@@ -1,0 +1,19 @@
+{
+	"source": {
+		"exclude": [
+			"src/gsjs"
+		]
+	},
+	"opts": {
+		"recurse": true
+	},
+	"plugins": [
+		"plugins/markdown"
+	],
+	"markdown": {
+		"parser": "marked"
+	},
+    "templates": {
+        "cleverLinks": true
+    }
+}

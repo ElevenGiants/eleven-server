@@ -1,0 +1,660 @@
+{
+	"tsid": "PUVF8UK15083AI1XXX",
+	"id": "PUVF8UK15083AI1XXX",
+	"ts": 1359263650109,
+	"label": "Aroha",
+	"count": 1,
+	"x": -76,
+	"y": -137,
+	"collDet": false,
+	"deleted": false,
+	"size": 16,
+	"items": [
+		{
+			"tsid": "I8VRY7NHNZQG58KXXX",
+			"label": "Lump of Earth",
+			"objref": true
+		},
+		{
+			"tsid": "ITR0SQQ3ETKBXD2XXX",
+			"label": "Construction Tool",
+			"objref": true
+		},
+		{
+			"tsid": "I4KXI286NLWN4S4XXX",
+			"label": "Shovel",
+			"objref": true
+		},
+		{
+			"tsid": "IAPE8RG7WIB2O6RXXX",
+			"label": "Urth Block",
+			"objref": true
+		}
+	],
+	"hiddenItems": [
+		{
+			"tsid": "B5P946XEYS0CHXGXXX",
+			"label": "Private Trading Storage",
+			"objref": true
+		},
+		{
+			"tsid": "B9A6POR1L2BEUQ5XXX",
+			"label": "Private Rewards Overflow Storage",
+			"objref": true
+		},
+		{
+			"tsid": "BBCPQLPEK015AH5XXX",
+			"label": "Private Mail Storage",
+			"objref": true
+		},
+		{
+			"tsid": "BS3U5OB5MC9D7K3XXX",
+			"label": "Private Furniture Storage",
+			"objref": true
+		},
+		{
+			"tsid": "BN1ADU1A551QHNCXXX",
+			"label": "Private Trophy Storage",
+			"objref": true
+		},
+		{
+			"tsid": "BVR77CQP5LCJ46LXXX",
+			"label": "Private Auction Storage",
+			"objref": true
+		}
+	],
+	"tsx": 1388921070732,
+	"class_tsid": "human",
+	"load_time": "2013-01-26 21:13:59.000",
+	"location": {
+		"tsid": "LVU6KZIKDTE8NNRXXX",
+		"label": "Aroha's Home Street",
+		"objref": true
+	},
+	"lpa": "3g8ao5il",
+	"upd_gs": "gs6",
+	"upd_time": "2013-01-26 20:49:28.479",
+	"userid": 122470,
+	"a2": {
+		"coat": 0,
+		"dress": 0,
+		"ears": 0,
+		"ears_height": 1,
+		"ears_scale": 0.824,
+		"eye_dist": -2.5266666666667,
+		"eye_height": 0.88,
+		"eye_scale": 0.84873333333333,
+		"eyes": 11,
+		"hair": 64,
+		"hair_color": 8,
+		"hat": 136,
+		"mouth": 40,
+		"mouth_height": 0.28,
+		"mouth_scale": 0.75,
+		"nose": 50,
+		"nose_height": 0.50666666666667,
+		"nose_scale": 1.0126666666667,
+		"pants": 366,
+		"shirt": 312,
+		"shoes": 251,
+		"skin_color": 63,
+		"skirt": 0
+	},
+	"av_meta": {
+		"pending": false,
+		"sheets": "/c2.glitch.bz/avatars/2012-08-30/0cb1cbc48741925cd06c0af10b4fa2f4_1346361932",
+		"singles": "/c2.glitch.bz/avatars/2012-08-30/0cb1cbc48741925cd06c0af10b4fa2f4_1346361821",
+		"version": 3
+	},
+	"daily_quoin_limit": 1355100037,
+	"date_last_loggedin": 1406304623,
+	"date_last_login": 1355106571,
+	"date_last_logout": 1355106704,
+	"deaths_today": 0,
+	"delivery_type": "auction",
+	"do_not_disturb": false,
+	"feeling_called_love_last_time": 1339040842,
+	"followers": "",
+	"food_today": 0,
+	"fox_preserve_intro": true,
+	"fox_preserve_visit": true,
+	"giant_tip_index": 11,
+	"h": 112,
+	"has_done_intro": true,
+	"is_afk": true,
+	"is_dead": 0,
+	"is_god": 1,
+	"jump_count": 14989,
+	"metabolics": {
+		"energy": 832,
+		"mood": 900,
+		"tank": 900
+	},
+	"new_player_goodbye_familiar": 1336770937,
+	"next_delivery": -1,
+	"physics_new": {
+		"imagination": {
+			"added_time": 1342669406577,
+			"can_3_jump": 1,
+			"can_wall_jump": 0,
+			"gravity": 1,
+			"is_img": 1,
+			"is_permanent": 1,
+			"multiplier_3_jump": 0.8,
+			"vx_max": 1,
+			"vy_jump": 1
+		}
+	},
+	"s": "25",
+	"skills": {
+		"tsid": "DDXADR8FT3V22TNXXX",
+		"label": "Skills",
+		"objref": true
+	},
+	"stacked_physics_cache": {
+		"keys": {
+			"imagination": {
+				"added_time": 1342669406577,
+				"can_3_jump": 1,
+				"can_wall_jump": 0,
+				"gravity": 1,
+				"is_img": 1,
+				"is_permanent": 1,
+				"multiplier_3_jump": 0.8,
+				"vx_max": 1,
+				"vy_jump": 1
+			}
+		},
+		"can_3_jump": true,
+		"vx_max": 1,
+		"vy_max": 1,
+		"gravity": 1,
+		"vy_jump": 1,
+		"vx_accel_add_in_floor": 1,
+		"vx_accel_add_in_air": 1,
+		"friction_floor": 1,
+		"friction_air": 1,
+		"friction_thresh": 1,
+		"vx_off_ladder": 1,
+		"pc_scale": 1,
+		"item_scale": 1,
+		"y_cam_offset": 1,
+		"multiplier_3_jump": 0.8
+	},
+	"stats": {
+		"xp": 747399,
+		"currants": 135183,
+		"donation_xp_today": 0,
+		"imagination": 10604,
+		"credits": 2695,
+		"quoins_today": 0,
+		"meditation_today": 0,
+		"rube_trades": 0,
+		"rube_lure_disabled": 0,
+		"daily_count": {},
+		"has_subscription": true,
+		"last_rube_trade": 1343188363,
+		"level": 26,
+		"misc": {},
+		"quoin_multiplier": 9.650000000000002,
+		"subscription_end": 1355126400
+	},
+	"time_played": 412219,
+	"too_much_nostalgia_prompt": true,
+	"tp_queue": [],
+	"use_img": true,
+	"w": 59,
+	"favor_points": {
+		"alph": 0,
+		"cosma": 0,
+		"friendly": 0,
+		"grendaline": 0,
+		"humbaba": 0,
+		"lem": 0,
+		"mab": 0,
+		"pot": 0,
+		"spriggan": 0,
+		"ti": 0,
+		"zille": 0
+	},
+	"giant_emblems": {},
+	"making": {},
+	"making_queue": [],
+	"familiar": {
+		"details": {},
+		"stack": []
+	},
+	"prompts": {},
+	"group_invites": {},
+	"group_applied": {},
+	"group_chats": [
+		"RA9118JTCLA204I"
+	],
+	"can_be_rooked": true,
+	"is_player": 1,
+	"is_bag": true,
+	"is_limited": false,
+	"prefs": {
+		"int_menu_more_quantity_buttons": false,
+		"int_menu_default_to_one": false,
+		"do_oneclick_pickup": true,
+		"do_stat_count_animations": true,
+		"do_power_saving_mode": true,
+		"up_key_is_enter": false
+	},
+	"live_help_group": "RA512UITCLA22AD",
+	"global_chat_group": "RA9118JTCLA204I",
+	"acl_keys": {},
+	"houses": {
+		"LEUD40JRYT3OHTOXXX": 1,
+		"LVU6KZIKDTE8NNRXXX": 1
+	},
+	"house_auth": {},
+	"house_auth_req": {},
+	"secret_giants": [
+		"spriggan",
+		"zille",
+		"cosma",
+		"humbaba",
+		"alph",
+		"grendaline",
+		"tii",
+		"friendly",
+		"mab",
+		"pot"
+	],
+	"secret_locations": [
+		{
+			"tsid": "LA91JU4QQ712DJN",
+			"label": "Arjun Plunge",
+			"objref": true
+		},
+		{
+			"tsid": "LIFKPQEDFG722M5",
+			"label": "Sanna Salts",
+			"objref": true
+		},
+		{
+			"tsid": "LCRTAJK5UN124GG",
+			"label": "Bolesan Ambitions",
+			"objref": true
+		},
+		{
+			"tsid": "LA5DVVGJQQ5237U",
+			"label": "Firdaus Finds",
+			"objref": true
+		},
+		{
+			"tsid": "LA97L62229522GS",
+			"label": "Jethimadh Herb Gardens",
+			"objref": true
+		},
+		{
+			"tsid": "LHVGSE15MQA2OGE",
+			"label": "Boda Apta",
+			"objref": true
+		},
+		{
+			"tsid": "LHVQU18N3O021A5",
+			"label": "Ekorran Roughs",
+			"objref": true
+		},
+		{
+			"tsid": "LCR146VPNK12CTU",
+			"label": "Fyran Descant",
+			"objref": true
+		},
+		{
+			"tsid": "LA91SD0IEQA24L5",
+			"label": "Goli Grabs",
+			"objref": true
+		},
+		{
+			"tsid": "LA9I92MRBE92S8Q",
+			"label": "Willis Brone",
+			"objref": true
+		},
+		{
+			"tsid": "LA9NT2E8FF8243N",
+			"label": "Osechi Oath",
+			"objref": true
+		},
+		{
+			"tsid": "LIF1609JRKV151E",
+			"label": "Svarta Swale",
+			"objref": true
+		},
+		{
+			"tsid": "LHV1HKHRSKA2CR9",
+			"label": "Senaga Siren",
+			"objref": true
+		},
+		{
+			"tsid": "LIFF72DU3O727EA",
+			"label": "Balkao Blvd",
+			"objref": true
+		},
+		{
+			"tsid": "LTJ1024R2DQ1B5S",
+			"label": "Clam Calumny",
+			"objref": true
+		},
+		{
+			"tsid": "LCR11JA67NJ15N3",
+			"label": "Nightshade Woods",
+			"objref": true
+		},
+		{
+			"tsid": "LM112V6OCA126K1",
+			"label": "Devi Drape",
+			"objref": true
+		},
+		{
+			"tsid": "LTJ10HO3FAV1HDD",
+			"label": "Tennio Spur",
+			"objref": true
+		},
+		{
+			"tsid": "LA95G0P137927B4",
+			"label": "Dunlin Roble",
+			"objref": true
+		},
+		{
+			"tsid": "LIF16GDJ89724E3",
+			"label": "Goorsh Gam",
+			"objref": true
+		}
+	],
+	"last_online_gameday": "37-10-04",
+	"street_history": {
+		"tsid": "D02EI6QW9G4X6RXXX",
+		"label": "Street History",
+		"objref": true
+	},
+	"recipes": {
+		"tsid": "DQVI5VGWT7ILTYBXXX",
+		"label": "Recipes",
+		"objref": true
+	},
+	"buffs": {
+		"tsid": "DEE7JM4UWHNRBPGXXX",
+		"label": "Buffs",
+		"objref": true
+	},
+	"achievements": {
+		"tsid": "D9AV3ZTGJQMT5IPXXX",
+		"label": "Achievements",
+		"objref": true
+	},
+	"quests": {
+		"todo": {
+			"tsid": "D1O5ONVBG6TPJ5RXXX",
+			"label": "To Do",
+			"objref": true
+		},
+		"done": {
+			"tsid": "DCJ3YL1RQ1Y30UDXXX",
+			"label": "Done",
+			"objref": true
+		},
+		"fail_repeat": {
+			"tsid": "D6DVXNJIX5H9CC8XXX",
+			"label": "Repeatable Failed",
+			"objref": true
+		},
+		"misc": {
+			"tsid": "DV77P7IEJ98UXRXXX",
+			"label": "Misc",
+			"objref": true
+		},
+		"queue": [
+			"beer_guzzle",
+			"letter_block_2",
+			"brain_freezer",
+			"kindly_randomness",
+			"rook_hall_start"
+		]
+	},
+	"instances": {
+		"tsid": "D088SPQRYAMXI52XXX",
+		"label": "Instances",
+		"objref": true
+	},
+	"auctions": {
+		"tsid": "DQSUB2OREC6K495XXX",
+		"label": "Auctions",
+		"objref": true
+	},
+	"trading": {
+		"tsid": "DHBHNGNHYAYBKE2XXX",
+		"label": "Trading",
+		"objref": true
+	},
+	"jobs": {
+		"todo": {
+			"tsid": "DCLGLVLS9J6K1EMXXX",
+			"label": "To Do",
+			"objref": true
+		},
+		"done": {
+			"tsid": "DBHCXJQH20PJ2X1XXX",
+			"label": "Done",
+			"objref": true
+		}
+	},
+	"daily_history": {
+		"tsid": "D72HT9TSQGG3F2YXXX",
+		"label": "Daily History",
+		"objref": true
+	},
+	"rewards": {
+		"tsid": "DZSJVYPYHP6869AXXX",
+		"label": "Rewards",
+		"objref": true
+	},
+	"mail": {
+		"tsid": "DNUGHUGGCINGBVSXXX",
+		"label": "Mail",
+		"objref": true
+	},
+	"friends": {
+		"group1": {
+			"tsid": "DWDI5DQRLM4E7B9XXX",
+			"label": "Buddies",
+			"objref": true
+		},
+		"cache": {
+			"tsid": "DB5BPZ2QIZ7X2YBXXX",
+			"label": "Cache",
+			"objref": true
+		},
+		"reverse": {
+			"tsid": "DC4GJGY32H8OUHAXXX",
+			"label": "Reverse Contacts",
+			"objref": true
+		}
+	},
+	"ignoring": {
+		"tsid": "DKM4KRQD14TQVKJXXX",
+		"label": "Ignoring",
+		"objref": true
+	},
+	"ignored_by": {
+		"tsid": "D6HH3ID51B1TKPGXXX",
+		"label": "Ignored By",
+		"objref": true
+	},
+	"reverse_buddy_cache": {
+		"tsid": "DGS3XN58BCV6G8PXXX",
+		"label": "Reverse Buddy Cache",
+		"objref": true
+	},
+	"clothing": {
+		"tsid": "DYNQYV9EXCM9DLSXXX",
+		"label": "Clothing",
+		"objref": true
+	},
+	"groups": {
+		"tsid": "DF7I4W32WWXCU9PXXX",
+		"label": "Groups",
+		"objref": true
+	},
+	"organizations": {
+		"tsid": "DF4SRTVEGQTZKT9XXX",
+		"label": "Organizations",
+		"objref": true
+	},
+	"conversations": {
+		"tsid": "DA2T9YMY7EHKQEHXXX",
+		"label": "Conversations",
+		"objref": true
+	},
+	"teleportation": {
+		"tsid": "DM15OM6JS5UL680XXX",
+		"label": "Teleportation",
+		"objref": true
+	},
+	"counters": {
+		"tsid": "DLL0TLT0X3DZ33DXXX",
+		"label": "Counters",
+		"objref": true
+	},
+	"imagination": {
+		"tsid": "DSRSMEWHP3S2OI5XXX",
+		"label": "Imagination",
+		"objref": true
+	},
+	"furniture": {
+		"tsid": "D3FHQ7836S1DIMSXXX",
+		"label": "Furniture",
+		"objref": true
+	},
+	"events": {},
+	"radiation_today": 0,
+	"daily_favor": {
+		"alph": 0,
+		"cosma": 0,
+		"friendly": 0,
+		"grendaline": 0,
+		"humbaba": 0,
+		"lem": 0,
+		"mab": 0,
+		"pot": 0,
+		"spriggan": 0,
+		"ti": 0,
+		"zille": 0
+	},
+	"seenMaxDonationsPrompt": 0,
+	"last_location": {
+		"tsid": "LVU6KZIKDTE8NNRXXX",
+		"label": "Aroha's Home Street",
+		"objref": true
+	},
+	"last_hub_visited": "POL_PUVF8UK15083AI1XXX",
+	"food_history": {
+		"tsid": "D9NHLG3XV460KVSXXX",
+		"objref": true
+	},
+	"global_chatter": true,
+	"home": {
+		"interior": {
+			"tsid": "LEUD40JRYT3OHTOXXX",
+			"label": "Aroha's House",
+			"objref": true
+		},
+		"exterior": {
+			"tsid": "LVU6KZIKDTE8NNRXXX",
+			"label": "Aroha's Home Street",
+			"objref": true
+		},
+		"tower": {
+			"tsid": "LZW5KVP1MHXIARAXXX",
+			"label": "Aroha's Tower",
+			"objref": true
+		}
+	},
+	"home_profile": {
+		"interior": {
+			"tsid": "LEUD40JRYT3OHTOXXX",
+			"house": "Aroha's House",
+			"home": {
+				"yard_start": 5,
+				"yard_now": 5,
+				"yard_max": 20,
+				"segs_start": 7,
+				"segs_now": 7,
+				"segs_max": 20,
+				"floors_now": 1,
+				"floors_max": 3
+			},
+			"entry": {
+				"x": 940,
+				"y": -120
+			}
+		},
+		"exterior": {
+			"tsid": "LVU6KZIKDTE8NNRXXX",
+			"house": "Aroha's Home Street",
+			"home": {
+				"left_start": 3,
+				"right_start": 8,
+				"left_now": 3,
+				"right_now": 8,
+				"left_max": 20,
+				"right_max": 20,
+				"style": "jimtest_ext_default_high"
+			},
+			"entry": {
+				"x": 1077,
+				"y": -174
+			}
+		}
+	},
+	"home_leave": {
+		"tsid": "LLID3PL336E1RN1",
+		"x": 2570,
+		"y": -314
+	},
+	"last_magic_rock_location": "LVU6KZIKDTE8NNRXXX",
+	"magic_rock": {
+		"cultivate": "cultivate_complete",
+		"changestyle": "howto_shown",
+		"customize": "howto_shown",
+		"expand": "howto_shown",
+		"keys": "howto_shown"
+	},
+	"last_quest_offer": 1406304932,
+	"timers": {
+		"onPlayTimeCheck": {
+			"start": 1406304922675,
+			"delay": 60000,
+			"func": "onPlayTimeCheck",
+			"args": []
+		},
+		"handleDelayedTeleport": {
+			"start": 1406304632505,
+			"delay": 500,
+			"func": "handleDelayedTeleport",
+			"args": []
+		},
+		"achievements_run_callback_queue": {
+			"start": 1406304622615,
+			"delay": 30000,
+			"func": "achievements_run_callback_queue",
+			"args": []
+		},
+		"quests_run_queue": {
+			"start": 1406304931764,
+			"delay": 300000,
+			"func": "quests_run_queue",
+			"args": []
+		},
+		"onPeriodicEnergyLoss": {
+			"start": 1406304982641,
+			"delay": 90000,
+			"func": "onPeriodicEnergyLoss",
+			"args": []
+		}
+	},
+	"intervals": {}
+}

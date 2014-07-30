@@ -1,0 +1,268 @@
+{
+    "class_tsid": "", 
+    "dynamic": {
+        "b": 0, 
+        "gradient": {
+            "bottom": "000000", 
+            "top": "000000"
+        }, 
+        "ground_y": 0, 
+        "img_file_versioned": null, 
+        "l": -500, 
+        "label": "unnnn", 
+        "layers": {
+            "T_1311832165202": {
+                "decos": {
+                    "rook_hall_placeholder_painting_1311833262112": {
+                        "h": 284, 
+                        "name": "rook_hall_placeholder_painting_1311832941297", 
+                        "sprite_class": "rook_hall_placeholder_painting", 
+                        "w": 375, 
+                        "x": 517, 
+                        "y": 426, 
+                        "z": 11
+                    }, 
+                    "rookhall_spotlight_1311833262113": {
+                        "h": 451, 
+                        "name": "rookhall_spotlight_1311833262111", 
+                        "r": -180, 
+                        "sprite_class": "rookhall_spotlight", 
+                        "w": 557, 
+                        "x": 506, 
+                        "y": -81, 
+                        "z": 10
+                    }, 
+                    "rookhall_spotlight_1311833262114": {
+                        "h": 398, 
+                        "name": "rookhall_spotlight_1311833262111", 
+                        "sprite_class": "rookhall_spotlight", 
+                        "w": 557, 
+                        "x": 521, 
+                        "y": 560, 
+                        "z": 7
+                    }, 
+                    "rookhall_spotlight_1311833262115": {
+                        "h": 337, 
+                        "name": "rookhall_spotlight_1311833262111", 
+                        "r": 90, 
+                        "sprite_class": "rookhall_spotlight", 
+                        "w": 405, 
+                        "x": 195, 
+                        "y": 294, 
+                        "z": 8
+                    }, 
+                    "rookhall_spotlight_1311833262116": {
+                        "h": 337, 
+                        "h_flip": true, 
+                        "name": "rookhall_spotlight_1311833262111", 
+                        "r": -90, 
+                        "sprite_class": "rookhall_spotlight", 
+                        "w": 405, 
+                        "x": 820, 
+                        "y": 294, 
+                        "z": 9
+                    }, 
+                    "rookhall_spotlight_1311833262117": {
+                        "h": 630, 
+                        "name": "rookhall_spotlight_1311833262107", 
+                        "r": -117, 
+                        "sprite_class": "rookhall_spotlight", 
+                        "w": 176, 
+                        "x": 1088, 
+                        "y": -44, 
+                        "z": 6
+                    }, 
+                    "rookhall_spotlight_1311833262118": {
+                        "h": 630, 
+                        "name": "rookhall_spotlight_1311833262107", 
+                        "r": -238, 
+                        "sprite_class": "rookhall_spotlight", 
+                        "w": 176, 
+                        "x": -52, 
+                        "y": -74, 
+                        "z": 2
+                    }, 
+                    "rookhall_spotlight_1311833262119": {
+                        "h": 630, 
+                        "name": "rookhall_spotlight_1311833262107", 
+                        "r": -181, 
+                        "sprite_class": "rookhall_spotlight", 
+                        "w": 176, 
+                        "x": 495, 
+                        "y": -335, 
+                        "z": 3
+                    }, 
+                    "rookhall_spotlight_1311833262120": {
+                        "h": 630, 
+                        "name": "rookhall_spotlight_1311833262107", 
+                        "r": -308, 
+                        "sprite_class": "rookhall_spotlight", 
+                        "w": 176, 
+                        "x": 49, 
+                        "y": 618, 
+                        "z": 4
+                    }, 
+                    "rookhall_spotlight_1311833262121": {
+                        "h": 630, 
+                        "name": "rookhall_spotlight_1311833262107", 
+                        "r": -61, 
+                        "sprite_class": "rookhall_spotlight", 
+                        "w": 176, 
+                        "x": 1015, 
+                        "y": 540, 
+                        "z": 5
+                    }, 
+                    "rookhall_spotlight_1311833262122": {
+                        "h": 630, 
+                        "name": "rookhall_spotlight_1311833262107", 
+                        "r": -271, 
+                        "sprite_class": "rookhall_spotlight", 
+                        "w": 176, 
+                        "x": -55, 
+                        "y": 295, 
+                        "z": 1
+                    }, 
+                    "rookhall_spotlight_1311833262123": {
+                        "h": 630, 
+                        "name": "rookhall_spotlight_1311833262107", 
+                        "r": -91, 
+                        "sprite_class": "rookhall_spotlight", 
+                        "w": 176, 
+                        "x": 1115, 
+                        "y": 260, 
+                        "z": 0
+                    }
+                }, 
+                "h": 700, 
+                "name": "T_1311832165202", 
+                "w": 1000, 
+                "z": -1
+            }, 
+            "T_1311832941302": {
+                "decos": {
+                    "firebog_linear_gradient_shadow_1311832941300": {
+                        "h": 1114, 
+                        "name": "firebog_linear_gradient_shadow_1311832941300", 
+                        "sprite_class": "firebog_linear_gradient_shadow", 
+                        "w": 331, 
+                        "x": 84, 
+                        "y": 703, 
+                        "z": 2
+                    }, 
+                    "firebog_linear_gradient_shadow_1311832941303": {
+                        "h": 1114, 
+                        "name": "firebog_linear_gradient_shadow_1311832941300", 
+                        "r": -90, 
+                        "sprite_class": "firebog_linear_gradient_shadow", 
+                        "w": 331, 
+                        "x": 1059, 
+                        "y": 678, 
+                        "z": 3
+                    }, 
+                    "firebog_linear_gradient_shadow_1311833262109": {
+                        "h": 1114, 
+                        "name": "firebog_linear_gradient_shadow_1311832941300", 
+                        "sprite_class": "firebog_linear_gradient_shadow", 
+                        "w": 331, 
+                        "x": 84, 
+                        "y": 703, 
+                        "z": 2
+                    }, 
+                    "firebog_linear_gradient_shadow_1311833262110": {
+                        "h": 1114, 
+                        "h_flip": true, 
+                        "name": "firebog_linear_gradient_shadow_1311832941300", 
+                        "sprite_class": "firebog_linear_gradient_shadow", 
+                        "w": 331, 
+                        "x": 924, 
+                        "y": 703, 
+                        "z": 1
+                    }
+                }, 
+                "filtersNEW": {
+                    "saturation": {
+                        "value": -73
+                    }
+                }, 
+                "h": 700, 
+                "name": "T_1311832941302", 
+                "w": 1000, 
+                "z": 1
+            }, 
+            "middleground": {
+                "boxes": {}, 
+                "decos": {
+                    "flash_crasher_demon_1311832941296": {
+                        "h": 316, 
+                        "name": "flash_crasher_demon_1311832941296", 
+                        "sprite_class": "flash_crasher_demon", 
+                        "w": 339, 
+                        "x": 17, 
+                        "y": -39, 
+                        "z": 3
+                    }, 
+                    "water_ripple_1311832941298": {
+                        "h": 130, 
+                        "name": "water_ripple_1311832941298", 
+                        "sprite_class": "water_ripple", 
+                        "w": 1388, 
+                        "x": -16, 
+                        "y": 68, 
+                        "z": 0
+                    }
+                }, 
+                "doors": {}, 
+                "filtersNEW": {
+                    "saturation": {
+                        "value": -77
+                    }
+                }, 
+                "h": 700, 
+                "ladders": {}, 
+                "name": "middleground", 
+                "platform_lines": {
+                    "plat_1348906674423": {
+                        "end": {
+                            "x": 499, 
+                            "y": -12
+                        }, 
+                        "platform_item_perm": -1, 
+                        "platform_pc_perm": -1, 
+                        "start": {
+                            "x": -499, 
+                            "y": -12
+                        }
+                    }
+                }, 
+                "signposts": {}, 
+                "targets": {}, 
+                "w": 1000, 
+                "walls": {}, 
+                "z": 0
+            }
+        }, 
+        "loading_label": null, 
+        "music_file": "", 
+        "no_hubmap": true, 
+        "no_map": false, 
+        "no_zoom": true, 
+        "physics": null, 
+        "r": 500, 
+        "rookable_type": 0, 
+        "sources": {
+            "LIFGJ2246R72LJL": 1
+        }, 
+        "swf_file": "firebog.swf", 
+        "swf_file_versioned": "http://c2.glitch.bz/locations/firebog/1348165766.swf", 
+        "t": -700, 
+        "tsid": "LIFPV9EMLT72DP4", 
+        "wall_jump": false
+    }, 
+    "label": "unnnn", 
+    "lastUpdateTime": "1358983047", 
+    "load_time": "2013-01-23 15:15:24.000", 
+    "ts": "1358983057940", 
+    "tsid": "GIFPV9EMLT72DP4", 
+    "upd_gs": "gs6", 
+    "upd_time": "2013-01-23 14:55:13.374"
+}

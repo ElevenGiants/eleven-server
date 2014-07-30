@@ -1,0 +1,6 @@
+persdata
+log
+docs
+src/gsjs
+node_modules/**/out
+node_modules/**/build
