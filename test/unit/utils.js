@@ -193,4 +193,41 @@ suite('utils', function() {
 			orproxy.__set__('pers', require('data/pers'));  // restore
 		});
 	});
+	
+	
+	suite('arrayToHash', function() {
+	
+		test('does its job', function() {
+			var a = [{tsid: 'X'}, {tsid: 'Y'}, {tsid: 'Z', test: 'foo'}];
+			assert.deepEqual(utils.arrayToHash(a), {
+				X: {tsid: 'X'},
+				Y: {tsid: 'Y'},
+				Z: {tsid: 'Z', test: 'foo'},
+			});
+		});
+		
+		test('throws an error when an object does not have a TSID', function() {
+			var a = [1, 'x', {b: 'moo'}];
+			assert.throw(function() {
+				utils.arrayToHash(a);
+			}, Error);
+		});
+	});
+	
+	
+	suite('hashToArray', function() {
+	
+		test('does its job', function() {
+			var h = {
+				X: {tsid: 'X'},
+				Y: {tsid: 'Y'},
+				Z: {tsid: 'Z', test: 'foo'},
+			};
+			assert.deepEqual(utils.hashToArray(h), [
+				{tsid: 'X'},
+				{tsid: 'Y'},
+				{tsid: 'Z', test: 'foo'},
+			]);
+		});
+	});
 });

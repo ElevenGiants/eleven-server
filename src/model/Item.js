@@ -15,6 +15,8 @@ Item.prototype.collDet = false;
 utils.makeNonEnumerable(Item.prototype, 'collDet');
 Item.prototype.deleted = false;  // see apiDelete/apiIsDeleted functions
 utils.makeNonEnumerable(Item.prototype, 'deleted');
+Item.prototype.slot = undefined;
+utils.makeNonEnumerable(Item.prototype, 'slot');
 Object.defineProperty(Item.prototype, 'isHidden', {
 	get: function() {
 		return !!this.is_hidden;

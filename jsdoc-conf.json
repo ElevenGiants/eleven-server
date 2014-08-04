@@ -11,7 +11,8 @@
 		"plugins/markdown"
 	],
 	"markdown": {
-		"parser": "marked"
+		"parser": "marked",
+		"tags": ["exceptions"]
 	},
     "templates": {
         "cleverLinks": true

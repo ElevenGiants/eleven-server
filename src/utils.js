@@ -19,6 +19,8 @@ module.exports = {
 	isQuest: isQuest,
 	isGroup: isGroup,
 	makeNonEnumerable: makeNonEnumerable,
+	arrayToHash: arrayToHash,
+	hashToArray: hashToArray,
 };
 
 
@@ -228,4 +230,42 @@ function makeNonEnumerable(obj, propName) {
 		value: obj[propName],
 		enumerable: false,
 	});
+}
+
+
+/**
+ * Copies game objects from an array into a hash (object with game
+ * objects as properties, and their respective TSIDs as keys).
+ *
+ * @param {GameObject[]} data the game object array to convert
+ * @returns {object} hash with game object properties
+ * @throws {Error} when an object in `data` does not have a valid TSID
+ */
+function arrayToHash(data) {
+	var ret = {};
+	for (var i = 0; i < data.length; i++) {
+		if (typeof data[i].tsid !== 'string') {
+			throw new Error('invalid TSID: ' + data[i].tsid);
+		}
+		ret[data[i].tsid] = data[i];
+	}
+	return ret;
+}
+
+
+/**
+ * Copies game objects from a hash into an array.
+ *
+ * @param {object} data hash with game object properties
+ * @returns {GameObject[]} array containing the game objects from
+ *          `data`
+ */
+function hashToArray(data) {
+	var ret = [];
+	for (var key in data) {
+		if (data.hasOwnProperty(key)) {
+			ret.push(data[key]);
+		}
+	}
+	return ret;
 }
