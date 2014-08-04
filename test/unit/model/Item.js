@@ -86,4 +86,23 @@ suite('Item', function() {
 			assert.strictEqual(i.path, 'B1/B2/I1', 'player not included');
 		});
 	});
+	
+	
+	suite('serialize', function() {
+	
+		test('does not include internal (non-enumerable) properties', function() {
+			var data = {
+				tsid: 'IFOO',
+				label: 'Teapot',
+				ts: 12345,
+				count: 1,
+				x: 123,
+				y: 456,
+				onPlayerCollision: function() {},
+			};
+			var i = new Item(data);
+			delete data.onPlayerCollision;  // functions are not included in serialization
+			assert.deepEqual(i.serialize(), data);
+		});
+	});
 });

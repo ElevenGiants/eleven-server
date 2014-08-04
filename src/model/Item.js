@@ -10,13 +10,8 @@ var utils = require('utils');
 util.inherits(Item, GameObject);
 Item.prototype.TSID_INITIAL = 'I';
 
-// define some non-enumerable Item properties (used internally or by GSJS)
-Item.prototype.collDet = false;
-utils.makeNonEnumerable(Item.prototype, 'collDet');
-Item.prototype.deleted = false;  // see apiDelete/apiIsDeleted functions
-utils.makeNonEnumerable(Item.prototype, 'deleted');
-Item.prototype.slot = undefined;
-utils.makeNonEnumerable(Item.prototype, 'slot');
+
+// define some derived properties (used by GSJS)
 Object.defineProperty(Item.prototype, 'isHidden', {
 	get: function() {
 		return !!this.is_hidden;
@@ -43,6 +38,11 @@ function Item(data) {
 	if (this.x === undefined) this.x = 0;
 	if (this.y === undefined) this.y = 0;
 	if (!utils.isInt(this.count)) this.count = 1;
+	// add some non-enumerable properties (used internally or by GSJS)
+	utils.addNonEnumerable(this, 'collDet', false);
+	utils.addNonEnumerable(this, 'deleted', false);  // see apiDelete/apiIsDeleted functions
+	utils.addNonEnumerable(this, 'slot', undefined);
+	utils.addNonEnumerable(this, 'path', this.tsid);
 	// enable collision detection if we have a handler function
 	if (typeof this.onPlayerCollision === 'function') {
 		this['!colliders'] = {};

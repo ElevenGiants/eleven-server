@@ -156,15 +156,24 @@ suite('utils', function() {
 				assert.notStrictEqual(k, 'y');
 			}
 		});
+	});
+	
+	
+	suite('addNonEnumerable', function() {
+	
+		test('does its job', function() {
+			var o = {x: 12};
+			utils.addNonEnumerable(o, 'y', 'argl');
+			assert.strictEqual(o.y, 'argl');
+			assert.deepEqual(Object.keys(o), ['x']);
+		});
 		
-		test('also works on prototype properties', function() {
-			var O = function() {};
-			O.prototype.x = 1;
-			utils.makeNonEnumerable(O.prototype, 'x');
-			var o = new O();
-			o.y = 12;
-			assert.deepEqual(Object.keys(o), ['y']);
-			assert.property(o, 'x');
+		test('creates writable properties', function() {
+			var o = {};
+			utils.addNonEnumerable(o, 'y', 'argl');
+			assert.strictEqual(o.y, 'argl');
+			o.y = 'moo';
+			assert.strictEqual(o.y, 'moo');
 		});
 	});
 	

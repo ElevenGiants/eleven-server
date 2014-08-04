@@ -19,6 +19,7 @@ module.exports = {
 	isQuest: isQuest,
 	isGroup: isGroup,
 	makeNonEnumerable: makeNonEnumerable,
+	addNonEnumerable: addNonEnumerable,
 	arrayToHash: arrayToHash,
 	hashToArray: hashToArray,
 };
@@ -219,16 +220,29 @@ function getInitial(gameObjOrTsid) {
 
 
 /**
- * Makes a property of an object non-enumerable (e.g. to exclude it
- * from AMF serialization).
+ * Makes an existing property of an object non-enumerable (e.g. to
+ * exclude it from AMF serialization).
  *
- * @param {object} obj object to modify (can be a prototype object, too)
+ * @param {object} obj object to modify
  * @param {string} propName name of the property to make non-enumerable
  */
 function makeNonEnumerable(obj, propName) {
+	addNonEnumerable(obj, propName, obj[propName]);
+}
+
+
+/**
+ * Adds a new non-enumerable, writable property to an object.
+ *
+ * @param {object} obj object to add the property to
+ * @param {string} propName name of the new property
+ * @param {*} [val] value of the new property
+ */
+function addNonEnumerable(obj, propName, val) {
 	Object.defineProperty(obj, propName, {
-		value: obj[propName],
+		value: val,
 		enumerable: false,
+		writable: true,
 	});
 }
 

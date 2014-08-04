@@ -60,10 +60,10 @@ function GameObject(data) {
  */
 GameObject.prototype.serialize = function() {
 	var ret = {};
-	var keys = Object.keys(this);
+	var keys = Object.keys(this);  // Object.keys only includes own properties
 	for (var i = 0; i < keys.length; i++) {
 		var k = keys[i];
-		if (k[0] !== '!' && this.hasOwnProperty(k) && k !== 'id' && k !== 'class_id') {
+		if (k[0] !== '!' && k !== 'id' && k !== 'class_id') {
 			var val = this[k];
 			if (typeof(val) !== 'function') {
 				ret[k] = val;
