@@ -1,4 +1,9 @@
+var rewire = require('rewire');
 var utils = require('utils');
+var GameObject = require('model/GameObject');
+var Bag = require('model/Bag');
+var Player = require('model/Player');
+var orproxy = rewire('data/objrefProxy');
 
 
 suite('utils', function() {
@@ -136,6 +141,56 @@ suite('utils', function() {
 			assert.isFalse(utils.isInt(Infinity), 'Infinity');
 			assert.isFalse(utils.isInt(false), 'false');
 			assert.isFalse(utils.isInt(true), 'true');
+		});
+	});
+	
+	
+	suite('makeNonEnumerable', function() {
+	
+		test('does its job', function() {
+			var o = {x: 1, y: 2};
+			utils.makeNonEnumerable(o, 'y');
+			assert.deepEqual(Object.keys(o), ['x']);
+			assert.isTrue(o.hasOwnProperty('y'));
+			for (var k in o) {
+				assert.notStrictEqual(k, 'y');
+			}
+		});
+		
+		test('also works on prototype properties', function() {
+			var O = function() {};
+			O.prototype.x = 1;
+			utils.makeNonEnumerable(O.prototype, 'x');
+			var o = new O();
+			o.y = 12;
+			assert.deepEqual(Object.keys(o), ['y']);
+			assert.property(o, 'x');
+		});
+	});
+	
+	
+	suite('isBag', function() {
+		
+		test('does its job', function() {
+			assert.isTrue(utils.isBag(new Bag()));
+			assert.isTrue(utils.isBag(new Player()));
+			assert.isFalse(utils.isBag(new GameObject()));
+			assert.isTrue(utils.isBag('BXYZ'));
+			assert.isFalse(utils.isBag('ASDF'));
+			assert.isFalse(utils.isBag('bXYZ', 'case sensitive'));
+		});
+		
+		test('does not resolve objref', function() {
+			orproxy.__set__('pers', {
+				get: function() {
+					throw new Error('should not be called');
+				},
+			});
+			var proxy = orproxy.makeProxy({tsid: 'BTEST'});
+			assert.isTrue(utils.isBag(proxy));
+			proxy = orproxy.makeProxy({tsid: 'XTEST'});
+			assert.isFalse(utils.isBag(proxy));
+			orproxy.__set__('pers', require('data/pers'));  // restore
 		});
 	});
 });

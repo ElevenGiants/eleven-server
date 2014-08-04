@@ -11,7 +11,8 @@ GameObject.prototype.__isGO = true;
  * Generic constructor for both instantiating an existing game object
  * (from JSON data), and creating a new object.
  *
- * @param {object} [data]
+ * @param {object} [data] initialization values (properties are
+ *        shallow-copied into the game object)
  * @constructor
  */
 function GameObject(data) {
