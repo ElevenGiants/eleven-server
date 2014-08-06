@@ -15,12 +15,22 @@ suite('GameObject', function() {
 		test('can instantiate new objects from existing data', function() {
 			var go = new GameObject({
 				tsid: 'GXYZ',
+				class_tsid: 'something',
+			});
+			assert.strictEqual(go.tsid, 'GXYZ');
+			assert.strictEqual(go.class_tsid, 'something');
+			assert.strictEqual(go.id, 'GXYZ', 'deprecated property "id"');
+			assert.strictEqual(go.class_id, 'something', 'deprecated property "class_id"');
+		});
+		
+		test('can instantiate with deprecated ID properties', function() {
+			var go = new GameObject({
+				id: 'GXYZ',
 				class_id: 'something',
 			});
 			assert.strictEqual(go.tsid, 'GXYZ');
 			assert.strictEqual(go.class_tsid, 'something');
 		});
-		
 	});
 	
 	
@@ -47,6 +57,18 @@ suite('GameObject', function() {
 			});
 			go = new GameObject(go.serialize());
 			assert.strictEqual(go.tsid, 'GXYZ');
+		});
+		
+		test('does not include deprecated ID properties', function() {
+			var go = new GameObject({
+				id: 'GXYZ',
+				class_id: 'something',
+			});
+			var ser = go.serialize();
+			assert.strictEqual(ser.tsid, 'GXYZ');
+			assert.strictEqual(ser.class_tsid, 'something');
+			assert.notProperty(ser, 'id');
+			assert.notProperty(ser, 'class_id');
 		});
 	});
 });

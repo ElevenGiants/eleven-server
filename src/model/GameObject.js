@@ -17,12 +17,13 @@ GameObject.prototype.__isGO = true;
  */
 function GameObject(data) {
 	if (!data) data = {};
-	// initialize TSID/class ID
-	this.tsid = data.tsid || utils.makeTsid(this.TSID_INITIAL);
-	this.id = this.tsid;  // deprecated
-	if (data.class_id !== undefined) {
-		this.class_id = data.class_id;  // deprecated
-		this.class_tsid = data.class_id;
+	// initialize TSID/class ID (use deprecated properties if necessary, and
+	// keep them as non-enumerable so they are available, but not persisted)
+	this.tsid = data.tsid || data.id || utils.makeTsid(this.TSID_INITIAL);
+	utils.addNonEnumerable(this, 'id', this.tsid);  // deprecated
+	if (data.class_tsid || data.class_id) {
+		this.class_tsid = data.class_tsid || data.class_id;
+		utils.addNonEnumerable(this, 'class_id', this.class_tsid);  // deprecated
 	}
 	// copy supplied data
 	// TODO: remove 'dynamic' partition in fixture data, and get rid of special handling here
@@ -63,7 +64,7 @@ GameObject.prototype.serialize = function() {
 	var keys = Object.keys(this);  // Object.keys only includes own properties
 	for (var i = 0; i < keys.length; i++) {
 		var k = keys[i];
-		if (k[0] !== '!' && k !== 'id' && k !== 'class_id') {
+		if (k[0] !== '!') {
 			var val = this[k];
 			if (typeof(val) !== 'function') {
 				ret[k] = val;
