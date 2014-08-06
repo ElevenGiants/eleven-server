@@ -257,11 +257,13 @@ function addNonEnumerable(obj, propName, val) {
  */
 function arrayToHash(data) {
 	var ret = {};
-	for (var i = 0; i < data.length; i++) {
-		if (typeof data[i].tsid !== 'string') {
-			throw new Error('invalid TSID: ' + data[i].tsid);
+	if (data instanceof Array) {
+		for (var i = 0; i < data.length; i++) {
+			if (typeof data[i].tsid !== 'string') {
+				throw new Error('invalid TSID: ' + data[i].tsid);
+			}
+			ret[data[i].tsid] = data[i];
 		}
-		ret[data[i].tsid] = data[i];
 	}
 	return ret;
 }

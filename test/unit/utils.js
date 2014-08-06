@@ -221,6 +221,11 @@ suite('utils', function() {
 				utils.arrayToHash(a);
 			}, Error);
 		});
+		
+		test('works with undefined/null input', function() {
+			assert.deepEqual(utils.arrayToHash(), {});
+			assert.deepEqual(utils.arrayToHash(null), {});
+		});
 	});
 	
 	
@@ -237,6 +242,11 @@ suite('utils', function() {
 				{tsid: 'Y'},
 				{tsid: 'Z', test: 'foo'},
 			]);
+		});
+		
+		test('works with undefined/null input', function() {
+			assert.deepEqual(utils.hashToArray(), []);
+			assert.deepEqual(utils.hashToArray(null), []);
 		});
 	});
 });
