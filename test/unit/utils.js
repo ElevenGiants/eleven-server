@@ -249,4 +249,48 @@ suite('utils', function() {
 			assert.deepEqual(utils.hashToArray(null), []);
 		});
 	});
+	
+	
+	suite('shallowCopy', function() {
+	
+		test('does its job', function() {
+			var o = {
+				p: {x: 1, y: 2},
+				q: 3,
+			};
+			var oc = utils.shallowCopy(o);
+			assert.deepEqual(oc, o);
+			o.r = 'test';
+			assert.notProperty(oc, 'r');
+			o.p.z = 3;
+			assert.strictEqual(oc.p.z, 3, 'just a shallow copy');
+			oc.s = 'moo';
+			assert.notProperty(o, 's');
+		});
+		
+		test('does not copy functions and inherited properties', function() {
+			var O = function() {
+				this.a = 'A';
+				this.f = function() {};
+			};
+			O.b = 'B';
+			var o = new O();
+			var oc = utils.shallowCopy(o);
+			assert.notProperty(oc, 'f', 'does not copy functions');
+			assert.property(oc, 'a');
+			assert.notProperty(oc, 'b', 'does not copy inherited props');
+		});
+		
+		test('fails on invalid parameter types', function() {
+			var vals = [null, 1, 'x', [1, 2, 3], function() {}];
+			for (var i = 0; i < vals.length; i++) {
+				assert.throw(
+					function() {
+						utils.shallowCopy(vals[i]);
+					},
+					assert.AssertionError, undefined, '' + vals[i]
+				);
+			}
+		});
+	});
 });

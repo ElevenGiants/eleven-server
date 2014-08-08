@@ -22,6 +22,7 @@ module.exports = {
 	addNonEnumerable: addNonEnumerable,
 	arrayToHash: arrayToHash,
 	hashToArray: hashToArray,
+	shallowCopy: shallowCopy,
 };
 
 
@@ -281,6 +282,28 @@ function hashToArray(data) {
 	for (var key in data) {
 		if (data.hasOwnProperty(key)) {
 			ret.push(data[key]);
+		}
+	}
+	return ret;
+}
+
+
+/**
+ * Creates a shallow copy of a given object, containing only direct
+ * ("own"), non-function-type properties.
+ *
+ * @param {object|undefined} obj input data
+ * @returns {object|undefined} shallow copy of `obj`, or `undefined` if
+ *          input was `undefined`
+ */
+function shallowCopy(obj) {
+	if (obj === undefined) return undefined;
+	assert(typeof obj === 'object' && obj !== null && !(obj instanceof Array),
+		'invalid type: ' + typeof obj);
+	var ret = {};
+	for (var k in obj) {
+		if (obj.hasOwnProperty(k) && typeof(obj[k]) !== 'function') {
+			ret[k] = obj[k];
 		}
 	}
 	return ret;
