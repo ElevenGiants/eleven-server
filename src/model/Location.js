@@ -2,8 +2,10 @@ module.exports = Location;
 
 
 var GameObject = require('model/GameObject');
+var Geo = require('model/Geo');
 var IdObjRefMap = require('model/IdObjRefMap');
 var OrderedHash = require('model/OrderedHash');
+var pers = require('data/pers');
 var util = require('util');
 var utils = require('utils');
 
@@ -18,10 +20,13 @@ Location.prototype.TSID_INITIAL = 'L';
  *
  * @param {object} [data] initialization values (properties are
  *        shallow-copied into the location object)
+ * @param {Geo} [geo] geometry data (optional, for testing); if
+ *        `undefined`, the respective `Geo` object is loaded from
+ *        persistence
  * @constructor
  * @augments GameObject
  */
-function Location(data) {
+function Location(data, geo) {
 	Location.super_.call(this, data);
 	// initialize items and players, convert to IdObjRefMap
 	if (!this.players || this.players instanceof Array) {
@@ -36,7 +41,8 @@ function Location(data) {
 	if (this.neighbors) {
 		this.neighbors = new OrderedHash(this.neighbors);
 	}
-	//TODO: geometry
+	// initialize geometry
+	this.updateGeo(geo || pers.get(Geo.prototype.TSID_INITIAL + this.tsid.slice(1)));
 }
 
 
@@ -62,4 +68,23 @@ Location.prototype.serialize = function() {
 	ret.items = utils.hashToArray(ret.items);
 	ret.players = utils.hashToArray(ret.players);
 	return ret;
+};
+
+
+/**
+ * (Re)initializes the geometry data (see {@link Geo#prepConnects})
+ * and updates the `clientGeometry` and `geo` properties. Should be
+ * called after any geometry change.
+ *
+ * @param {Geo} [data] new/changed geometry data; if `undefined`,
+ *        operates on the existing `Geo` object
+ */
+Location.prototype.updateGeo = function(data) {
+	log.debug('%s.updateGeo', this);
+	if (!data) data = this.geometry;
+	this.geometry = data;
+	this.geometry.prepConnects();
+	// initialize/update clientGeometry and geo properties
+	this.clientGeometry = this.geometry.getClientGeo();
+	this.geo = this.geometry.getGeo();
 };

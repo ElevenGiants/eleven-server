@@ -4,6 +4,7 @@ module.exports = Geo;
 var util = require('util');
 var utils = require('utils');
 var GameObject = require('model/GameObject');
+var Location = require('model/Location');
 
 
 util.inherits(Geo, GameObject);
@@ -12,10 +13,8 @@ Geo.prototype.TSID_INITIAL = 'G';
 
 /**
  * Generic constructor for both instantiating an existing geometry
- * object (from JSON data), and creating a new geo object. The
- * `connect` objects in the doors and signposts are prepared for
- * the client and GSJS here (additional properties not present
- * in the persistent data are added).
+ * object (from JSON data), and creating a new geo object. Calls
+ * {@link Geo#prepConnects|prepConnects}.
  *
  * @param {object} [data] initialization data; **caution**, properties
  *        are shallow-copied and **will** be modified
@@ -25,7 +24,18 @@ Geo.prototype.TSID_INITIAL = 'G';
  */
 function Geo(data) {
 	Geo.super_.call(this, data);
-	// prepare connects for GSJS and client
+	this.prepConnects();
+}
+
+
+/**
+ * Converts geometry data `connect` objects in signposts and doors to
+ * the format expected by GSJS and client (containing additional
+ * properties not present in the persistent data). It is safe to call
+ * this function multiple times (e.g. when the geometry has been
+ * changed).
+ */
+Geo.prototype.prepConnects = function() {
 	if (this.layers && this.layers.middleground) {
 		var mg = this.layers.middleground;
 		var i, k;
@@ -40,12 +50,13 @@ function Geo(data) {
 			door.connect = prepConnect(door.connect);
 		}
 	}
-}
+};
 
 
-function prepConnect(conn) {  // converts a geometry data "connect" to a "connect" as expected by GSJS/client
+function prepConnect(conn) {
 	var ret = utils.shallowCopy(conn);
 	if (conn.target) {
+		ret.target = conn.target;  // may be non-enumerable (when prepConnect used more than once)
 		ret.label = conn.target.label;
 		ret.street_tsid = conn.target.tsid;
 	}
@@ -99,3 +110,42 @@ function revertConnect(conn) {
 	ret.target = conn.target;  // was not copied by shallowCopy (non-enumerable)
 	return ret;
 }
+
+
+/**
+ * Creates a shallow data-only copy of the geometry to be made
+ * available for the GSJS code as `location.clientGeometry`.
+ *
+ * @returns {object} shallow copy of the geometry data
+ */
+Geo.prototype.getClientGeo = function() {
+	var ret = utils.shallowCopy(this);
+	// client expects location TSID here:
+	ret.tsid = Location.prototype.TSID_INITIAL + this.tsid.slice(1);
+	return ret;
+};
+
+
+/**
+ * Creates a small subset of the geometry data to be made available for
+ * the GSJS code as `location.geo`.
+ *
+ * @returns {object} subset of the geometry data with just a few select
+ *          properties
+ */
+Geo.prototype.getGeo = function() {
+	var ret = {
+		l: this.l,
+		r: this.r,
+		t: this.t,
+		b: this.b,
+		ground_y: this.ground_y,
+		swf_file: this.swf_file,
+		sources: this.sources,
+	};
+	if (this.layers && this.layers.middleground) {
+		ret.signposts = this.layers.middleground.signposts;
+		ret.doors = this.layers.middleground.doors;
+	}
+	return ret;
+};

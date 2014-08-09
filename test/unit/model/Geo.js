@@ -14,7 +14,7 @@ suite('Geo', function() {
 	}
 
 
-	suite('ctor', function() {
+	suite('prepConnects', function() {
 	
 		test('prepares door/signpost connects', function() {
 			var data = getSampleData();
@@ -63,6 +63,32 @@ suite('Geo', function() {
 			assert.property(g.layers.middleground.doors.d2.connect, 'hub_id');
 			assert.property(g.layers.middleground.doors.d2.connect, 'target');
 		});
+		
+		test('updates added connects', function() {
+			var g = new Geo({
+				layers: {middleground: {doors: {
+					d: {connect: {
+						target: {label: 'paris', tsid: 'LXYZ'},
+					}},
+				}}},
+			});
+			var before = g.layers.middleground.doors.d.connect;
+			g.layers.middleground.doors.d2 = {
+				connect: {target: {label: 'moscow', tsid: 'LZYX'}},
+			};
+			g.prepConnects();
+			// updates new connect properly:
+			assert.strictEqual(g.layers.middleground.doors.d2.connect.label, 'moscow');
+			assert.strictEqual(g.layers.middleground.doors.d2.connect.street_tsid, 'LZYX');
+			assert.typeOf(g.layers.middleground.doors.d2.connect.target, 'object');
+			assert.isFalse(g.layers.middleground.doors.d2.connect.propertyIsEnumerable('target'));
+			// maintains existing connect:
+			assert.deepEqual(g.layers.middleground.doors.d.connect, before);
+			assert.property(g.layers.middleground.doors.d.connect,
+				'target', 'target still there');
+			assert.isFalse(g.layers.middleground.doors.d.connect.propertyIsEnumerable('target'),
+				'target still non-enumerable');
+		});
 	});
 	
 
@@ -108,6 +134,39 @@ suite('Geo', function() {
 			assert.strictEqual(g.layers.middleground.doors.d.connect.street_tsid, 'LXYZ');
 			assert.property(g.layers.middleground.doors.d.connect, 'target');
 			assert.isFalse(g.layers.middleground.doors.d.connect.propertyIsEnumerable('target'));
+		});
+	});
+	
+	
+	suite('getClientGeo', function() {
+	
+		test('does its job', function() {
+			var g = new Geo(getSampleData());
+			var cg = g.getClientGeo();
+			assert.property(cg.layers.middleground, 'doors');
+			assert.property(cg.layers.middleground, 'signposts');
+			assert.notProperty(cg, 'serialize', 'does not contain functions');
+			assert.strictEqual(cg.tsid, 'LLI32G3NUTD100I', 'has location TSID');
+			cg.foo = 'doodle';
+			assert.notProperty(g, 'foo', 'is a copy');
+		});
+	});
+	
+	
+	suite('getGeo', function() {
+	
+		test('does its job', function() {
+			var data = getSampleData();
+			var cg = new Geo(data).getGeo();
+			var props = ['l', 'r', 't', 'b', 'ground_y', 'swf_file'];
+			for (var i = 0; i < props.length; i++) {
+				assert.strictEqual(cg[props[i]], data[props[i]], props[i]);
+			}
+			assert.deepEqual(cg.sources, data.sources);
+			assert.sameMembers(Object.keys(cg.signposts),
+				Object.keys(data.layers.middleground.signposts));
+			assert.sameMembers(Object.keys(cg.doors),
+				Object.keys(data.layers.middleground.doors));
 		});
 	});
 });
