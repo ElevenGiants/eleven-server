@@ -70,6 +70,7 @@ function init(backEnd) {
  * @returns {GameObject} the requested object, undefined if not found
  */
 function load(tsid) {
+	assert(pbe, 'persistence back-end not set');
 	log.debug('pers.load: %s', tsid);
 	try {
 		data = pbe.read(tsid);
