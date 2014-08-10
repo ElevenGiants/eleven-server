@@ -156,6 +156,14 @@ suite('utils', function() {
 				assert.notStrictEqual(k, 'y');
 			}
 		});
+		
+		test('non-enumerable sticks even when reassigning value', function() {
+			var o = {x: {'y': 'blah'}};
+			utils.makeNonEnumerable(o, 'x');
+			o.x = {'a': 'blub'};
+			assert.strictEqual(o.x.a, 'blub', 'assignment actually works');
+			assert.isFalse(o.propertyIsEnumerable('x'), 'still not enumerable');
+		});
 	});
 	
 	

@@ -42,7 +42,10 @@ function Location(data, geo) {
 		this.neighbors = new OrderedHash(this.neighbors);
 	}
 	// initialize geometry
-	this.updateGeo(geo || pers.get(Geo.prototype.TSID_INITIAL + this.tsid.slice(1)));
+	utils.addNonEnumerable(this, 'geometry');
+	utils.addNonEnumerable(this, 'clientGeometry');
+	utils.addNonEnumerable(this, 'geo');
+	this.updateGeo(geo || pers.get(this.getGeoTsid()));
 }
 
 
@@ -55,6 +58,16 @@ Object.defineProperty(Location.prototype, 'activePlayers', {
 		throw new Error('read-only property: activePlayers');
 	},
 });
+
+
+/**
+ * Gets the TSID of the {@link Geo} object for this location.
+ *
+ * @returns {string} TSID of the corresponding {@link Geo} object
+ */
+Location.prototype.getGeoTsid = function() {
+	return Geo.prototype.TSID_INITIAL + this.tsid.slice(1);
+};
 
 
 /**
@@ -81,8 +94,15 @@ Location.prototype.serialize = function() {
  */
 Location.prototype.updateGeo = function(data) {
 	log.debug('%s.updateGeo', this);
+	// optional parameter handling
 	if (!data) data = this.geometry;
 	this.geometry = data;
+	// workaround for GSJS functions that replace the whole geometry property
+	if (!(this.geometry instanceof Geo)) {
+		this.geometry.tsid = this.getGeoTsid();  // make sure new data does not have a template TSID
+		this.geometry = pers.add(new Geo(this.geometry));
+	}
+	// process connects for GSJS
 	this.geometry.prepConnects();
 	// initialize/update clientGeometry and geo properties
 	this.clientGeometry = this.geometry.getClientGeo();

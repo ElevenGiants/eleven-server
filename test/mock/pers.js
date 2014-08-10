@@ -5,6 +5,7 @@ module.exports = {
 	add: add,
 	processDirtyList: processDirtyList,
 	getDirtyList: getDirtyList,
+	preAdd: preAdd,
 };
 
 
@@ -29,6 +30,13 @@ function get(tsid, dontCache) {
 
 function add(obj, flush) {
 	cache[obj.tsid] = obj;
+	dlist[obj.tsid] = obj;
+	return obj;
+}
+
+
+function preAdd(obj) {
+	cache[obj.tsid] = obj;
 }
 
 
@@ -40,4 +48,3 @@ function processDirtyList(list, logmsg) {
 function getDirtyList() {
 	return dlist;
 }
-

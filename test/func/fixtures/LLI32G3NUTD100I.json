@@ -1,0 +1,93 @@
+{
+    "class_tsid": "town", 
+    "dynamic": {
+        "action_requests": {}, 
+        "delayed_sounds": {}, 
+        "disallow_animals": false, 
+        "edit_history": {}, 
+        "emotes": {}, 
+        "hi_sign_daily_evasion_record": {}, 
+        "hi_sign_evasion_record": {}, 
+        "hi_sign_evasion_record_history": {}, 
+        "image": {
+            "h": 120, 
+            "url": "streets/2012-05-10/LLI32G3NUTD100I_main_1336673390.jpg", 
+            "w": 720
+        }, 
+        "incantations": {}, 
+        "incantations_redux": {}, 
+        "incantations_redux_step": 1, 
+        "incantations_step": 1, 
+        "jobs": {
+            "39": {
+                "class_ids": {
+                    "job_standard1_for_new_groddle_meadow_streets": {
+                        "class_id": "job_standard1_for_new_groddle_meadow_streets", 
+                        "delay_seconds": 0, 
+                        "delay_text": "", 
+                        "in_order": 1, 
+                        "instance": {
+                            "id": "instance", 
+                            "objref": true, 
+                            "tsid": "QCR15UP1DLN1E16"
+                        }, 
+                        "label": "Briarset Croft"
+                    }
+                }, 
+                "street_info": {
+                    "is_hidden": 0, 
+                    "target_street": "LCR11DNA3EL10TD", 
+                    "type": 2
+                }
+            }, 
+            "59": {
+                "class_ids": {
+                    "job_standard2_for_new_streets": {
+                        "class_id": "job_standard2_for_new_streets", 
+                        "delay_seconds": 0, 
+                        "delay_text": "", 
+                        "in_order": 1, 
+                        "instance": {
+                            "id": "instance", 
+                            "objref": true, 
+                            "tsid": "QCR15VP1DLN1EHE"
+                        }, 
+                        "label": "Tillymurry Hurry"
+                    }
+                }, 
+                "street_info": {
+                    "is_hidden": 0, 
+                    "target_street": "LCR1985LIRK12N4", 
+                    "type": 2
+                }
+            }, 
+            "proto-IIFM59B4Q8V2UG3": {}
+        }, 
+        "jobs_auto_unlock": false, 
+        "jobs_is_locked": false, 
+        "keys": {}, 
+        "loading_image": {
+            "h": 160, 
+            "url": "streets/2012-05-10/LLI32G3NUTD100I_loading_1336673389.jpg", 
+            "w": 840
+        }, 
+        "no_rook": true, 
+        "no_teleportation": false, 
+        "qurazy": {}, 
+        "rook_status": {
+            "rooked": false
+        }, 
+        "streaking_increments": {}
+    }, 
+    "hubid": "58", 
+    "items": [], 
+    "label": "Gregarious Grange", 
+    "letime": "3is9bi73", 
+    "load_time": "2013-03-25 12:23:06.000", 
+    "moteid": "9", 
+    "players": [], 
+    "rbtime": "25h9uij6", 
+    "ts": "1364245821900", 
+    "tsid": "LLI32G3NUTD100I", 
+    "upd_gs": "gs6"
+}
