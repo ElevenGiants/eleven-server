@@ -2,6 +2,8 @@ var util = require('util');
 var rewire = require('rewire');
 var gsjsBridge = rewire('model/gsjsBridge');
 var Item = require('model/Item');
+var Geo = require('model/Geo');
+var DataContainer = require('model/DataContainer');
 
 
 suite('gsjsBridge', function() {
@@ -38,11 +40,11 @@ suite('gsjsBridge', function() {
 			assert.property(o, 'dummydata', 'property set in thingie constructor');
 		});
 		
-		test('geometry and DC objects are instantiated directly from GameObject', function() {
-			var o = gsjsBridge.createFromData({tsid: 'GXYZ'});
-			assert.strictEqual(o.constructor.name, 'GameObject');
-			var o = gsjsBridge.createFromData({tsid: 'DXYZ'});
-			assert.strictEqual(o.constructor.name, 'GameObject');
+		test('geo and DC objects are instantiated from their base classes', function() {
+			var g = gsjsBridge.createFromData({tsid: 'GXYZ'});
+			assert.instanceOf(g, Geo);
+			var d = gsjsBridge.createFromData({tsid: 'DXYZ'});
+			assert.instanceOf(d, DataContainer);
 		});
 	});
 });

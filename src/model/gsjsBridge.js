@@ -45,19 +45,21 @@ var Item = require('model/Item');
 var Location = require('model/Location');
 var Player = require('model/Player');
 var Quest = require('model/Quest');
+var Geo = require('model/Geo');
+var DataContainer = require('model/DataContainer');
 
 
 // require calls are significantly faster with absolute path
 var GSJS_PATH = path.resolve(path.join(process.env.NODE_PATH, 'gsjs'));
 
-// mapping between TSID initials and GSJS model groups
+// mapping between TSID initials and GSJS model groups or base classes
 var TSID_INITIALS_MAP = {
-	G: null,  // geometry, mapped to plain GameObject
+	G: Geo,
 	B: 'bags',
 	L: 'locations',
 	I: 'items',
 	P: 'players',
-	D: null,  // data container, mapped to plain GameObject
+	D: DataContainer,
 	R: 'groups',
 	Q: 'quests',
 };
@@ -156,14 +158,14 @@ function createFromData(data) {
 	assert(typeof data === 'object', 'object data is required');
 	assert(typeof data.tsid === 'string' && data.tsid.length > 1,
 		util.format('valid TSID is required (got: %s)', data.tsid));
-	var group = TSID_INITIALS_MAP[data.tsid[0]];
-	if (group) {
-		var klass = data.class_tsid || group.slice(0, -1);
-		var ctor = getProto(group, klass).constructor;
+	var groupOrClass = TSID_INITIALS_MAP[data.tsid[0]];
+	if (typeof groupOrClass === 'string') {
+		var klass = data.class_tsid || groupOrClass.slice(0, -1);
+		var ctor = getProto(groupOrClass, klass).constructor;
 		return new ctor(data);
 	}
 	else {
-		return new GameObject(data);
+		return new groupOrClass(data);
 	}
 }
 

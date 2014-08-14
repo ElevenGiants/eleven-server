@@ -10,10 +10,14 @@ Quest.prototype.TSID_INITIAL = 'Q';
 
 
 /**
+ * Generic constructor for both instantiating an existing quest object
+ * (from JSON data), and creating a new one.
+ *
+ * @param {object} [data] initialization values (properties are
+ *        shallow-copied into the object)
  * @constructor
  * @augments GameObject
  */
 function Quest(data) {
 	Quest.super_.call(this, data);
-	//TODO...
 }
