@@ -301,4 +301,16 @@ suite('utils', function() {
 			}
 		});
 	});
+	
+	
+	suite('padLeft', function() {
+	
+		test('does its job', function() {
+			assert.strictEqual(utils.padLeft('', 'x', 5), 'xxxxx');
+			assert.strictEqual(utils.padLeft('A', 'x', 5), 'xxxxA');
+			assert.strictEqual(utils.padLeft('A', 'x', 0), 'A');
+			assert.strictEqual(utils.padLeft(24, 0, 4), '0024');
+			assert.strictEqual(utils.padLeft(1234, 0, 2), '1234');
+		});
+	});	
 });

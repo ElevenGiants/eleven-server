@@ -23,6 +23,7 @@ module.exports = {
 	arrayToHash: arrayToHash,
 	hashToArray: hashToArray,
 	shallowCopy: shallowCopy,
+	padLeft: padLeft,
 };
 
 
@@ -305,6 +306,25 @@ function shallowCopy(obj) {
 		if (obj.hasOwnProperty(k) && typeof(obj[k]) !== 'function') {
 			ret[k] = obj[k];
 		}
+	}
+	return ret;
+}
+
+
+/**
+ * Pads a string to the left with a given character up to the desired
+ * length.
+ *
+ * @param {string} str string to left-pad
+ * @param {string} padding character (must be single character string)
+ * @param {number} len desired overall length (string + padding); if
+ *        `str` is already this long or longer, nothing happens
+ * @returns the padded string
+ */
+function padLeft(str, pad, len) {
+	var ret = str.toString();
+	while (ret.length < len) {
+		ret = pad + ret;
 	}
 	return ret;
 }

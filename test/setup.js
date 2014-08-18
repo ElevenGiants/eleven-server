@@ -1,8 +1,10 @@
 var bunyan = require('bunyan');
 var chai = require('chai');
+var config = require('config');
 
 
 initGlobals();
+initConfig();
 
 
 function initGlobals() {
@@ -17,4 +19,19 @@ function initGlobals() {
 			},
 		],
 	});
+}
+
+
+function initConfig() {
+	// minimal configuration just to enable tests
+	config.init(true, {
+		net: {
+			gameServers: {
+				gs01: {
+					host: '127.0.0.1',
+					ports: [1443],
+				},
+			},
+		},
+	}, {});
 }

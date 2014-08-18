@@ -1,0 +1,29 @@
+/**
+ * Sample local configuration file - copy to 'config_local.js' to "activate".
+ * The preset values here are tailored to the Vagrant development VM.
+ */
+
+module.exports = {
+	net: {
+		gameServers: {
+			gs01: {
+				host: '192.168.23.23',
+				ports: [
+					1443,
+					1444,
+				],
+			},
+		},
+		assetServer: {
+			host: '192.168.23.23',
+			port: 8000,
+		},
+	},
+	log: {
+		level: {
+			file: 'debug',
+			stdout: 'error',
+		},
+		includeLoc: true,
+	},
+};

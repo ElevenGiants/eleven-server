@@ -1,0 +1,47 @@
+/**
+ * Game server configuration data.
+ * This file contains reasonable default or dummy values and should not normally
+ * be modified to suit a local server installation; instead, add configuration
+ * for your specific local environment to 'config_local.js' (typically at least
+ * the 'net' part), which is excluded from version control.
+ * In particular, do NOT add any sensitive information (e.g. credentials or keys
+ * for an actual public server) here.
+ * Values in 'config_local.js' take precedence over the values in this file.
+ */
+
+module.exports = {
+	net: {
+		// If the server ID is not specified explicitly (e.g. via environment
+		// variable), the server process will cycle through the following hash
+		// and compare each entry's 'host' property with the list of network
+		// interfaces returned by os.networkInterfaces. When a matching IP
+		// address is found, the process will consider the respective config
+		// block its own, and bind the GS instance(s) to that interface/port(s).
+		gameServers: {
+			gs01: {
+				host: '127.0.0.1',
+				ports: [
+					1443,
+					1444,
+					// add TCP ports here to add GS instances on this host
+				],
+			},
+			// add entries here (e.g. gs02, gs03, ...) for additional GS hosts
+		},
+		assetServer: {
+			host: '127.0.0.1',
+			port: 8000,
+		},
+	},
+	log: {
+		// dir can be an absolute path, or relative to eleven-server directory
+		dir: './log',
+		level: {
+			file: 'info',
+			stdout: 'error',
+		},
+		// include source file/line number in log messages:
+		// (slow - do not use in production!)
+		includeLoc: false,
+	},
+};
