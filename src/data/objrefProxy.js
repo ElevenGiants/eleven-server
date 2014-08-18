@@ -45,15 +45,14 @@ var pers = require('data/pers');
 /**
  * Custom error type for OR proxy related errors.
  * 
- * See {@link https://stackoverflow.com/a/5251506} and
- * {@link https://stackoverflow.com/a/8804539}.
- *
  * @param {string} [msg] error message
  * @constructor
  */
+// see <https://stackoverflow.com/a/5251506>, <https://stackoverflow.com/a/8804539>,
+// <https://code.google.com/p/v8/wiki/JavaScriptStackTraceApi>
 function ObjRefProxyError(msg) {
 	this.message = msg;
-	this.stack = Error().stack;
+	Error.captureStackTrace(this, ObjRefProxyError);
 }
 ObjRefProxyError.prototype = Object.create(Error.prototype);
 ObjRefProxyError.prototype.constructor = ObjRefProxyError;
