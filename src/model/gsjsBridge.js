@@ -125,6 +125,7 @@ function init(callback) {
  *
  * @param {string} group general type of the object (see above)
  * @param {string} klass specific type of the object (see above)
+ * @returns {object} corresponding game object prototype
  */
 function getProto(group, klass) {
 	if (!prototypes[group][klass]) {
@@ -139,6 +140,8 @@ function getProto(group, klass) {
  *
  * @param {string} group general type of the object (see above)
  * @param {string} klass specific type of the object (see above)
+ * @returns {GameObject} an "empty" game object of the specified type
+ *          (instantiated with the default no-argument constructor)
  */
 function create(group, klass) {
 	var ctor = getProto(group, klass).constructor;
@@ -153,6 +156,8 @@ function create(group, klass) {
  *
  * @param {object} data initialization data used to determine the right
  *        prototype, and passed through to the game object constructor
+ * @returns {GameObject} a game object of the specified type,
+ *          instantiated through the default constructor with `data`
  */
 function createFromData(data) {
 	assert(typeof data === 'object', 'object data is required');
@@ -224,6 +229,8 @@ function loadProto(group, klass) {
  *
  * @param {string} group general type of the object (see above)
  * @param {string} klass specific type of the object (see above)
+ * @returns {object} prototype of the corresponding game object base
+ *          class ({@link GameObject} or one of its subclasses)
  * @private
  */
 function getModelClass(group, klass) {
