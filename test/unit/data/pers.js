@@ -15,7 +15,7 @@ suite('pers', function() {
 		pers.__set__('reqContext', rcMock);
 		pers.init(pbeMock);
 		rcMock.reset();
-		rpcMock.setLocal(true);
+		rpcMock.reset(true);
 	});
 	
 	teardown(function() {
@@ -24,7 +24,7 @@ suite('pers', function() {
 		pers.__set__('reqContext', require('data/requestContext'));
 		pers.init(undefined);  // disable mock back-end
 		rcMock.reset();
-		rpcMock.setLocal(true);
+		rpcMock.reset(true);
 	});
 	
 
@@ -82,7 +82,7 @@ suite('pers', function() {
 		});
 		
 		test('handles remote objects properly', function() {
-			rpcMock.setLocal(false);
+			rpcMock.reset(false);
 			var o = {tsid: 'ITEST', some: 'data'};
 			pbeMock.write(o);
 			var lo = load(o.tsid);
