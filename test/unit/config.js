@@ -143,4 +143,28 @@ suite('config', function() {
 			assert.deepEqual(visited, ['gs01-01', 'gs01-02']);
 		});
 	});
+	
+	
+	suite('mapToGS', function() {
+	
+		test('does its job', function() {
+			config.init(true, {
+				net: {gameServers: {
+					gs1: {host: '127.0.0.1', ports: [1, 2]},
+					gs2: {host: '5.6.7.8', ports: [3, 4]},
+				}},
+			}, {});
+			var gsids = ['gs1-01', 'gs1-02', 'gs2-01', 'gs2-02'];
+			['L1234', 'I56', 'PAO25K62', 'B2', 'DXYZ'].forEach(function(tsid) {
+				assert.include(gsids, config.mapToGS(tsid).gsid);
+			});
+			[
+				{tsid: 'LSDGSGVWT'},
+				{tsid: 'I235252WB'},
+				{tsid: 'BW1T1P15W13E5I3V46T3M75W7P37T34I3V64W34P2E23T2356I23T'},
+			].forEach(function(obj) {
+				assert.include(gsids, config.mapToGS(obj).gsid);
+			});
+		});
+	});
 });

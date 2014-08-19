@@ -35,8 +35,11 @@ function add(obj, flush) {
 }
 
 
-function preAdd(obj) {
-	cache[obj.tsid] = obj;
+function preAdd() {
+	for (var i = 0; i < arguments.length; i++) {
+		var obj = arguments[i];
+		cache[obj.tsid] = obj;
+	}
 }
 
 

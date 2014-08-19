@@ -149,3 +149,13 @@ Geo.prototype.getGeo = function() {
 	}
 	return ret;
 };
+
+
+/**
+ * Gets the TSID of the {@link Location} object for this `Geo`.
+ *
+ * @returns {string} TSID of the corresponding {@link Location} object
+ */
+Geo.prototype.getLocTsid = function() {
+	return Location.prototype.TSID_INITIAL + this.tsid.slice(1);
+};

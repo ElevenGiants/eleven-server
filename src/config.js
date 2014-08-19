@@ -15,6 +15,7 @@ module.exports = {
 	getGsid: getGsid,
 	forEachGS: forEachGS,
 	forEachLocalGS: forEachLocalGS,
+	mapToGS: mapToGS,
 };
 
 
@@ -244,4 +245,43 @@ function forEachLocalGS(callback) {
 			callback(gsconf);
 		}
 	});
+}
+
+
+/**
+ * Determines which game server "owns" a given game object (i.e. where
+ * other game servers should send RPC requests to when functions are
+ * called on that object there), based on its TSID.
+ *
+ * This is **only** valid for object types that are mapped directly to
+ * a game server by their own TSID, i.e. {@link Location}s and {@link
+ * Group}s! For the generic function for any kind of game object, refer
+ * to {@link module:data/rpc~getGsid|rpc.getGsid}.
+ *
+ * @param {GameObject|string} objOrTsid the game object to find the
+ *        responsible game server for, or its TSID
+ * @returns {object} a game server network configuration record;
+ *        something along the lines of:
+ * ```
+ * {
+ *     gsid: 'gs02-03',
+ *     host: '12.34.56.78',
+ *     port: 1445,
+ *     hostPort: '12.34.56.78:1445',
+ *     isLocal: false,
+ * }
+ * ```
+ */
+function mapToGS(objOrTsid) {
+	var tsid = typeof objOrTsid === 'string' ? objOrTsid : objOrTsid.tsid;
+	assert(typeof tsid === 'string' && tsid.length > 0,
+		util.format('invalid TSID for %s: %s', objOrTsid, tsid));
+	// using simple charcode summation for now - we may need something more
+	// sophisticated later (e.g. if we need manual influence on the mapping)
+	var sum = 0;
+	for (var i = 0; i < tsid.length; i++) {
+		sum += tsid.charCodeAt(i);
+	}
+	var id = gsids[sum % gsids.length];
+	return gameServers[id];
 }
