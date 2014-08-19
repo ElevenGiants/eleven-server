@@ -7,6 +7,7 @@
 // public interface
 module.exports = {
 	makeTsid: makeTsid,
+	checkUniqueHashes: checkUniqueHashes,
 	copyProps: copyProps,
 	copyProtoProps: copyProtoProps,
 	isInt: isInt,
@@ -29,6 +30,7 @@ module.exports = {
 
 var assert = require('assert');
 var util = require('util');
+var murmur = require('murmurhash-js');
 
 
 // buffer variables for TSID generation
@@ -42,14 +44,17 @@ var lastTsidHrt = process.hrtime();
  *
  * @param {string} initial first letter of the returned TSID,
  *        corresponding to the game object type
+ * @param {string} gsid unique ID of the game server creating the
+ *        object
  * @returns {string} the generated TSID
  */
-function makeTsid(initial) {
-	// TODO: include server ID
+function makeTsid(initial, gsid) {
 	assert(typeof initial === 'string', util.format(
 		'TSID initial must be a string (got: %s)', typeof initial));
 	assert(initial.length === 1, util.format(
 		'TSID initial must be single letter (got length: %s)', initial.length));
+	assert(typeof gsid === 'string' && gsid.length >= 1, util.format(
+		'GSID must be a non-empty string (got: %s)', gsid));
 	var t = new Date().getTime() * 1e6;  // epoch time in ns
 	while (t <= lastTsidTime) {
 		// add ns since previous TSID was generated (repeatedly if timer
@@ -58,7 +63,31 @@ function makeTsid(initial) {
 	}
 	lastTsidTime = t;
 	lastTsidHrt = process.hrtime();
-	return (initial + t.toString(36)).toUpperCase();
+	var code = murmur.murmur3(gsid).toString(36) + t.toString(36);
+	return (initial + code).toUpperCase();
+}
+
+
+/**
+ * Makes sure that the hash function used for TSID generation does not
+ * generate colliding hashes for the given list of strings (e.g. game
+ * server IDs).
+ *
+ * @param {string[]} ids the list of strings to check
+ * @throws {AssertionError} in case of a hash collision between two
+ *         of the given strings
+ */
+function checkUniqueHashes(ids) {
+	var hashes = {};
+	for (var i = 0; i < ids.length; i++) {
+		var id = ids[i];
+		var hash = murmur.murmur3(id);
+		for (var k in hashes) {
+			assert(hash !== hashes[k], util.format(
+				'hash collision for %s and %s (%s)', id, k, hash));
+		}
+		hashes[id] = hash;
+	}
 }
 
 

@@ -1,6 +1,7 @@
 module.exports = GameObject;
 
 
+var config = require('config');
 var utils = require('utils');
 
 
@@ -19,7 +20,8 @@ function GameObject(data) {
 	if (!data) data = {};
 	// initialize TSID/class ID (use deprecated properties if necessary, and
 	// keep them as non-enumerable so they are available, but not persisted)
-	this.tsid = data.tsid || data.id || utils.makeTsid(this.TSID_INITIAL);
+	this.tsid = data.tsid || data.id || utils.makeTsid(this.TSID_INITIAL,
+		config.getGsid());
 	utils.addNonEnumerable(this, 'id', this.tsid);  // deprecated
 	if (data.class_tsid || data.class_id) {
 		this.class_tsid = data.class_tsid || data.class_id;

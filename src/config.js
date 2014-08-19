@@ -136,6 +136,7 @@ function initClusterConfig(isMaster) {
 			}
 		}
 	}
+	utils.checkUniqueHashes(gsids);
 	// sort by natural order, so loops over GS instances are deterministic
 	gsids.sort();
 }

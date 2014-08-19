@@ -11,9 +11,9 @@ suite('utils', function() {
 	suite('makeTsid', function() {
 	
 		test('does its job', function() {
-			assert.strictEqual(utils.makeTsid('G')[0], 'G');
-			assert.strictEqual(utils.makeTsid('p')[0], 'P');
-			assert.isTrue(utils.makeTsid('X').length == 13);
+			assert.strictEqual(utils.makeTsid('G', 'gs01-01')[0], 'G');
+			assert.strictEqual(utils.makeTsid('p', 'gs01-02')[0], 'P');
+			assert.isTrue(utils.makeTsid('X', 'gs01-01').length >= 18);
 		});
 		
 		test('fails with invalid parameters', function() {
@@ -27,7 +27,16 @@ suite('utils', function() {
 				utils.makeTsid(1);
 			}, assert.AssertionError);
 			assert.throw(function() {
-				utils.makeTsid('XY');
+				utils.makeTsid('XY', 'abc');
+			}, assert.AssertionError);
+			assert.throw(function() {
+				utils.makeTsid('A');
+			}, assert.AssertionError);
+			assert.throw(function() {
+				utils.makeTsid('A', null);
+			}, assert.AssertionError);
+			assert.throw(function() {
+				utils.makeTsid('A', '');
 			}, assert.AssertionError);
 		});
 		
@@ -36,9 +45,20 @@ suite('utils', function() {
 			var tsid, prev;
 			for (var i = 0; i < 100; i++) {
 				prev = tsid;
-				tsid = utils.makeTsid('L');
+				tsid = utils.makeTsid('L', 'gs01-01');
 				assert.notStrictEqual(tsid, prev);
 			}
+		});
+	});
+	
+	
+	suite('checkUniqueGsidHashes', function() {
+	
+		test('does its job', function() {
+			utils.checkUniqueHashes(['gs01', 'gs01-01', 'gs02', 'gs02-01', 'gs02-02']);
+			assert.throw(function() {
+				utils.checkUniqueHashes(['abc', 'def', 'ghi', 'abc']);
+			}, assert.AssertionError);
 		});
 	});
 	
