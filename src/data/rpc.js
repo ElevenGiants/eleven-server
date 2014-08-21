@@ -5,6 +5,7 @@
 // public interface
 module.exports = {
 	init: init,
+	shutdown: shutdown,
 	makeProxy: makeProxy,
 	sendRequest: sendRequest,
 	isLocal: isLocal,
@@ -13,6 +14,7 @@ module.exports = {
 
 
 var assert = require('assert');
+var async = require('async');
 var config = require('config');
 var jrpc = require('multitransport-jsonrpc');
 var rpcProxy = require('data/rpcProxy');
@@ -22,40 +24,53 @@ var util = require('util');
 
 
 // RPC clients for connection to other GSs stored here (by gsid):
-var clients;
+var clients = {};
+// RPC server (for other GSs to connect to):
+var server;
 
 
 /**
  * Initializes the RPC subsystem (server for this GS instance, and
  * client connections to all other GS instances).
+ *
+ * @param {function} [callback]
+ * ```
+ * callback(err)
+ * ```
+ * called when all RPC connections have been established successfully
+ * (`err` argument is `null`), or when an error occurred (`err`
+ * contains the error object or message)
  */
-function init() {
+function init(callback) {
 	clients = {};
-	initServer();
-	config.forEachGS(initClient);
+	initServer(function cb() {
+		config.forEachGS(initClient, callback);
+	});
 }
 
 
 /**
  * Initializes the RPC server for this GS instance.
  *
+ * @param {function} [callback] called when the server socket is ready
  * @private
  */
-function initServer() {
+function initServer(callback) {
 	var port = config.getRpcPort();
 	log.info('starting RPC server on port %s', port);
-	var srv = new jrpc.server(
+	server = new jrpc.server(
 		new jrpc.transports.server.tcp(port, {
 			logger: getJrpcLogger('server'),
 		})
 	);
-	srv.transport.on('connection', onServerConnection);
-	srv.transport.on('closedConnection', onServerClosedConnection);
-	srv.transport.on('listening', onServerListening);
-	srv.transport.on('retry', onServerRetry);
-	srv.transport.on('error', onServerError);
-	srv.transport.on('shutdown', onServerShutdown);
-	srv.register('gsrpc', handleRequest);
+	if (callback) server.transport.on('listening', callback);
+	server.transport.on('connection', onServerConnection);
+	server.transport.on('closedConnection', onServerClosedConnection);
+	server.transport.on('listening', onServerListening);
+	server.transport.on('retry', onServerRetry);
+	server.transport.on('error', onServerError);
+	server.transport.on('shutdown', onServerShutdown);
+	server.register('gsrpc', handleRequest);
 }
 
 
@@ -65,23 +80,53 @@ function initServer() {
  *
  * @param {object} gsconf a game server network configuration record
  *        (see {@link module:config~mapToGS|config.mapToGS})
+ * @param {function} [callback] called when the client endpoint is
+ *        connected to its server
  * @private
  */
-function initClient(gsconf) {
-	if (gsconf.gsid === config.getGsid()) return;  // skip self
+function initClient(gsconf, callback) {
+	if (gsconf.gsid === config.getGsid()) return callback();  // skip self
 	var gsid = gsconf.gsid;
 	var port = config.getRpcPort(gsid);
 	log.info('starting RPC client for %s (%s:%s)', gsid, gsconf.host, port);
 	var client = new jrpc.client(
 		new jrpc.transports.client.tcp(gsconf.host, port, {
 			logger: getJrpcLogger('client-' + gsid),
-		})
+		}), {},
+		function(connectedClient) {
+			log.info('RPC client for %s connected', gsid);
+			clients[gsid] = connectedClient;
+			callback();
+		}
 	);
 	client.transport.on('retry', getOnClientRetryHandler(gsid));
 	client.transport.on('end', getOnClientEndHandler(gsid));
 	client.transport.on('sweep', getOnClientSweepHandler(gsid));
 	client.transport.on('shutdown', getOnClientShutdownHandler(gsid));
-	clients[gsid] = client;
+}
+
+
+/**
+ * Shuts down all RPC client connections and the RPC server for this
+ * GS.
+ *
+ * @param {function} [callback] called when all RPC connections have
+ *        been terminated
+ */
+function shutdown(callback) {
+	// first shut down the clients...
+	async.each(Object.keys(clients), function iterator(gsid, cb) {
+		if (clients[gsid]) clients[gsid].shutdown(cb);
+	},
+	function clientsDone(err) {
+		if (err) log.error(err, 'error shutting down RPC clients');
+		// ...then the server (regardless of client shutdown errors)
+		server.shutdown(function cleanup() {
+			server = undefined;
+			clients = {};
+			callback();
+		});
+	});
 }
 
 

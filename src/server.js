@@ -40,7 +40,10 @@ function main() {
 	else {
 		runWorker();
 	}
-	rpc.init();
+	rpc.init(function callback(err) {
+		if (err) log.error(err, 'RPC initialization failed');
+		else log.info('RPC connections established');
+	});
 }
 
 

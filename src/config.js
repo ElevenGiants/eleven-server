@@ -22,6 +22,7 @@ module.exports = {
 };
 
 
+var async = require('async');
 var nconf = require('nconf');
 var os = require('os');
 var path = require('path');
@@ -220,49 +221,63 @@ function get(key) {
 	return ret;
 }
 
-
 /**
- * Calls a function for each configured GS instance. The function is
- * called with the respective server configuration object as the only
- * parameter.
+ * Calls a function for each configured GS instance.
  *
- * @param {function} callback function to call for each GS
+ * @param {function} func
+ * ```
+ * func(gsconf, callback)
+ * ```
+ * function to call for each GS, where `gsconf` is a server network
+ * configuration object (as returned by {@link module:config~mapToGS|
+ * config.mapToGS}), and `callback(err)` must be called once the
+ * function has completed or an error has occurred
+ * @param {function} [callback]
+ * ```
+ * callback(err)
+ * ```
+ * called when all function calls have finished, or when an error
+ * occurs in any of them; `err` is an `Error` object or `null`
  * @param {boolean} [noLocal] if `true`, do not call function for
  *        instances on the local host
  * @param {boolean} [noRemote] if `true`, do not call function for
  *        instances on remote hosts
  */
-function forEachGS(callback, noLocal, noRemote) {
-	for (var i = 0; i < gsids.length; i++) {
-		var gsconf = gameServers[gsids[i]];
+function forEachGS(func, callback, noLocal, noRemote) {
+	// see <https://github.com/caolan/async#eacharr-iterator-callback>
+	async.each(gsids, function iterator(gsid, cb) {
+		var gsconf = gameServers[gsid];
 		if ((gsconf.local && !noLocal) || (!gsconf.local && !noRemote)) {
-			callback(gsconf);
+			func(gsconf, cb);
 		}
-	}
+		else cb(null);
+	}, callback);
 }
 
 
 /**
- * Calls a function for each GS instance configured on this host. The
- * function is called with the respective server configuration object
- * as the only parameter.
+ * Calls a function for each GS instance configured on this host. See
+ * {@link module:config~forEachGS|forEachGS} for parameter details.
  *
- * @param {function} callback function to call for each local GS
+ * @param {function} func function to call for each local GS
+ * @param {function} [callback] called when all function calls have
+ *        finished, or when an error occurs in any of them
  */
-function forEachLocalGS(callback) {
-	forEachGS(callback, false, true);
+function forEachLocalGS(func, callback) {
+	forEachGS(func, callback, false, true);
 }
 
 
 /**
  * Calls a function for each GS instance configured on a remote host.
- * The function is called with the respective server configuration
- * object as the only parameter.
+ * See {@link module:config~forEachGS|forEachGS} for parameter details.
  *
- * @param {function} callback function to call for each remote GS
+ * @param {function} func function to call for each remote GS
+ * @param {function} [callback] called when all function calls have
+ *        finished, or when an error occurs in any of them
  */
-function forEachRemoteGS(callback) {
-	forEachGS(callback, true, false);
+function forEachRemoteGS(func, callback) {
+	forEachGS(func, callback, true, false);
 }
 
 
