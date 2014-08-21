@@ -11,6 +11,7 @@
     "bunyan": "^0.23.1",
     "clone": "^0.1.17",
     "harmony-reflect": "^1.0.1",
+    "multitransport-jsonrpc": "^0.6.1",
     "murmurhash-js": "^1.0.0",
     "nconf": "^0.6.9",
     "wait.for": "^0.6.4"
