@@ -64,21 +64,21 @@ suite('config', function() {
 					host: '127.0.0.1',
 					port: 1234,
 					hostPort: '127.0.0.1:1234',
-					isLocal: true,
+					local: true,
 				},
 				'gs01-02': {
 					gsid: 'gs01-02',
 					host: '127.0.0.1',
 					port: 1235,
 					hostPort: '127.0.0.1:1235',
-					isLocal: true,
+					local: true,
 				},
 				'gs07-01': {
 					gsid: 'gs07-01',
 					host: '123.4.5.6',
 					port: 2345,
 					hostPort: '123.4.5.6:2345',
-					isLocal: false,
+					local: false,
 				},
 			});
 		});
@@ -110,18 +110,21 @@ suite('config', function() {
 	
 	
 	suite('get', function() {
-		config.init(true, MINIMAL_CFG, {test: {a: 'foo', b: {c: 'xyz'}}});
-		assert.strictEqual(config.get().test.a, 'foo');
-		assert.strictEqual(config.get('test:a'), 'foo');
-		assert.strictEqual(config.get('test:b').c, 'xyz');
-		assert.strictEqual(config.get('test:b:c'), 'xyz');
-		assert.throw(function() {
-			config.get('test:a:x');
-		}, config.ConfigError);
+	
+		test('does its job', function() {
+			config.init(true, MINIMAL_CFG, {test: {a: 'foo', b: {c: 'xyz'}}});
+			assert.strictEqual(config.get().test.a, 'foo');
+			assert.strictEqual(config.get('test:a'), 'foo');
+			assert.strictEqual(config.get('test:b').c, 'xyz');
+			assert.strictEqual(config.get('test:b:c'), 'xyz');
+			assert.throw(function() {
+				config.get('test:a:x');
+			}, config.ConfigError);
+		});
 	});
 	
 	
-	suite('forEachGS/forEachLocalGS', function() {
+	suite('forEachGS/forEachLocalGS/forEachRemoteGS', function() {
 	
 		test('do their job', function() {
 			config.init(true, {
@@ -141,6 +144,9 @@ suite('config', function() {
 				assert.include(['127.0.0.1:1234', '127.0.0.1:1235'], gsconf.hostPort);
 			});
 			assert.deepEqual(visited, ['gs01-01', 'gs01-02']);
+			config.forEachRemoteGS(function (gsconf) {
+				assert.strictEqual(gsconf.hostPort, '123.4.5.6:2345');
+			});
 		});
 	});
 	
@@ -165,6 +171,26 @@ suite('config', function() {
 			].forEach(function(obj) {
 				assert.include(gsids, config.mapToGS(obj).gsid);
 			});
+		});
+	});
+	
+	
+	suite('getServicePort', function() {
+	
+		test('does its job', function() {
+			config.init(true, {
+				net: {gameServers: {
+					gs1: {host: '127.0.0.1', ports: [1, 2]},
+					gs2: {host: '5.6.7.8', ports: [3]},
+					gs3: {host: '6.7.8.9', ports: [4]},
+				}},
+			}, {});
+			assert.strictEqual(config.getServicePort(100, 'gs1-01'), 101);
+			assert.strictEqual(config.getServicePort(100, 'gs1-02'), 102);
+			assert.strictEqual(config.getServicePort(100, 'gs2-01'), 103);
+			assert.strictEqual(config.getServicePort(100, 'gs3-01'), 104);
+			// unknown GSID is assumed to be the cluster master:
+			assert.strictEqual(config.getServicePort(100, 'meh'), 100);
 		});
 	});
 });

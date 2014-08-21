@@ -15,7 +15,10 @@ module.exports = {
 	getGsid: getGsid,
 	forEachGS: forEachGS,
 	forEachLocalGS: forEachLocalGS,
+	forEachRemoteGS: forEachRemoteGS,
 	mapToGS: mapToGS,
+	getServicePort: getServicePort,
+	getRpcPort: getRpcPort,
 };
 
 
@@ -128,7 +131,7 @@ function initClusterConfig(isMaster) {
 				host: gsconf.host,
 				port: gsconf.ports[i],
 				hostPort: gsconf.host + ':' + gsconf.ports[i],
-				isLocal: local,
+				local: local,
 			};
 			// if we are a worker process and this ID matches the env variable
 			// 'gsid', then that's us!
@@ -224,10 +227,17 @@ function get(key) {
  * parameter.
  *
  * @param {function} callback function to call for each GS
+ * @param {boolean} [noLocal] if `true`, do not call function for
+ *        instances on the local host
+ * @param {boolean} [noRemote] if `true`, do not call function for
+ *        instances on remote hosts
  */
-function forEachGS(callback) {
+function forEachGS(callback, noLocal, noRemote) {
 	for (var i = 0; i < gsids.length; i++) {
-		callback(gameServers[gsids[i]]);
+		var gsconf = gameServers[gsids[i]];
+		if ((gsconf.local && !noLocal) || (!gsconf.local && !noRemote)) {
+			callback(gsconf);
+		}
 	}
 }
 
@@ -240,11 +250,19 @@ function forEachGS(callback) {
  * @param {function} callback function to call for each local GS
  */
 function forEachLocalGS(callback) {
-	forEachGS(function (gsconf) {
-		if (gsconf.isLocal) {
-			callback(gsconf);
-		}
-	});
+	forEachGS(callback, false, true);
+}
+
+
+/**
+ * Calls a function for each GS instance configured on a remote host.
+ * The function is called with the respective server configuration
+ * object as the only parameter.
+ *
+ * @param {function} callback function to call for each remote GS
+ */
+function forEachRemoteGS(callback) {
+	forEachGS(callback, true, false);
 }
 
 
@@ -268,7 +286,7 @@ function forEachLocalGS(callback) {
  *     host: '12.34.56.78',
  *     port: 1445,
  *     hostPort: '12.34.56.78:1445',
- *     isLocal: false,
+ *     local: false,
  * }
  * ```
  */
@@ -284,4 +302,40 @@ function mapToGS(objOrTsid) {
 	}
 	var id = gsids[sum % gsids.length];
 	return gameServers[id];
+}
+
+
+/**
+ * Calculates the TCP port number for a network service on a specific
+ * game server instance. To avoid conflicts between multiple processes
+ * on the same host, each server process is using a specific, unique
+ * port, derived from a configurable base port.
+ *
+ * @param {number} basePort base port of the network service
+ * @param {string} [gsid] ID of the game server instance to determine
+ *        the port for; if `undefined` (or an unknown ID), the base
+ *        port itself is returned (to be used for the cluster master)
+ * @returns {number} TCP port number for the service in question on
+ *          the specified server instance
+ */
+function getServicePort(basePort, gsid) {
+	if (!gsid) gsid = getGsid();
+	var add = gsids.indexOf(gsid) + 1;  // master is not in gsids list -> 0
+	return basePort + add;
+}
+
+
+/**
+ * Calculates the TCP port number for the RPC service endpoint on a
+ * specific game server instance (see {@link
+ * module:config~getServicePort|getServicePort}).
+ *
+ * @param {string} [gsid] ID of the game server instance to determine
+ *        the port for; if `undefined` (or an unknown ID), the base
+ *        port itself is returned (to be used for the cluster master)
+ * @returns {number} TCP port number for the RPC service on the
+ *          specified server instance
+ */
+function getRpcPort(gsid) {
+	return getServicePort(get('net:rpc:basePort'), gsid);
 }

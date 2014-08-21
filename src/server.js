@@ -16,6 +16,7 @@ var cluster = require('cluster');
 var config = require('config');
 var fs = require('fs');
 var path = require('path');
+var rpc = require('data/rpc');
 
 
 var cfg;  // buffer for the loaded configuration (for convenience)
@@ -39,6 +40,7 @@ function main() {
 	else {
 		runWorker();
 	}
+	rpc.init();
 }
 
 

@@ -32,6 +32,11 @@ module.exports = {
 			host: '127.0.0.1',
 			port: 8000,
 		},
+		rpc: {
+			// process number is added to the base port for each GS instance
+			// (master = 0 (i.e. running on basePort), workers = 1, 2, 3, ...)
+			basePort: 7000,
+		},
 	},
 	log: {
 		// dir can be an absolute path, or relative to eleven-server directory
