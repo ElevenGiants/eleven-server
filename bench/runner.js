@@ -51,9 +51,13 @@ function runSuite(suitePath) {
 	var name = suitePath.slice(SUITE_DIR.length + 1);
 	console.log('\nrunning bench suite %s...', name);
 	var suite = require(suitePath);
-	suite.on('cycle', onCycle);
-	suite.on('error', onError);
-	suite.run();
+	// workaround for asynchronous suite setup (cf. <https://github.com/bestiejs/benchmark.js/issues/70>)
+	var setup = suite.asyncSetup || function(cb) { cb(); };
+	setup(function cb() {
+		suite.on('cycle', onCycle);
+		suite.on('error', onError);
+		suite.run();
+	});
 }
 
 

@@ -22,6 +22,7 @@ module.exports = {
 };
 
 
+var assert = require('assert');
 var async = require('async');
 var nconf = require('nconf');
 var os = require('os');

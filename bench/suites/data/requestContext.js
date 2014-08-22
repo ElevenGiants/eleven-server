@@ -4,7 +4,7 @@ module.exports = suite;
 var requestContext = require('data/requestContext');
 
 
-suite.add('run', function() {
+suite.add('run (fire&forget)', function() {
 	requestContext.run(
 		function req() {
 		},
@@ -14,3 +14,16 @@ suite.add('run', function() {
 		}
 	);
 });
+
+
+suite.add('run (sequential/wait for result)', function(deferred) {
+	requestContext.run(
+		function req() {
+		},
+		undefined, undefined,
+		function cb(err) {
+			if (err) throw err;
+			deferred.resolve();
+		}
+	);
+}, {defer: true});

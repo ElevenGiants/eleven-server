@@ -161,7 +161,7 @@ function shutdown(callback) {
 		server.shutdown(function cleanup() {
 			server = undefined;
 			clients = {};
-			callback();
+			if (callback) callback();
 		});
 	});
 }
@@ -183,8 +183,8 @@ function makeProxy(obj) {
  * Client-side RPC handler; used by the {@link module:data/rpcProxy|
  * rpcProxy} to forward a function call to the authoritative game
  * server for the respective game object.
- * Returns the result synchronously (using {@link
- * https://github.com/luciotato/waitfor|wait.for/fibers} internally).
+ * Returns the result either via callback or synchronously using
+ * {@link https://github.com/luciotato/waitfor|wait.for/fibers}.
  * 
  * @param {GameObject} obj game object on which the function is being
  *        called (or more precisely, its local {@link
@@ -192,10 +192,19 @@ function makeProxy(obj) {
  * @param {string} fname name of the function to call
  * @param {array} args function arguments supplied by the original
  *        caller
- * @returns {*} result of the remote function call
- * @throws {RpcError} in case something bad happens during the RPC
+ * @param {function} [callback]
+ * ```
+ * callback(err, res)
+ * ```
+ * called with the function result (`res`) or an error (`err`) when the
+ * RPC returns; if not supplied, the function behaves synchronously and
+ * returns the result (or throws an exception)
+ * @returns {*} result of the remote function call if no callback was
+ *          supplied (`undefined` otherwise)
+ * @throws {RpcError} in case something bad happens during the RPC and
+ *         no callback was supplied
  */
-function sendRequest(obj, fname, args) {
+function sendRequest(obj, fname, args, callback) {
 	var gsid;
 	var client;
 	try {
@@ -215,14 +224,22 @@ function sendRequest(obj, fname, args) {
 	var logmsg = util.format('%s.%s(%s) via RPC on %s', obj, fname,
 		args.join(', '), gsid);
 	log.debug('calling %s', logmsg);
-	try {
-		var ret = wait.forMethod(client, 'request', 'gsrpc',
-			[config.getGsid(), obj.tsid, fname, args]);
-		orProxy.proxify(ret);  // return value unmarshalling
-		return ret;
+	var rpcArgs = [config.getGsid(), obj.tsid, fname, args];
+	if (callback) {
+		client.request('gsrpc', rpcArgs, function cb(err, res) {
+			if (!err) orProxy.proxify(res);
+			callback(err, res);
+		});
 	}
-	catch (e) {
-		throw new RpcError('error calling ' + logmsg, e);
+	else {
+		try {
+			var ret = wait.forMethod(client, 'request', 'gsrpc', rpcArgs);
+			orProxy.proxify(ret);
+			return ret;
+		}
+		catch (e) {
+			throw new RpcError('error calling ' + logmsg, e);
+		}
 	}
 }
 
