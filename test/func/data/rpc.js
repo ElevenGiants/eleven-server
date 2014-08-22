@@ -1,13 +1,16 @@
 var rewire = require('rewire');
 var config = rewire('config');
 var rpc = rewire('data/rpc');
+var persMock = require('../../mock/pers');
+var rcMock = require('../../mock/requestContext');
+var GameObject = require('model/GameObject');
 
 
 suite('rpc', function() {
 
 	var CONFIG = {net: {
 		gameServers: {
-			gs01: {host: '127.0.0.1', ports: [3000, 3001]},
+			gs01: {host: '127.0.0.1', ports: [3000]},
 		},
 		rpc: {basePort: 7000},
 	}};
@@ -69,8 +72,13 @@ suite('rpc', function() {
 	suite('function calls', function() {
 	
 		setup(function(done) {
+			rcMock.reset();
+			// enable mock persistence layer
+			rpc.__set__('pers', persMock);
+			persMock.reset();
 			// set up client/server loopback connection within the same process
-			config.init(true, CONFIG, {});
+			// (as a worker process so it is managing the test game objects)
+			config.init(false, CONFIG, {gsid: 'gs01-01'});
 			rpc.__get__('initServer')(function serverStarted() {
 				rpc.__get__('initClient')(GSCONF_LOOPBACK, function clientStarted() {
 					done();
@@ -79,6 +87,9 @@ suite('rpc', function() {
 		});
 
 		teardown(function(done) {
+			rcMock.reset();
+			persMock.reset();
+			rpc.__set__('pers', require('data/pers'));
 			rpc.shutdown(function callback() {
 				done();
 			});
@@ -96,6 +107,23 @@ suite('rpc', function() {
 				assert.strictEqual(result, 5);
 				done(err);
 			});
+		});
+		
+		test('function call on actual game object', function(done) {
+			// make fake client RPC connection available under our own GSID (so
+			// requests on objects we are managing go to our own RPC server):
+			rpc.__get__('clients')['gs01-01'] = rpc.__get__('clients')['gs01-loopback'];
+			// create dummy object with a test function (we're the only
+			// configured GS, so we are authoritative for it):
+			var go = new GameObject({
+				tsid: 'LXYZ',
+				foo: function(a, b) { return a + b; },
+			});
+			persMock.preAdd(go);
+			rcMock.run(function () {
+				var res = rpc.sendRequest(go, 'foo', [17, 4]);
+				assert.strictEqual(res, 21, 'function is actually called');
+			}, null, null, done);
 		});
 	});
 });

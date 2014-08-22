@@ -63,6 +63,8 @@ function proxyGet(target, name, receiver) {
 	}
 	// anything else: call on remote host
 	return function rpcWrapper() {
-		return rpc.sendRequest(target, name, arguments);
+		// convert function arguments to a proper array
+		var args = Array.prototype.slice.call(arguments);
+		return rpc.sendRequest(target, name, args);
 	};
 }

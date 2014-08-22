@@ -62,5 +62,15 @@ suite('rpcProxy', function() {
 			assert.deepEqual(rpcMock.getRequests()[0],
 				{obj: o, fname: 'gumbo', args: [1, 2]});
 		});
+		
+		test('function arguments are sent as an Array', function() {
+			var p = rp.makeProxy({
+				test: function(a, b, c) {},
+			});
+			p.test(1, 2, 3);
+			var args = rpcMock.getRequests()[0].args;
+			assert.deepEqual(args, [1, 2, 3]);
+			assert.instanceOf(args, Array);
+		});
 	});
 });

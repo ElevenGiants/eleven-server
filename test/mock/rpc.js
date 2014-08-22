@@ -30,7 +30,7 @@ function makeProxy(obj) {
 
 
 function sendRequest(obj, fname, args) {
-	requests.push({obj: obj, fname: fname, args: Array.prototype.slice.call(args)});
+	requests.push({obj: obj, fname: fname, args: args});
 	return obj[fname].apply(obj, args);
 }
 

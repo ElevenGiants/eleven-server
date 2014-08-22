@@ -1,9 +1,20 @@
 /**
+ * Module for management of the transparent RPC connections between
+ * game servers, which enable the GSJS code to call functions on any
+ * game object without needing to worry about of the underlying
+ * distributed server architecture.
+ * Contains functions for setting up/shutting down the RPC connections,
+ * and sending and handling RPC requests.
+ *
+ * @see {@link module:data/rpcProxy|rpcProxy}
+ * @see {@link module:config|config}
+ *
  * @module
  */
 
 // public interface
 module.exports = {
+	RpcError: RpcError,
 	init: init,
 	shutdown: shutdown,
 	makeProxy: makeProxy,
@@ -17,10 +28,36 @@ var assert = require('assert');
 var async = require('async');
 var config = require('config');
 var jrpc = require('multitransport-jsonrpc');
-var rpcProxy = require('data/rpcProxy');
+var orProxy = require('data/objrefProxy');
 var pers = require('data/pers');
+var reqContext = require('data/requestContext');
+var rpcProxy = require('data/rpcProxy');
 var utils = require('utils');
 var util = require('util');
+var wait = require('wait.for');
+
+
+/**
+ * Custom error type for errors during RPC requests.
+ * 
+ * @param {string} [msg] error message
+ * @constructor
+ */
+// see <https://stackoverflow.com/a/5251506>, <https://stackoverflow.com/a/8804539>,
+// <https://code.google.com/p/v8/wiki/JavaScriptStackTraceApi>
+function RpcError(msg, cause) {
+	this.message = msg;
+	if (cause) {
+		this.message = util.format('%s (caused by: %s)', this.message, cause);
+	}
+	Error.captureStackTrace(this, RpcError);
+	// log something here just in case, because who knows what the GSJS ends up
+	// doing with the error
+	log.error(cause, msg);
+}
+RpcError.prototype = Object.create(Error.prototype);
+RpcError.prototype.constructor = RpcError;
+RpcError.prototype.name = 'RpcError';
 
 
 // RPC clients for connection to other GSs stored here (by gsid):
@@ -142,13 +179,92 @@ function makeProxy(obj) {
 }
 
 
+/**
+ * Client-side RPC handler; used by the {@link module:data/rpcProxy|
+ * rpcProxy} to forward a function call to the authoritative game
+ * server for the respective game object.
+ * Returns the result synchronously (using {@link
+ * https://github.com/luciotato/waitfor|wait.for/fibers} internally).
+ * 
+ * @param {GameObject} obj game object on which the function is being
+ *        called (or more precisely, its local {@link
+ *        module:data/rpcProxy|rpcProxy}-wrapped copy)
+ * @param {string} fname name of the function to call
+ * @param {array} args function arguments supplied by the original
+ *        caller
+ * @returns {*} result of the remote function call
+ * @throws {RpcError} in case something bad happens during the RPC
+ */
 function sendRequest(obj, fname, args) {
-	//TODO
+	var gsid;
+	var client;
+	try {
+		gsid = getGsid(obj);
+		client = clients[gsid];
+	}
+	catch (e) {
+		// caller has to handle this, like any other "regular" error the
+		// called function might have thrown locally
+		throw new RpcError(util.format('could not get RPC client to %s for %s', gsid, obj), e);
+	}
+	if (!client) {
+		throw new RpcError(util.format('no RPC client to %s found for %s', gsid, obj));
+	}
+	// argument marshalling (replace objref proxies with actual objrefs)
+	args = orProxy.refify(args);
+	var logmsg = util.format('%s.%s(%s) via RPC on %s', obj, fname,
+		args.join(', '), gsid);
+	log.debug('calling %s', logmsg);
+	try {
+		var ret = wait.forMethod(client, 'request', 'gsrpc',
+			[config.getGsid(), obj.tsid, fname, args]);
+		orProxy.proxify(ret);  // return value unmarshalling
+		return ret;
+	}
+	catch (e) {
+		throw new RpcError('error calling ' + logmsg, e);
+	}
 }
 
 
-function handleRequest() {
-	//TODO
+/**
+ * Server-side RPC request handler. Executes a function on an object
+ * specified by TSID (within a separate request context) and returns
+ * the result to the remote caller.
+ * 
+ * @param {string} gsid ID of the game server requesting the function
+ *        call (for logging)
+ * @param {string} tsid TSID of the game object on which the function
+ *        should be called
+ * @param {string} fname name of the function to call
+ * @param {array} args function call arguments
+ * @param {function} callback
+ * ```
+ * callback(error, result)
+ * ```
+ * callback for the RPC library, returning the result (or errors) to
+ * the remote caller
+ */
+function handleRequest(gsid, tsid, fname, args, callback) {
+	orProxy.proxify(args);  // unmarshal arguments
+	var logmsg = util.format('RPC from %s: %s.%s(%s)', gsid, tsid,
+		fname, args.join(', '));
+	log.debug(logmsg);
+	// process RPC in its own request context
+	reqContext.run(
+		function rpcReq() {
+			var obj = pers.get(tsid);
+			return obj[fname].apply(obj, args);
+		},
+		fname, tsid,
+		function rpcReqCallback(err, res) {
+			if (err) {
+				log.error(err, 'exception in %s', logmsg);
+			}
+			res = orProxy.refify(res);  // marshal return value
+			callback(err, res);
+		}
+	);
 }
 
 

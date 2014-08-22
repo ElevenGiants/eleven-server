@@ -7,7 +7,11 @@ module.exports = {
 	objCachePut: objCachePut,
 	objCacheGet: objCacheGet,
 	setDirty: setDirty,
+	run: run,
 };
+
+
+var wait = require('wait.for');
 
 
 var cache = {};
@@ -49,4 +53,21 @@ function objCacheGet(tsid) {
 
 function setDirty(obj) {
 	dirty[obj.tsid] = obj;
+}
+
+
+function run(func, logtag, owner, callback) {
+	wait.launchFiber(function persFiber() {
+		try {
+			var fiber = getContext();
+			fiber.dirty = dirty;
+			fiber.cache = cache;
+			var res = func();
+			if (callback) callback(null, res);
+		}
+		catch (e) {
+			if (callback) callback(e);
+			else throw e;
+		}
+	});
 }

@@ -93,16 +93,20 @@ function setDirty(obj) {
  * the request handler.
  * If the function finishes successfully, any modified game objects are
  * persisted (see {@link module:data/requestContext~setDirty|setDirty}).
- * 
- * @param {string} logtag short text describing the nature or type of
- *        the request (optional, just for logging)
- * @param {GameObject} owner game object on whose behalf the request is
- *        executed (commonly a {@link Player}; optional, just for
- *        logging)
- * @param callback {function} handler for request processing errors and
- *        getting back the function result (optional; if not specified,
- *        exceptions will not be caught, and the function result is
- *        lost)
+ *
+ * @param {function} func function to run in request context
+ * @param {string} [logtag] short text describing the nature or type of
+ *        the request (just for logging)
+ * @param {GameObject|string} [owner] game object on whose behalf the
+ *        request is executed (commonly a {@link Player}), or its TSID
+ *        (just for logging)
+ * @param {function} [callback]
+ * ```
+ * callback(error, result)
+ * ```
+ * for request processing errors and getting back the function result
+ * (if not specified, exceptions will not be caught, and the function
+ * result is lost)
  */
 function run(func, logtag, owner, callback) {
 	wait.launchFiber(function persFiber() {
