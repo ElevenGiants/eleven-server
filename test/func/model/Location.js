@@ -1,3 +1,5 @@
+'use strict';
+
 var path = require('path');
 var rewire = require('rewire');
 var pers = rewire('data/pers');

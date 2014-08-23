@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Connects the game server and the GSJS code which describes all game
  * behavior. GSJS entity classes and GS model classes are combined here

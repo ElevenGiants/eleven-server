@@ -1,3 +1,5 @@
+'use strict';
+
 // public interface
 module.exports = {
 	createFromData: createFromData,

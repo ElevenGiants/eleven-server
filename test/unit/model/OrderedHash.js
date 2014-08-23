@@ -1,3 +1,5 @@
+'use strict';
+
 var OrderedHash = require('model/OrderedHash');
 
 

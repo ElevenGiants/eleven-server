@@ -1,3 +1,5 @@
+'use strict';
+
 var Property = require('model/Property');
 var Player = require('model/Player');
 

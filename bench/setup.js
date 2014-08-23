@@ -1,3 +1,5 @@
+'use strict';
+
 var bunyan = require('bunyan');
 
 

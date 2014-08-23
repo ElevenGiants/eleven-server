@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Provides functionality to process requests (e.g. from game clients,
  * the HTTP API or remote game servers) within a dedicated context

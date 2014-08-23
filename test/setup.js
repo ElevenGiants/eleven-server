@@ -1,3 +1,5 @@
+'use strict';
+
 var bunyan = require('bunyan');
 var chai = require('chai');
 var config = require('config');

@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Various helper functions.
  *

@@ -1,3 +1,5 @@
+'use strict';
+
 var rewire = require('rewire');
 var GameObject = require('model/GameObject');
 var orproxy = rewire('data/objrefProxy');

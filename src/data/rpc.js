@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Module for management of the transparent RPC connections between
  * game servers, which enable the GSJS code to call functions on any

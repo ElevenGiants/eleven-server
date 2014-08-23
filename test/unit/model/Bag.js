@@ -1,3 +1,5 @@
+'use strict';
+
 var util = require('util');
 var Bag = require('model/Bag');
 var Item = require('model/Item');

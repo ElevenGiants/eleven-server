@@ -1,3 +1,5 @@
+'use strict';
+
 var rewire = require('rewire');
 var config = rewire('config');
 

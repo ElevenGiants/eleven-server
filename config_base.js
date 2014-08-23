@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Game server configuration data.
  * This file contains reasonable default or dummy values and should not normally

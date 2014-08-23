@@ -1,3 +1,5 @@
+'use strict';
+
 var Prop = require('model/Property');
 
 

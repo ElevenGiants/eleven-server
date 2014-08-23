@@ -1,3 +1,5 @@
+'use strict';
+
 var rewire = require('rewire');
 var rpc = rewire('data/rpc');
 var persMock = require('../../mock/pers');

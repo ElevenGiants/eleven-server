@@ -1,3 +1,5 @@
+'use strict';
+
 var rewire = require('rewire');
 var pers = rewire('data/pers');
 var GameObject = require('model/GameObject');

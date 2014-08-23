@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * ECMAScript 6 direct proxy helper for persistence. Game objects are
  * wrapped in a proxy that monitors access to its properties; If any of

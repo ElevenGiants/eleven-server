@@ -1,3 +1,5 @@
+'use strict';
+
 var util = require('util');
 var rewire = require('rewire');
 var gsjsBridge = rewire('model/gsjsBridge');

@@ -1,3 +1,5 @@
+'use strict';
+
 var IdObjRefMap = require('model/IdObjRefMap');
 
 

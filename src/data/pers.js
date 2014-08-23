@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Persistence layer, manages loading and saving game objects.
  * A lean persistence back-end module takes care of the actual

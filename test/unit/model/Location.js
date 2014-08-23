@@ -1,3 +1,5 @@
+'use strict';
+
 var util = require('util');
 var Location = require('model/Location');
 var Geo = require('model/Geo');

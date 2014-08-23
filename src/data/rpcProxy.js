@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * ECMAScript 6 direct proxy helper for transparent RPC wrapping of
  * function calls on game objects. On each game server instance,

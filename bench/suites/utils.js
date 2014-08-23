@@ -1,3 +1,5 @@
+'use strict';
+
 require('../setup');
 var suite = new (require('benchmark')).Suite;
 module.exports = suite;

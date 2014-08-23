@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Configuration management module. Provides access to the parameters
  * defined in configuration files (or environment vars/command-line

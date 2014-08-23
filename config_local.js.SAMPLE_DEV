@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Sample local configuration file - copy to 'config_local.js' to "activate".
  * The preset values here are tailored to the Vagrant development VM.

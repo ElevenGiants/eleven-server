@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Quick-and-dirty benchmark suite runner. Runs the files in SUITE_DIR
  * (including subdirectories) one by one as BenchmarkJS suites, each

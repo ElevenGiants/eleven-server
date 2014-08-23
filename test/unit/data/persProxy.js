@@ -1,3 +1,5 @@
+'use strict';
+
 var rewire = require('rewire');
 var pp = rewire('data/persProxy');
 var rcMock = require('../../mock/requestContext');

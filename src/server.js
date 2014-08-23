@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Main game server entry point: all GS instances (master and worker)
  * are started through this module.

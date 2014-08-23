@@ -1,3 +1,5 @@
+'use strict';
+
 var GameObject = require('model/GameObject');
 
 

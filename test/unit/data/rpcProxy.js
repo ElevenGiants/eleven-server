@@ -1,3 +1,5 @@
+'use strict';
+
 var rewire = require('rewire');
 var rp = rewire('data/rpcProxy');
 var rpcMock = require('../../mock/rpc');

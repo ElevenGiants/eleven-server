@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Functions for handling references (objrefs) between game objects
  * (e.g. items in a player's inventory, or connections between
