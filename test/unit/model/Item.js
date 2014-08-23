@@ -41,13 +41,6 @@ suite('Item', function() {
 			assert.isTrue(i.isHidden);
 		});
 		
-		test('can not be assigned a value', function() {
-			var i = new Item();
-			assert.isFalse(i.isHidden);
-			i.isHidden = true;
-			assert.isFalse(i.isHidden);
-		});
-		
 		test('is not enumerable', function() {
 			assert.notInclude(Object.keys(new Item()), 'isHidden');
 		});

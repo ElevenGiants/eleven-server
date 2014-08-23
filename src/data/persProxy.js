@@ -34,7 +34,7 @@ function makeProxy(obj, prop) {
 	if (typeof prop !== 'object' || prop.__isPP) {  // prevent double-wrapping
 		return prop;
 	}
-	var ret = Proxy(prop, {
+	var ret = new Proxy(prop, {
 		get: function(target, name, receiver) {
 			if (name === '__isPP') {
 				return true;
@@ -79,8 +79,9 @@ function makeProxy(obj, prop) {
 				if (name[0] !== '!' && target.hasOwnProperty(name) && target.propertyIsEnumerable(name)) {
 					reqContext.setDirty(obj);
 				}
-				delete target[name];
+				return delete target[name];
 			}
+			return true;  // default delete behavior: return 'true' if property doesn't exist
 		}, 
 	});
 	return ret;

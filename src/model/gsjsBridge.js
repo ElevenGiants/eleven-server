@@ -144,6 +144,7 @@ function getProto(group, klass) {
  *          (instantiated with the default no-argument constructor)
  */
 function create(group, klass) {
+	/*jshint -W055 */  // ignore lowercase constructor names here
 	var ctor = getProto(group, klass).constructor;
 	return new ctor();
 }
@@ -160,6 +161,7 @@ function create(group, klass) {
  *          instantiated through the default constructor with `data`
  */
 function createFromData(data) {
+	/*jshint -W055 */  // ignore lowercase constructor names here
 	assert(typeof data === 'object', 'object data is required');
 	assert(typeof data.tsid === 'string' && data.tsid.length > 1,
 		util.format('valid TSID is required (got: %s)', data.tsid));
@@ -193,12 +195,12 @@ function loadProto(group, klass) {
 	// create named constructor that relays to model class constructor if possible
 	var name = (utils.isInt(klass[0]) ? '_' : '') + klass;  // function name can't start with a digit
 	/*jslint evil: true */
-	eval('\
-		var proto = function ' + name + '() {\
+	var proto = eval('\
+		(function ' + name + '() {\
 			if (proto.super_) {\
 				proto.super_.apply(this, arguments);\
 			}\
-		};\
+		});\
 	');
 	// inherit from appropriate model class
 	if (getModelClass(group, klass)) {

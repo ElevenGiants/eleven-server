@@ -72,7 +72,7 @@ ObjRefProxyError.prototype.name = 'ObjRefProxyError';
  *          in the module docs above).
  */
 function makeProxy(objref) {
-	return Proxy(objref, {
+	return new Proxy(objref, {
 		// transparently handle on-access loading from persistence
 		get: function(target, name, receiver) {
 			if (name === 'inspect' || name === 'valueOf' || name === 'toString') {
@@ -95,7 +95,7 @@ function makeProxy(objref) {
 			resolve(target)[name] = val;
 		},
 		deleteProperty: function(target, name) {
-			delete resolve(target)[name];
+			return delete resolve(target)[name];
 		},
 		enumerate: function(target) {
 			return Reflect.enumerate(resolve(target));

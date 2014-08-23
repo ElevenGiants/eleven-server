@@ -30,6 +30,7 @@ module.exports = {
 };
 
 
+var assert = require('assert');
 var gsjsBridge = require('model/gsjsBridge');
 var orProxy = require('data/objrefProxy');
 var persProxy = require('data/persProxy');
@@ -72,6 +73,7 @@ function init(backEnd) {
 function load(tsid) {
 	assert(pbe, 'persistence back-end not set');
 	log.debug('pers.load: %s', tsid);
+	var data;
 	try {
 		data = pbe.read(tsid);
 	}

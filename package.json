@@ -33,8 +33,14 @@
     "docs": "node node_modules/jsdoc/jsdoc.js --destination docs --configure jsdoc-conf.json src"
   },
   "jshintConfig": {
+	"strict": true,
     "node": true,
-    "multistr": true
+    "multistr": true,
+	"globals": {
+		"log": true,
+		"Reflect": true,
+		"Proxy": true
+	}
   },
   "contributors": [
     "aroha@elevengiants.com"

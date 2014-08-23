@@ -135,7 +135,6 @@ suite('utils', function() {
 			assert.isTrue(utils.isInt(-10));
 			assert.isTrue(utils.isInt(-0));
 			assert.isTrue(utils.isInt(0));
-			assert.isTrue(utils.isInt(023));  // octal
 			assert.isTrue(utils.isInt(0x1f));
 			assert.isTrue(utils.isInt(1e9));
 		});

@@ -34,7 +34,7 @@ suite('Property', function() {
 		});
 		
 		test('non-integer arguments are rounded', function() {
-			p = new Prop('test', {value: -3.76, bottom: -5.1, top: 6.1e2});
+			var p = new Prop('test', {value: -3.76, bottom: -5.1, top: 6.1e2});
 			assert.strictEqual(p.value, -4);
 			assert.strictEqual(p.bottom, -5);
 			assert.strictEqual(p.top, 610);
@@ -134,13 +134,13 @@ suite('Property', function() {
 	suite('serialization', function() {
 	
 		test('JSON.stringify generates the right structure for Player json files', function() {
-			p = new Prop('test', {value: -3, bottom: -7, top: 8000});
+			var p = new Prop('test', {value: -3, bottom: -7, top: 8000});
 			var procd = JSON.parse(JSON.stringify(p));
 			assert.deepEqual(procd, {value: -3, bottom: -7, top: 8000, label: 'test'});
 		});
 		
 		test('Property can be recreated from JSON.stringify data', function() {
-			p = new Prop('test', {value: -3, bottom: -7, top: 8000});
+			var p = new Prop('test', {value: -3, bottom: -7, top: 8000});
 			var pclone = new Prop(p.label, JSON.parse(JSON.stringify(p)));
 			assert.instanceOf(pclone, Prop);
 			assert.strictEqual(pclone.label, p.label);

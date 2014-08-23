@@ -16,6 +16,7 @@ module.exports = {
 
 
 require('harmony-reflect');
+var assert = require('assert');
 var rpc = require('data/rpc');
 
 
@@ -29,7 +30,7 @@ var rpc = require('data/rpc');
  */
 function makeProxy(obj) {
 	assert(!obj.__isRP, 'object is already RPC-proxied: ' + obj);
-	return Proxy(obj, {
+	return new Proxy(obj, {
 		get: proxyGet,
 	});
 }
