@@ -25,6 +25,7 @@
     "rewire": "^2.1.0"
   },
   "scripts": {
+    "preproc": "python tools/gsjs-preproc.py",
     "start": "NODE_PATH=src node --harmony ./src/server.js",
     "test": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/unit",
     "functest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/func",
