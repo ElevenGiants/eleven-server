@@ -17,6 +17,7 @@ var bunyan = require('bunyan');
 var cluster = require('cluster');
 var config = require('config');
 var fs = require('fs');
+var gsjsBridge = require('model/gsjsBridge');
 var path = require('path');
 var rpc = require('data/rpc');
 
@@ -42,6 +43,10 @@ function main() {
 	else {
 		runWorker();
 	}
+	gsjsBridge.init(function callback(err) {
+		if (err) log.error(err, 'GSJS bridge initialization failed');
+		else log.info('GSJS prototypes loaded');
+	});
 	rpc.init(function callback(err) {
 		if (err) log.error(err, 'RPC initialization failed');
 		else log.info('RPC connections established');

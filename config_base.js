@@ -51,4 +51,8 @@ module.exports = {
 		// (slow - do not use in production!)
 		includeLoc: false,
 	},
+	gsjs: {
+		// the GSJS configuration variant to load
+		config: 'config_prod',
+	},
 };

@@ -11,7 +11,6 @@ module.exports = {
 	makeTsid: makeTsid,
 	checkUniqueHashes: checkUniqueHashes,
 	copyProps: copyProps,
-	copyProtoProps: copyProtoProps,
 	isInt: isInt,
 	isBag: isBag,
 	isPlayer: isPlayer,
@@ -107,18 +106,6 @@ function copyProps(from, to) {
 			to[key] = from[key];
 		}
 	}
-}
-
-
-/**
- * Shallow-copies properties from the prototype of one object to the
- * prototype of another.
- *
- * @param {object} from copy source
- * @param {object} to copy target
- */
-function copyProtoProps(from, to) {
-	copyProps(from.prototype, to.prototype);
 }
 
 

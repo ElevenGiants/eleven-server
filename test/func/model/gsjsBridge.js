@@ -18,6 +18,10 @@ suite('gsjsBridge', function() {
 		}
 	});
 	
+	teardown(function() {
+		gsjsBridge.reset();
+	});
+	
 	
 	suite('prototype cache initialization', function() {
 	
@@ -62,7 +66,9 @@ suite('gsjsBridge', function() {
 			var pi = new Pi();
 			assert.instanceOf(pi, Item);
 			assert.instanceOf(pi, GameObject);
-			assert.property(pi, 'estimateDigit', 'pi-specific property');
+			assert.strictEqual(pi.label, 'Pi');
+			assert.isFalse(pi.hasOwnProperty('label'), 'inherited property');
+			assert.property(pi, 'estimateDigit', 'pi-specific function');
 			assert.property(pi, 'distanceFromPlayer', 'property from item.js');
 			assert.property(pi, 'is_food', 'property from include/food.js');
 			var bag = gsjsBridge.create('items', 'bag_bigger');
@@ -83,6 +89,34 @@ suite('gsjsBridge', function() {
 		test('base classes are loaded too', function() {
 			assert.isDefined(gsjsBridge.getProto('items', 'item'));
 			assert.isDefined(gsjsBridge.getProto('quests', 'quest'));
+		});
+		
+		test('itemDef is initialized properly', function() {
+			var jar = gsjsBridge.create('items', 'firefly_jar');
+			assert.property(jar, 'itemDef');
+			assert.isFalse(jar.hasOwnProperty('itemDef'), 'itemDef is inherited from prototype');
+			assert.strictEqual(jar.itemDef.label, 'Firefly Jar');
+			assert.strictEqual(jar.itemDef.consumable_label_single, 'Firefly');
+		});
+		
+		test('GSJS utils and config are loaded', function() {
+			gsjsBridge.__get__('initDependencies')('config_prod');
+			var human = gsjsBridge.create('players', 'human');
+			assert.strictEqual(human.skills_get('alchemy_2').name, 'Alchemy',
+				'config is loaded (including includes)');
+			assert.strictEqual(human.skills_get_name('alchemy_2'), 'Alchemy II',
+				'functions from utils.js are available in GSJS code');
+		});
+		
+		test('global API functions can be used', function(done) {
+			gsjsBridge.__get__('initDependencies')('config_prod', {
+				apiIsPlayerOnline: function apiIsPlayerOnline(tsid) {
+					assert.strictEqual(tsid, human.tsid);
+					done();
+				},
+			});
+			var human = gsjsBridge.create('players', 'human');
+			human.isOnline();
 		});
 	});
 });

@@ -35,5 +35,8 @@ function initConfig() {
 				},
 			},
 		},
+		gsjs: {
+			config: 'config_prod',
+		},
 	}, {});
 }

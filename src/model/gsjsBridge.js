@@ -36,6 +36,7 @@ module.exports = {
 
 var assert = require('assert');
 var async = require('async');
+var config = require('config');
 var fs = require('fs');
 var path = require('path');
 var util = require('util');
@@ -68,13 +69,16 @@ var TSID_INITIALS_MAP = {
 
 // container for loaded game object prototypes
 var prototypes = {};
+// dependencies provided to GSJS files on import (initialized in init())
+var dependencies = {};
 
 
 /**
  * Initializes the game object prototype cache (according to the GSJS
- * directory structure).
+ * directory structure) and GSJS import dependencies.
  */
 function reset() {
+	dependencies = {};
 	prototypes = {
 		achievements: {},
 		groups: {},
@@ -97,6 +101,7 @@ function reset() {
  */
 function init(callback) {
 	reset();
+	initDependencies();
 	// walk GSJS tree and schedule a prototype loading task for each file
 	var tasks = [];
 	for (var group in prototypes) {
@@ -113,11 +118,32 @@ function init(callback) {
 	}
 	// load prototypes without blocking the event loop
 	async.eachLimit(tasks, 4, function iterator(task, iterCallback) {
-		setImmediate(function() {
+		setImmediate(function doLoadProto() {
 			loadProto(task.group, task.klass);
 			iterCallback();
 		});
 	}, callback);
+}
+
+
+/**
+ * Initializes global GSJS functions (from `common.js`) and the
+ * dependencies provided to GSJS files on import (`utils`, `config`
+ * and the global API).
+ *
+ * @param {string} [testConfig] alternate configuration environment
+ *        to load (for testing)
+ * @param {object} [testApi] custom global API object (for testing)
+ * @private
+ */
+function initDependencies(testConfig, testApi) {
+	require(path.resolve(path.join(GSJS_PATH, 'common')));
+	dependencies.utils = compose('utils');
+	dependencies.config = compose(testConfig || config.get('gsjs:config'));
+	dependencies.api = testApi || {
+		//TODO dummy, replace with actual global API once there is one
+		valueOf: function valueOf() { return 'TODO-DUMMY-API'; }
+	};
 }
 
 
@@ -197,34 +223,32 @@ function loadProto(group, klass) {
 	// create named constructor that relays to model class constructor if possible
 	var name = (utils.isInt(klass[0]) ? '_' : '') + klass;  // function name can't start with a digit
 	/*jslint evil: true */
-	var proto = eval('\
+	var ctor = eval('\
 		(function ' + name + '() {\
-			if (proto.super_) {\
-				proto.super_.apply(this, arguments);\
+			if (ctor.super_) {\
+				ctor.super_.apply(this, arguments);\
 			}\
 		});\
 	');
 	// inherit from appropriate model class
 	if (getModelClass(group, klass)) {
-		util.inherits(proto, getModelClass(group, klass));
+		util.inherits(ctor, getModelClass(group, klass));
 	}
+	var proto = ctor.prototype;
 	// copy over props from group base class (if applicable)
 	var baseName = group.slice(0, -1);
 	if (group !== 'achievements') {
-		var base = require(path.join(GSJS_PATH, group, baseName));
-		utils.copyProtoProps(base, proto);
+		compose(group, baseName, proto);
 	}
 	// special case for bags
 	if (group === 'items' && klass.indexOf('bag') === 0 && klass !== 'bag') {
-		var bagBase = require(path.join(GSJS_PATH, group, 'bag'));
-		utils.copyProtoProps(bagBase, proto);
+		compose(group, 'bag', proto);
 	}
 	// copy over props from object class itself
 	if (klass !== baseName) {
-		var kls = require(path.join(GSJS_PATH, group, klass));
-		utils.copyProtoProps(kls, proto);
+		compose(group, klass, proto);
 	}
-	prototypes[group][klass] = proto.prototype;
+	prototypes[group][klass] = proto;
 }
 
 
@@ -251,4 +275,59 @@ function getModelClass(group, klass) {
 		case 'quests':
 			return Quest;
 	}
+}
+
+
+/**
+ * Reads a GSJS game object file and appends all its properties to the
+ * given prototype object. The GSJS file is sourced as a node.js module
+ * (using `require`) and is expected to export a "composer" function
+ * with the following signature:
+ * ```
+ * function (include, api, utils, config)
+ * ```
+ * Where `api`, `utils` and `config` are the dependencies required by
+ * the GSJS code (see {@link module:model/gsjsBridge~initDependencies|
+ * initDependencies}), and `include` is this function, which the module
+ * can use to include other GSJS files itself.
+ *
+ * The composer function is `call`ed with the `proto` object as the
+ * `this` argument, which it must attach its properties to (functions,
+ * object attributes, etc).
+ *
+ * @param {string} dir directory path of the desired GSJS file
+ * @param {string} file name of the desired GSJS file
+ * @param {object} proto prototype object to append properties to
+ * @private
+ */
+function include(dir, file, proto) {
+	var fpath = path.resolve(path.join(dir, file));
+	var composer = require(fpath);
+	assert(typeof composer === 'function', 'module does not export a ' +
+		'prototype composition function: ' + fpath);
+	composer.call(proto, include,
+		dependencies.api, dependencies.utils, dependencies.config);
+}
+
+
+/**
+ * Convenience wrapper for {@link module:model/gsjsBridge~include|
+ * include}, adopted for the specific use cases in {@link
+ * module:model/gsjsBridge~loadProto|loadProto} and {@link
+ * module:model/gsjsBridge~initDependencies|initDependencies}.
+ *
+ * @param {string} dir path to the desired GSJS file, relative to the
+ *        base GSJS directory
+ * @param {string} [file] file name of the GSJS file; if `undefined`,
+ *        `dir` is assumed to contain the full (relative) path
+ * @param {object} [proto] prototype object to append properties to;
+ *        if `undefined`, a new (empty) object is created
+ * @return {object} the (modified) `proto` object
+ * @private
+ */
+function compose(dir, file, proto) {
+	if (!file) file = '';
+	if (!proto) proto = {};
+	include(path.join(GSJS_PATH, dir), file, proto);
+	return proto;
 }

@@ -115,21 +115,6 @@ suite('utils', function() {
 	});
 
 	
-	suite('copyProtoProps', function() {
-	
-		test('does its job', function() {
-			var O = function() {};
-			O.prototype.x = 13;
-			O.y = 17;
-			var P = function() {};
-			utils.copyProtoProps(O, P);
-			assert.property(P.prototype, 'x');
-			assert.notProperty(P.prototype, 'y');
-			assert.notProperty(P, 'y');
-		});
-	});
-	
-	
 	suite('isInt', function() {
 	
 		test('confirms that ints are ints', function() {
