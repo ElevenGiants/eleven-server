@@ -19,7 +19,7 @@
     "benchmark": "https://github.com/bestiejs/benchmark.js/tarball/master",
     "chai": "^1.9.1",
     "jsdoc": "^3.3.0-alpha9",
-    "jshint": "^2.5.2",
+    "jshint": "^2.5.5",
     "mocha": "^1.20.1",
     "rewire": "^2.1.0"
   },
