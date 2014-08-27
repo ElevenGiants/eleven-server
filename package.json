@@ -26,9 +26,9 @@
   "scripts": {
     "preproc": "python tools/gsjs-preproc.py",
     "start": "NODE_PATH=src node --harmony ./src/server.js",
-    "test": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/unit",
-    "functest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/func",
-    "bench": "NODE_PATH=src node --harmony bench/runner.js",
+    "test": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony $ARG test/unit",
+    "functest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony $ARG test/func",
+    "bench": "NODE_PATH=src node --harmony bench/runner.js $ARG",
     "lint": "node_modules/jshint/bin/jshint --exclude src/gsjs src",
     "docs": "node node_modules/jsdoc/jsdoc.js --destination docs --configure jsdoc-conf.json src"
   },
