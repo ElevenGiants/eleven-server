@@ -2,6 +2,20 @@
   "name": "eleven-server",
   "version": "0.0.1-snapshot",
   "description": "Eleven game server",
+  "homepage": "http://elevengiants.com/",
+  "license": "MIT",
+  "contributors": [
+    {
+      "name": "Markus Dolic",
+      "email": "aroha@elevengiants.com",
+      "url": "https://twitter.com/ElevenAroha"
+    }
+  ],
+  "author": "Markus Dolic <aroha@elevengiants.com> (https://twitter.com/ElevenAroha)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ElevenGiants/eleven-server.git"
+  },
   "main": "src/server.js",
   "directories": {
     "test": "test"
@@ -33,17 +47,13 @@
     "docs": "node node_modules/jsdoc/jsdoc.js --destination docs --configure jsdoc-conf.json src"
   },
   "jshintConfig": {
-	"strict": true,
+    "strict": true,
     "node": true,
     "multistr": true,
-	"globals": {
-		"log": true,
-		"Reflect": true,
-		"Proxy": true
-	}
-  },
-  "contributors": [
-    "aroha@elevengiants.com"
-  ],
-  "license": "TODO"
+    "globals": {
+      "log": true,
+      "Reflect": true,
+      "Proxy": true
+    }
+  }
 }
