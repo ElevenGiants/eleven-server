@@ -5,3 +5,4 @@ docs
 src/gsjs
 node_modules/**/out
 node_modules/**/build
+npm-debug.log
