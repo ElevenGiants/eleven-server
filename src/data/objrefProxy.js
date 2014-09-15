@@ -76,7 +76,7 @@ ObjRefProxyError.prototype.name = 'ObjRefProxyError';
 function makeProxy(objref) {
 	return new Proxy(objref, {
 		// transparently handle on-access loading from persistence
-		get: function(target, name, receiver) {
+		get: function get(target, name, receiver) {
 			if (name === 'inspect' || name === 'valueOf' || name === 'toString') {
 				// node's util module uses 'inspect' (e.g. during console.log)
 				return function() {
@@ -93,23 +93,32 @@ function makeProxy(objref) {
 			return resolve(target)[name];
 		},
 		// other operations: resolve reference and perform operation on actual object
-		set: function(target, name, val, receiver) {
+		set: function set(target, name, val, receiver) {
 			resolve(target)[name] = val;
 		},
-		deleteProperty: function(target, name) {
+		has: function has(target, name) {
+			return name in resolve(target);
+		},
+		deleteProperty: function deleteProperty(target, name) {
 			return delete resolve(target)[name];
 		},
-		enumerate: function(target) {
+		enumerate: function enumerate(target) {
 			return Reflect.enumerate(resolve(target));
 		},
-		keys: function(target) {
-			return Reflect.keys(resolve(target));
+		ownKeys: function ownKeys(target) {
+			return Reflect.ownKeys(resolve(target));
+		},
+		preventExtensions: function preventExtensions(target) {
+			return Reflect.preventExtensions(resolve(target));
+		},
+		getOwnPropertyDescriptor: function getOwnPropertyDescriptor(target, name) {
+			return Reflect.getOwnPropertyDescriptor(resolve(target), name);
 		},
 		// construct/apply operations do not make sense on an objref
-		apply: function(target, thisArg, args) {
+		apply: function apply(target, thisArg, args) {
 			throw new ObjRefProxyError('apply not supported');
 		},
-		construct: function(target, args) {
+		construct: function construct(target, args) {
 			throw new ObjRefProxyError('construct not supported');
 		},
 	});

@@ -49,7 +49,7 @@ suite('objrefProxy', function() {
 		test('set and delete operations on proxy are reflected in referenced object', function() {
 			var obj = {tsid: 'TEST'};
 			persMock.add(obj);
-			var proxy = orproxy.makeProxy(obj);
+			var proxy = orproxy.makeProxy({tsid: 'TEST'});
 			proxy.thing = 'thump';
 			assert.strictEqual(obj.thing, 'thump');
 			delete proxy.thing;
@@ -69,19 +69,43 @@ suite('objrefProxy', function() {
 		test('Object.keys(proxy) returns referenced object\'s keys', function() {
 			var obj = {tsid: 'TEST', a: 1, x: 2};
 			persMock.add(obj);
-			var proxy = orproxy.makeProxy(obj);
+			var proxy = orproxy.makeProxy({tsid: 'TEST'});
 			assert.sameMembers(Object.keys(proxy), ['tsid', 'a', 'x']);
 		});
 		
 		test('for loop on proxy loops over referenced object\'s properties', function() {
 			var obj = {tsid: 'TEST', a: 1, b: 2};
 			persMock.add(obj);
-			var proxy = orproxy.makeProxy(obj);
+			var proxy = orproxy.makeProxy({tsid: 'TEST'});
 			var l = [];
 			for (var k in proxy) {
 				l.push(k);
 			}
 			assert.sameMembers(l, ['tsid', 'a', 'b']);
+		});
+		
+		test('"has" works on referenced object', function() {
+			var obj = {tsid: 'TEST', x: 1};
+			persMock.add(obj);
+			var proxy = orproxy.makeProxy({tsid: 'TEST'});
+			assert.isTrue('x' in proxy);
+			assert.isFalse('y' in proxy);
+		});
+		
+		test('"hasOwnProperty" works on referenced object', function() {
+			var O = function() {};
+			O.prototype.y = 2;
+			var obj = new O();
+			obj.tsid = 'TEST';
+			obj.x = 1;
+			persMock.add(obj);
+			var proxy = orproxy.makeProxy({tsid: 'TEST'});
+			assert.isTrue(proxy.hasOwnProperty('tsid'));
+			assert.isTrue(proxy.hasOwnProperty('x'));
+			assert.isFalse(proxy.hasOwnProperty('y'));
+			assert.isTrue(({}).hasOwnProperty.call(proxy, 'tsid'));
+			assert.isTrue(({}).hasOwnProperty.call(proxy, 'x'));
+			assert.isFalse(({}).hasOwnProperty.call(proxy, 'y'));
 		});
 	});
 	
