@@ -38,11 +38,10 @@ suite('config', function() {
 		});
 		
 		test('init does its job (worker)', function() {
-			var prev = process.env.gsid;
 			process.env.gsid = 'gs01-01';
 			config.init(false, MINIMAL_CFG, {});
 			assert.strictEqual(config.getGsid(), 'gs01-01', 'GSID for worker');
-			process.env.gsid = prev;  // restore, just in case
+			delete process.env.gsid;
 		});
 		
 		test('insufficient net configuration causes ConfigError', function() {
@@ -193,6 +192,36 @@ suite('config', function() {
 			assert.strictEqual(config.getServicePort(100, 'gs3-01'), 104);
 			// unknown GSID is assumed to be the cluster master:
 			assert.strictEqual(config.getServicePort(100, 'meh'), 100);
+		});
+	});
+	
+	
+	suite('getGSConf', function() {
+	
+		test('does its job (master server)', function() {
+			config.init(true, {net: {gameServers: {gs1: {host: '127.0.0.1', ports: [1]}}}}, {});
+			assert.strictEqual(config.getGSConf(), undefined, 'no GS config entry for master server');
+		});
+		
+		test('does its job (worker server)', function() {
+			config.init(false, {
+				net: {gameServers: {
+					gs1: {host: '127.0.0.1', ports: [1]},
+					gs2: {host: '5.6.7.8', ports: [2]},
+				}},
+			}, {gsid: 'gs1-01'});
+			// not testing the format of the returned config object here, just
+			// check the 'gsid' prop as proof that the right one was returned
+			assert.strictEqual(config.getGSConf().gsid, 'gs1-01');
+			assert.strictEqual(config.getGSConf('gs1-01').gsid, 'gs1-01');
+			assert.strictEqual(config.getGSConf('gs2-01').gsid, 'gs2-01');
+		});
+		
+		test('error for invalid GSID', function() {
+			config.init(true, MINIMAL_CFG, {});
+			assert.throw(function() {
+				config.getGSConf('blurb');
+			}, assert.AssertionError);
 		});
 	});
 });
