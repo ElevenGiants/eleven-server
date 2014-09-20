@@ -1,0 +1,26 @@
+{
+    "class_tsid": "quoin", 
+    "container": {
+        "label": "Pansanu Insanu", 
+        "objref": true, 
+        "tsid": "LHFF2N2M36J2MG3"
+    }, 
+    "count": 1, 
+    "instanceProps": {
+        "benefit_ceil": 6, 
+        "benefit_floor": 2, 
+        "class_name": "small random currants", 
+        "is_random": "1", 
+        "respawn_time": 180, 
+        "type": "currants"
+    }, 
+    "label": "Coin", 
+    "spawned": 1, 
+    "state": 1, 
+    "tcont": "LHFF2N2M36J2MG3", 
+    "ts": 1390339339072, 
+    "tsid": "IHFK8C8NB6J2FJ5", 
+    "version": "1351476850", 
+    "x": 376, 
+    "y": -484
+}
