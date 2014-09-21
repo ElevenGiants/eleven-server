@@ -15,6 +15,7 @@ module.exports = {
 	init: init,
 	get: get,
 	getGsid: getGsid,
+	getGSConf: getGSConf,
 	forEachGS: forEachGS,
 	forEachLocalGS: forEachLocalGS,
 	forEachRemoteGS: forEachRemoteGS,
@@ -224,6 +225,30 @@ function get(key) {
 	return ret;
 }
 
+
+/**
+ * Retrieves the network configuration record for a given game server.
+ *
+ * @param {string} [gsid] ID of the game server; if `undefined`, the
+ *        configuration for this process will be returned
+ * @returns {object} a game server network configuration record;
+ *          something along the lines of:
+ * ```
+ * {
+ *     gsid: 'gs02-03',
+ *     host: '12.34.56.78',
+ *     port: 1445,
+ *     hostPort: '12.34.56.78:1445',
+ *     local: false,
+ * }
+ * ```
+ */
+function getGSConf(gsid) {
+	assert(gsid === undefined || gsid in gameServers, 'invalid GSID: ' + gsid);
+	return gameServers[gsid ? gsid : getGsid()];
+}
+
+
 /**
  * Calls a function for each configured GS instance.
  *
@@ -296,17 +321,8 @@ function forEachRemoteGS(func, callback) {
  *
  * @param {GameObject|string} objOrTsid the game object to find the
  *        responsible game server for, or its TSID
- * @returns {object} a game server network configuration record;
- *        something along the lines of:
- * ```
- * {
- *     gsid: 'gs02-03',
- *     host: '12.34.56.78',
- *     port: 1445,
- *     hostPort: '12.34.56.78:1445',
- *     local: false,
- * }
- * ```
+ * @returns {object} a game server network configuration record
+ *          (see {@link module:config~getGSConf|getGSConf})
  */
 function mapToGS(objOrTsid) {
 	var tsid = typeof objOrTsid === 'string' ? objOrTsid : objOrTsid.tsid;

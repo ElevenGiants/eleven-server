@@ -20,6 +20,7 @@ var fs = require('fs');
 var gsjsBridge = require('model/gsjsBridge');
 var path = require('path');
 var rpc = require('data/rpc');
+var sessionMgr = require('comm/sessionMgr');
 
 
 var cfg;  // buffer for the loaded configuration (for convenience)
@@ -103,6 +104,17 @@ function runMaster() {
 
 function runWorker() {
 	log.info('starting cluster worker %s', config.getGsid());
+	// start dummy echo server (temporary code, obviously)
+	sessionMgr.init();
+	var gsconf = config.getGSConf();
+	require('net').createServer(function(socket) {
+		sessionMgr.newSession(socket,
+			function dataHandler(session, data) {
+				socket.write(data);  // simple echo
+			}
+		);
+	}).listen(gsconf.port, gsconf.host);
+	log.info('%s ready, listening on %s', gsconf.gsid, gsconf.hostPort);
 }
 
 
