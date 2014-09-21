@@ -21,6 +21,23 @@ module.exports = {
 			port: 8000,
 		},
 	},
+	pers: {
+		backEnd: {
+			module: 'rethink',
+			config: {
+				rethink: {
+					dbname: 'eleven_dev',
+					dbhost: 'localhost',
+					dbport: 28015,
+					dbauth: 'test123',
+					queryOpts: {
+						durability: 'hard',
+						noreply: false,
+					},
+				},
+			},
+		},
+	},
 	log: {
 		level: {
 			file: 'debug',

@@ -6,11 +6,20 @@
  * interaction with a specific storage facility (e.g. files on disk or
  * a database). It must implement the following API:
  * ```
- *     function init()
+ *     function init(config, callback)
+ *     function close(callback)
  *     function read(tsid)
  *     function write(obj, callback)
- *     function del(tsid)
+ *     function del(obj, callback)
  * ```
+ * Where `callback` follows the usual Node conventions (`Error` object
+ * or `null` as first parameter, function call results second). The
+ * `init` and `close` functions are optional. `read` is expected to
+ * return data synchronously; this is due to the fact that the GSJS
+ * code was not designed with an asynchronous data store in mind. See
+ * e.g. the {@link module:data/pbe/rethink|rethink} module for how to
+ * work around this limitation using {@link
+ * https://github.com/luciotato/waitfor|wait.for/fibers}.
  *
  * Once loaded, game objects are kept in a cache data structure here,
  * to avoid having to reload them from the back-end for each access.
@@ -52,13 +61,19 @@ var pbe = null;
  * cache and setting the supplied persistence back-end.
  *
  * @param {object} backEnd persistence back-end module; must implement
- * the API shown in the above module docs.
+ *        the API shown in the above module docs.
+ * @param {object} config configuration options for the back-end module
+ * @param {function} callback called when persistence layer is ready,
+ *        or an error occurred during initialization
  */
-function init(backEnd) {
+function init(backEnd, config, callback) {
 	cache = {};
 	pbe = backEnd;
 	if (pbe && typeof pbe.init === 'function') {
-		pbe.init();
+		return pbe.init(config, callback);
+	}
+	else if (callback) {
+		return callback(null);
 	}
 }
 
@@ -180,7 +195,10 @@ function processDirtyList(dlist, logmsg) {
  */
 function write(obj, logmsg, callback) {
 	log.debug('pers.write: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
-	pbe.write(orProxy.refify(obj.serialize()), callback);
+	pbe.write(orProxy.refify(obj.serialize()), function cb(err, res) {
+		if (err) log.error(err, 'could not write: %s', obj.tsid);
+		if (callback) return callback(err, res);
+	});
 }
 
 
@@ -189,10 +207,15 @@ function write(obj, logmsg, callback) {
  *
  * @param {GameObject} obj game object to remove
  * @param {string} logmsg short additional info for log messages
+ * @param {function} callback called when delete operation has
+ *        finished, or in case of errors
  * @private
  */
-function del(obj, logmsg) {
+function del(obj, logmsg, callback) {
 	log.debug('pers.del: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	delete cache[obj.tsid];
-	pbe.del(obj.tsid);
+	pbe.del(obj.tsid, function db(err, res) {
+		if (err) log.error(err, 'could not delete: %s', obj.tsid);
+		if (callback) return callback(err, res);
+	});
 }

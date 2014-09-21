@@ -28,19 +28,18 @@ suite('pers', function() {
 		gsjsBridge.reset();
 	});
 	
-	setup(function() {
+	setup(function(done) {
 		pers.__set__('rpc', rpcMock);
 		pers.__set__('reqContext', rcMock);
-		pers.init(pbeMock);
-		pbeMock.init(FIXTURES_PATH);
 		rcMock.reset();
+		pers.init(pbeMock, FIXTURES_PATH, done);
 	});
 	
 	teardown(function() {
 		pers.__set__('rpc', require('data/rpc'));
 		pers.__set__('reqContext', require('data/requestContext'));
-		pers.init(undefined);  // disable mock back-end
 		rcMock.reset();
+		pers.init();  // disable mock back-end
 	});
 	
 

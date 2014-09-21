@@ -19,7 +19,7 @@ var db = {};
 var counts = {};
 
 
-function init(fixturePath) {
+function init(fixturePath, callback) {
 	fpath = fixturePath;
 	db = {};
 	counts = {
@@ -27,6 +27,7 @@ function init(fixturePath) {
 		write: 0,
 		del: 0,
 	};
+	callback(null);
 }
 
 
@@ -53,7 +54,8 @@ function write(obj, callback) {
 }
 
 
-function del(tsid) {
+function del(tsid, callback) {
 	counts.del++;
 	delete db[tsid];
+	if (callback) callback(null, null);
 }

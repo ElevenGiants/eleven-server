@@ -35,6 +35,22 @@ function initConfig() {
 				},
 			},
 		},
+		pers: {
+			backEnd: {
+				config: {
+					rethink: {
+						dbname: 'eleven_test',
+						dbhost: 'localhost',
+						dbport: 28015,
+						dbauth: 'test123',
+						queryOpts: {
+							durability: 'hard',
+							noreply: false,
+						},
+					},
+				},
+			},
+		},
 		gsjs: {
 			config: 'config_prod',
 		},

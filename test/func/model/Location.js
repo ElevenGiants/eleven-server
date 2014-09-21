@@ -92,13 +92,12 @@ suite('Location', function() {
 			gsjsBridge.reset();
 		});
 		
-		setup(function() {
+		setup(function(done) {
 			persProxy.__set__('reqContext', rcMock);
 			pers.__set__('reqContext', rcMock);
 			pers.__set__('rpc', rpcMock);
-			pers.init(pbeMock);
-			pbeMock.init(path.resolve(path.join(__dirname, '../fixtures')));
 			rcMock.reset();
+			pers.init(pbeMock, path.resolve(path.join(__dirname, '../fixtures')), done);
 		});
 		
 		teardown(function() {
@@ -106,7 +105,7 @@ suite('Location', function() {
 			pers.__set__('reqContext', rc);
 			pers.__set__('rpc', require('data/rpc'));
 			persMock.reset();
-			pers.init(undefined);  // disable mock back-end
+			pers.init();  // disable mock back-end
 			rcMock.reset();
 		});
 

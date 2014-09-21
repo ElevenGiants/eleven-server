@@ -55,7 +55,8 @@ function runSuite(suitePath) {
 	var suite = require(suitePath);
 	// workaround for asynchronous suite setup (cf. <https://github.com/bestiejs/benchmark.js/issues/70>)
 	var setup = suite.asyncSetup || function(cb) { cb(); };
-	setup(function cb() {
+	setup(function cb(err) {
+		if (err) throw err;
 		suite.on('cycle', onCycle);
 		suite.on('error', onError);
 		suite.run();

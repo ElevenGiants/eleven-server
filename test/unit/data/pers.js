@@ -11,20 +11,20 @@ var rcMock = require('../../mock/requestContext');
 
 suite('pers', function() {
 
-	setup(function() {
+	setup(function(done) {
 		pers.__set__('gsjsBridge', gsjsBridgeMock);
 		pers.__set__('rpc', rpcMock);
 		pers.__set__('reqContext', rcMock);
-		pers.init(pbeMock);
 		rcMock.reset();
 		rpcMock.reset(true);
+		pers.init(pbeMock, undefined, done);
 	});
 	
 	teardown(function() {
 		pers.__set__('gsjsBridge', require('model/gsjsBridge'));
 		pers.__set__('rpc', require('data/rpc'));
 		pers.__set__('reqContext', require('data/requestContext'));
-		pers.init(undefined);  // disable mock back-end
+		pers.init();  // disable mock back-end
 		rcMock.reset();
 		rpcMock.reset(true);
 	});

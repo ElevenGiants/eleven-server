@@ -19,6 +19,7 @@ var config = require('config');
 var fs = require('fs');
 var gsjsBridge = require('model/gsjsBridge');
 var path = require('path');
+var pers = require('data/pers');
 var rpc = require('data/rpc');
 var sessionMgr = require('comm/sessionMgr');
 
@@ -38,6 +39,7 @@ function main() {
 	config.init(cluster.isMaster);
 	cfg = config.get();
 	logInit();
+	persInit();
 	if (cluster.isMaster) {
 		runMaster();
 	}
@@ -87,6 +89,24 @@ function logInit() {
 				path: path.join(dir, gsid + '-errors.log'),
 			},
 		],
+	});
+}
+
+
+function persInit() {
+	var mod = config.get('pers:backEnd:module');
+	var pbe;
+	try {
+		pbe = require('data/pbe/' + mod);
+	}
+	catch (e) {
+		throw new config.ConfigError('could not load persistence back-end ' +
+			'module: ' + e.message);
+	}
+	var pbeConfig = config.get('pers:backEnd:config:' + mod);
+	pers.init(pbe, pbeConfig, function cb(err, res) {
+		if (err) throw err;
+		log.info('persistence layer initialized');
 	});
 }
 
