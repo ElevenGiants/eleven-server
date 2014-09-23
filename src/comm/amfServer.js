@@ -1,8 +1,8 @@
 'use strict';
 
 /**
- * Accepts TCP connections from game clients and handles incoming
- * requests (mainly AMF parsing and dispatching messages to GSJS).
+ * Accepts TCP connections from game clients and binds them to
+ * {@link Session} instances.
  *
  * @module
  */
@@ -31,9 +31,5 @@ function start(host, port) {
 
 
 function handleConnect(socket) {
-	sessionMgr.newSession(socket,
-		function dataHandler(session, data) {
-			socket.write(data);  // simple echo
-		}
-	);
+	sessionMgr.newSession(socket);
 }

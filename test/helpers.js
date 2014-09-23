@@ -1,5 +1,6 @@
 'use strict';
 
+var amf = require('amflib/node-amf/amf');
 var events = require('events');
 
 
@@ -10,4 +11,12 @@ exports.getDummySocket = function getDummySocket() {
 	};
 	ret.setNoDelay = function setNoDelay() {};  // dummy
 	return ret;
-}
+};
+
+
+exports.amfEnc = function amfEnc(data) {
+	var data = amf.serializer().writeObject(data);
+	var ret = new Buffer(Buffer.byteLength(data, 'binary'));
+	ret.write(data, 0, ret.length, 'binary');
+	return ret;
+};

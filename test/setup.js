@@ -34,6 +34,7 @@ function initConfig() {
 					ports: [1443],
 				},
 			},
+			maxMsgSize: 131072,
 		},
 		pers: {
 			backEnd: {
