@@ -4,7 +4,6 @@ module.exports = Session;
 
 
 var amf = require('amflib/node-amf/amf');
-var bunyan = require('bunyan');
 var domain = require('domain');
 var events = require('events');
 var util = require('util');
@@ -54,11 +53,6 @@ function Session(id, socket) {
 	this.socket = socket;
 	this.ts = new Date().getTime();
 	this.maxMsgSize = config.get('net:maxMsgSize');
-	// set up customized bunyan child logger
-	this.log = log.child({serializers: {
-		session: Session.logSerialize,
-		err: bunyan.stdSerializers.err,
-	}});
 	// disable Nagle's algorithm (we need all messages delivered as quickly as possible)
 	this.socket.setNoDelay(true);
 	// set up domain for low-level issue handling (networking and
@@ -67,7 +61,7 @@ function Session(id, socket) {
 	this.dom.add(this.socket);
 	this.dom.on('error', this.handleError.bind(this));
 	this.setupSocketEventHandlers();
-	this.log.info({session: this}, 'new session created');
+	log.info({session: this}, 'new session created');
 }
 
 
@@ -112,17 +106,17 @@ Session.prototype.onSocketData = function(data) {
 
 
 Session.prototype.onSocketEnd = function() {
-	this.log.info({session: this}, 'socket end');
+	log.info({session: this}, 'socket end');
 };
 
 
 Session.prototype.onSocketTimeout = function() {
-	this.log.warn({session: this}, 'socket timeout');
+	log.warn({session: this}, 'socket timeout');
 };
 
 
 Session.prototype.onSocketClose = function(hadError) {
-	this.log.info({session: this}, 'socket close (hadError: %s)', hadError);
+	log.info({session: this}, 'socket close (hadError: %s)', hadError);
 	this.emit('close', this);
 };
 
@@ -140,11 +134,11 @@ Session.prototype.onSocketClose = function(hadError) {
  * @private
  */
 Session.prototype.handleError = function(err) {
-	this.log.error({session: this, err: err},
+	log.error({session: this, err: err},
 		'unhandled error: %s', err ? err.message : err);
 	// careful cleanup - if anything throws here, the server goes down
 	if (this.socket && typeof this.socket.destroy === 'function') {
-		this.log.info({session: this}, 'destroying socket');
+		log.info({session: this}, 'destroying socket');
 		this.socket.destroy();
 	}
 };
@@ -210,9 +204,11 @@ Session.prototype.checkForMessages = function() {
 Session.prototype.handleMessage = function(msg) {
 	log.trace({data: msg}, 'got %s request', msg.type);
 	var self = this;
-	var rc = new RC(msg.type, this.pc);
+	var rc = new RC(msg.type, this.pc, this);
 	rc.run(
-		this.processRequest.bind(this, msg),
+		function clientReq() {
+			self.processRequest.call(self, msg);
+		},
 		function callback(err) {
 			if (err) self.handleAmfReqError.call(self, err, msg);
 		}

@@ -12,7 +12,6 @@
  * @module
  */
 
-var assert = require('assert');
 var async = require('async');
 var bunyan = require('bunyan');
 var cluster = require('cluster');
@@ -23,6 +22,7 @@ var path = require('path');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
 var amfServer = require('comm/amfServer');
+var logging = require('logging');
 
 
 /**
@@ -36,47 +36,10 @@ var amfServer = require('comm/amfServer');
 function main() {
 	// init low-level things first (synchronously)
 	config.init(cluster.isMaster);
-	logInit();
+	logging.init();
 	// then actually fork workers, resp. start up server components there
 	if (cluster.isMaster) runMaster();
 	else runWorker();
-}
-
-
-/**
- * Initializes logging for this GS process.
- *
- * @private
- */
-function logInit() {
-	var gsid = config.getGsid();
-	var cfg = config.get('log');
-	assert(typeof gsid === 'string' && gsid.length > 0, 'invalid GSID: ' + gsid);
-	var dir = path.resolve(path.join(cfg.dir));
-	try {
-		fs.mkdirSync(dir);
-	}
-	catch (e) {
-		if (e.code !== 'EEXIST') throw e;
-	}
-	global.log = bunyan.createLogger({
-		name: gsid,
-		src: cfg.includeLoc,
-		streams: [
-			{
-				level: cfg.level.stdout,
-				stream: process.stdout,
-			},
-			{
-				level: cfg.level.file,
-				path: path.join(dir, gsid + '-default.log'),
-			},
-			{
-				level: 'error',
-				path: path.join(dir, gsid + '-errors.log'),
-			},
-		],
-	});
 }
 
 
