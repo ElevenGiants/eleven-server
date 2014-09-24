@@ -1,19 +1,19 @@
 'use strict';
 
 var rewire = require('rewire');
-var rc = rewire('data/requestContext');
+var RC = rewire('data/RequestContext');
 var persMock = require('../../mock/pers');
 
 
-suite('requestContext', function() {
+suite('RequestContext', function() {
 
 	setup(function() {
-		rc.__set__('pers', persMock);
+		RC.__set__('pers', persMock);
 		persMock.reset();
 	});
 	
 	teardown(function() {
-		rc.__set__('pers', rewire('data/pers'));
+		RC.__set__('pers', rewire('data/pers'));
 	});
 	
 	
@@ -21,17 +21,17 @@ suite('requestContext', function() {
 		
 		test('fails when called outside a request context', function() {
 			assert.throw(function() {
-				rc.getContext();
+				RC.getContext();
 			}, assert.AssertionError);
 		});
 		
 		test('does its job', function(done) {
-			rc.run(function() {
-				var ctx = rc.getContext();
+			new RC('testlogtag').run(function() {
+				var ctx = RC.getContext();
 				assert.isDefined(ctx);
 				assert.strictEqual(ctx.logtag, 'testlogtag');
 				done();
-			}, 'testlogtag');
+			});
 		});
 	});
 	
@@ -39,8 +39,8 @@ suite('requestContext', function() {
 	suite('run', function() {
 	
 		test('initializes request data structures', function(done) {
-			rc.run(function() {
-				var ctx = rc.getContext();
+			new RC().run(function() {
+				var ctx = RC.getContext();
 				assert.property(ctx, 'cache');
 				assert.deepEqual(ctx.cache, {});
 				assert.property(ctx, 'dirty');
@@ -50,12 +50,13 @@ suite('requestContext', function() {
 		});
 		
 		test('persists dirty objects after request is finished', function(done) {
-			rc.run(function() {
+			new RC('', '').run(function() {
+				var rc = RC.getContext();
 				rc.setDirty({tsid: 'IA'});
 				rc.setDirty({tsid: 'IB', deleted: true});
-				assert.deepEqual(Object.keys(rc.getContext().dirty), ['IA', 'IB']);
+				assert.deepEqual(Object.keys(RC.getContext().dirty), ['IA', 'IB']);
 				assert.deepEqual(persMock.getDirtyList(), {});  // request in progress, list not processed yet
-			}, '', '',
+			},
 			function callback() {
 				assert.deepEqual(persMock.getDirtyList(), {
 					IA: {tsid: 'IA'},
@@ -67,10 +68,10 @@ suite('requestContext', function() {
 		
 		test('runs request function and returns its return value in callback', function(done) {
 			var derp = 1;
-			rc.run(function() {
+			new RC('', '').run(function() {
 				derp = 3;
 				return 'hooray';
-			}, '', '',
+			},
 			function callback(err, res) {
 				assert.strictEqual(derp, 3);
 				assert.strictEqual(res, 'hooray');
@@ -79,9 +80,9 @@ suite('requestContext', function() {
 		});
 		
 		test('passes errors thrown by the request function back in callback', function(done) {
-			rc.run(function() {
+			new RC('', '').run(function() {
 				throw new Error('meh');
-			}, '', '',
+			},
 			function callback(err, res) {
 				assert.isDefined(err);
 				assert.strictEqual(err.message, 'meh');

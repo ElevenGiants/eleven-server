@@ -3,14 +3,13 @@
 require('../../setup');
 var suite = new (require('benchmark')).Suite;
 module.exports = suite;
-var requestContext = require('data/requestContext');
+var RequestContext = require('data/RequestContext');
 
 
 suite.add('run (fire&forget)', function() {
-	requestContext.run(
+	new RequestContext().run(
 		function req() {
 		},
-		undefined, undefined,
 		function cb(err) {
 			if (err) throw err;
 		}
@@ -19,10 +18,9 @@ suite.add('run (fire&forget)', function() {
 
 
 suite.add('run (sequential/wait for result)', function(deferred) {
-	requestContext.run(
+	new RequestContext().run(
 		function req() {
 		},
-		undefined, undefined,
 		function cb(err) {
 			if (err) throw err;
 			deferred.resolve();

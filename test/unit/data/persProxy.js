@@ -2,18 +2,18 @@
 
 var rewire = require('rewire');
 var pp = rewire('data/persProxy');
-var rcMock = require('../../mock/requestContext');
+var rcMock = require('../../mock/RequestContext');
 
 
 suite('persProxy', function() {
 
 	setup(function() {
 		rcMock.reset();
-		pp.__set__('reqContext', rcMock);
+		pp.__set__('RC', rcMock);
 	});
 	
 	teardown(function() {
-		pp.__set__('reqContext', require('data/requestContext'));
+		pp.__set__('RC', require('data/RequestContext'));
 	});
 
 

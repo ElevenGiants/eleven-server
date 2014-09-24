@@ -4,7 +4,7 @@ var rewire = require('rewire');
 var config = rewire('config');
 var rpc = rewire('data/rpc');
 var persMock = require('../../mock/pers');
-var rcMock = require('../../mock/requestContext');
+var rcMock = require('../../mock/RequestContext');
 var GameObject = require('model/GameObject');
 
 

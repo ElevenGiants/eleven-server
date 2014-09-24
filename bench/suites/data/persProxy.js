@@ -5,7 +5,7 @@ var suite = new (require('benchmark')).Suite;
 module.exports = suite;
 var rewire = require('rewire');
 var pp = rewire('data/persProxy');
-var rcMock = require('../../../test/mock/requestContext');
+var rcMock = require('../../../test/mock/RequestContext');
 // workaround to make Proxy available in persProxy module after rewiring:
 require('harmony-reflect');
 pp.__set__('Proxy', Proxy);
@@ -25,11 +25,11 @@ obj = pp.makeProxy(obj);
 
 suite.on('start', function() {
 	rcMock.reset();
-	pp.__set__('reqContext', rcMock);
+	pp.__set__('RC', rcMock);
 });
 
 suite.on('complete', function() {
-	pp.__set__('reqContext', require('data/requestContext'));
+	pp.__set__('RC', require('data/RequestContext'));
 });
 
 

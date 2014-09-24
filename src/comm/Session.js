@@ -9,7 +9,7 @@ var domain = require('domain');
 var events = require('events');
 var util = require('util');
 var config = require('config');
-var reqContext = require('data/requestContext');
+var RC = require('data/RequestContext');
 
 
 util.inherits(Session, events.EventEmitter);
@@ -210,9 +210,9 @@ Session.prototype.checkForMessages = function() {
 Session.prototype.handleMessage = function(msg) {
 	log.trace({data: msg}, 'got %s request', msg.type);
 	var self = this;
-	reqContext.run(
+	var rc = new RC(msg.type, this.pc);
+	rc.run(
 		this.processRequest.bind(this, msg),
-		msg.type, this.pc,
 		function callback(err) {
 			if (err) self.handleAmfReqError.call(self, err, msg);
 		}

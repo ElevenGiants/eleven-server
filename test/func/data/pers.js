@@ -8,7 +8,7 @@ var GameObject = require('model/GameObject');
 var Item = require('model/Item');
 var pbeMock = require('../../mock/pbe');
 var rpcMock = require('../../mock/rpc');
-var rcMock = require('../../mock/requestContext');
+var rcMock = require('../../mock/RequestContext');
 
 
 suite('pers', function() {
@@ -30,14 +30,14 @@ suite('pers', function() {
 	
 	setup(function(done) {
 		pers.__set__('rpc', rpcMock);
-		pers.__set__('reqContext', rcMock);
+		pers.__set__('RC', rcMock);
 		rcMock.reset();
 		pers.init(pbeMock, FIXTURES_PATH, done);
 	});
 	
 	teardown(function() {
 		pers.__set__('rpc', require('data/rpc'));
-		pers.__set__('reqContext', require('data/requestContext'));
+		pers.__set__('RC', require('data/RequestContext'));
 		rcMock.reset();
 		pers.init();  // disable mock back-end
 	});
