@@ -4,11 +4,11 @@ var path = require('path');
 var rewire = require('rewire');
 var pers = rewire('data/pers');
 var persProxy = rewire('data/persProxy');
-var rc = require('data/requestContext');
+var rc = require('data/RequestContext');
 var persMock = require('../../mock/pers');
 var pbeMock = require('../../mock/pbe');
 var rpcMock = require('../../mock/rpc');
-var rcMock = require('../../mock/requestContext');
+var rcMock = require('../../mock/RequestContext');
 var Location = rewire('model/Location');
 var Geo = require('model/Geo');
 var gsjsBridge = rewire('model/gsjsBridge');
@@ -24,13 +24,13 @@ suite('Location', function() {
 	suite('Location/Geo integration', function() {
 	
 		setup(function() {
-			persProxy.__set__('reqContext', rcMock);
+			persProxy.__set__('RC', rcMock);
 			rcMock.reset();
 			persMock.reset();
 		});
 		
 		teardown(function() {
-			persProxy.__set__('reqContext', rc);
+			persProxy.__set__('RC', rc);
 			rcMock.reset();
 			persMock.reset();
 		});
@@ -93,16 +93,16 @@ suite('Location', function() {
 		});
 		
 		setup(function(done) {
-			persProxy.__set__('reqContext', rcMock);
-			pers.__set__('reqContext', rcMock);
+			persProxy.__set__('RC', rcMock);
+			pers.__set__('RC', rcMock);
 			pers.__set__('rpc', rpcMock);
 			rcMock.reset();
 			pers.init(pbeMock, path.resolve(path.join(__dirname, '../fixtures')), done);
 		});
 		
 		teardown(function() {
-			persProxy.__set__('reqContext', rc);
-			pers.__set__('reqContext', rc);
+			persProxy.__set__('RC', rc);
+			pers.__set__('RC', rc);
 			pers.__set__('rpc', require('data/rpc'));
 			persMock.reset();
 			pers.init();  // disable mock back-end

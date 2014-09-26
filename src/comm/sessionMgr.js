@@ -24,9 +24,9 @@ function init() {
 }
 
 
-function newSession(socket, dataHandler) {
+function newSession(socket) {
 	var id = genSessionId();
-	var session = new Session(id, socket, dataHandler);
+	var session = new Session(id, socket);
 	sessions[id] = session;
 	session.on('close', onSessionClose);
 	return session;

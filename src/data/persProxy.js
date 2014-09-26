@@ -19,7 +19,7 @@ module.exports = {
 
 
 require('harmony-reflect');
-var reqContext = require('data/requestContext');
+var RC = require('data/RequestContext');
 
 
 /**
@@ -71,7 +71,7 @@ function makeProxy(obj, prop) {
 				if (name[0] !== '!' && target.propertyIsEnumerable(name)) {
 					// performance hack: don't persist x/y changes for players
 					if (target !== obj || obj.tsid[0] !== 'P' || (name !== 'x' && name !== 'y')) {
-						reqContext.setDirty(obj);
+						RC.getContext().setDirty(obj);
 					}
 				}
 			}
@@ -79,7 +79,7 @@ function makeProxy(obj, prop) {
 		deleteProperty: function(target, name) {
 			if (name in target) {
 				if (name[0] !== '!' && target.hasOwnProperty(name) && target.propertyIsEnumerable(name)) {
-					reqContext.setDirty(obj);
+					RC.getContext().setDirty(obj);
 				}
 				return delete target[name];
 			}

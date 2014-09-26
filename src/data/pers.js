@@ -46,7 +46,7 @@ var gsjsBridge = require('model/gsjsBridge');
 var orProxy = require('data/objrefProxy');
 var persProxy = require('data/persProxy');
 var rpc = require('data/rpc');
-var reqContext = require('data/requestContext');
+var RC = require('data/RequestContext');
 
 
 // live game object cache
@@ -103,7 +103,7 @@ function load(tsid) {
 	if (!rpc.isLocal(obj)) {
 		// wrap object in RPC proxy and add it to request cache
 		obj = rpc.makeProxy(obj);
-		reqContext.objCachePut(obj);
+		RC.getContext().cache[tsid] = obj;
 	}
 	else {
 		// make sure any changes to the object are persisted
@@ -132,8 +132,9 @@ function get(tsid) {
 		return cache[tsid];
 	}
 	// otherwise, see if we already have it in the request cache
-	if (reqContext.objCacheGet(tsid)) {
-		return reqContext.objCacheGet(tsid);
+	var rc = RC.getContext();
+	if (tsid in rc.cache) {
+		return rc.cache[tsid];
 	}
 	// if not, actually load the object
 	return load(tsid);
@@ -158,7 +159,7 @@ function add(obj) {
 	}
 	obj = persProxy.makeProxy(obj);
 	cache[obj.tsid] = obj;
-	reqContext.setDirty(obj);
+	RC.getContext().setDirty(obj);
 	return obj;
 }
 

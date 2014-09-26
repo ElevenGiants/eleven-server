@@ -12,7 +12,7 @@
  * @module
  */
 
-var assert = require('assert');
+var async = require('async');
 var bunyan = require('bunyan');
 var cluster = require('cluster');
 var config = require('config');
@@ -21,10 +21,8 @@ var gsjsBridge = require('model/gsjsBridge');
 var path = require('path');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
-var sessionMgr = require('comm/sessionMgr');
-
-
-var cfg;  // buffer for the loaded configuration (for convenience)
+var amfServer = require('comm/amfServer');
+var logging = require('logging');
 
 
 /**
@@ -36,64 +34,16 @@ var cfg;  // buffer for the loaded configuration (for convenience)
  * @private
  */
 function main() {
+	// init low-level things first (synchronously)
 	config.init(cluster.isMaster);
-	cfg = config.get();
-	logInit();
-	persInit();
-	if (cluster.isMaster) {
-		runMaster();
-	}
-	else {
-		runWorker();
-	}
-	gsjsBridge.init(function callback(err) {
-		if (err) log.error(err, 'GSJS bridge initialization failed');
-		else log.info('GSJS prototypes loaded');
-	});
-	rpc.init(function callback(err) {
-		if (err) log.error(err, 'RPC initialization failed');
-		else log.info('RPC connections established');
-	});
+	logging.init();
+	// then actually fork workers, resp. start up server components there
+	if (cluster.isMaster) runMaster();
+	else runWorker();
 }
 
 
-/**
- * Initializes logging for this GS process.
- *
- * @private
- */
-function logInit() {
-	var gsid = config.getGsid();
-	assert(typeof gsid === 'string' && gsid.length > 0, 'invalid GSID: ' + gsid);
-	var dir = path.resolve(path.join(cfg.log.dir));
-	try {
-		fs.mkdirSync(dir);
-	}
-	catch (e) {
-		if (e.code !== 'EEXIST') throw e;
-	}
-	global.log = bunyan.createLogger({
-		name: gsid,
-		src: cfg.log.includeLoc,
-		streams: [
-			{
-				level: cfg.log.level.stdout,
-				stream: process.stdout,
-			},
-			{
-				level: cfg.log.level.file,
-				path: path.join(dir, gsid + '-default.log'),
-			},
-			{
-				level: 'error',
-				path: path.join(dir, gsid + '-errors.log'),
-			},
-		],
-	});
-}
-
-
-function persInit() {
+function persInit(callback) {
 	var mod = config.get('pers:backEnd:module');
 	var pbe;
 	try {
@@ -105,8 +55,18 @@ function persInit() {
 	}
 	var pbeConfig = config.get('pers:backEnd:config:' + mod);
 	pers.init(pbe, pbeConfig, function cb(err, res) {
-		if (err) throw err;
-		log.info('persistence layer initialized');
+		if (err) log.error(err, 'persistence layer initialization failed');
+		else log.info('persistence layer initialized');
+		callback(err);
+	});
+}
+
+
+function rpcInit(callback) {
+	rpc.init(function cb(err) {
+		if (err) log.error(err, 'RPC initialization failed');
+		else log.info('RPC connections established');
+		callback(err);
 	});
 }
 
@@ -124,17 +84,22 @@ function runMaster() {
 
 function runWorker() {
 	log.info('starting cluster worker %s', config.getGsid());
-	// start dummy echo server (temporary code, obviously)
-	sessionMgr.init();
-	var gsconf = config.getGSConf();
-	require('net').createServer(function(socket) {
-		sessionMgr.newSession(socket,
-			function dataHandler(session, data) {
-				socket.write(data);  // simple echo
-			}
-		);
-	}).listen(gsconf.port, gsconf.host);
-	log.info('%s ready, listening on %s', gsconf.gsid, gsconf.hostPort);
+	// initialize and wait for modules required for GS operation
+	async.series([
+			persInit,
+			rpcInit,
+		],
+		function callback(err, res) {
+			if (err) throw err;  // bail if anything went wrong
+			// otherwise, start listening for requests
+			amfServer.start();
+		}
+	);
+	// gsjs bridge loads stuff in the background (don't need to wait for it)
+	gsjsBridge.init(function callback(err) {
+		if (err) log.error(err, 'GSJS bridge initialization failed');
+		else log.info('GSJS prototypes loaded');
+	});
 }
 
 

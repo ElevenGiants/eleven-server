@@ -32,7 +32,7 @@ var config = require('config');
 var jrpc = require('multitransport-jsonrpc');
 var orProxy = require('data/objrefProxy');
 var pers = require('data/pers');
-var reqContext = require('data/requestContext');
+var RC = require('data/RequestContext');
 var rpcProxy = require('data/rpcProxy');
 var utils = require('utils');
 var util = require('util');
@@ -270,12 +270,12 @@ function handleRequest(gsid, tsid, fname, args, callback) {
 		fname, args.join(', '));
 	log.debug(logmsg);
 	// process RPC in its own request context
-	reqContext.run(
+	var rc = new RC(fname, tsid);
+	rc.run(
 		function rpcReq() {
 			var obj = pers.get(tsid);
 			return obj[fname].apply(obj, args);
 		},
-		fname, tsid,
 		function rpcReqCallback(err, res) {
 			if (err) {
 				log.error(err, 'exception in %s', logmsg);

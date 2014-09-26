@@ -5,9 +5,6 @@ module.exports = {
 	reset: reset,
 	getContext: getContext,
 	getDirtyList: getDirtyList,
-	getObjCache: getObjCache,
-	objCachePut: objCachePut,
-	objCacheGet: objCacheGet,
 	setDirty: setDirty,
 	run: run,
 };
@@ -29,27 +26,13 @@ function reset() {
 function getContext() {
 	return {
 		cache: cache,
+		setDirty: setDirty,
 	};
-}
-
-
-function getObjCache() {
-	return cache;
 }
 
 
 function getDirtyList() {
 	return Object.keys(dirty);
-}
-
-
-function objCachePut(obj) {
-	cache[obj.tsid] = obj;
-}
-
-
-function objCacheGet(tsid) {
-	return cache[tsid];
 }
 
 
@@ -61,9 +44,6 @@ function setDirty(obj) {
 function run(func, logtag, owner, callback) {
 	wait.launchFiber(function persFiber() {
 		try {
-			var fiber = getContext();
-			fiber.dirty = dirty;
-			fiber.cache = cache;
 			var res = func();
 			if (callback) callback(null, res);
 		}

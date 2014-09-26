@@ -39,6 +39,8 @@ module.exports = {
 			// (master = 0 (i.e. running on basePort), workers = 1, 2, 3, ...)
 			basePort: 7000,
 		},
+		// incoming AMF messages bigger than this are considered invalid
+		maxMsgSize: 131072,
 	},
 	log: {
 		// dir can be an absolute path, or relative to eleven-server directory

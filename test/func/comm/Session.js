@@ -3,6 +3,7 @@
 var async = require('async');
 var net = require('net');
 var config = require('config');
+var helpers = require('../../helpers');
 var sessionMgr = require('comm/sessionMgr');
 
 
@@ -14,9 +15,10 @@ suite('Session', function() {
 	suiteSetup(function() {
 		sessionMgr.init();
 		server = net.createServer(function(socket) {
-			sessionMgr.newSession(socket, function dataHandler(session, data) {
-				socket.write(data);  // simple echo
-			});
+			var s = sessionMgr.newSession(socket);
+			s.processRequest = function (req) {
+				socket.write(JSON.stringify(req));  // echo request object
+			};
 		}).listen(cfg.port, cfg.host);
 	});
 	
@@ -34,14 +36,14 @@ suite('Session', function() {
 		test('works as expected over local TCP connection', function(done) {
 			var sock = net.connect(cfg.port, cfg.host);
 			sock.on('data', function (data) {
-				assert.strictEqual(data.toString(), 'foo');
+				assert.deepEqual(JSON.parse(data.toString()), {type: 'foo'});
 				sock.end();
 			});
 			sock.on('close', function () {
 				assert.strictEqual(sessionMgr.getSessionCount(), 0);
 				done();
 			});
-			sock.write('foo');
+			sock.write(helpers.amfEnc({type: 'foo'}));
 		});
 		
 		test('works with a number of concurrent connections', function(done) {
@@ -50,13 +52,13 @@ suite('Session', function() {
 				function iterator(i, cb) {
 					net.connect(cfg.port, cfg.host)
 						.on('data', function (data) {
-							assert.equal(data.toString(), i);
+							assert.deepEqual(JSON.parse(data.toString()), {msg_id: i});
 							this.end();
 						})
 						.on('close', function (hadError) {
 							cb(hadError);
 						})
-						.write('' + i);
+						.write(helpers.amfEnc({msg_id: i}));
 				},
 				function callback(err) {
 					assert.strictEqual(sessionMgr.getSessionCount(), 0);
