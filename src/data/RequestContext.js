@@ -43,6 +43,8 @@ function RequestContext(logtag, owner, session) {
 	this.dirty = {};
 	// objects scheduled for unloading after current request
 	this.unload = {};
+	// post request callback (see setPostReqCallback)
+	this.postReqCallback = null;
 }
 
 
@@ -74,7 +76,7 @@ RequestContext.prototype.run = function(func, callback) {
 			var tag = util.format('%s/%s/%s', func.name, rc.owner, rc.logtag);
 			log.debug('finished %s (%s dirty)', tag, Object.keys(rc.dirty).length);
 			// persist modified objects
-			pers.postRequestProc(rc.dirty, rc.unload, tag);
+			pers.postRequestProc(rc.dirty, rc.unload, tag, rc.postReqCallback);
 			if (typeof callback === 'function') {
 				callback(null, res);
 			}
@@ -153,4 +155,18 @@ RequestContext.prototype.setDirty = function(obj) {
 RequestContext.prototype.setUnload = function(obj) {
 	this.setDirty(obj);  // make sure last state is persisted
 	this.unload[obj.tsid] = obj;
+};
+
+
+/**
+ * Schedules a function to be called after a request has been processed
+ * successfully, **and** the resulting changes have been written to
+ * persistence. If request processing fails, the function will not be
+ * called.
+ *
+ * @param {function} callback called after request processing and the
+ *        resulting persistence; no arguments
+ */
+RequestContext.prototype.setPostReqCallback = function(callback) {
+	this.postReqCallback = callback;
 };

@@ -25,9 +25,8 @@
  * to avoid having to reload them from the back-end for each access.
  * Game logic functions do not need to take care of saving modified
  * objects explicitly; this happens automatically at the end of each
- * request processed through {@link module:data/requestContext~run|
- * requestContext.run}, with the help of the {@link
- * module:data/persProxy|persProxy} wrapper.
+ * request processed through {@link RequestContext#run}, with help of
+ * the {@link module:data/persProxy|persProxy} wrapper.
  *
  * @module
  */
@@ -42,6 +41,7 @@ module.exports = {
 
 
 var assert = require('assert');
+var async = require('async');
 var gsjsBridge = require('model/gsjsBridge');
 var orProxy = require('data/objrefProxy');
 var persProxy = require('data/persProxy');
@@ -165,30 +165,36 @@ function add(obj) {
 
 
 /**
- * Called by {@link module:data/requestContext~run|requestContext.run}
- * after processing a request has finished, writes all resulting game
- * object changes to persistence.
+ * Called by {@link RequestContext#run} after processing a request has
+ * finished, writes all resulting game object changes to persistence.
  *
  * @param {object} dlist hash containing the modified game objects
  *        (TSIDs as keys, objects as values)
  * @param {object} ulist hash containing game objects to release from
  *        the live object cache
+ * @param {function} [callback] function to be called after persistence
+ *        operations have finished (set by {@link
+ *        RequestContext#setPostReqCallback})
  * @param {string} logmsg optional information for log messages
  */
-function postRequestProc(dlist, ulist, logmsg) {
-	var k;
-	for (k in dlist) {
-		var obj = dlist[k];
-		if (obj.deleted) {
-			del(obj, logmsg);
+function postRequestProc(dlist, ulist, logmsg, callback) {
+	async.each(Object.keys(dlist),
+		function iterate(k, iterCallback) {
+			var obj = dlist[k];
+			var op = obj.deleted ? del : write;
+			op(obj, logmsg, function cb(err, res) {
+				// silently ignore errors (we're not interested in them here,
+				// but we want to call callback when *all* ops have finished)
+				iterCallback(null);
+			});
+		},
+		function cb() {
+			for (var k in ulist) {
+				unload(ulist[k]);
+			}
+			if (callback) callback();
 		}
-		else {
-			write(obj, logmsg);
-		}
-	}
-	for (k in ulist) {
-		unload(ulist[k]);
-	}
+	);
 }
 
 
