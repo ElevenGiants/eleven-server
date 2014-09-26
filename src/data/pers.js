@@ -37,7 +37,7 @@ module.exports = {
 	init: init,
 	get: get,
 	add: add,
-	processDirtyList: processDirtyList,
+	postRequestProc: postRequestProc,
 };
 
 
@@ -171,16 +171,23 @@ function add(obj) {
  *
  * @param {object} dlist hash containing the modified game objects
  *        (TSIDs as keys, objects as values)
+ * @param {object} ulist hash containing game objects to release from
+ *        the live object cache
  * @param {string} logmsg optional information for log messages
  */
-function processDirtyList(dlist, logmsg) {
-	for (var k in dlist) {
-		if (dlist[k].deleted) {
-			del(dlist[k], logmsg);
+function postRequestProc(dlist, ulist, logmsg) {
+	var k;
+	for (k in dlist) {
+		var obj = dlist[k];
+		if (obj.deleted) {
+			del(obj, logmsg);
 		}
 		else {
-			write(dlist[k], logmsg);
+			write(obj, logmsg);
 		}
+	}
+	for (k in ulist) {
+		unload(ulist[k]);
 	}
 }
 
@@ -204,7 +211,8 @@ function write(obj, logmsg, callback) {
 
 
 /**
- * Permanently deletes a game object from persistent storage.
+ * Permanently deletes a game object from persistent storage. Also
+ * removes the object from the live object cache.
  *
  * @param {GameObject} obj game object to remove
  * @param {string} logmsg short additional info for log messages
@@ -219,4 +227,20 @@ function del(obj, logmsg, callback) {
 		if (err) log.error(err, 'could not delete: %s', obj.tsid);
 		if (callback) return callback(err, res);
 	});
+}
+
+
+/**
+ * Removes a game object from the live object cache. This can not check
+ * whether there are still references to the object elsewhere (e.g.
+ * pending timers), i.e. it cannot guarantee that memory is eventually
+ * freed through garbage collection.
+ *
+ * @param {GameObject} obj game object to unload
+ * @param {string} logmsg short additional info for log messages
+ * @private
+ */
+function unload(obj, logmsg) {
+	log.debug('pers.unload: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
+	delete cache[obj.tsid];
 }

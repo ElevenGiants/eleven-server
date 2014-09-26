@@ -5,19 +5,22 @@ module.exports = {
 	reset: reset,
 	get: get,
 	add: add,
-	processDirtyList: processDirtyList,
+	postRequestProc: postRequestProc,
 	getDirtyList: getDirtyList,
+	getUnloadList: getUnloadList,
 	preAdd: preAdd,
 };
 
 
 var cache = {};
 var dlist = {};
+var ulist = {};
 
 
 function reset() {
 	cache = {};
 	dlist = {};
+	ulist = {};
 }
 
 
@@ -45,11 +48,17 @@ function preAdd() {
 }
 
 
-function processDirtyList(list, logmsg) {
-	dlist = list;
+function postRequestProc(dl, ul, logmsg) {
+	dlist = dl;
+	ulist = ul;
 }
 
 
 function getDirtyList() {
 	return dlist;
+}
+
+
+function getUnloadList() {
+	return ulist;
 }

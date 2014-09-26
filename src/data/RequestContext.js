@@ -41,6 +41,8 @@ function RequestContext(logtag, owner, session) {
 	this.cache = {};
 	// dirty object collector for persistence
 	this.dirty = {};
+	// objects scheduled for unloading after current request
+	this.unload = {};
 }
 
 
@@ -72,7 +74,7 @@ RequestContext.prototype.run = function(func, callback) {
 			var tag = util.format('%s/%s/%s', func.name, rc.owner, rc.logtag);
 			log.debug('finished %s (%s dirty)', tag, Object.keys(rc.dirty).length);
 			// persist modified objects
-			pers.processDirtyList(rc.dirty, tag);
+			pers.postRequestProc(rc.dirty, rc.unload, tag);
 			if (typeof callback === 'function') {
 				callback(null, res);
 			}
@@ -137,4 +139,18 @@ RequestContext.logSerialize = function(rc) {
  */
 RequestContext.prototype.setDirty = function(obj) {
 	this.dirty[obj.tsid] = obj;
+};
+
+
+/**
+ * Schedules a game object for unloading from the live object cache at
+ * the end of the current request. Can only be called from within a
+ * request (see {@link RequestContext#run|run}). This includes {@link
+ * RequestContext#setDirty|setDirty}.
+ *
+ * @param {GameObject} obj
+ */
+RequestContext.prototype.setUnload = function(obj) {
+	this.setDirty(obj);  // make sure last state is persisted
+	this.unload[obj.tsid] = obj;
 };
