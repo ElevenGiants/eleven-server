@@ -49,13 +49,21 @@
     "docs": "node node_modules/jsdoc/jsdoc.js --destination docs --configure jsdoc-conf.json src"
   },
   "jshintConfig": {
-    "strict": true,
-    "node": true,
-    "multistr": true,
-    "globals": {
+	"eqeqeq": true,
+	"freeze": true,
+	"globals": {
       "log": true,
       "Reflect": true,
       "Proxy": true
-    }
+    },
+	"immed": true,
+	"maxdepth": 4,
+	"maxparams": 5,
+	"maxstatements": 20,
+    "multistr": true,
+    "node": true,
+	"quotmark": "single",
+    "strict": true,
+	"unused": "vars"
   }
 }

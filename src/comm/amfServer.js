@@ -20,7 +20,7 @@ var sessionMgr = require('comm/sessionMgr');
 var server;
 
 
-function start(host, port) {
+function start() {
 	sessionMgr.init();
 	var gsconf = config.getGSConf();
 	server = net.createServer(handleConnect).listen(gsconf.port, gsconf.host);

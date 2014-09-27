@@ -42,7 +42,6 @@ var path = require('path');
 var util = require('util');
 var utils = require('utils');
 var Bag = require('model/Bag');
-var GameObject = require('model/GameObject');
 var Group = require('model/Group');
 var Item = require('model/Item');
 var Location = require('model/Location');

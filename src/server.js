@@ -13,12 +13,9 @@
  */
 
 var async = require('async');
-var bunyan = require('bunyan');
 var cluster = require('cluster');
 var config = require('config');
-var fs = require('fs');
 var gsjsBridge = require('model/gsjsBridge');
-var path = require('path');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
 var amfServer = require('comm/amfServer');
