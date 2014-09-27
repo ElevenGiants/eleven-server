@@ -6,8 +6,7 @@
  * its properties (including nested props) are modified or deleted, the
  * object is flagged as dirty, so the changes will be written to
  * persistence once the current request is finished (this obviously
- * only works within a {@link module:data/requestContext|
- * requestContext}).
+ * only works within a {@link RequestContext}).
  *
  * @module
  */
