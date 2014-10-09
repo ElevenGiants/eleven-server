@@ -70,3 +70,15 @@ Item.prototype.updatePath = function() {
 		cont = cont.container;
 	}
 };
+
+
+/**
+ * Sets the coordinates within the `Item`'s current location.
+ *
+ * @param {number} x
+ * @param {number} y
+ */
+Item.prototype.setXY = function(x, y) {
+	this.x = x;
+	this.y = y;
+};
