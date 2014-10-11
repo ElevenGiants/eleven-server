@@ -1,7 +1,7 @@
 'use strict';
 
 var rewire = require('rewire');
-var config = rewire('config');
+var config = require('config');
 var rpc = rewire('data/rpc');
 var persMock = require('../../mock/pers');
 var rcMock = require('../../mock/RequestContext');
@@ -31,7 +31,7 @@ suite('rpc', function() {
 	});
 	
 	suiteTeardown(function() {
-		config.init(true, cfgBackup);
+		config.init(false, cfgBackup);
 	});
 	
 
@@ -82,9 +82,12 @@ suite('rpc', function() {
 			// (as a worker process so it is managing the test game objects)
 			config.init(false, CONFIG, {gsid: 'gs01-01'});
 			rpc.__get__('initServer')(function serverStarted() {
+				// meddle with base port to get a loopback client in worker process
+				require('nconf').overrides({net: {rpc: {basePort: 7001}}});
 				rpc.__get__('initClient')(GSCONF_LOOPBACK, function clientStarted() {
 					done();
 				});
+				require('nconf').overrides({});  // reset
 			});
 		});
 

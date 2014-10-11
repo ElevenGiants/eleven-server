@@ -70,6 +70,8 @@ function reset() {
 	gsids = [];
 	gameServers = {};
 	gsid = null;
+	//TODO: the following doesn't actually reset anything
+	// (see <https://github.com/flatiron/nconf/issues/93>)
 	nconf.reset();
 }
 

@@ -26,7 +26,7 @@ function initGlobals() {
 
 function initConfig() {
 	// minimal configuration just to enable tests
-	config.init(true, {
+	config.init(false, {
 		net: {
 			gameServers: {
 				gs01: {
@@ -55,5 +55,7 @@ function initConfig() {
 		gsjs: {
 			config: 'config_prod',
 		},
-	}, {});
+	}, {
+		gsid: 'gs01-01',
+	});
 }
