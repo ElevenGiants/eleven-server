@@ -4,11 +4,14 @@ module.exports = Session;
 
 
 var amf = require('amflib/node-amf/amf');
+var assert = require('assert');
+var config = require('config');
 var domain = require('domain');
 var events = require('events');
+var pers = require('data/pers');
 var util = require('util');
-var config = require('config');
 var RC = require('data/RequestContext');
+var gsjsMain = require('gsjs/main');
 
 
 util.inherits(Session, events.EventEmitter);
@@ -117,6 +120,13 @@ Session.prototype.onSocketTimeout = function() {
 
 Session.prototype.onSocketClose = function(hadError) {
 	log.info({session: this}, 'socket close (hadError: %s)', hadError);
+	if (this.pc && this.pc.session) {
+		// if pc is still linked to session, socket has been closed without a
+		// "logout" request; could be an error/unexpected connection loss or a
+		// move to another GS (Player#onDisconnect will act accordingly)
+		var rc = new RC('socketClose', this.pc, this);
+		rc.run(this.pc.onDisconnect.bind(this.pc));
+	}
 	this.emit('close', this);
 };
 
@@ -217,8 +227,57 @@ Session.prototype.handleMessage = function(msg) {
 
 
 Session.prototype.processRequest = function(req) {
-	//TODO: actual request processing.
-	log.info({data: req}, 'I would handle a %s request now if I knew how', req.type);
+	log.trace({data: req}, 'handling %s request', req.type);
+	this.preRequestProc(req);
+	if (req.type !== 'logout') {
+		gsjsMain.processMessage(this.pc, req);
+	}
+	this.postRequestProc(req);
+};
+
+
+/**
+ * Things that need to be done *before* forwarding the request to
+ * GSJS for processing.
+ * @private
+ */
+Session.prototype.preRequestProc = function(req) {
+	switch (req.type) {
+		case 'login_start':
+		case 'relogin_start':
+			assert(this.pc === undefined, 'session already bound: ' + this.pc);
+			// retrieve PC via auth token, verify, link to this session
+			//TODO: actual tokens and authentication
+			this.pc = pers.get(req.token);
+			// prepare Player object for login (e.g. call GSJS events)
+			this.pc.onLoginStart(this, req.type === 'relogin_start');
+			break;
+		case 'logout':
+			this.pc.onDisconnect();
+			this.socket.end();
+			break;
+	}
+};
+
+
+/**
+ * Things that need to be done *after* the request has been handled by
+ * GSJS.
+ * @private
+ */
+Session.prototype.postRequestProc = function(req) {
+	switch (req.type) {
+		case 'login_end':
+			// put player into location (same as regular move end)
+			this.pc.endMove();
+			break;
+		case 'relogin_end':
+			// call Location.onPlayerReconnect event (necessary to make client
+			// hide hidden decos after reconnecting; relogin_start is too early
+			// for this)
+			this.pc.location.onPlayerReconnect(this.pc);
+			break;
+	}
 };
 
 

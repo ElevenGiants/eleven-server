@@ -6,6 +6,7 @@ module.exports = Player;
 var assert = require('assert');
 var Prop = require('model/Property');
 var Bag = require('model/Bag');
+var rpc = require('data/rpc');
 var util = require('util');
 var utils = require('utils');
 
@@ -38,6 +39,7 @@ var PROPS = {
  */
 function Player(data) {
 	Player.super_.call(this, data);
+	utils.addNonEnumerable(this, 'session');
 	// convert selected properties to "Property" instances (works with simple
 	// int values as well as serialized Property instances)
 	for (var group in PROPS) {
@@ -48,6 +50,61 @@ function Player(data) {
 		}
 	}
 }
+
+
+/**
+ * Initializes the instance for an active player; called when a client
+ * is actually logging in on this GS as this player.
+ *
+ * @param {Session} session the session for the connected client
+ * @param {boolean} isRelogin `true` if the client is already in-game
+ *        (e.g. after an inter-GS move or short connection loss);
+ *        otherwise, this is a "full" login after client startup
+ */
+Player.prototype.onLoginStart = function(session, isRelogin) {
+	this.session = session;
+	//TODO: start onTimePlaying interval
+	if (isRelogin) {
+		this.onRelogin();
+	}
+	else {
+		this.onLogin();
+	}
+};
+
+
+/**
+ * Performs all kinds of shutdown/cleanup tasks when a client that was
+ * logged in as this player is logging out, or disconnects.
+ * This should be called in the following scenarios:
+ *
+ * * "regular" logout (`logout` request, triggered by user action, e.g.
+ *   selecting "Exit the world" in the menu or closing the browser tab)
+ * * network error (socket closed without preceding `logout` request)
+ * * player moving to another GS (location change)
+ */
+Player.prototype.onDisconnect = function() {
+	// properly move out of location in case of an actual logout request, or
+	// error/connection loss (in case of an inter-GS moves, the location already
+	// points to another castle^Wserver)
+	if (rpc.isLocal(this.location)) {
+		//TODO: clear onTimePlaying interval
+		// remove from location, onExit callbacks etc.
+		this.startMove();
+		// GSJS logout event
+		this.onLogout();
+		//TODO: send pc_logout message to let other clients in same location know we're gone
+	}
+	// in any case, stop timers etc and unload from live object cache
+	this.unload();
+	// unlink the session, so this function won't be accidentally called again
+	this.session = null;
+};
+
+
+Player.prototype.unload = function() {
+	//TODO...
+};
 
 
 /**
