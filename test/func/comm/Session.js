@@ -2,9 +2,16 @@
 
 var async = require('async');
 var net = require('net');
+var path = require('path');
+var rewire = require('rewire');
 var config = require('config');
 var helpers = require('../../helpers');
+var RC = require('data/RequestContext');
+var Session = rewire('comm/Session');
 var sessionMgr = require('comm/sessionMgr');
+var pers = require('data/pers');
+var pbeMock = require('../../mock/pbe');
+var gsjsBridge = require('model/gsjsBridge');
 
 
 suite('Session', function() {
@@ -65,6 +72,82 @@ suite('Session', function() {
 					done(err);
 				}
 			);
+		});
+	});
+	
+	
+	suite('special request processing', function() {
+	
+		this.timeout(10000);
+		this.slow(2000);
+		
+		suiteSetup(function(done) {
+			// initialize gsjsBridge data structures (empty) without loading all the prototypes
+			gsjsBridge.init(done, true);
+		});
+		
+		suiteTeardown(function() {
+			// reset gsjsBridge so the cached prototypes don't influence other tests
+			gsjsBridge.reset();
+		});
+		
+		setup(function(done) {
+			pers.init(pbeMock, path.resolve(path.join(__dirname, '../fixtures')), done);
+		});
+		
+		teardown(function() {
+			pers.init();  // disable mock back-end
+			Session.__set__('gsjsMain', require('gsjs/main'));
+		});
+		
+		test('login_start', function(done) {
+			var onLoginCalled = false;
+			Session.__set__('gsjsMain', {
+				processMessage: function (pc, req) {
+					assert.strictEqual(pc.tsid, 'P00000000000001');
+					assert.strictEqual(req.type, 'login_start');
+					assert.isTrue(onLoginCalled);
+					done();
+				},
+			});
+			var s = new Session('TEST', helpers.getDummySocket());
+			var rc = new RC('login_start TEST', undefined, s);
+			rc.run(function() {
+				var p = pers.get('P00000000000001');
+				p.onLogin = function () {
+					onLoginCalled = true;
+				};
+				s.processRequest({
+					msg_id: '1',
+					type: 'login_start',
+					token: 'P00000000000001',
+				});
+			});
+		});
+		
+		test('login_end', function() {
+			var onPlayerEnterCalled = false;
+			Session.__set__('gsjsMain', {
+				// just a placeholder to prevent calling the "real" function
+				processMessage: function dummy() {},
+			});
+			var s = new Session('TEST', helpers.getDummySocket());
+			var rc = new RC('login_end TEST', undefined, s);
+			rc.run(function() {
+				var l = pers.get('LLI32G3NUTD100I');
+				l.onPlayerEnter = function() {
+					onPlayerEnterCalled = true;
+				};
+				var p = pers.get('P00000000000001');
+				s.pc = p;  // login_start must have already happened
+				assert.deepEqual(l.players, {});
+				s.processRequest({
+					msg_id: '2',
+					type: 'login_end',
+				});
+				assert.deepEqual(Object.keys(l.players), ['P00000000000001']);
+				assert.isTrue(onPlayerEnterCalled);
+			});
 		});
 	});
 });

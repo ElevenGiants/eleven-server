@@ -1,10 +1,12 @@
 'use strict';
 
+var rewire = require('rewire');
 var Property = require('model/Property');
-var Player = require('model/Player');
+var Player = rewire('model/Player');
 var Location = require('model/Location');
 var Geo = require('model/Geo');
 var Item = require('model/Item');
+var rpcMock = require('../../mock/rpc');
 
 
 suite('Player', function () {
@@ -131,6 +133,49 @@ suite('Player', function () {
 			p.endMove();
 			assert.isTrue(itemOnPlayerEnterCalled);
 			assert.isTrue(locOnPlayerEnterCalled);
+		});
+	});
+	
+	
+	suite('onDisconnect', function () {
+	
+		setup(function () {
+			Player.__set__('rpc', rpcMock);
+			rpcMock.reset(true);
+		});
+		
+		teardown(function () {
+			Player.__set__('rpc', require('data/rpc'));
+		});
+		
+		test('handles logout/error case correctly', function () {
+			var logoutCalled = false;
+			var p = new Player({tsid: 'P1', session: 'foo'});
+			p.onLogout = function () {
+				logoutCalled = true;
+			};
+			var l = new Location({tsid: 'L', players: [p]}, new Geo());
+			p.location = l;
+			rpcMock.reset(true);  // simulate logout/connection error
+			p.onDisconnect();
+			assert.isFalse('P1' in l.players, 'PC removed from location');
+			assert.isTrue(logoutCalled, 'API event onLogout called');
+			assert.isNull(p.session);
+		});
+		
+		test('handles inter-GS move case correctly', function () {
+			var logoutCalled = false;
+			var p = new Player({tsid: 'P1', session: 'foo'});
+			p.onLogout = function () {
+				logoutCalled = true;
+			};
+			var l = new Location({tsid: 'L', players: [p]}, new Geo());
+			p.location = l;
+			rpcMock.reset(false);  // simulate inter-GS move
+			p.onDisconnect();
+			assert.isTrue('P1' in l.players, 'PC not removed from loc (already the new location)');
+			assert.isFalse(logoutCalled, 'API event onLogout is not called on loc change');
+			assert.isNull(p.session);
 		});
 	});
 });
