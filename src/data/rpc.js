@@ -37,6 +37,7 @@ var rpcProxy = require('data/rpcProxy');
 var utils = require('utils');
 var util = require('util');
 var wait = require('wait.for');
+var gsjsBridge = require('model/gsjsBridge');
 
 
 /**
@@ -109,7 +110,9 @@ function initServer(callback) {
 	server.transport.on('retry', onServerRetry);
 	server.transport.on('error', onServerError);
 	server.transport.on('shutdown', onServerShutdown);
-	server.register('gsrpc', handleRequest);
+	server.register('obj', objectRequest);
+	server.register('admin', adminRequest);
+	server.register('api', globalApiRequest);
 }
 
 
@@ -228,14 +231,14 @@ function sendRequest(obj, fname, args, callback) {
 	log.debug('calling %s', logmsg);
 	var rpcArgs = [config.getGsid(), obj.tsid, fname, args];
 	if (callback) {
-		client.request('gsrpc', rpcArgs, function cb(err, res) {
+		client.request('obj', rpcArgs, function cb(err, res) {
 			if (!err) orProxy.proxify(res);
 			callback(err, res);
 		});
 	}
 	else {
 		try {
-			var ret = wait.forMethod(client, 'request', 'gsrpc', rpcArgs);
+			var ret = wait.forMethod(client, 'request', 'obj', rpcArgs);
 			orProxy.proxify(ret);
 			return ret;
 		}
@@ -251,11 +254,12 @@ function sendRequest(obj, fname, args, callback) {
  * specified by TSID (within a separate request context) and returns
  * the result to the remote caller.
  * 
- * @param {string} gsid ID of the game server requesting the function
+ * @param {string} callerId ID of the component requesting the function
  *        call (for logging)
- * @param {string} tsid TSID of the game object on which the function
- *        should be called
- * @param {string} fname name of the function to call
+ * @param {object|string} objOrTsid either an object whose function
+ *        with the given name should be called, or the TSID of a game
+ *        object
+ * @param {string} fname name of the function to call on the object
  * @param {array} args function call arguments
  * @param {function} callback
  * ```
@@ -264,16 +268,18 @@ function sendRequest(obj, fname, args, callback) {
  * callback for the RPC library, returning the result (or errors) to
  * the remote caller
  */
-function handleRequest(gsid, tsid, fname, args, callback) {
+function handleRequest(callerId, objOrTsid, fname, args, callback) {
 	orProxy.proxify(args);  // unmarshal arguments
-	var logmsg = util.format('RPC from %s: %s.%s(%s)', gsid, tsid,
-		fname, args.join(', '));
-	log.debug(logmsg);
+	var logmsg = util.format('RPC from %s: %s.%s', callerId, objOrTsid, fname);
+	log.debug('%s(%s)', logmsg, args.join(', '));
 	// process RPC in its own request context
-	var rc = new RC(fname, tsid);
+	var rc = new RC(objOrTsid + '.' + fname, 'rpc.' + callerId);
 	rc.run(
 		function rpcReq() {
-			var obj = pers.get(tsid);
+			var obj = objOrTsid;
+			if (typeof obj === 'string') {
+				obj = pers.get(obj);
+			}
 			return obj[fname].apply(obj, args);
 		},
 		function rpcReqCallback(err, res) {
@@ -284,6 +290,25 @@ function handleRequest(gsid, tsid, fname, args, callback) {
 			callback(err, res);
 		}
 	);
+}
+
+
+function objectRequest(callerId, tsid, fname, args, callback) {
+	handleRequest(callerId, tsid, fname, args, callback);
+}
+
+
+function globalApiRequest(callerId, fname, args, callback) {
+	//TODO dummy, replace with actual global API once there is one:
+	var dummyApi = {
+		valueOf: function valueOf() { return 'TODO-DUMMY-API'; }
+	};
+	handleRequest(callerId, dummyApi, fname, args, callback);
+}
+
+
+function adminRequest(callerId, fname, argsObject, callback) {
+	handleRequest(callerId, gsjsBridge.getAdmin(), fname, [argsObject], callback);
 }
 
 
