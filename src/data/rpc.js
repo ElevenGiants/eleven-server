@@ -291,12 +291,12 @@ function handleRequest(gsid, tsid, fname, args, callback) {
  * Tests if this game server instance is responsible for a given
  * game object.
  *
- * @param {GameObject} obj the game object to check
+ * @param {GameObject|string} objOrTsid the game object to check
  * @returns {boolean} `true` if this is the authoritative server
  *          instance for the given object, `false` otherwise
  */
-function isLocal(obj) {
-	return getGsid(obj) === config.getGsid();
+function isLocal(objOrTsid) {
+	return getGsid(objOrTsid) === config.getGsid();
 }
 
 

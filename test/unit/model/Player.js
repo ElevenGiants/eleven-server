@@ -7,6 +7,7 @@ var Location = require('model/Location');
 var Geo = require('model/Geo');
 var Item = require('model/Item');
 var rpcMock = require('../../mock/rpc');
+var RC = require('data/RequestContext');
 
 
 suite('Player', function () {
@@ -176,6 +177,124 @@ suite('Player', function () {
 			assert.isTrue('P1' in l.players, 'PC not removed from loc (already the new location)');
 			assert.isFalse(logoutCalled, 'API event onLogout is not called on loc change');
 			assert.isNull(p.session);
+		});
+	});
+
+	
+	suite('sendServerMsg', function () {
+			
+		test('does what it is supposed to do', function (done) {
+			var p = new Player({tsid: 'P1'});
+			p.session = {
+				send: function send(msg) {
+					assert.deepEqual(msg, {
+						type: 'server_message',
+						action: 'CLOSE',
+						ping: 'pong',
+					});
+					done();
+				},
+			};
+			p.sendServerMsg('CLOSE', {ping: 'pong'});
+		});
+		
+		test('works without optional data parameter', function (done) {
+			var p = new Player({tsid: 'P1'});
+			p.session = {
+				send: function send(msg) {
+					assert.deepEqual(msg, {
+						type: 'server_message',
+						action: 'TOKEN',
+					});
+					done();
+				},
+			};
+			p.sendServerMsg('TOKEN');
+		});
+		
+		test('error for offline player', function () {
+			assert.throw(function () {
+				new Player().sendServerMsg('FOO');
+			}, assert.AssertionError);
+		});
+	});
+	
+	
+	suite('gsMoveCheck', function () {
+	
+		setup(function () {
+			Player.__set__('config', {
+				getGSConf: function getGSConf(gsid) {
+					return {
+						gsid: 'gs02-03',
+						host: '12.34.56.78',
+						port: 1445,
+						hostPort: '12.34.56.78:1445',
+						local: false,
+					}
+				},
+			});
+			Player.__set__('rpc', rpcMock);
+			rpcMock.reset(true);
+		});
+		
+		teardown(function () {
+			Player.__set__('config', require('config'));
+			Player.__set__('rpc', require('data/rpc'));
+			rpcMock.reset(true);
+		});
+		
+		test('handles local move case correctly', function (done) {
+			var p = new Player({tsid: 'P1', onGSLogout: function dummy() {}});
+			var rc = new RC();
+			rc.run(function () {
+				var res = p.gsMoveCheck('LLOCAL');
+				assert.isUndefined(res);
+				assert.isNull(rc.postReqCallback);
+				done();
+			});
+		});
+		
+		test('returns data required for GS reconnect', function (done) {
+			rpcMock.reset(false);
+			var p = new Player({tsid: 'P1', onGSLogout: function dummy() {}});
+			p.session = {send: function dummy() {}};
+			new RC().run(function () {
+				var res = p.gsMoveCheck('LREMOTE');
+				assert.strictEqual(res.hostPort, '12.34.56.78:1445');
+				done();
+			});
+		});
+		
+		test('sends/schedules server messages required for GS reconnect', function (done) {
+			rpcMock.reset(false);
+			var p = new Player({tsid: 'P1', onGSLogout: function dummy() {}});
+			var msgs = [];
+			p.session = {send: function send(msg) {
+				msgs.push(msg);
+			}};
+			var rc = new RC();
+			rc.run(
+				function () {
+					p.gsMoveCheck('LREMOTE');
+				},
+				function callback(err, res) {
+					assert.deepEqual(msgs, [
+						{
+							type: 'server_message',
+							action: 'PREPARE_TO_RECONNECT',
+							hostport: '12.34.56.78:1445',
+							token: 'P1',
+						},
+						{
+							type: 'server_message',
+							action: 'CLOSE',
+							msg: 'CONNECT_TO_ANOTHER_SERVER',
+						},
+					]);
+					done(err);
+				}
+			);
 		});
 	});
 });

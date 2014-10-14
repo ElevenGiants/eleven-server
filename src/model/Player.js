@@ -4,9 +4,11 @@ module.exports = Player;
 
 
 var assert = require('assert');
+var config = require('config');
 var Prop = require('model/Property');
 var Bag = require('model/Bag');
 var rpc = require('data/rpc');
+var RC = require('data/RequestContext');
 var util = require('util');
 var utils = require('utils');
 
@@ -180,4 +182,58 @@ Player.prototype.endMove = function() {
 			}
 		}
 	}
+};
+
+
+/**
+ * Prepares the player for moving to another game server if the given
+ * location is not managed by this server (if it is, this function does
+ * nothing). This includes sending the relevant server messages to the
+ * client.
+ *
+ * @param {string} newLocId TSID of the location the player is moving to
+ */
+Player.prototype.gsMoveCheck = function(newLocId) {
+	if (rpc.isLocal(newLocId)) {
+		log.debug('local move, no GS change');
+		return;
+	}
+	var gsConf = config.getGSConf(rpc.getGsid(newLocId));
+	var token = this.tsid;  //TODO: actual token once we have proper auth
+	log.info('scheduling GS move to %s', gsConf.gsid);
+	// send GSJS inter-GS move event
+	this.onGSLogout();
+	// inform client about pending reconnect
+	this.sendServerMsg('PREPARE_TO_RECONNECT', {
+		hostport: gsConf.hostPort,
+		token: token,
+	});
+	// set up callback that will tell the client to reconnect to the new GS
+	// once the current request is finished
+	var self = this;
+	RC.getContext().setPostReqCallback(function triggerReconnect() {
+		self.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
+	});
+	return gsConf;
+};
+
+
+
+/**
+ * Sends a special "server message" to the player's client, mostly for
+ * connection management (e.g. reconnect information during inter-GS
+ * moves, server restarts etc.).
+ *
+ * @param {string} action indicates the purpose of the message (must be
+ *        `CLOSE`, `TOKEN` or `PREPARE_TO_RECONNECT`)
+ * @param {object} [data] optional additional payload data
+ */
+Player.prototype.sendServerMsg = function(action, data) {
+	assert(this.session !== undefined && this.session !== null,
+		'tried to send to offline player');
+	var msg = data || {};
+	msg.type = 'server_message';
+	msg.action = action;
+	log.debug({payload: msg}, 'sending server message');
+	this.session.send(msg);
 };
