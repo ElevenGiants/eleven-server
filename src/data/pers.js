@@ -181,6 +181,11 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
 	async.each(Object.keys(dlist),
 		function iterate(k, iterCallback) {
 			var obj = dlist[k];
+			if (obj.deleted || k in ulist) {
+				// stop timers/intervals for deleted objects and objects about
+				// to be unloaded from cache
+				//TODO: stop game object timers/intervals
+			}
 			var op = obj.deleted ? del : write;
 			op(obj, logmsg, function cb(err, res) {
 				// silently ignore errors (we're not interested in them here,
@@ -248,5 +253,8 @@ function del(obj, logmsg, callback) {
  */
 function unload(obj, logmsg) {
 	log.debug('pers.unload: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
-	delete cache[obj.tsid];
+	if (obj.tsid in cache) {
+		//TODO: stop game object timers/intervals
+		delete cache[obj.tsid];
+	}
 }

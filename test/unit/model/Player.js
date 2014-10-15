@@ -3,15 +3,30 @@
 var rewire = require('rewire');
 var Property = require('model/Property');
 var Player = rewire('model/Player');
+var Quest = require('model/Quest');
 var Location = require('model/Location');
+var DataContainer = require('model/DataContainer');
 var Geo = require('model/Geo');
 var Item = require('model/Item');
+var RC = rewire('data/RequestContext');
+var utils = require('utils');
 var rpcMock = require('../../mock/rpc');
-var RC = require('data/RequestContext');
+var persMock = require('../../mock/pers');
 
 
 suite('Player', function () {
 
+	setup(function () {
+		RC.__set__('pers', persMock);
+		persMock.reset();
+	});
+	
+	teardown(function () {
+		RC.__set__('pers', rewire('data/pers'));
+		persMock.reset();
+	});
+	
+	
 	suite('ctor', function () {
 	
 		test('TSIDs of new Player objects start with P', function () {
@@ -149,7 +164,7 @@ suite('Player', function () {
 			Player.__set__('rpc', require('data/rpc'));
 		});
 		
-		test('handles logout/error case correctly', function () {
+		test('handles logout/error case correctly', function (done) {
 			var logoutCalled = false;
 			var p = new Player({tsid: 'P1', session: 'foo'});
 			p.onLogout = function () {
@@ -158,13 +173,22 @@ suite('Player', function () {
 			var l = new Location({tsid: 'L', players: [p]}, new Geo());
 			p.location = l;
 			rpcMock.reset(true);  // simulate logout/connection error
-			p.onDisconnect();
-			assert.isFalse('P1' in l.players, 'PC removed from location');
-			assert.isTrue(logoutCalled, 'API event onLogout called');
-			assert.isNull(p.session);
+			new RC().run(
+				function () {
+					p.onDisconnect();
+				},
+				function callback(err, res) {
+					if (err) return done(err);
+					assert.isFalse('P1' in l.players, 'PC removed from location');
+					assert.isTrue(logoutCalled, 'API event onLogout called');
+					assert.isNull(p.session);
+					assert.deepEqual(persMock.getUnloadList(), {P1: p});
+					done();
+				}
+			);
 		});
 		
-		test('handles inter-GS move case correctly', function () {
+		test('handles inter-GS move case correctly', function (done) {
 			var logoutCalled = false;
 			var p = new Player({tsid: 'P1', session: 'foo'});
 			p.onLogout = function () {
@@ -173,10 +197,19 @@ suite('Player', function () {
 			var l = new Location({tsid: 'L', players: [p]}, new Geo());
 			p.location = l;
 			rpcMock.reset(false);  // simulate inter-GS move
-			p.onDisconnect();
-			assert.isTrue('P1' in l.players, 'PC not removed from loc (already the new location)');
-			assert.isFalse(logoutCalled, 'API event onLogout is not called on loc change');
-			assert.isNull(p.session);
+			new RC().run(
+				function () {
+					p.onDisconnect();
+				},
+				function callback(err, res) {
+					if (err) return done(err);
+					assert.isTrue('P1' in l.players, 'PC not removed from loc (already the new location)');
+					assert.isFalse(logoutCalled, 'API event onLogout is not called on loc change');
+					assert.isNull(p.session);
+					assert.deepEqual(persMock.getUnloadList(), {P1: p});
+					done();
+				}
+			);
 		});
 	});
 
@@ -293,6 +326,71 @@ suite('Player', function () {
 						},
 					]);
 					done(err);
+				}
+			);
+		});
+	});
+	
+	
+	suite('getConnectedObjects', function () {
+	
+		test('does its job', function () {
+			var p = new Player({tsid: 'P1',
+				buffs: new DataContainer({label: 'Buffs'}),
+				achievements: new DataContainer({label: 'Achievements'}),
+				jobs: {
+					todo: new DataContainer({label: 'To Do'}),
+					done: new DataContainer({label: 'Done'}),
+				},
+				friends: {
+					group1: new DataContainer({label: 'Buddies'}),
+					reverse: new DataContainer({label: 'Reverse Contacts'}),
+				},
+				quests: {
+					todo: new DataContainer({label: 'To Do', quests: {
+						lightgreenthumb_1: new Quest(),
+						soilappreciation_1: new Quest(),
+					}}),
+					done: new DataContainer({label: 'Done'}),
+					// fail_repeat and misc missing on purpose
+				},
+			});
+			var objects = p.getConnectedObjects();
+			var keys = Object.keys(objects);
+			assert.strictEqual(keys.filter(utils.isPlayer).length, 1);
+			assert.strictEqual(keys.filter(utils.isDC).length, 8);
+			assert.strictEqual(keys.filter(utils.isQuest).length, 2);
+			assert.strictEqual(keys.length, 11, 'does not contain any other objects');
+		});
+	});
+	
+	
+	suite('unload', function () {
+	
+		test('does its job', function (done) {
+			var p = new Player({tsid: 'P1',
+				buffs: new DataContainer({tsid: 'DC1'}),
+				jobs: {
+					todo: new DataContainer({tsid: 'DC2'}),
+				},
+				quests: {
+					todo: new DataContainer({tsid: 'DC3', quests: {
+						lightgreenthumb_1: new Quest({tsid: 'Q1'}),
+					}}),
+				},
+			});
+			var rc = new RC();
+			rc.run(
+				function () {
+					p.unload();
+				},
+				function callback(err, res) {
+					if (err) return done(err);
+					assert.sameMembers(Object.keys(persMock.getDirtyList()),
+						['P1', 'DC1', 'DC2', 'DC3', 'Q1']);
+					assert.sameMembers(Object.keys(persMock.getUnloadList()),
+						['P1', 'DC1', 'DC2', 'DC3', 'Q1']);
+					done();
 				}
 			);
 		});

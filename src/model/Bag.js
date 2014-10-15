@@ -49,3 +49,38 @@ Bag.prototype.serialize = function() {
 	ret.hiddenItems = utils.hashToArray(ret.hiddenItems);
 	return ret;
 };
+
+
+/**
+ * Recursively collects the contents of this bag and all bags within
+ * it, adding them to a flat data structure with TSID "paths" as keys,
+ * like this:
+ * ```
+ * {
+ *     "ITEMID1": item1,
+ *     "BAGID1": bag1,
+ *     "BAGID1/ITEMID2": item2,
+ *     "BAGID1/BAGID2": bag2,
+ *     "BAGID1/BAGID2/ITEMID3": item3
+ * }
+ * ```
+ *
+ * @param {object} [aggregate] for internal use (recursion)
+ * @param {object} [pathPrefix] for internal use (recursion)
+ * @returns a hash with all contained items, as decribed above
+ *          (NB: does not contain the root bag itself!)
+ */
+Bag.prototype.getAllItems = function(aggregate, pathPrefix) {
+	var ret = aggregate || {};
+	pathPrefix = pathPrefix || '';
+	[this.items, this.hiddenItems].forEach(function collect(itemHash) {
+		for (var k in itemHash) {
+			var it = itemHash[k];
+			ret[pathPrefix + it.tsid] = it;
+			if (utils.isBag(it)) {
+				it.getAllItems(ret, pathPrefix + it.tsid + '/');
+			}
+		}
+	});
+	return ret;
+};
