@@ -32,9 +32,11 @@ var assert = require('assert');
  */
 // see <https://stackoverflow.com/a/5251506>, <https://stackoverflow.com/a/8804539>,
 // <https://code.google.com/p/v8/wiki/JavaScriptStackTraceApi>
-function AuthError(msg) {
+function AuthError(msg, cause) {
 	this.message = msg;
 	Error.captureStackTrace(this, AuthError);
+	// log cause (for possible auth debugging)
+	log.info(cause, msg);
 }
 AuthError.prototype = Object.create(Error.prototype);
 AuthError.prototype.constructor = AuthError;
@@ -50,11 +52,15 @@ var abe = null;
  *
  * @param {object} backEnd auth back-end module; must implement the API
  *        shown in the above module docs.
+ * @param {object} [config] configuration options for back-end module
  * @param {function} [callback] called when auth layer is ready, or an
  *        error occurred during initialization
  */
-function init(backEnd, callback) {
+function init(backEnd, config, callback) {
 	abe = backEnd;
+	if (abe && typeof abe.init === 'function') {
+		abe.init(config);
+	}
 	if (callback) return callback();
 }
 

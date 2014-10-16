@@ -69,7 +69,8 @@ function persInit(callback) {
 function authInit(callback) {
 	var modName = config.get('auth:backEnd:module');
 	var mod = loadPluggable('comm/abe/' + modName, 'authentication back-end');
-	auth.init(mod, function cb(err) {
+	var abeConfig = config.get('auth:backEnd:config:' + modName);
+	auth.init(mod, abeConfig, function cb(err) {
 		if (err) log.error(err, 'auth layer initialization failed');
 		else log.info('auth layer initialized (%s back-end)', modName);
 		callback(err);
