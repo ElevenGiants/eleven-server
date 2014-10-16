@@ -1,6 +1,8 @@
 'use strict';
 
 var rewire = require('rewire');
+var auth = require('comm/auth');
+var abePassthrough = require('comm/abe/passthrough');
 var Property = require('model/Property');
 var Player = rewire('model/Player');
 var Quest = require('model/Quest');
@@ -269,12 +271,14 @@ suite('Player', function () {
 			});
 			Player.__set__('rpc', rpcMock);
 			rpcMock.reset(true);
+			auth.init(abePassthrough);
 		});
 		
 		teardown(function () {
 			Player.__set__('config', require('config'));
 			Player.__set__('rpc', require('data/rpc'));
 			rpcMock.reset(true);
+			auth.init(null);
 		});
 		
 		test('handles local move case correctly', function (done) {

@@ -12,6 +12,7 @@
  * @module
  */
 
+var auth = require('comm/auth'); 
 var async = require('async');
 var cluster = require('cluster');
 var config = require('config');
@@ -20,6 +21,7 @@ var pers = require('data/pers');
 var rpc = require('data/rpc');
 var amfServer = require('comm/amfServer');
 var logging = require('logging');
+var util = require('util');
 
 
 /**
@@ -40,20 +42,36 @@ function main() {
 }
 
 
-function persInit(callback) {
-	var mod = config.get('pers:backEnd:module');
-	var pbe;
+function loadPluggable(modPath, logtag) {
 	try {
-		pbe = require('data/pbe/' + mod);
+		return require(modPath);
 	}
 	catch (e) {
-		throw new config.ConfigError('could not load persistence back-end ' +
-			'module: ' + e.message);
+		var msg = util.format('could not load pluggable %s module "%s": %s',
+			logtag, modPath, e.message);
+		throw new config.ConfigError(msg);
 	}
-	var pbeConfig = config.get('pers:backEnd:config:' + mod);
+}
+
+
+function persInit(callback) {
+	var modName = config.get('pers:backEnd:module');
+	var pbe = loadPluggable('data/pbe/' + modName, 'persistence back-end');
+	var pbeConfig = config.get('pers:backEnd:config:' + modName);
 	pers.init(pbe, pbeConfig, function cb(err, res) {
 		if (err) log.error(err, 'persistence layer initialization failed');
-		else log.info('persistence layer initialized');
+		else log.info('persistence layer initialized (%s back-end)', modName);
+		callback(err);
+	});
+}
+
+
+function authInit(callback) {
+	var modName = config.get('auth:backEnd:module');
+	var mod = loadPluggable('comm/abe/' + modName, 'authentication back-end');
+	auth.init(mod, function cb(err) {
+		if (err) log.error(err, 'auth layer initialization failed');
+		else log.info('auth layer initialized (%s back-end)', modName);
 		callback(err);
 	});
 }
@@ -84,6 +102,7 @@ function runWorker() {
 	// initialize and wait for modules required for GS operation
 	async.series([
 			persInit,
+			authInit,
 			rpcInit,
 		],
 		function callback(err, res) {

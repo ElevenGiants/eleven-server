@@ -5,6 +5,7 @@ module.exports = Session;
 
 var amf = require('amflib/node-amf/amf');
 var assert = require('assert');
+var auth = require('comm/auth');
 var config = require('config');
 var domain = require('domain');
 var events = require('events');
@@ -247,8 +248,8 @@ Session.prototype.preRequestProc = function(req) {
 		case 'relogin_start':
 			assert(this.pc === undefined, 'session already bound: ' + this.pc);
 			// retrieve PC via auth token, verify, link to this session
-			//TODO: actual tokens and authentication
-			this.pc = pers.get(req.token);
+			var tsid = auth.authenticate(req.token);
+			this.pc = pers.get(tsid);
 			// prepare Player object for login (e.g. call GSJS events)
 			this.pc.onLoginStart(this, req.type === 'relogin_start');
 			break;
