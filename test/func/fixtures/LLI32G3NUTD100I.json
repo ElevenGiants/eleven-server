@@ -18,51 +18,7 @@
         "incantations_redux": {}, 
         "incantations_redux_step": 1, 
         "incantations_step": 1, 
-        "jobs": {
-            "39": {
-                "class_ids": {
-                    "job_standard1_for_new_groddle_meadow_streets": {
-                        "class_id": "job_standard1_for_new_groddle_meadow_streets", 
-                        "delay_seconds": 0, 
-                        "delay_text": "", 
-                        "in_order": 1, 
-                        "instance": {
-                            "id": "instance", 
-                            "objref": true, 
-                            "tsid": "QCR15UP1DLN1E16"
-                        }, 
-                        "label": "Briarset Croft"
-                    }
-                }, 
-                "street_info": {
-                    "is_hidden": 0, 
-                    "target_street": "LCR11DNA3EL10TD", 
-                    "type": 2
-                }
-            }, 
-            "59": {
-                "class_ids": {
-                    "job_standard2_for_new_streets": {
-                        "class_id": "job_standard2_for_new_streets", 
-                        "delay_seconds": 0, 
-                        "delay_text": "", 
-                        "in_order": 1, 
-                        "instance": {
-                            "id": "instance", 
-                            "objref": true, 
-                            "tsid": "QCR15VP1DLN1EHE"
-                        }, 
-                        "label": "Tillymurry Hurry"
-                    }
-                }, 
-                "street_info": {
-                    "is_hidden": 0, 
-                    "target_street": "LCR1985LIRK12N4", 
-                    "type": 2
-                }
-            }, 
-            "proto-IIFM59B4Q8V2UG3": {}
-        }, 
+        "jobs": {}, 
         "jobs_auto_unlock": false, 
         "jobs_is_locked": false, 
         "keys": {}, 

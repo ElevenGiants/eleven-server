@@ -28,7 +28,7 @@ var pers = require('data/pers');
  * @param {GameObject|string} [owner] game object on whose behalf the
  *        request is executed (commonly a {@link Player}), or its TSID
  *        (just for logging)
- * @param {Session} [session] client session that where the request
+ * @param {Session} [session] client session where the request
  *        originated (if applicable)
  *
  * @constructor

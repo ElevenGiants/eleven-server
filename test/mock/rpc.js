@@ -7,6 +7,7 @@ module.exports = {
 	makeProxy: makeProxy,
 	sendRequest: sendRequest,
 	getRequests: getRequests,
+	getGsid: getGsid,
 };
 
 
@@ -39,4 +40,9 @@ function sendRequest(obj, fname, args) {
 
 function getRequests() {
 	return requests;
+}
+
+
+function getGsid() {
+	return 'gs01-01';
 }

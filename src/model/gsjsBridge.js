@@ -94,13 +94,17 @@ function reset() {
  * and loading/initializing the prototype for each of the contained
  * game object files. Should be called at server startup.
  *
- * @param {function} callback Called when initialization has finished
+ * @param {function} callback called when initialization has finished
  *        successfully, or with an error argument when something goes
  *        wrong (in which case initialization is aborted immediately)
+ * @param {boolean} if `true`, **only** initialize module and GSJS
+ *        dependencies, but do not load and cache prototypes (for
+ *        testing)
  */
-function init(callback) {
+function init(callback, noPreload) {
 	reset();
 	initDependencies();
+	if (noPreload) return callback(null);
 	// walk GSJS tree and schedule a prototype loading task for each file
 	var tasks = [];
 	for (var group in prototypes) {
