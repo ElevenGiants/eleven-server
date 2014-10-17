@@ -43,8 +43,8 @@ function RequestContext(logtag, owner, session) {
 	this.dirty = {};
 	// objects scheduled for unloading after current request
 	this.unload = {};
-	// post request callback (see setPostReqCallback)
-	this.postReqCallback = null;
+	// post-request-and-persistence callback (see setPostPersCallback)
+	this.postPersCallback = null;
 }
 
 
@@ -64,8 +64,10 @@ function RequestContext(logtag, owner, session) {
  * for request processing errors and getting back the function result
  * (if not specified, exceptions will not be caught, and the function
  * result is lost)
+ * @param {boolean} [waitPers] if `true`, wait for persistence
+ *        operations to finish before invoking callback
  */
-RequestContext.prototype.run = function(func, callback) {
+RequestContext.prototype.run = function(func, callback, waitPers) {
 	var rc = this;
 	wait.launchFiber(function rcFiber() {
 		try {
@@ -76,9 +78,20 @@ RequestContext.prototype.run = function(func, callback) {
 			var tag = util.format('%s/%s/%s', func.name, rc.owner, rc.logtag);
 			log.debug('finished %s (%s dirty)', tag, Object.keys(rc.dirty).length);
 			// persist modified objects
-			pers.postRequestProc(rc.dirty, rc.unload, tag, rc.postReqCallback);
-			if (typeof callback === 'function') {
-				callback(null, res);
+			pers.postRequestProc(rc.dirty, rc.unload, tag, function done() {
+				// invoke special post-persistence callback if there is one
+				if (typeof rc.postPersCallback === 'function') {
+					rc.postPersCallback();
+				}
+				// continue with "regular" request context callback
+				if (waitPers && typeof callback === 'function') {
+					return callback(null, res);
+				}
+			});
+			// if we don't have to wait for the persistence operations, continue
+			// with request context callback right away
+			if (!waitPers && typeof callback === 'function') {
+				return callback(null, res);
 			}
 		}
 		catch (e) {
@@ -167,6 +180,6 @@ RequestContext.prototype.setUnload = function(obj) {
  * @param {function} callback called after request processing and the
  *        resulting persistence; no arguments
  */
-RequestContext.prototype.setPostReqCallback = function(callback) {
-	this.postReqCallback = callback;
+RequestContext.prototype.setPostPersCallback = function(callback) {
+	this.postPersCallback = callback;
 };

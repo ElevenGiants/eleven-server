@@ -48,10 +48,10 @@ function preAdd() {
 }
 
 
-function postRequestProc(dl, ul, logmsg, postReqCallback) {
+function postRequestProc(dl, ul, logmsg, postPersCallback) {
 	dlist = dl;
 	ulist = ul;
-	if (postReqCallback) postReqCallback();
+	if (postPersCallback) postPersCallback();
 }
 
 

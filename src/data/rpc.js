@@ -288,7 +288,8 @@ function handleRequest(callerId, objOrTsid, fname, args, callback) {
 			}
 			res = orProxy.refify(res);  // marshal return value
 			callback(err, res);
-		}
+		},
+		true  // make sure changes are persisted before returning RPC
 	);
 }
 

@@ -174,7 +174,7 @@ function add(obj) {
  *        the live object cache
  * @param {function} [callback] function to be called after persistence
  *        operations have finished (set by {@link
- *        RequestContext#setPostReqCallback})
+ *        RequestContext#setPostPersCallback})
  * @param {string} logmsg optional information for log messages
  */
 function postRequestProc(dlist, ulist, logmsg, callback) {
