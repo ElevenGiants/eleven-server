@@ -191,9 +191,9 @@ function makeProxy(obj) {
  * Returns the result either via callback or synchronously using
  * {@link https://github.com/luciotato/waitfor|wait.for/fibers}.
  * 
- * @param {GameObject} obj game object on which the function is being
- *        called (or more precisely, its local {@link
- *        module:data/rpcProxy|rpcProxy}-wrapped copy)
+ * @param {GameObject|string} objOrTsid game object on which the
+ *        function is being called (or more precisely, its local {@link
+ *        module:data/rpcProxy|rpcProxy}-wrapped copy), or its TSID
  * @param {string} fname name of the function to call
  * @param {array} args function arguments supplied by the original
  *        caller
@@ -209,27 +209,28 @@ function makeProxy(obj) {
  * @throws {RpcError} in case something bad happens during the RPC and
  *         no callback was supplied
  */
-function sendRequest(obj, fname, args, callback) {
+function sendRequest(objOrTsid, fname, args, callback) {
 	var gsid;
 	var client;
 	try {
-		gsid = getGsid(obj);
+		gsid = getGsid(objOrTsid);
 		client = clients[gsid];
 	}
 	catch (e) {
 		// caller has to handle this, like any other "regular" error the
 		// called function might have thrown locally
-		throw new RpcError(util.format('could not get RPC client to %s for %s', gsid, obj), e);
+		throw new RpcError(util.format('could not get RPC client to %s for %s', gsid, objOrTsid), e);
 	}
 	if (!client) {
-		throw new RpcError(util.format('no RPC client to %s found for %s', gsid, obj));
+		throw new RpcError(util.format('no RPC client to %s found for %s', gsid, objOrTsid));
 	}
 	// argument marshalling (replace objref proxies with actual objrefs)
 	args = orProxy.refify(args);
-	var logmsg = util.format('%s.%s(%s) via RPC on %s', obj, fname,
+	var logmsg = util.format('%s.%s(%s) via RPC on %s', objOrTsid, fname,
 		args.join(', '), gsid);
 	log.debug('calling %s', logmsg);
-	var rpcArgs = [config.getGsid(), obj.tsid, fname, args];
+	var tsid = typeof objOrTsid === 'string' ? objOrTsid : objOrTsid.tsid;
+	var rpcArgs = [config.getGsid(), tsid, fname, args];
 	if (callback) {
 		client.request('obj', rpcArgs, function cb(err, res) {
 			if (!err) orProxy.proxify(res);
@@ -271,7 +272,7 @@ function sendRequest(obj, fname, args, callback) {
 function handleRequest(callerId, objOrTsid, fname, args, callback) {
 	orProxy.proxify(args);  // unmarshal arguments
 	var logmsg = util.format('RPC from %s: %s.%s', callerId, objOrTsid, fname);
-	log.debug('%s(%s)', logmsg, args.join(', '));
+	log.debug('%s(%s)', logmsg, args instanceof Array ? args.join(', ') : args);
 	// process RPC in its own request context
 	var rc = new RC(objOrTsid + '.' + fname, 'rpc.' + callerId);
 	rc.run(
@@ -280,7 +281,15 @@ function handleRequest(callerId, objOrTsid, fname, args, callback) {
 			if (typeof obj === 'string') {
 				obj = pers.get(obj);
 			}
-			return obj[fname].apply(obj, args);
+			if (!obj || typeof obj[fname] !== 'function') {
+				throw new RpcError(util.format('no such function: %s.%s',
+					objOrTsid, fname));
+			}
+			var ret = obj[fname].apply(obj, args);
+			// convert <undefined> result to <null> so RPC lib produces a valid
+			// response (it just omits the <result> property otherwise)
+			if (ret === undefined) ret = null;
+			return ret;
 		},
 		function rpcReqCallback(err, res) {
 			if (err) {
