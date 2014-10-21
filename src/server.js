@@ -20,6 +20,7 @@ var gsjsBridge = require('model/gsjsBridge');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
 var amfServer = require('comm/amfServer');
+var policyServer = require('comm/policyServer');
 var logging = require('logging');
 var util = require('util');
 
@@ -98,6 +99,7 @@ function runMaster() {
 		var env = {gsid: id};
 		cluster.fork(env);
 	});
+	policyServer.start();
 }
 
 
