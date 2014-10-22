@@ -5,10 +5,15 @@
  * game servers, which enable the GSJS code to call functions on any
  * game object without needing to worry about of the underlying
  * distributed server architecture.
- * Contains functions for setting up/shutting down the RPC connections,
- * and sending and handling RPC requests.
  *
- * @see {@link module:data/rpcProxy|rpcProxy}
+ * Also exposes RPC access to the global API, the GSJS admin singleton
+ * object, and the {@link module:data/rpcApi|GS RPC API} (through the
+ * RPC functions `api`, `admin` and `gs`, respectively).
+ *
+ * Contains functions for setting up/shutting down the RPC connections,
+ * and sending and handling RPC requests (which are used by the {@link
+ * module:data/rpcProxy|transparent RPC proxy}).
+ *
  * @see {@link module:config|config}
  *
  * @module
@@ -33,6 +38,7 @@ var jrpc = require('multitransport-jsonrpc');
 var orProxy = require('data/objrefProxy');
 var pers = require('data/pers');
 var RC = require('data/RequestContext');
+var rpcApi = require('data/rpcApi');
 var rpcProxy = require('data/rpcProxy');
 var utils = require('utils');
 var util = require('util');
@@ -113,6 +119,7 @@ function initServer(callback) {
 	server.register('obj', objectRequest);
 	server.register('admin', adminRequest);
 	server.register('api', globalApiRequest);
+	server.register('gs', gsApiRequest);
 }
 
 
@@ -303,11 +310,32 @@ function handleRequest(callerId, objOrTsid, fname, args, callback) {
 }
 
 
+/**
+ * Wrapper around {@link module:data/rpc~handleRequest|handleRequest}
+ * for game object function calls.
+ *
+ * @param {string} callerId ID of the calling component (for logging)
+ * @param {string} tsid TSID of the game object to call the function on
+ * @param {string} fname name of the function to call on the object
+ * @param {array} args function call arguments
+ * @param {function} callback callback for the RPC library, returning
+ *        the result (or errors) to the remote caller
+ */
 function objectRequest(callerId, tsid, fname, args, callback) {
 	handleRequest(callerId, tsid, fname, args, callback);
 }
 
 
+/**
+ * Wrapper around {@link module:data/rpc~handleRequest|handleRequest}
+ * for global API function calls.
+ *
+ * @param {string} callerId ID of the calling component (for logging)
+ * @param {string} fname name of the global API function to call
+ * @param {array} args function call arguments
+ * @param {function} callback callback for the RPC library, returning
+ *        the result (or errors) to the remote caller
+ */
 function globalApiRequest(callerId, fname, args, callback) {
 	//TODO dummy, replace with actual global API once there is one:
 	var dummyApi = {
@@ -317,8 +345,33 @@ function globalApiRequest(callerId, fname, args, callback) {
 }
 
 
+/**
+ * Wrapper around {@link module:data/rpc~handleRequest|handleRequest}
+ * for GSJS admin object calls.
+ *
+ * @param {string} callerId ID of the calling component (for logging)
+ * @param {string} fname name of the GSJS admin function to call
+ * @param {array} argsObject object containing options/parameters
+ * @param {function} callback callback for the RPC library, returning
+ *        the result (or errors) to the remote caller
+ */
 function adminRequest(callerId, fname, argsObject, callback) {
 	handleRequest(callerId, gsjsBridge.getAdmin(), fname, [argsObject], callback);
+}
+
+
+/**
+ * Wrapper around {@link module:data/rpc~handleRequest|handleRequest}
+ * for {@link module:data/rpcApi|game server RPC API} calls.
+ *
+ * @param {string} callerId ID of the calling component (for logging)
+ * @param {string} fname name of the API function to call
+ * @param {array} args function call arguments
+ * @param {function} callback callback for the RPC library, returning
+ *        the result (or errors) to the remote caller
+ */
+function gsApiRequest(callerId, fname, args, callback) {
+	handleRequest(callerId, rpcApi, fname, args, callback);
 }
 
 
