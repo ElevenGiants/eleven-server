@@ -81,14 +81,21 @@ function init() {
 
 
 function addField(args, name, val) {
+	// first arg is an Error -> wrap it in a fields object
 	if (args[0] instanceof Error) {
 		args[0] = {err: args[0]};
 	}
+	// handle unexpected input gracefully (probably caller meant to supply an
+	// error that wasn't really there)
+	if (args[0] === null || args[0] === undefined) {
+		args[0] = {};
+	}
+	// first arg is the log message -> insert an empty fields object
 	if (typeof args[0] === 'string') {
 		Array.prototype.splice.call(args, 0, 0, {});
 	}
+	// add the new field
 	args[0][name] = val;
-	return args;
 }
 
 
