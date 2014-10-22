@@ -41,7 +41,8 @@ var utils = require('utils');
  * @param {object} config configuration settings
  */
 function init(config) {
-	assert(config.secret !== undefined && utils.isInt(config.timeStep),
+	assert(typeof config === 'object' && config !== null &&
+		config.secret !== undefined && utils.isInt(config.timeStep),
 		'invalid or missing HMAC auth config');
 	token.defaults.secret = config.secret;
 	token.defaults.timeStep = config.timeStep;
