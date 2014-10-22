@@ -1,0 +1,18 @@
+{
+	"class_tsid": "apple",
+	"container": {
+		"label": "Beta",
+		"objref": true,
+		"tsid": "P00000000000002"
+	},
+	"count": 1,
+	"label": "Apple",
+	"pcont": "P00000000000002",
+	"state": "iconic",
+	"tcont": "P00000000000002",
+	"ts": 1355112616233,
+	"tsid": "I00000000000002",
+	"version": "1355086256",
+	"x": 0,
+	"y": 1
+}
