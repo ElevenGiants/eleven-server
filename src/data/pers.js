@@ -6,11 +6,11 @@
  * interaction with a specific storage facility (e.g. files on disk or
  * a database). It must implement the following API:
  * ```
- *     function init(config, callback)
- *     function close(callback)
- *     function read(tsid)
- *     function write(obj, callback)
- *     function del(obj, callback)
+ *     init(config, callback)
+ *     close(callback)
+ *     read(tsid) -> gameObjectData
+ *     write(obj, callback)
+ *     del(obj, callback)
  * ```
  * Where `callback` follows the usual Node conventions (`Error` object
  * or `null` as first parameter, function call results second). The
@@ -62,8 +62,8 @@ var pbe = null;
  *
  * @param {object} backEnd persistence back-end module; must implement
  *        the API shown in the above module docs.
- * @param {object} config configuration options for the back-end module
- * @param {function} callback called when persistence layer is ready,
+ * @param {object} [config] configuration options for back-end module
+ * @param {function} [callback] called when persistence layer is ready,
  *        or an error occurred during initialization
  */
 function init(backEnd, config, callback) {

@@ -1,6 +1,8 @@
 'use strict';
 
 var async = require('async');
+var auth = require('comm/auth');
+var abePassthrough = require('comm/abe/passthrough');
 var net = require('net');
 var path = require('path');
 var rewire = require('rewire');
@@ -84,11 +86,13 @@ suite('Session', function() {
 		suiteSetup(function(done) {
 			// initialize gsjsBridge data structures (empty) without loading all the prototypes
 			gsjsBridge.init(done, true);
+			auth.init(abePassthrough);
 		});
 		
 		suiteTeardown(function() {
 			// reset gsjsBridge so the cached prototypes don't influence other tests
 			gsjsBridge.reset();
+			auth.init(null);
 		});
 		
 		setup(function(done) {

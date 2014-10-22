@@ -38,6 +38,19 @@ module.exports = {
 			},
 		},
 	},
+	auth: {
+		backEnd: {
+			module: 'hmac',
+			config: {
+				hmac: {
+					// secret used for auth token HMAC calculation:
+					secret: 'CHANGE-ME-OR-ELSE',
+					// minimum token lifetime in seconds:
+					timeStep: 600,
+				},
+			},
+		},
+	},
 	log: {
 		level: {
 			file: 'debug',

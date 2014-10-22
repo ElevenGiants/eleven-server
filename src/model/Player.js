@@ -4,6 +4,7 @@ module.exports = Player;
 
 
 var assert = require('assert');
+var auth = require('comm/auth');
 var config = require('config');
 var Prop = require('model/Property');
 var Bag = require('model/Bag');
@@ -251,7 +252,7 @@ Player.prototype.gsMoveCheck = function(newLocId) {
 		return;
 	}
 	var gsConf = config.getGSConf(rpc.getGsid(newLocId));
-	var token = this.tsid;  //TODO: actual token once we have proper auth
+	var token = auth.getToken(this);
 	log.info('scheduling GS move to %s', gsConf.gsid);
 	// send GSJS inter-GS move event
 	this.onGSLogout();
