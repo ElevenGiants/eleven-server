@@ -10,6 +10,7 @@ var config = require('config');
 var domain = require('domain');
 var events = require('events');
 var pers = require('data/pers');
+var rpc = require('data/rpc');
 var util = require('util');
 var RC = require('data/RequestContext');
 var gsjsMain = require('gsjs/main');
@@ -229,10 +230,9 @@ Session.prototype.handleMessage = function(msg) {
 
 Session.prototype.processRequest = function(req) {
 	log.trace({data: req}, 'handling %s request', req.type);
-	this.preRequestProc(req);
-	if (req.type !== 'logout') {
-		gsjsMain.processMessage(this.pc, req);
-	}
+	var abort = this.preRequestProc(req);
+	if (abort) return;
+	gsjsMain.processMessage(this.pc, req);
 	this.postRequestProc(req);
 };
 
@@ -240,6 +240,9 @@ Session.prototype.processRequest = function(req) {
 /**
  * Things that need to be done *before* forwarding the request to
  * GSJS for processing.
+ *
+ * @returns {boolean} `true` if request processing should be aborted
+ *          (e.g. on logout or critical errors)
  * @private
  */
 Session.prototype.preRequestProc = function(req) {
@@ -249,14 +252,22 @@ Session.prototype.preRequestProc = function(req) {
 			assert(this.pc === undefined, 'session already bound: ' + this.pc);
 			// retrieve PC via auth token, verify, link to this session
 			var tsid = auth.authenticate(req.token);
+			if (!rpc.isLocal(tsid)) {
+				// this should not happen (client should get correct connect
+				// data from webapp/HTTP API), so don't try to fix it here
+				log.warn('%s trying to log in on wrong GS', tsid);
+				this.socket.end();
+				return true;
+			}
 			this.pc = pers.get(tsid);
+			assert(this.pc !== undefined, 'unable to load player: ' + tsid);
 			// prepare Player object for login (e.g. call GSJS events)
 			this.pc.onLoginStart(this, req.type === 'relogin_start');
 			break;
 		case 'logout':
 			this.pc.onDisconnect();
 			this.socket.end();
-			break;
+			return true;
 	}
 };
 
