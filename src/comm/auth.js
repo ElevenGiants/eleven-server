@@ -74,7 +74,9 @@ function init(backEnd, config, callback) {
  */
 function authenticate(token) {
 	assert(abe !== undefined && abe !== null, 'no auth back-end configured');
-	return abe.authenticate(token);
+	var ret = abe.authenticate(token);
+	log.info({token: token}, '%s successfully authenticated', ret);
+	return ret;
 }
 
 
@@ -87,5 +89,7 @@ function authenticate(token) {
  */
 function getToken(player) {
 	assert(abe !== undefined && abe !== null, 'no auth back-end configured');
-	return abe.getToken(player);
+	var ret = abe.getToken(player);
+	log.debug({token: ret}, 'auth token generated for %s', player);
+	return ret;
 }
