@@ -302,8 +302,13 @@ function handleRequest(callerId, objOrTsid, fname, args, callback) {
 			if (err) {
 				log.error(err, 'exception in %s', logmsg);
 			}
-			res = orProxy.refify(res);  // marshal return value
-			callback(err, res);
+			if (typeof callback !== 'function') {
+				log.error('%s called without a valid callback', logmsg);
+			}
+			else {
+				res = orProxy.refify(res);  // marshal return value
+				callback(err, res);
+			}
 		},
 		true  // make sure changes are persisted before returning RPC
 	);
