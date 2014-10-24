@@ -17,6 +17,7 @@ var gsjsBridge = rewire('model/gsjsBridge');
 pers.__set__('gsjsBridge', gsjsBridge);
 pers.__set__('persProxy', persProxy);
 gsjsBridge.__set__('Location', Location);
+Location.__set__('pers', pers);
 
 
 suite('Location', function () {
