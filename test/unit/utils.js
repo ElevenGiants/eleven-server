@@ -298,6 +298,7 @@ suite('utils', function() {
 		test('fails on invalid parameter types', function() {
 			var vals = [null, 1, 'x', [1, 2, 3], function() {}];
 			for (var i = 0; i < vals.length; i++) {
+				/*jshint -W083 */
 				assert.throw(
 					function() {
 						utils.shallowCopy(vals[i]);

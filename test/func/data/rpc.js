@@ -178,7 +178,7 @@ suite('rpc', function () {
 				},
 			}));
 			rcMock.run(function () {
-				var res = rpc.__get__('handleRequest')('caller', 'LX', 'func', null, function cb(err, res) {
+				rpc.__get__('handleRequest')('caller', 'LX', 'func', null, function cb(err, res) {
 					if (err) return done(err);
 					assert.strictEqual(res, 'foo');
 					done();

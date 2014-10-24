@@ -266,7 +266,7 @@ suite('Player', function () {
 						port: 1445,
 						hostPort: '12.34.56.78:1445',
 						local: false,
-					}
+					};
 				},
 			});
 			Player.__set__('rpc', rpcMock);

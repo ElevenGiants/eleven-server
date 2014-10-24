@@ -85,7 +85,8 @@ suite('persProxy', function() {
 		test('object-type props are permanently pers-proxified on access', function() {
 			var o = {nested: {a: 1}};
 			var p = pp.makeProxy(o);
-			var dummy = p.nested.a;
+			/*jshint -W030 */  // the following expression is expected to have a side effect
+			p.nested.a;
 			assert.isTrue(o.nested.__isPP);
 		});
 		
@@ -95,7 +96,8 @@ suite('persProxy', function() {
 				b: {c: 3},
 			};
 			var p = pp.makeProxy(o);
-			var dummy = p.a + p.b.c;
+			/*jshint -W030 */  // the following expression is tested for not having a side effect
+			p.a + p.b.c;
 			assert.deepEqual(rcMock.getDirtyList(), []);
 		});
 		

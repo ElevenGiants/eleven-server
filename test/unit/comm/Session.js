@@ -87,7 +87,7 @@ suite('session', function() {
 				// this should be called by the domain error handler
 				done();
 			};
-			var s = new Session('test', socket);
+			new Session('test', socket);
 			socket.emit('error', new Error('ECONNRESET'));
 		});
 		

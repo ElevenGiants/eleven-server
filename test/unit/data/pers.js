@@ -90,7 +90,7 @@ suite('pers', function() {
 			var lo = load(o.tsid);
 			assert.isTrue(lo.__isRP, 'is wrapped in RPC proxy');
 			assert.isUndefined(lo.__isPP, 'is not wrapped in persistence proxy');
-			assert.isDefined(rcMock.getContext().cache['ITEST'], 'in request cache');
+			assert.isDefined(rcMock.getContext().cache.ITEST, 'in request cache');
 			assert.notProperty(pers.__get__('cache'), 'ITEST', 'not in live object cache');
 		});
 	});
@@ -115,7 +115,7 @@ suite('pers', function() {
 		});
 		
 		test('if an object is already in the request cache, get it from there', function() {
-			rcMock.getContext().cache['IA'] = {tsid: 'IA'};
+			rcMock.getContext().cache.IA = {tsid: 'IA'};
 			assert.strictEqual(pers.get('IA').tsid, 'IA');
 			assert.strictEqual(pbeMock.getCounts().read, 0);
 		});

@@ -15,7 +15,7 @@ exports.getDummySocket = function getDummySocket() {
 
 
 exports.amfEnc = function amfEnc(data) {
-	var data = amf.serializer().writeObject(data);
+	data = amf.serializer().writeObject(data);
 	var ret = new Buffer(Buffer.byteLength(data, 'binary'));
 	ret.write(data, 0, ret.length, 'binary');
 	return ret;

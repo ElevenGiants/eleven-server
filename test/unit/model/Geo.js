@@ -2,7 +2,6 @@
 
 var fs = require('fs');
 var path = require('path');
-var util = require('util');
 var Geo = require('model/Geo');
 
 
@@ -21,16 +20,17 @@ suite('Geo', function() {
 		test('prepares door/signpost connects', function() {
 			var data = getSampleData();
 			var g = new Geo(data);
+			var c;
 			for (var sp in g.layers.middleground.signposts) {
 				for (var i in g.layers.middleground.signposts[sp].connects) {
-					var c = g.layers.middleground.signposts[sp].connects[i];
+					c = g.layers.middleground.signposts[sp].connects[i];
 					assert.typeOf(c.label, 'string', sp);
 					assert.typeOf(c.street_tsid, 'string', sp);
 					assert.typeOf(c.target, 'object', sp);
 				}
 			}
 			for (var k in g.layers.middleground.doors) {
-				var c = g.layers.middleground.doors[k].connect;
+				c = g.layers.middleground.doors[k].connect;
 				assert.typeOf(c.label, 'string', k);
 				assert.typeOf(c.street_tsid, 'string', k);
 				assert.typeOf(c.target, 'object', k);

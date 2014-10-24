@@ -38,7 +38,7 @@ suite('Location', function() {
 
 		test('Location initialization does not flag Location or Geo as dirty', function() {
 			var g = persProxy.makeProxy(new Geo({tsid: 'GX'}));
-			var l = persProxy.makeProxy(new Location({tsid: 'LX'}, g));
+			persProxy.makeProxy(new Location({tsid: 'LX'}, g));
 			assert.strictEqual(rcMock.getDirtyList().length, 0);
 		});
 		

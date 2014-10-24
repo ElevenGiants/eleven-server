@@ -42,6 +42,7 @@ suite('objrefProxy', function() {
 		test('proxy throws error when referenced object is not available', function() {
 			var proxy = orproxy.makeProxy({tsid: 'NOT_AVAILABLE'});
 			assert.throw(function() {
+				/*jshint -W030 */  // we're doing this on purpose here
 				proxy.something;
 			}, orproxy.ObjRefProxyError);
 		});
@@ -57,6 +58,7 @@ suite('objrefProxy', function() {
 		});
 		
 		test('construct/apply on a proxy throw an error', function() {
+			/*jshint -W055 */  // this isn't a real constructor
 			var proxy = orproxy.makeProxy(function() {});  // does not make sense anyway, but just in case...
 			assert.throw(function() {
 				new proxy();

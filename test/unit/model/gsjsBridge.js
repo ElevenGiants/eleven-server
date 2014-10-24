@@ -23,7 +23,7 @@ suite('gsjsBridge', function() {
 			util.inherits(Thingie, Item);
 			ret.items.thingie = Thingie.prototype;
 			return ret;
-		};
+		}
 		
 		setup(function() {
 			gsjsBridge.__set__('prototypes', createDummyProtos());
