@@ -5,7 +5,7 @@ var path = require('path');
 var Geo = require('model/Geo');
 
 
-suite('Geo', function() {
+suite('Geo', function () {
 
 	var FIXTURES_PATH = path.resolve(path.join(__dirname, '../fixtures'));
 
@@ -15,9 +15,9 @@ suite('Geo', function() {
 	}
 
 
-	suite('prepConnects', function() {
+	suite('prepConnects', function () {
 	
-		test('prepares door/signpost connects', function() {
+		test('prepares door/signpost connects', function () {
 			var data = getSampleData();
 			var g = new Geo(data);
 			var c;
@@ -37,7 +37,7 @@ suite('Geo', function() {
 			}
 		});
 		
-		test('does not fail on missing layer data', function() {
+		test('does not fail on missing layer data', function () {
 			var g = new Geo();
 			assert.instanceOf(g, Geo);
 			g = new Geo({layers: {}});
@@ -46,7 +46,7 @@ suite('Geo', function() {
 			assert.instanceOf(g, Geo);
 		});
 		
-		test('does not fail with incomplete connects', function() {
+		test('does not fail with incomplete connects', function () {
 			var g = new Geo({
 				layers: {middleground: {doors: {
 					d1: {connect: {  // no target
@@ -66,7 +66,7 @@ suite('Geo', function() {
 			assert.property(g.layers.middleground.doors.d2.connect, 'target');
 		});
 		
-		test('updates added connects', function() {
+		test('updates added connects', function () {
 			var g = new Geo({
 				layers: {middleground: {doors: {
 					d: {connect: {
@@ -94,9 +94,9 @@ suite('Geo', function() {
 	});
 	
 
-	suite('serialize', function() {
+	suite('serialize', function () {
 	
-		test('works as expected', function() {
+		test('works as expected', function () {
 			var g = new Geo({
 				layers: {middleground: {doors: {
 					d: {connect: {
@@ -117,12 +117,12 @@ suite('Geo', function() {
 			assert.strictEqual(ser.layers.middleground.doors.d.connect.target.tsid, 'LXYZ');
 		});
 		
-		test('returns data equivalent to original input data', function() {
+		test('returns data equivalent to original input data', function () {
 			var ser = new Geo(getSampleData()).serialize();
 			assert.deepEqual(ser, getSampleData());
 		});
 		
-		test('does not modify instance data', function() {
+		test('does not modify instance data', function () {
 			var g = new Geo({
 				layers: {middleground: {doors: {
 					d: {connect: {target: {
@@ -140,9 +140,9 @@ suite('Geo', function() {
 	});
 	
 	
-	suite('getClientGeo', function() {
+	suite('getClientGeo', function () {
 	
-		test('does its job', function() {
+		test('does its job', function () {
 			var g = new Geo(getSampleData());
 			var cg = g.getClientGeo();
 			assert.property(cg.layers.middleground, 'doors');
@@ -155,9 +155,9 @@ suite('Geo', function() {
 	});
 	
 	
-	suite('getGeo', function() {
+	suite('getGeo', function () {
 	
-		test('does its job', function() {
+		test('does its job', function () {
 			var data = getSampleData();
 			var cg = new Geo(data).getGeo();
 			var props = ['l', 'r', 't', 'b', 'ground_y', 'swf_file'];

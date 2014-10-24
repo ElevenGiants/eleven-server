@@ -16,14 +16,14 @@ var pbeMock = require('../../mock/pbe');
 var gsjsBridge = require('model/gsjsBridge');
 
 
-suite('Session', function() {
+suite('Session', function () {
 	
 	var server;
 	var cfg = config.getGSConf('gs01-01');
 	
-	suiteSetup(function() {
+	suiteSetup(function () {
 		sessionMgr.init();
-		server = net.createServer(function(socket) {
+		server = net.createServer(function (socket) {
 			var s = sessionMgr.newSession(socket);
 			s.processRequest = function (req) {
 				socket.write(JSON.stringify(req));  // echo request object
@@ -31,18 +31,18 @@ suite('Session', function() {
 		}).listen(cfg.port, cfg.host);
 	});
 	
-	suiteTeardown(function() {
+	suiteTeardown(function () {
 		server.close();
 		sessionMgr.init();
 	});
 	
 	
-	suite('connection and data transmission', function() {
+	suite('connection and data transmission', function () {
 	
 		this.timeout(5000);
 		this.slow(2000);
 		
-		test('works as expected over local TCP connection', function(done) {
+		test('works as expected over local TCP connection', function (done) {
 			var sock = net.connect(cfg.port, cfg.host);
 			sock.on('data', function (data) {
 				assert.deepEqual(JSON.parse(data.toString()), {type: 'foo'});
@@ -55,7 +55,7 @@ suite('Session', function() {
 			sock.write(helpers.amfEnc({type: 'foo'}));
 		});
 		
-		test('works with a number of concurrent connections', function(done) {
+		test('works with a number of concurrent connections', function (done) {
 			var numbers = Array.apply(null, {length: 1000}).map(Number.call, Number);
 			async.eachLimit(numbers, 10,
 				function iterator(i, cb) {
@@ -78,33 +78,33 @@ suite('Session', function() {
 	});
 	
 	
-	suite('special request processing', function() {
+	suite('special request processing', function () {
 	
 		this.timeout(10000);
 		this.slow(2000);
 		
-		suiteSetup(function(done) {
+		suiteSetup(function (done) {
 			// initialize gsjsBridge data structures (empty) without loading all the prototypes
 			gsjsBridge.init(done, true);
 			auth.init(abePassthrough);
 		});
 		
-		suiteTeardown(function() {
+		suiteTeardown(function () {
 			// reset gsjsBridge so the cached prototypes don't influence other tests
 			gsjsBridge.reset();
 			auth.init(null);
 		});
 		
-		setup(function(done) {
+		setup(function (done) {
 			pers.init(pbeMock, path.resolve(path.join(__dirname, '../fixtures')), done);
 		});
 		
-		teardown(function() {
+		teardown(function () {
 			pers.init();  // disable mock back-end
 			Session.__set__('gsjsMain', require('gsjs/main'));
 		});
 		
-		test('login_start', function(done) {
+		test('login_start', function (done) {
 			var onLoginCalled = false;
 			Session.__set__('gsjsMain', {
 				processMessage: function (pc, req) {
@@ -116,7 +116,7 @@ suite('Session', function() {
 			});
 			var s = new Session('TEST', helpers.getDummySocket());
 			var rc = new RC('login_start TEST', undefined, s);
-			rc.run(function() {
+			rc.run(function () {
 				var p = pers.get('P00000000000001');
 				p.onLogin = function () {
 					onLoginCalled = true;
@@ -129,7 +129,7 @@ suite('Session', function() {
 			});
 		});
 		
-		test('login_end', function() {
+		test('login_end', function () {
 			var onPlayerEnterCalled = false;
 			Session.__set__('gsjsMain', {
 				// just a placeholder to prevent calling the "real" function
@@ -137,9 +137,9 @@ suite('Session', function() {
 			});
 			var s = new Session('TEST', helpers.getDummySocket());
 			var rc = new RC('login_end TEST', undefined, s);
-			rc.run(function() {
+			rc.run(function () {
 				var l = pers.get('LLI32G3NUTD100I');
-				l.onPlayerEnter = function() {
+				l.onPlayerEnter = function () {
 					onPlayerEnterCalled = true;
 				};
 				var p = pers.get('P00000000000001');

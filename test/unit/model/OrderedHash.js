@@ -3,11 +3,11 @@
 var OrderedHash = require('model/OrderedHash');
 
 
-suite('OrderedHash', function() {
+suite('OrderedHash', function () {
 
-	suite('ctor', function() {
+	suite('ctor', function () {
 	
-		test('creates OrderedHash', function() {
+		test('creates OrderedHash', function () {
 			var o = {x: 'x', y: 'y', z: 'z'};
 			var oh = new OrderedHash(o);
 			assert.instanceOf(oh, OrderedHash);
@@ -16,12 +16,12 @@ suite('OrderedHash', function() {
 			assert.notProperty(o, 'q', 'new properties not added to source data object');
 		});
 	
-		test('creates empty OrderedHash without parameter', function() {
+		test('creates empty OrderedHash without parameter', function () {
 			var oh = new OrderedHash();
 			assert.strictEqual(oh.length(), 0);
 		});
 		
-		test('JSON serialization skips everything but data properties', function() {
+		test('JSON serialization skips everything but data properties', function () {
 			var oh = new OrderedHash({x: 'x', yz: {y: 'y', z: 'z'}});
 			assert.strictEqual(JSON.stringify(oh),
 				'{"x":"x","yz":{"y":"y","z":"z"}}');
@@ -29,9 +29,9 @@ suite('OrderedHash', function() {
 	});
 	
 	
-	suite('first', function() {
+	suite('first', function () {
 	
-		test('does its job', function() {
+		test('does its job', function () {
 			var oh = new OrderedHash({X: 'X', y: 'y', z: 'z'});
 			assert.strictEqual(oh.first(), 'X');
 			oh.A = 13;
@@ -40,9 +40,9 @@ suite('OrderedHash', function() {
 	});
 	
 	
-	suite('last', function() {
+	suite('last', function () {
 	
-		test('does its job', function() {
+		test('does its job', function () {
 			var oh = new OrderedHash({X: 'X', y: 'y', z: 'z'});
 			assert.strictEqual(oh.last(), 'z');
 			oh.zzz = null;
@@ -51,9 +51,9 @@ suite('OrderedHash', function() {
 	});
 	
 	
-	suite('length', function() {
+	suite('length', function () {
 	
-		test('does its job', function() {
+		test('does its job', function () {
 			var oh = new OrderedHash();
 			assert.strictEqual(oh.length(), 0);
 			oh.x = 'x';
@@ -68,9 +68,9 @@ suite('OrderedHash', function() {
 	});
 	
 	
-	suite('clear', function() {
+	suite('clear', function () {
 
-		test('does its job', function() {
+		test('does its job', function () {
 			var oh = new OrderedHash({x: 'x', y: 'y', z: 'z'});
 			oh.clear();
 			assert.strictEqual(oh.length(), 0);

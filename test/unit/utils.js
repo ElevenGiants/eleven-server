@@ -8,41 +8,41 @@ var Player = require('model/Player');
 var orproxy = rewire('data/objrefProxy');
 
 
-suite('utils', function() {
+suite('utils', function () {
 	
-	suite('makeTsid', function() {
+	suite('makeTsid', function () {
 	
-		test('does its job', function() {
+		test('does its job', function () {
 			assert.strictEqual(utils.makeTsid('G', 'gs01-01')[0], 'G');
 			assert.strictEqual(utils.makeTsid('p', 'gs01-02')[0], 'P');
 			assert.isTrue(utils.makeTsid('X', 'gs01-01').length >= 18);
 		});
 		
-		test('fails with invalid parameters', function() {
-			assert.throw(function() {
+		test('fails with invalid parameters', function () {
+			assert.throw(function () {
 				utils.makeTsid();
 			}, assert.AssertionError);
-			assert.throw(function() {
+			assert.throw(function () {
 				utils.makeTsid('');
 			}, assert.AssertionError);
-			assert.throw(function() {
+			assert.throw(function () {
 				utils.makeTsid(1);
 			}, assert.AssertionError);
-			assert.throw(function() {
+			assert.throw(function () {
 				utils.makeTsid('XY', 'abc');
 			}, assert.AssertionError);
-			assert.throw(function() {
+			assert.throw(function () {
 				utils.makeTsid('A');
 			}, assert.AssertionError);
-			assert.throw(function() {
+			assert.throw(function () {
 				utils.makeTsid('A', null);
 			}, assert.AssertionError);
-			assert.throw(function() {
+			assert.throw(function () {
 				utils.makeTsid('A', '');
 			}, assert.AssertionError);
 		});
 		
-		test('consecutive calls never return same TSID', function() {
+		test('consecutive calls never return same TSID', function () {
 			this.slow(400);  // prevent mocha from flagging this test as slow
 			var tsid, prev;
 			for (var i = 0; i < 100; i++) {
@@ -54,24 +54,24 @@ suite('utils', function() {
 	});
 	
 	
-	suite('checkUniqueGsidHashes', function() {
+	suite('checkUniqueGsidHashes', function () {
 	
-		test('does its job', function() {
+		test('does its job', function () {
 			utils.checkUniqueHashes(['gs01', 'gs01-01', 'gs02', 'gs02-01', 'gs02-02']);
-			assert.throw(function() {
+			assert.throw(function () {
 				utils.checkUniqueHashes(['abc', 'def', 'ghi', 'abc']);
 			}, assert.AssertionError);
 		});
 	});
 	
 	
-	suite('copyProps', function() {
+	suite('copyProps', function () {
 	
-		test('does its job', function() {
-			var O = function() {
+		test('does its job', function () {
+			var O = function () {
 				this.z = 3;
 			};
-			O.prototype.f = function() {};
+			O.prototype.f = function () {};
 			O.prototype.x = 7;
 			var o = new O();
 			o.y = 13;
@@ -90,10 +90,10 @@ suite('utils', function() {
 			assert.notProperty(o2, 'x');
 		});
 		
-		test('works as intended on prototypes', function() {
-			var O = function() {};
-			var P = function() {};
-			O.prototype.f = function() {};
+		test('works as intended on prototypes', function () {
+			var O = function () {};
+			var P = function () {};
+			O.prototype.f = function () {};
 			O.prototype.x = 13;
 			utils.copyProps(O.prototype, P.prototype);
 			var p = new P();
@@ -105,7 +105,7 @@ suite('utils', function() {
 			assert.strictEqual(p.x, 13);
 		});
 		
-		test('only makes shallow copies of properties', function() {
+		test('only makes shallow copies of properties', function () {
 			var o = {o: {s: 'everybodyshake'}};
 			var p = {};
 			utils.copyProps(o, p);
@@ -115,9 +115,9 @@ suite('utils', function() {
 	});
 
 	
-	suite('isInt', function() {
+	suite('isInt', function () {
 	
-		test('confirms that ints are ints', function() {
+		test('confirms that ints are ints', function () {
 			assert.isTrue(utils.isInt(123));
 			assert.isTrue(utils.isInt(-10));
 			assert.isTrue(utils.isInt(-0));
@@ -126,19 +126,19 @@ suite('utils', function() {
 			assert.isTrue(utils.isInt(1e9));
 		});
 		
-		test('works for strings too', function() {
+		test('works for strings too', function () {
 			assert.isTrue(utils.isInt('123'));
 			assert.isTrue(utils.isInt('-10'));
 			assert.isTrue(utils.isInt('0x1f'));
 		});
 		
-		test('returns false for non-integer numbers', function() {
+		test('returns false for non-integer numbers', function () {
 			assert.isFalse(utils.isInt(1e-9));
 			assert.isFalse(utils.isInt(0.1));
 			assert.isFalse(utils.isInt('.1'));
 		});
 		
-		test('returns false for anything else', function() {
+		test('returns false for anything else', function () {
 			assert.isFalse(utils.isInt(''), 'empty string');
 			assert.isFalse(utils.isInt('1a'), 'non-numeric string');
 			assert.isFalse(utils.isInt(null), 'null');
@@ -151,9 +151,9 @@ suite('utils', function() {
 	});
 	
 	
-	suite('makeNonEnumerable', function() {
+	suite('makeNonEnumerable', function () {
 	
-		test('does its job', function() {
+		test('does its job', function () {
 			var o = {x: 1, y: 2};
 			utils.makeNonEnumerable(o, 'y');
 			assert.deepEqual(Object.keys(o), ['x']);
@@ -163,7 +163,7 @@ suite('utils', function() {
 			}
 		});
 		
-		test('non-enumerable sticks even when reassigning value', function() {
+		test('non-enumerable sticks even when reassigning value', function () {
 			var o = {x: {'y': 'blah'}};
 			utils.makeNonEnumerable(o, 'x');
 			o.x = {'a': 'blub'};
@@ -173,16 +173,16 @@ suite('utils', function() {
 	});
 	
 	
-	suite('addNonEnumerable', function() {
+	suite('addNonEnumerable', function () {
 	
-		test('does its job', function() {
+		test('does its job', function () {
 			var o = {x: 12};
 			utils.addNonEnumerable(o, 'y', 'argl');
 			assert.strictEqual(o.y, 'argl');
 			assert.deepEqual(Object.keys(o), ['x']);
 		});
 		
-		test('creates writable properties', function() {
+		test('creates writable properties', function () {
 			var o = {};
 			utils.addNonEnumerable(o, 'y', 'argl');
 			assert.strictEqual(o.y, 'argl');
@@ -192,9 +192,9 @@ suite('utils', function() {
 	});
 	
 	
-	suite('isBag', function() {
+	suite('isBag', function () {
 		
-		test('does its job', function() {
+		test('does its job', function () {
 			assert.isTrue(utils.isBag(new Bag()));
 			assert.isTrue(utils.isBag(new Player()));
 			assert.isFalse(utils.isBag(new GameObject()));
@@ -203,9 +203,9 @@ suite('utils', function() {
 			assert.isFalse(utils.isBag('bXYZ', 'case sensitive'));
 		});
 		
-		test('does not resolve objref', function() {
+		test('does not resolve objref', function () {
 			orproxy.__set__('pers', {
-				get: function() {
+				get: function () {
 					throw new Error('should not be called');
 				},
 			});
@@ -218,9 +218,9 @@ suite('utils', function() {
 	});
 	
 	
-	suite('arrayToHash', function() {
+	suite('arrayToHash', function () {
 	
-		test('does its job', function() {
+		test('does its job', function () {
 			var a = [{tsid: 'X'}, {tsid: 'Y'}, {tsid: 'Z', test: 'foo'}];
 			assert.deepEqual(utils.arrayToHash(a), {
 				X: {tsid: 'X'},
@@ -229,23 +229,23 @@ suite('utils', function() {
 			});
 		});
 		
-		test('throws an error when an object does not have a TSID', function() {
+		test('throws an error when an object does not have a TSID', function () {
 			var a = [1, 'x', {b: 'moo'}];
-			assert.throw(function() {
+			assert.throw(function () {
 				utils.arrayToHash(a);
 			}, Error);
 		});
 		
-		test('works with undefined/null input', function() {
+		test('works with undefined/null input', function () {
 			assert.deepEqual(utils.arrayToHash(), {});
 			assert.deepEqual(utils.arrayToHash(null), {});
 		});
 	});
 	
 	
-	suite('hashToArray', function() {
+	suite('hashToArray', function () {
 	
-		test('does its job', function() {
+		test('does its job', function () {
 			var h = {
 				X: {tsid: 'X'},
 				Y: {tsid: 'Y'},
@@ -258,16 +258,16 @@ suite('utils', function() {
 			]);
 		});
 		
-		test('works with undefined/null input', function() {
+		test('works with undefined/null input', function () {
 			assert.deepEqual(utils.hashToArray(), []);
 			assert.deepEqual(utils.hashToArray(null), []);
 		});
 	});
 	
 	
-	suite('shallowCopy', function() {
+	suite('shallowCopy', function () {
 	
-		test('does its job', function() {
+		test('does its job', function () {
 			var o = {
 				p: {x: 1, y: 2},
 				q: 3,
@@ -282,10 +282,10 @@ suite('utils', function() {
 			assert.notProperty(o, 's');
 		});
 		
-		test('does not copy functions and inherited properties', function() {
-			var O = function() {
+		test('does not copy functions and inherited properties', function () {
+			var O = function () {
 				this.a = 'A';
-				this.f = function() {};
+				this.f = function () {};
 			};
 			O.b = 'B';
 			var o = new O();
@@ -295,12 +295,12 @@ suite('utils', function() {
 			assert.notProperty(oc, 'b', 'does not copy inherited props');
 		});
 		
-		test('fails on invalid parameter types', function() {
-			var vals = [null, 1, 'x', [1, 2, 3], function() {}];
+		test('fails on invalid parameter types', function () {
+			var vals = [null, 1, 'x', [1, 2, 3], function () {}];
 			for (var i = 0; i < vals.length; i++) {
 				/*jshint -W083 */
 				assert.throw(
-					function() {
+					function () {
 						utils.shallowCopy(vals[i]);
 					},
 					assert.AssertionError, undefined, '' + vals[i]
@@ -310,9 +310,9 @@ suite('utils', function() {
 	});
 	
 	
-	suite('padLeft', function() {
+	suite('padLeft', function () {
 	
-		test('does its job', function() {
+		test('does its job', function () {
 			assert.strictEqual(utils.padLeft('', 'x', 5), 'xxxxx');
 			assert.strictEqual(utils.padLeft('A', 'x', 5), 'xxxxA');
 			assert.strictEqual(utils.padLeft('A', 'x', 0), 'A');

@@ -4,7 +4,7 @@ var Location = require('model/Location');
 var Geo = require('model/Geo');
 
 
-suite('Location', function() {
+suite('Location', function () {
 
 	function getDummyGeo() {
 		// blank dummy object to prevent Location from trying to retrieve
@@ -13,16 +13,16 @@ suite('Location', function() {
 	}
 
 
-	suite('ctor', function() {
+	suite('ctor', function () {
 	
-		test('initializes core properties', function() {
+		test('initializes core properties', function () {
 			var l = new Location({}, getDummyGeo());
 			assert.deepEqual(l.players, {});
 			assert.deepEqual(l.activePlayers, {});
 			assert.deepEqual(l.items, {});
 		});
 		
-		test('converts players and items lists to IdObjRefMaps', function() {
+		test('converts players and items lists to IdObjRefMaps', function () {
 			var l = new Location({
 				players: [
 					{tsid: 'PX'},
@@ -40,9 +40,9 @@ suite('Location', function() {
 	});
 	
 	
-	suite('updateGeo', function() {
+	suite('updateGeo', function () {
 	
-		test('does its job', function() {
+		test('does its job', function () {
 			var l = new Location({}, new Geo({layers: {middleground: {doors: {}}}}));
 			l.geometry.layers.middleground.doors.d = {
 				connect: {target: {label: 'uranus', tsid: 'LABC'}},

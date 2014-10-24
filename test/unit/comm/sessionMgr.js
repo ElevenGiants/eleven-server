@@ -5,21 +5,21 @@ var sessionMgr = rewire('comm/sessionMgr');
 var getDummySocket = require('../../helpers').getDummySocket;
 
 
-suite('sessionMgr', function() {
+suite('sessionMgr', function () {
 
-	setup(function() {
+	setup(function () {
 		sessionMgr.init();
 	});
 	
-	suiteTeardown(function() {
+	suiteTeardown(function () {
 		// just in case any other test relies on sessionMgr
 		sessionMgr.init();
 	});
 	
 
-	suite('newSession', function() {
+	suite('newSession', function () {
 		
-		test('creates and adds new Session object', function() {
+		test('creates and adds new Session object', function () {
 			var s = sessionMgr.newSession(getDummySocket());
 			var sessions = sessionMgr.__get__('sessions');
 			assert.isString(s.id);
@@ -31,9 +31,9 @@ suite('sessionMgr', function() {
 	});
 	
 	
-	suite('onSessionClose', function() {
+	suite('onSessionClose', function () {
 	
-		test('does its job', function() {
+		test('does its job', function () {
 			var s = sessionMgr.newSession(getDummySocket());
 			assert.strictEqual(sessionMgr.getSessionCount(), 1);
 			s.emit('close', s);

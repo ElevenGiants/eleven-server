@@ -20,12 +20,12 @@ function getTestSession(id, socket) {
 }
 
 
-suite('session', function() {
+suite('session', function () {
 
 
-	suite('ctor', function() {
+	suite('ctor', function () {
 		
-		test('creates and adds new Session object', function() {
+		test('creates and adds new Session object', function () {
 			var socket = getDummySocket();
 			var s = getTestSession('test', socket);
 			assert.isString(s.id);
@@ -35,12 +35,12 @@ suite('session', function() {
 	});
 	
 	
-	suite('onSocketClose', function() {
+	suite('onSocketClose', function () {
 	
-		test('is called when socket closes', function(done) {
+		test('is called when socket closes', function (done) {
 			var socket = getDummySocket();
 			var s = getTestSession('test', socket);
-			s.on('close', function(arg) {
+			s.on('close', function (arg) {
 				assert.strictEqual(arg, s);
 				done();
 			});
@@ -49,9 +49,9 @@ suite('session', function() {
 	});
 	
 	
-	suite('onSocketData/handleData', function() {
+	suite('onSocketData/handleData', function () {
 	
-		test('stores data in internal buffer and triggers message handler', function(done) {
+		test('stores data in internal buffer and triggers message handler', function (done) {
 			var socket = getDummySocket();
 			var s = getTestSession('test', socket);
 			s.checkForMessages = function () {
@@ -62,7 +62,7 @@ suite('session', function() {
 			socket.write(new Buffer('asdf'));
 		});
 		
-		test('concatenates consecutive data chunks', function(done) {
+		test('concatenates consecutive data chunks', function (done) {
 			var socket = getDummySocket();
 			var s = getTestSession('test', socket);
 			var i = 0;
@@ -79,11 +79,11 @@ suite('session', function() {
 	});
 	
 	
-	suite('handleError', function() {
+	suite('handleError', function () {
 	
-		test('handles socket errors', function(done) {
+		test('handles socket errors', function (done) {
 			var socket = getDummySocket();
-			socket.destroy = function() {
+			socket.destroy = function () {
 				// this should be called by the domain error handler
 				done();
 			};
@@ -91,9 +91,9 @@ suite('session', function() {
 			socket.emit('error', new Error('ECONNRESET'));
 		});
 		
-		test('handles errors in our code', function(done) {
+		test('handles errors in our code', function (done) {
 			var socket = getDummySocket();
-			socket.destroy = function() {
+			socket.destroy = function () {
 				// this should be called by the domain error handler
 				done();
 			};
@@ -107,9 +107,9 @@ suite('session', function() {
 	});
 	
 	
-	suite('checkForMessages', function() {
+	suite('checkForMessages', function () {
 	
-		test('deserializes one message', function(done) {
+		test('deserializes one message', function (done) {
 			var s = getTestSession('test', getDummySocket());
 			s.buffer = new Buffer(TEST_AMF3_MSG, 'hex');
 			s.handleMessage = function (msg) {
@@ -120,7 +120,7 @@ suite('session', function() {
 			s.checkForMessages();
 		});
 		
-		test('deserializes multiple messages', function(done) {
+		test('deserializes multiple messages', function (done) {
 			var s = getTestSession('test', getDummySocket());
 			var buf = new Buffer(TEST_AMF3_MSG, 'hex');
 			s.buffer = Buffer.concat([buf, buf]);
@@ -135,7 +135,7 @@ suite('session', function() {
 			s.checkForMessages();
 		});
 		
-		test('preserves trailing incomplete messages in buffer', function(done) {
+		test('preserves trailing incomplete messages in buffer', function (done) {
 			var s = getTestSession('test', getDummySocket());
 			s.buffer = Buffer.concat([new Buffer(TEST_AMF3_MSG, 'hex'), new Buffer('foo')]);
 			s.handleMessage = function (msg) {
@@ -146,7 +146,7 @@ suite('session', function() {
 			s.checkForMessages();
 		});
 		
-		test('fails on excessively large messages', function() {
+		test('fails on excessively large messages', function () {
 			var s = getTestSession('test', getDummySocket());
 			s.buffer = new Buffer(new Array(config.get('net:maxMsgSize') + 2).join('X'));
 			assert.throw(s.checkForMessages.bind(s), Error);
@@ -154,9 +154,9 @@ suite('session', function() {
 	});
 	
 	
-	suite('handleMessage', function() {
+	suite('handleMessage', function () {
 	
-		test('handles errors with request error handler', function(done) {
+		test('handles errors with request error handler', function (done) {
 			var s = getTestSession('test', getDummySocket());
 			s.processRequest = function () {
 				throw new Error('boo');
@@ -171,9 +171,9 @@ suite('session', function() {
 	});
 	
 	
-	suite('handleAmfReqError', function() {
+	suite('handleAmfReqError', function () {
 	
-		test('sends error response', function(done) {
+		test('sends error response', function (done) {
 			var s = getTestSession('test', getDummySocket());
 			s.pc = 'xyz';
 			s.send = function (msg) {
@@ -190,12 +190,12 @@ suite('session', function() {
 	});
 	
 	
-	suite('send', function() {
+	suite('send', function () {
 	
-		test('does its job', function(done) {
+		test('does its job', function (done) {
 			var socket = getDummySocket();
 			var s = getTestSession('test', socket);
-			socket.write = function(data) {
+			socket.write = function (data) {
 				assert.strictEqual(data.toString('hex'), '0000001f0a0b0d4f626a65637409747970650609746573740d6d73675f696406033101');
 				done();
 			};
