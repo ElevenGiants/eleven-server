@@ -47,7 +47,7 @@
     "test": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony $ARG test/unit",
     "functest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony $ARG test/func",
     "bench": "NODE_PATH=src node --harmony bench/runner.js $ARG",
-    "lint": "node_modules/jshint/bin/jshint --verbose --exclude src/gsjs src test",
+    "lint": "node_modules/jshint/bin/jshint --verbose --exclude src/gsjs src test && node_modules/jscs/bin/jscs --verbose --reporter inline src test",
     "docs": "node node_modules/jsdoc/jsdoc.js --destination docs --configure jsdoc-conf.json src"
   }
 }
