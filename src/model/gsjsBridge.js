@@ -31,6 +31,7 @@ module.exports = {
 	getProto: getProto,
 	create: create,
 	createFromData: createFromData,
+	getAdmin: getAdmin,
 };
 
 
@@ -70,6 +71,8 @@ var TSID_INITIALS_MAP = {
 var prototypes = {};
 // dependencies provided to GSJS files on import (initialized in init())
 var dependencies = {};
+// GSJS admin functions singleton object (initialized in getAdmin())
+var gsjsAdmin = null;
 
 
 /**
@@ -77,6 +80,7 @@ var dependencies = {};
  * directory structure) and GSJS import dependencies.
  */
 function reset() {
+	gsjsAdmin = null;
 	dependencies = {};
 	prototypes = {
 		achievements: {},
@@ -333,4 +337,13 @@ function compose(dir, file, proto) {
 	if (!proto) proto = {};
 	include(path.join(GSJS_PATH, dir), file, proto);
 	return proto;
+}
+
+
+function getAdmin() {
+	if (!gsjsAdmin) {
+		gsjsAdmin = {};
+		include(GSJS_PATH, 'admin', gsjsAdmin);
+	}
+	return gsjsAdmin;
 }

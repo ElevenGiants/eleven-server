@@ -50,20 +50,55 @@ suite('RequestContext', function () {
 		});
 		
 		test('persists dirty objects after request is finished', function (done) {
-			new RC().run(function () {
-				var rc = RC.getContext();
-				rc.setDirty({tsid: 'IA'});
-				rc.setDirty({tsid: 'IB', deleted: true});
-				assert.deepEqual(Object.keys(rc.dirty), ['IA', 'IB']);
-				assert.deepEqual(persMock.getDirtyList(), {},
-					'request in progress, list not processed yet');
-			},
-			function callback() {
-				assert.deepEqual(persMock.getDirtyList(), {
-					IA: {tsid: 'IA'},
-					IB: {tsid: 'IB', deleted: true},
-				});
-				done();
+			new RC().run(
+				function () {
+					var rc = RC.getContext();
+					rc.setDirty({tsid: 'IA'});
+					rc.setDirty({tsid: 'IB', deleted: true});
+					assert.deepEqual(Object.keys(rc.dirty), ['IA', 'IB']);
+					assert.deepEqual(persMock.getDirtyList(), {},
+						'request in progress, list not processed yet');
+				},
+				function callback() {
+					assert.deepEqual(persMock.getDirtyList(), {
+						IA: {tsid: 'IA'},
+						IB: {tsid: 'IB', deleted: true},
+					});
+					done();
+				}
+			);
+		});
+		
+		test('waits for persistence operation callback if desired', function (done) {
+			var persDone = false;
+			RC.__set__('pers', {
+				postRequestProc: function postRequestProc(dlist, ulist, logtag, callback) {
+					// simulate an async persistence operation that takes 20ms
+					setTimeout(function () {
+						persDone = true;
+						callback();
+					}, 20);
+				},
+			});
+			new RC().run(
+				function dummy() {
+					return 7;
+				},
+				function callback(err, res) {
+					if (err) return done(err);
+					assert.isTrue(persDone);
+					assert.strictEqual(res, 7);
+					return done();
+				},
+				true
+			);
+			// RC.pers is restored in suite teardown
+		});
+		
+		test('calls post-persistence callback', function (done) {
+			var rc = new RC();
+			rc.run(function () {
+				rc.setPostPersCallback(done);
 			});
 		});
 		

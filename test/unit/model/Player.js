@@ -287,7 +287,7 @@ suite('Player', function () {
 			rc.run(function () {
 				var res = p.gsMoveCheck('LLOCAL');
 				assert.isUndefined(res);
-				assert.isNull(rc.postReqCallback);
+				assert.isNull(rc.postPersCallback);
 				done();
 			});
 		});

@@ -264,7 +264,7 @@ Player.prototype.gsMoveCheck = function(newLocId) {
 	// set up callback that will tell the client to reconnect to the new GS
 	// once the current request is finished
 	var self = this;
-	RC.getContext().setPostReqCallback(function triggerReconnect() {
+	RC.getContext().setPostPersCallback(function triggerReconnect() {
 		self.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
 	});
 	return gsConf;
