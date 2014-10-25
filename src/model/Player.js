@@ -64,7 +64,7 @@ function Player(data) {
  *        (e.g. after an inter-GS move or short connection loss);
  *        otherwise, this is a "full" login after client startup
  */
-Player.prototype.onLoginStart = function(session, isRelogin) {
+Player.prototype.onLoginStart = function onLoginStart(session, isRelogin) {
 	this.session = session;
 	//TODO: start onTimePlaying interval
 	if (isRelogin) {
@@ -86,7 +86,7 @@ Player.prototype.onLoginStart = function(session, isRelogin) {
  * * network error (socket closed without preceding `logout` request)
  * * player moving to another GS (location change)
  */
-Player.prototype.onDisconnect = function() {
+Player.prototype.onDisconnect = function onDisconnect() {
 	// properly move out of location in case of an actual logout request, or
 	// error/connection loss (in case of an inter-GS moves, the location already
 	// points to another castle^Wserver)
@@ -110,7 +110,7 @@ Player.prototype.onDisconnect = function() {
  * quests etc) from the GS live object cache (or more specifically,
  * schedules their removal at the end of the current request).
  */
-Player.prototype.unload = function() {
+Player.prototype.unload = function unload() {
 	var objects = this.getConnectedObjects();
 	for (var k in objects) {
 		RC.getContext().setUnload(objects[k]);
@@ -127,7 +127,7 @@ Player.prototype.unload = function() {
  *          GameObject} instances as properties
  * @private
  */
-Player.prototype.getConnectedObjects = function() {
+Player.prototype.getConnectedObjects = function getConnectedObjects() {
 	// collect objects in a hash (object with TSIDs as property names) to
 	// implicitly avoid duplicate entries
 	var ret = {};
@@ -173,7 +173,7 @@ Player.prototype.getConnectedObjects = function() {
  * @param {number} [x] x coordinate of the player in the new location
  * @param {number} [y] y coordinate of the player in the new location
  */
-Player.prototype.startMove = function(newLoc, x, y) {
+Player.prototype.startMove = function startMove(newLoc, x, y) {
 	if (newLoc) {
 		log.info('start move to %s (%s/%s)', newLoc, x, y);
 	}
@@ -214,7 +214,7 @@ Player.prototype.startMove = function(newLoc, x, y) {
  * "new" location at this point (set in
  * {@link Player#startMove|startMove}).
  */
-Player.prototype.endMove = function() {
+Player.prototype.endMove = function endMove() {
 	log.info('end move to %s', this.location);
 	assert(utils.isLoc(this.location), util.format(
 		'invalid location property: %s', this.location));
@@ -246,7 +246,7 @@ Player.prototype.endMove = function() {
  *
  * @param {string} newLocId TSID of the location the player is moving to
  */
-Player.prototype.gsMoveCheck = function(newLocId) {
+Player.prototype.gsMoveCheck = function gsMoveCheck(newLocId) {
 	if (rpc.isLocal(newLocId)) {
 		log.debug('local move, no GS change');
 		return;
@@ -281,7 +281,7 @@ Player.prototype.gsMoveCheck = function(newLocId) {
  *        `CLOSE`, `TOKEN` or `PREPARE_TO_RECONNECT`)
  * @param {object} [data] optional additional payload data
  */
-Player.prototype.sendServerMsg = function(action, data) {
+Player.prototype.sendServerMsg = function sendServerMsg(action, data) {
 	assert(this.session !== undefined && this.session !== null,
 		'tried to send to offline player');
 	var msg = data || {};

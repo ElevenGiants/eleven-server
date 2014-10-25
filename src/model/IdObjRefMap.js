@@ -29,7 +29,7 @@ function IdObjRefMap(data) {
  * @instance
  */
 Object.defineProperty(IdObjRefMap.prototype, 'length', {
-	get: function() {
+	get: function get() {
 		return Object.keys(this).length;
 	},
 });
@@ -43,7 +43,7 @@ Object.defineProperty(IdObjRefMap.prototype, 'length', {
  * @param {function} func function to be called for each (matching)
  *        object; signature: `func(obj)`
  */
-IdObjRefMap.prototype.apiIterate = function(classTsid, func) {
+IdObjRefMap.prototype.apiIterate = function apiIterate(classTsid, func) {
 	// handle optional classTsid parameter
 	if (classTsid instanceof Function) {
 		func = classTsid;

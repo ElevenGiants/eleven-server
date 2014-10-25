@@ -70,7 +70,7 @@ function Session(id, socket) {
 }
 
 
-Session.prototype.setupSocketEventHandlers = function() {
+Session.prototype.setupSocketEventHandlers = function setupSocketEventHandlers() {
 	this.socket.on('data', this.onSocketData.bind(this));
 	this.socket.on('end', this.onSocketEnd.bind(this));
 	this.socket.on('timeout', this.onSocketTimeout.bind(this));
@@ -79,7 +79,7 @@ Session.prototype.setupSocketEventHandlers = function() {
 };
 
 
-Session.prototype.toString = function() {
+Session.prototype.toString = function toString() {
 	return util.format('[session#%s%s]', this.id, this.pc ? '|' + this.pc.tsid : '');
 };
 
@@ -91,7 +91,7 @@ Session.prototype.toString = function() {
  * @static
  * @private
  */
-Session.logSerialize = function(session) {
+Session.logSerialize = function logSerialize(session) {
 	var ret = {id: session.id};
 	if (session.socket && session.socket.remoteAddress) {
 		ret.addr = session.socket.remoteAddress + ':' + session.socket.remotePort;
@@ -103,24 +103,24 @@ Session.logSerialize = function(session) {
 };
 
 
-Session.prototype.onSocketData = function(data) {
+Session.prototype.onSocketData = function onSocketData(data) {
 	// wrap in nextTick to make sure sync errors are handled, too;
 	// see <https://stackoverflow.com/q/19461234/>
 	process.nextTick(this.handleData.bind(this, data));
 };
 
 
-Session.prototype.onSocketEnd = function() {
+Session.prototype.onSocketEnd = function onSocketEnd() {
 	log.info({session: this}, 'socket end');
 };
 
 
-Session.prototype.onSocketTimeout = function() {
+Session.prototype.onSocketTimeout = function onSocketTimeout() {
 	log.warn({session: this}, 'socket timeout');
 };
 
 
-Session.prototype.onSocketClose = function(hadError) {
+Session.prototype.onSocketClose = function onSocketClose(hadError) {
 	log.info({session: this}, 'socket close (hadError: %s)', hadError);
 	if (this.pc && this.pc.session) {
 		// if pc is still linked to session, socket has been closed without a
@@ -145,7 +145,7 @@ Session.prototype.onSocketClose = function(hadError) {
  * @param {Error} err the error to handle
  * @private
  */
-Session.prototype.handleError = function(err) {
+Session.prototype.handleError = function handleError(err) {
 	log.error({session: this, err: err},
 		'unhandled error: %s', err ? err.message : err);
 	// careful cleanup - if anything throws here, the server goes down
@@ -164,7 +164,7 @@ Session.prototype.handleError = function(err) {
  * @param {Buffer} data incoming data chunk
  * @private
  */
-Session.prototype.handleData = function(data) {
+Session.prototype.handleData = function handleData(data) {
 	if (!this.buffer) {
 		this.buffer = data;
 	}
@@ -176,7 +176,7 @@ Session.prototype.handleData = function(data) {
 };
 
 
-Session.prototype.checkForMessages = function() {
+Session.prototype.checkForMessages = function checkForMessages() {
 	// if node scheduled multiple consecutive calls, the first one has already
 	// processed all available messages, so, hammertime
 	if (!this.buffer) return;
@@ -213,7 +213,7 @@ Session.prototype.checkForMessages = function() {
 };
 
 
-Session.prototype.handleMessage = function(msg) {
+Session.prototype.handleMessage = function handleMessage(msg) {
 	log.trace({data: msg}, 'got %s request', msg.type);
 	var self = this;
 	var rc = new RC(msg.type, this.pc, this);
@@ -228,7 +228,7 @@ Session.prototype.handleMessage = function(msg) {
 };
 
 
-Session.prototype.processRequest = function(req) {
+Session.prototype.processRequest = function processRequest(req) {
 	log.trace({data: req}, 'handling %s request', req.type);
 	var abort = this.preRequestProc(req);
 	if (abort) return;
@@ -245,7 +245,7 @@ Session.prototype.processRequest = function(req) {
  *          (e.g. on logout or critical errors)
  * @private
  */
-Session.prototype.preRequestProc = function(req) {
+Session.prototype.preRequestProc = function preRequestProc(req) {
 	switch (req.type) {
 		case 'login_start':
 		case 'relogin_start':
@@ -277,7 +277,7 @@ Session.prototype.preRequestProc = function(req) {
  * GSJS.
  * @private
  */
-Session.prototype.postRequestProc = function(req) {
+Session.prototype.postRequestProc = function postRequestProc(req) {
 	switch (req.type) {
 		case 'login_end':
 			// put player into location (same as regular move end)
@@ -293,7 +293,7 @@ Session.prototype.postRequestProc = function(req) {
 };
 
 
-Session.prototype.handleAmfReqError = function(err, req) {
+Session.prototype.handleAmfReqError = function handleAmfReqError(err, req) {
 	if (typeof err === 'object' && err.type === 'stack_overflow') {
 		// special treatment for stack overflow errors
 		// see <https://github.com/trentm/node-bunyan/issues/127>
@@ -328,7 +328,7 @@ Session.prototype.handleAmfReqError = function(err, req) {
  * @param {object} msg the message to send; must not contain anything
  *        that cannot be encoded in AMF3 (e.g. circular references)
  */
-Session.prototype.send = function(msg) {
+Session.prototype.send = function send(msg) {
 	log.trace({data: msg}, 'sending %s message', msg.type);
 	var data = amf.serializer().writeObject(msg);
 	var size = Buffer.byteLength(data, 'binary');

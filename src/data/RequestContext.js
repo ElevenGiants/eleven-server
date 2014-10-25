@@ -67,7 +67,7 @@ function RequestContext(logtag, owner, session) {
  * @param {boolean} [waitPers] if `true`, wait for persistence
  *        operations to finish before invoking callback
  */
-RequestContext.prototype.run = function(func, callback, waitPers) {
+RequestContext.prototype.run = function run(func, callback, waitPers) {
 	//jscs:disable safeContextKeyword
 	var rc = this;
 	//jscs:enable safeContextKeyword
@@ -123,7 +123,7 @@ RequestContext.prototype.run = function(func, callback, waitPers) {
  *
  * @static
  */
-RequestContext.getContext = function(relaxed) {
+RequestContext.getContext = function getContext(relaxed) {
 	if (!relaxed) {
 		assert(Fiber.current !== undefined, 'no request context');
 	}
@@ -138,7 +138,7 @@ RequestContext.getContext = function(relaxed) {
  * @static
  * @private
  */
-RequestContext.logSerialize = function(rc) {
+RequestContext.logSerialize = function logSerialize(rc) {
 	var ret = {};
 	if (rc.logtag) ret.logtag = rc.logtag;
 	if (rc.owner) ret.owner = '' + rc.owner;
@@ -154,7 +154,7 @@ RequestContext.logSerialize = function(rc) {
  *
  * @param {GameObject} obj
  */
-RequestContext.prototype.setDirty = function(obj) {
+RequestContext.prototype.setDirty = function setDirty(obj) {
 	this.dirty[obj.tsid] = obj;
 };
 
@@ -167,7 +167,7 @@ RequestContext.prototype.setDirty = function(obj) {
  *
  * @param {GameObject} obj
  */
-RequestContext.prototype.setUnload = function(obj) {
+RequestContext.prototype.setUnload = function setUnload(obj) {
 	this.setDirty(obj);  // make sure last state is persisted
 	this.unload[obj.tsid] = obj;
 };
@@ -182,6 +182,6 @@ RequestContext.prototype.setUnload = function(obj) {
  * @param {function} callback called after request processing and the
  *        resulting persistence; no arguments
  */
-RequestContext.prototype.setPostPersCallback = function(callback) {
+RequestContext.prototype.setPostPersCallback = function setPostPersCallback(callback) {
 	this.postPersCallback = callback;
 };

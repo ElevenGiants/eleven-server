@@ -142,7 +142,7 @@ function initClient(gsconf, callback) {
 		new jrpc.transports.client.tcp(gsconf.host, port, {
 			logger: getJrpcLogger('client-' + gsid),
 		}), {},
-		function(connectedClient) {
+		function onConnected(connectedClient) {
 			log.info('RPC client for %s connected', gsid);
 			clients[gsid] = connectedClient;
 			callback();

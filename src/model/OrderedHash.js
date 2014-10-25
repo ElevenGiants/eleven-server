@@ -30,7 +30,7 @@ function OrderedHash(data) {
  * OrderedHash#last|last}.
  * @private
  */
-OrderedHash.prototype.sortedKeys = function() {
+OrderedHash.prototype.sortedKeys = function sortedKeys() {
 	return Object.keys(this).sort();
 };
 
@@ -41,7 +41,7 @@ OrderedHash.prototype.sortedKeys = function() {
  *
  * @returns {*} first value in the hash
  */
-OrderedHash.prototype.first = function() {
+OrderedHash.prototype.first = function first() {
 	return this[this.sortedKeys()[0]];
 };
 
@@ -52,7 +52,7 @@ OrderedHash.prototype.first = function() {
  *
  * @returns {*} last value in the hash
  */
-OrderedHash.prototype.last = function() {
+OrderedHash.prototype.last = function last() {
 	return this[this.sortedKeys().slice(-1)];
 };
 
@@ -62,7 +62,7 @@ OrderedHash.prototype.last = function() {
  *
  * @returns {number} number of key/value pairs stored in the hash
  */
-OrderedHash.prototype.length = function() {
+OrderedHash.prototype.length = function length() {
 	return Object.keys(this).length;
 };
 
@@ -70,7 +70,7 @@ OrderedHash.prototype.length = function() {
 /**
  * Clears the hash by removing all non-function direct properties.
  */
-OrderedHash.prototype.clear = function() {
+OrderedHash.prototype.clear = function clear() {
 	for (var prop in this) {
 		if (this.hasOwnProperty(prop) && typeof this[prop] !== 'function') {
 			delete this[prop];

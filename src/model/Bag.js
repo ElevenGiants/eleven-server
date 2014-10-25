@@ -43,7 +43,7 @@ function Bag(data) {
  *
  * @see {@link GameObject#serialize|GameObject.serialize}
  */
-Bag.prototype.serialize = function() {
+Bag.prototype.serialize = function serialize() {
 	var ret = Bag.super_.prototype.serialize.call(this);
 	ret.items = utils.hashToArray(ret.items);
 	ret.hiddenItems = utils.hashToArray(ret.hiddenItems);
@@ -70,7 +70,7 @@ Bag.prototype.serialize = function() {
  * @returns {object} a hash with all contained items, as decribed above
  *          (NB: does not contain the root bag itself!)
  */
-Bag.prototype.getAllItems = function(aggregate, pathPrefix) {
+Bag.prototype.getAllItems = function getAllItems(aggregate, pathPrefix) {
 	var ret = aggregate || {};
 	pathPrefix = pathPrefix || '';
 	[this.items, this.hiddenItems].forEach(function collect(itemHash) {

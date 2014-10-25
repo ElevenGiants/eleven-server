@@ -36,12 +36,12 @@ function makeProxy(obj, prop) {
 		return prop;
 	}
 	var ret = new Proxy(prop, {
-		get: function(target, name, receiver) {
+		get: function get(target, name, receiver) {
 			if (name === '__isPP') {
 				return true;
 			}
 			if (name === 'valueOf' || name === 'toString') {
-				return function() {
+				return function () {
 					return '^P' + target.toString();
 				};
 			}
@@ -64,7 +64,7 @@ function makeProxy(obj, prop) {
 			}
 			return ret;
 		},
-		set: function(target, name, val, receiver) {
+		set: function set(target, name, val, receiver) {
 			// only set dirty flag for actual value changes
 			if (val !== target[name]) {
 				target[name] = val;
@@ -77,7 +77,7 @@ function makeProxy(obj, prop) {
 				}
 			}
 		},
-		deleteProperty: function(target, name) {
+		deleteProperty: function deleteProperty(target, name) {
 			if (name in target) {
 				if (name[0] !== '!' && target.hasOwnProperty(name) &&
 					target.propertyIsEnumerable(name)) {

@@ -79,7 +79,7 @@ function makeProxy(objref) {
 		get: function get(target, name, receiver) {
 			if (name === 'inspect' || name === 'valueOf' || name === 'toString') {
 				// node's util module uses 'inspect' (e.g. during console.log)
-				return function() {
+				return function () {
 					return '^O[' + target.tsid + ']';
 				};
 			}
