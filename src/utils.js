@@ -113,7 +113,7 @@ function copyProps(from, to) {
  * Checks whether the supplied value is an integer number (works for
  * number and string type values).
  *
- * @param {number|string}
+ * @param {number|string} i
  * @returns {boolean}
  */
 function isInt(i) {
@@ -125,12 +125,12 @@ function isInt(i) {
  * Checks whether a given game object or TSID is (resp. refers to) a
  * {@link Bag} (which includes {@link Player}s).
  *
- * @param {GameObject|string} game object or TSID to check
+ * @param {GameObject|string} gameObjOrTsid game object/TSID to check
  * @returns {boolean}
  */
 function isBag(gameObjOrTsid) {
 	var i = getInitial(gameObjOrTsid);
-	return  i === 'P' || i === 'B';
+	return i === 'P' || i === 'B';
 }
 
 
@@ -138,7 +138,7 @@ function isBag(gameObjOrTsid) {
  * Checks whether a given game object or TSID is (resp. refers to) a
  * {@link Player}.
  *
- * @param {GameObject|string} game object or TSID to check
+ * @param {GameObject|string} gameObjOrTsid game object/TSID to check
  * @returns {boolean}
  */
 function isPlayer(gameObjOrTsid) {
@@ -150,7 +150,7 @@ function isPlayer(gameObjOrTsid) {
  * Checks whether a given game object or TSID is (resp. refers to) a
  * {@link Location}.
  *
- * @param {GameObject|string} game object or TSID to check
+ * @param {GameObject|string} gameObjOrTsid game object/TSID to check
  * @returns {boolean}
  */
 function isLoc(gameObjOrTsid) {
@@ -162,7 +162,7 @@ function isLoc(gameObjOrTsid) {
  * Checks whether a given game object or TSID is (resp. refers to) a
  * geometry object.
  *
- * @param {GameObject|string} game object or TSID to check
+ * @param {GameObject|string} gameObjOrTsid game object/TSID to check
  * @returns {boolean}
  */
 function isGeo(gameObjOrTsid) {
@@ -174,7 +174,7 @@ function isGeo(gameObjOrTsid) {
  * Checks whether a given game object or TSID is (resp. refers to) an
  * {@link Item} (which includes {@link Player}s and {@link Bag}s).
  *
- * @param {GameObject|string} game object or TSID to check
+ * @param {GameObject|string} gameObjOrTsid game object/TSID to check
  * @returns {boolean}
  */
 function isItem(gameObjOrTsid) {
@@ -187,7 +187,7 @@ function isItem(gameObjOrTsid) {
  * Checks whether a given game object or TSID is (resp. refers to) a
  * generic data container.
  *
- * @param {GameObject|string} game object or TSID to check
+ * @param {GameObject|string} gameObjOrTsid game object/TSID to check
  * @returns {boolean}
  */
 function isDC(gameObjOrTsid) {
@@ -199,7 +199,7 @@ function isDC(gameObjOrTsid) {
  * Checks whether a given game object or TSID is (resp. refers to) a
  * {@link Quest}.
  *
- * @param {GameObject|string} game object or TSID to check
+ * @param {GameObject|string} gameObjOrTsid game object/TSID to check
  * @returns {boolean}
  */
 function isQuest(gameObjOrTsid) {
@@ -211,7 +211,7 @@ function isQuest(gameObjOrTsid) {
  * Checks whether a given game object or TSID is (resp. refers to) a
  * {@link Group}.
  *
- * @param {GameObject|string} game object or TSID to check
+ * @param {GameObject|string} gameObjOrTsid game object/TSID to check
  * @returns {boolean}
  */
 function isGroup(gameObjOrTsid) {
@@ -222,7 +222,8 @@ function isGroup(gameObjOrTsid) {
 /**
  * Retrieves the first character of a given game object or TSID.
  *
- * @param {GameObject|string} game object or TSID to examine
+ * @param {GameObject|string} gameObjOrTsid game object or TSID to
+ *        examine
  * @returns {string|undefined} a single-letter string, or `undefined`
  *          if the input was invalid
  */
@@ -321,7 +322,7 @@ function shallowCopy(obj) {
 		'invalid type: ' + typeof obj);
 	var ret = {};
 	for (var k in obj) {
-		if (obj.hasOwnProperty(k) && typeof(obj[k]) !== 'function') {
+		if (obj.hasOwnProperty(k) && typeof obj[k] !== 'function') {
 			ret[k] = obj[k];
 		}
 	}
@@ -334,10 +335,10 @@ function shallowCopy(obj) {
  * length.
  *
  * @param {string} str string to left-pad
- * @param {string} padding character (must be single character string)
+ * @param {string} pad padding character (must be a single character)
  * @param {number} len desired overall length (string + padding); if
  *        `str` is already this long or longer, nothing happens
- * @returns the padded string
+ * @returns {string} the padded string
  */
 function padLeft(str, pad, len) {
 	var ret = str.toString();

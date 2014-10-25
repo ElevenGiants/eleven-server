@@ -35,6 +35,8 @@
   "devDependencies": {
     "benchmark": "https://github.com/bestiejs/benchmark.js/tarball/master",
     "chai": "^1.9.1",
+    "jscs": "^1.7.3",
+    "jscs-jsdoc": "0.0.13",
     "jsdoc": "^3.3.0-alpha9",
     "jshint": "^2.5.5",
     "mocha": "^1.20.1",
@@ -46,25 +48,7 @@
     "test": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony $ARG test/unit",
     "functest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony $ARG test/func",
     "bench": "NODE_PATH=src node --harmony bench/runner.js $ARG",
-    "lint": "node_modules/jshint/bin/jshint --exclude src/gsjs src",
+    "lint": "node_modules/jshint/bin/jshint --verbose --exclude src/gsjs src test && node_modules/jscs/bin/jscs --verbose --reporter inline src test",
     "docs": "node node_modules/jsdoc/jsdoc.js --destination docs --configure jsdoc-conf.json src"
-  },
-  "jshintConfig": {
-    "eqeqeq": true,
-    "freeze": true,
-    "globals": {
-      "log": true,
-      "Reflect": true,
-      "Proxy": true
-    },
-    "immed": true,
-    "maxdepth": 4,
-    "maxparams": 5,
-    "maxstatements": 20,
-    "multistr": true,
-    "node": true,
-    "quotmark": "single",
-    "strict": true,
-    "unused": "vars"
   }
 }

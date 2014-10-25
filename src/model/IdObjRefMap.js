@@ -29,7 +29,7 @@ function IdObjRefMap(data) {
  * @instance
  */
 Object.defineProperty(IdObjRefMap.prototype, 'length', {
-	get: function() {
+	get: function get() {
 		return Object.keys(this).length;
 	},
 });
@@ -39,22 +39,22 @@ Object.defineProperty(IdObjRefMap.prototype, 'length', {
  * Iterates over objects in this map, optionally filtering by
  * `class_tsid`, and calls the given function on each one.
  *
- * @param {string} [class_tsid] only iterate over objects of this class
+ * @param {string} [classTsid] only iterate over objects of this class
  * @param {function} func function to be called for each (matching)
  *        object; signature: `func(obj)`
  */
-IdObjRefMap.prototype.apiIterate = function(class_tsid, func) {
-	// handle optional class_tsid parameter
-	if (class_tsid instanceof Function) {
-		func = class_tsid;
-		class_tsid = undefined;
+IdObjRefMap.prototype.apiIterate = function apiIterate(classTsid, func) {
+	// handle optional classTsid parameter
+	if (classTsid instanceof Function) {
+		func = classTsid;
+		classTsid = undefined;
 	}
-	log.debug('IdObjRefMap.apiIterate(%s, %s)', class_tsid, func.name);
+	log.debug('IdObjRefMap.apiIterate(%s, %s)', classTsid, func.name);
 	var keys = Object.keys(this);
 	for (var i = 0; i < keys.length; i++) {
 		var o = this[keys[i]];
 		if (typeof o !== 'object') continue;
-		if (!class_tsid || o.class_tsid === class_tsid) {
+		if (!classTsid || o.class_tsid === classTsid) {
 			func(o);
 		}
 	}

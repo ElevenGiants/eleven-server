@@ -51,12 +51,12 @@ function makeProxy(obj) {
  */
 function proxyGet(target, name, receiver) {
 	if (name === '__isRP') return true;
-	// only functions are called remotely 
+	// only functions are called remotely
 	if (typeof target[name] !== 'function') {
 		return target[name];
 	}
 	if (name === 'valueOf' || name === 'toString') {
-		return function() {
+		return function () {
 			return '^R' + target.toString();
 		};
 	}

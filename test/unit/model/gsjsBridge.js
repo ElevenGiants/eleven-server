@@ -8,10 +8,10 @@ var Geo = require('model/Geo');
 var DataContainer = require('model/DataContainer');
 
 
-suite('gsjsBridge', function() {
+suite('gsjsBridge', function () {
 
-	suite('createFromData', function() {
-	
+	suite('createFromData', function () {
+
 		function createDummyProtos() {
 			var ret = {
 				items: {},
@@ -23,13 +23,13 @@ suite('gsjsBridge', function() {
 			util.inherits(Thingie, Item);
 			ret.items.thingie = Thingie.prototype;
 			return ret;
-		};
-		
-		setup(function() {
+		}
+
+		setup(function () {
 			gsjsBridge.__set__('prototypes', createDummyProtos());
 		});
-		
-		test('does its job', function() {
+
+		test('does its job', function () {
 			var o = gsjsBridge.createFromData({
 				tsid: 'IXYZ',
 				class_tsid: 'thingie',
@@ -41,8 +41,8 @@ suite('gsjsBridge', function() {
 			assert.property(o, 'blargh', 'property copied from supplied data');
 			assert.property(o, 'dummydata', 'property set in thingie constructor');
 		});
-		
-		test('geo and DC objects are instantiated from their base classes', function() {
+
+		test('geo and DC objects are instantiated from their base classes', function () {
 			var g = gsjsBridge.createFromData({tsid: 'GXYZ'});
 			assert.instanceOf(g, Geo);
 			var d = gsjsBridge.createFromData({tsid: 'DXYZ'});

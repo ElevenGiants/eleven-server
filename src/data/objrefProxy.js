@@ -46,7 +46,7 @@ var pers = require('data/pers');
 
 /**
  * Custom error type for OR proxy related errors.
- * 
+ *
  * @param {string} [msg] error message
  * @constructor
  */
@@ -79,7 +79,7 @@ function makeProxy(objref) {
 		get: function get(target, name, receiver) {
 			if (name === 'inspect' || name === 'valueOf' || name === 'toString') {
 				// node's util module uses 'inspect' (e.g. during console.log)
-				return function() {
+				return function () {
 					return '^O[' + target.tsid + ']';
 				};
 			}
@@ -136,7 +136,7 @@ function resolve(objref) {
 
 /**
  * Recursively replaces objrefs with proxies in the supplied data
- * (in-place replacement, **the input data will be modified!**). 
+ * (in-place replacement, **the input data will be modified!**).
  *
  * @param {object} data arbitrary data containing objrefs; must not
  *        contain circular references and must not be an objref itself

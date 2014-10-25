@@ -22,19 +22,19 @@ suite('Player', function () {
 		RC.__set__('pers', persMock);
 		persMock.reset();
 	});
-	
+
 	teardown(function () {
 		RC.__set__('pers', rewire('data/pers'));
 		persMock.reset();
 	});
-	
-	
+
+
 	suite('ctor', function () {
-	
+
 		test('TSIDs of new Player objects start with P', function () {
 			assert.strictEqual(new Player().tsid[0], 'P');
 		});
-		
+
 		test('properties are initialized properly', function () {
 			var p = new Player({tsid: 'P1', metabolics: {energy: 7000}});
 			assert.instanceOf(p.metabolics.energy, Property);
@@ -47,7 +47,7 @@ suite('Player', function () {
 			assert.strictEqual(p.metabolics.energy.bottom, 0);
 			assert.strictEqual(p.metabolics.energy.top, 800);
 		});
-		
+
 		test('missing properties are created', function () {
 			var p = new Player();
 			assert.strictEqual(p.metabolics.energy.value, 0);
@@ -55,10 +55,10 @@ suite('Player', function () {
 			assert.strictEqual(p.daily_favor.ti.value, 0);
 		});
 	});
-	
-	
+
+
 	suite('serialize', function () {
-	
+
 		test('properties are serialized as full objects', function () {
 			var p = new Player({tsid: 'P1', stats: {xp: 23}});
 			var data = JSON.parse(JSON.stringify(p.serialize()));
@@ -66,11 +66,12 @@ suite('Player', function () {
 				{value: 23, bottom: 23, top: 23, label: 'xp'});
 		});
 	});
-	
-	
+
+
 	suite('startMove', function () {
-	
-		test('removes player from old loc and updates location property', function () {
+
+		test('removes player from old loc and updates location property',
+			function () {
 			var lold = new Location({tsid: 'Lold'}, new Geo());
 			var lnew = new Location({tsid: 'Lnew'}, new Geo());
 			var p = new Player({tsid: 'P1', location: lold, x: 1, y: 1});
@@ -80,17 +81,19 @@ suite('Player', function () {
 			assert.strictEqual(p.x, 2);
 			assert.strictEqual(p.y, 3);
 			assert.lengthOf(Object.keys(lold.players), 0);
-			assert.deepEqual(lnew.players, {}, 'player is not added to new loc yet');
+			assert.deepEqual(lnew.players, {},
+				'player is not added to new loc yet');
 		});
-	
+
 		test('works when player does not have a current location', function () {
 			var p = new Player({tsid: 'P1'});
 			var l = new Location({tsid: 'L'}, new Geo());
 			p.startMove(l, 0, 0);
 			assert.strictEqual(p.location, l);
-			assert.deepEqual(l.players, {}, 'player is not added to new loc yet');
+			assert.deepEqual(l.players, {},
+				'player is not added to new loc yet');
 		});
-	
+
 		test('calls onExit callbacks', function () {
 			var itemOnPlayerExitCalled = false;
 			var locOnPlayerExitCalled = false;
@@ -111,29 +114,31 @@ suite('Player', function () {
 			assert.isTrue(itemOnPlayerExitCalled);
 			assert.isTrue(locOnPlayerExitCalled);
 		});
-		
+
 		test('does not change current location for logout call', function () {
 			var p = new Player({tsid: 'P1', x: 3, y: 7});
 			var l = new Location({tsid: 'L', players: [p]}, new Geo());
 			p.location = l;
 			p.startMove();
-			assert.deepEqual(l.players, {}, 'player removed from location on logout');
-			assert.strictEqual(p.location, l, 'location property unchanged after logout');
+			assert.deepEqual(l.players, {},
+				'player removed from location on logout');
+			assert.strictEqual(p.location, l,
+				'location property unchanged after logout');
 			assert.strictEqual(p.x, 3);
 		});
 	});
-	
-	
+
+
 	suite('endMove', function () {
-	
+
 		test('adds player to player list in new loc', function () {
 			var l = new Location({tsid: 'L'}, new Geo());
 			var p = new Player({tsid: 'P1', location: l});
 			p.endMove();
 			assert.strictEqual(p.location, l);  // unchanged
-			assert.deepEqual(l.players, {'P1': p}, 'player added to new loc');
+			assert.deepEqual(l.players, {P1: p}, 'player added to new loc');
 		});
-	
+
 		test('calls onEnter callbacks', function () {
 			var itemOnPlayerEnterCalled = false;
 			var locOnPlayerEnterCalled = false;
@@ -153,19 +158,19 @@ suite('Player', function () {
 			assert.isTrue(locOnPlayerEnterCalled);
 		});
 	});
-	
-	
+
+
 	suite('onDisconnect', function () {
-	
+
 		setup(function () {
 			Player.__set__('rpc', rpcMock);
 			rpcMock.reset(true);
 		});
-		
+
 		teardown(function () {
 			Player.__set__('rpc', require('data/rpc'));
 		});
-		
+
 		test('handles logout/error case correctly', function (done) {
 			var logoutCalled = false;
 			var p = new Player({tsid: 'P1', session: 'foo'});
@@ -181,7 +186,8 @@ suite('Player', function () {
 				},
 				function callback(err, res) {
 					if (err) return done(err);
-					assert.isFalse('P1' in l.players, 'PC removed from location');
+					assert.isFalse('P1' in l.players,
+						'PC removed from location');
 					assert.isTrue(logoutCalled, 'API event onLogout called');
 					assert.isNull(p.session);
 					assert.deepEqual(persMock.getUnloadList(), {P1: p});
@@ -189,7 +195,7 @@ suite('Player', function () {
 				}
 			);
 		});
-		
+
 		test('handles inter-GS move case correctly', function (done) {
 			var logoutCalled = false;
 			var p = new Player({tsid: 'P1', session: 'foo'});
@@ -205,8 +211,10 @@ suite('Player', function () {
 				},
 				function callback(err, res) {
 					if (err) return done(err);
-					assert.isTrue('P1' in l.players, 'PC not removed from loc (already the new location)');
-					assert.isFalse(logoutCalled, 'API event onLogout is not called on loc change');
+					assert.isTrue('P1' in l.players,
+						'PC not removed from loc (already the new location)');
+					assert.isFalse(logoutCalled,
+						'API event onLogout is not called on loc change');
 					assert.isNull(p.session);
 					assert.deepEqual(persMock.getUnloadList(), {P1: p});
 					done();
@@ -215,9 +223,9 @@ suite('Player', function () {
 		});
 	});
 
-	
+
 	suite('sendServerMsg', function () {
-			
+
 		test('does what it is supposed to do', function (done) {
 			var p = new Player({tsid: 'P1'});
 			p.session = {
@@ -232,7 +240,7 @@ suite('Player', function () {
 			};
 			p.sendServerMsg('CLOSE', {ping: 'pong'});
 		});
-		
+
 		test('works without optional data parameter', function (done) {
 			var p = new Player({tsid: 'P1'});
 			p.session = {
@@ -246,17 +254,17 @@ suite('Player', function () {
 			};
 			p.sendServerMsg('TOKEN');
 		});
-		
+
 		test('error for offline player', function () {
 			assert.throw(function () {
 				new Player().sendServerMsg('FOO');
 			}, assert.AssertionError);
 		});
 	});
-	
-	
+
+
 	suite('gsMoveCheck', function () {
-	
+
 		setup(function () {
 			Player.__set__('config', {
 				getGSConf: function getGSConf(gsid) {
@@ -266,21 +274,21 @@ suite('Player', function () {
 						port: 1445,
 						hostPort: '12.34.56.78:1445',
 						local: false,
-					}
+					};
 				},
 			});
 			Player.__set__('rpc', rpcMock);
 			rpcMock.reset(true);
 			auth.init(abePassthrough);
 		});
-		
+
 		teardown(function () {
 			Player.__set__('config', require('config'));
 			Player.__set__('rpc', require('data/rpc'));
 			rpcMock.reset(true);
 			auth.init(null);
 		});
-		
+
 		test('handles local move case correctly', function (done) {
 			var p = new Player({tsid: 'P1', onGSLogout: function dummy() {}});
 			var rc = new RC();
@@ -291,7 +299,7 @@ suite('Player', function () {
 				done();
 			});
 		});
-		
+
 		test('returns data required for GS reconnect', function (done) {
 			rpcMock.reset(false);
 			var p = new Player({tsid: 'P1', onGSLogout: function dummy() {}});
@@ -302,8 +310,9 @@ suite('Player', function () {
 				done();
 			});
 		});
-		
-		test('sends/schedules server messages required for GS reconnect', function (done) {
+
+		test('sends/schedules server messages required for GS reconnect',
+			function (done) {
 			rpcMock.reset(false);
 			var p = new Player({tsid: 'P1', onGSLogout: function dummy() {}});
 			var msgs = [];
@@ -334,10 +343,10 @@ suite('Player', function () {
 			);
 		});
 	});
-	
-	
+
+
 	suite('getConnectedObjects', function () {
-	
+
 		test('does its job', function () {
 			var p = new Player({tsid: 'P1',
 				buffs: new DataContainer({label: 'Buffs'}),
@@ -364,13 +373,14 @@ suite('Player', function () {
 			assert.strictEqual(keys.filter(utils.isPlayer).length, 1);
 			assert.strictEqual(keys.filter(utils.isDC).length, 8);
 			assert.strictEqual(keys.filter(utils.isQuest).length, 2);
-			assert.strictEqual(keys.length, 11, 'does not contain any other objects');
+			assert.strictEqual(keys.length, 11,
+				'does not contain any other objects');
 		});
 	});
-	
-	
+
+
 	suite('unload', function () {
-	
+
 		test('does its job', function (done) {
 			var p = new Player({tsid: 'P1',
 				buffs: new DataContainer({tsid: 'DC1'}),

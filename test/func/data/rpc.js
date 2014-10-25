@@ -23,21 +23,21 @@ suite('rpc', function () {
 		gsid: 'gs01-loopback',  // different from actual GSID to trick rpc module
 		host: '127.0.0.1',
 	};
-	
+
 	var cfgBackup;
-	
+
 	suiteSetup(function () {
 		cfgBackup = config.get();
 		config.reset();
 	});
-	
+
 	suiteTeardown(function () {
 		config.init(false, cfgBackup);
 	});
-	
+
 
 	suite('initialization and shutdown', function () {
-		
+
 		test('works', function (done) {
 			config.init(true, CONFIG, {});
 			// start up RPC server
@@ -45,17 +45,20 @@ suite('rpc', function () {
 				// start up RPC client (with fake config to connect back to
 				// the server we just started)
 				rpc.__get__('initClient')(GSCONF_LOOPBACK, function clientStarted() {
-					assert.deepEqual(Object.keys(rpc.__get__('clients')), ['gs01-loopback'],
-						'exactly one client endpoint initialized');
+					assert.deepEqual(Object.keys(rpc.__get__('clients')),
+						['gs01-loopback'], 'exactly one client endpoint initialized');
 					// multitransport-jsonrpc specific stuff:
 					var client = rpc.__get__('clients')['gs01-loopback'];
-					assert.deepEqual(client.transport.tcpConfig, {host: '127.0.0.1', port: 7000});
+					assert.deepEqual(client.transport.tcpConfig,
+						{host: '127.0.0.1', port: 7000});
 					var server = rpc.__get__('server');
-					assert.strictEqual(Object.keys(server.transport.connections).length, 1,
-						'exactly one client connected to server');
-					var connection = server.transport.connections[Object.keys(server.transport.connections)[0]];
+					assert.strictEqual(Object.keys(server.transport.connections).length,
+						1, 'exactly one client connected to server');
+					var connection = server.transport.connections[Object.keys(
+						server.transport.connections)[0]];
 					assert.strictEqual(connection.remoteAddress, '127.0.0.1');
-					assert.strictEqual(connection.remotePort, client.transport.con.localPort,
+					assert.strictEqual(connection.remotePort,
+						client.transport.con.localPort,
 						'server and client endpoints are connected');
 					// test shutdown, too
 					rpc.shutdown(function callback() {
@@ -70,10 +73,10 @@ suite('rpc', function () {
 			});
 		});
 	});
-	
-	
+
+
 	suite('function calls', function () {
-	
+
 		setup(function (done) {
 			rcMock.reset();
 			// enable mock persistence layer
@@ -100,8 +103,8 @@ suite('rpc', function () {
 				done();
 			});
 		});
-		
-		
+
+
 		test('dummy function', function (done) {
 			var server = rpc.__get__('server');
 			var client = rpc.__get__('clients')['gs01-loopback'];
@@ -114,7 +117,7 @@ suite('rpc', function () {
 				done(err);
 			});
 		});
-		
+
 		test('function call on actual game object', function (done) {
 			// make fake client RPC connection available under our own GSID (so
 			// requests on objects we are managing go to our own RPC server):
@@ -123,7 +126,9 @@ suite('rpc', function () {
 			// configured GS, so we are authoritative for it):
 			var go = new GameObject({
 				tsid: 'LXYZ',
-				foo: function (a, b) { return a + b; },
+				foo: function (a, b) {
+					return a + b;
+				},
 			});
 			persMock.preAdd(go);
 			rcMock.run(function () {
@@ -131,7 +136,7 @@ suite('rpc', function () {
 				assert.strictEqual(res, 21, 'function is actually called');
 			}, null, null, done);
 		});
-		
+
 		test('return null if called function returns undefined', function (done) {
 			rpc.__get__('clients')['gs01-01'] = rpc.__get__('clients')['gs01-loopback'];
 			persMock.preAdd(new GameObject({
@@ -143,8 +148,9 @@ suite('rpc', function () {
 				assert.isNull(res, 'undefined (unknown in JSON) is converted to null');
 			}, null, null, done);
 		});
-		
-		test('return proper RPC result object if called function returns undefined', function (done) {
+
+		test('return proper RPC result object if called function returns undefined',
+			function (done) {
 			rpc.__get__('clients')['gs01-01'] = rpc.__get__('clients')['gs01-loopback'];
 			persMock.preAdd(new GameObject({
 				tsid: 'LXYZ',
@@ -158,10 +164,12 @@ suite('rpc', function () {
 					var res = JSON.parse(s);
 					assert.strictEqual(res.id, 123);
 					assert.isNull(res.error, 'no error occurred');
-					assert.isNull(res.result, 'response contains result property with value null');
+					assert.isNull(res.result,
+						'response contains result property with value null');
 					done();
 				});
-				var msg = JSON.stringify({method: 'obj', params: ['foo', 'LXYZ', 'func', []], id: 123});
+				var msg = JSON.stringify({method: 'obj',
+					params: ['foo', 'LXYZ', 'func', []], id: 123});
 				var length = Buffer.byteLength(msg);
 				var buf = new Buffer(4 + length);
 				buf.writeUInt32BE(length, 0);
@@ -169,8 +177,9 @@ suite('rpc', function () {
 				socket.write(buf);
 			});
 		});
-		
-		test('handles invalid (non-array) args parameter gracefully', function (done) {
+
+		test('handles invalid (non-array) args parameter gracefully',
+			function (done) {
 			persMock.preAdd(new GameObject({
 				tsid: 'LX',
 				func: function () {
@@ -178,7 +187,8 @@ suite('rpc', function () {
 				},
 			}));
 			rcMock.run(function () {
-				var res = rpc.__get__('handleRequest')('caller', 'LX', 'func', null, function cb(err, res) {
+				rpc.__get__('handleRequest')('caller', 'LX', 'func', null,
+					function cb(err, res) {
 					if (err) return done(err);
 					assert.strictEqual(res, 'foo');
 					done();

@@ -26,7 +26,7 @@ var assert = require('assert');
 
 /**
  * Custom authentication error type.
- * 
+ *
  * @param {string} [msg] error message
  * @constructor
  */

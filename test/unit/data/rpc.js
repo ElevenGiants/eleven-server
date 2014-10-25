@@ -12,49 +12,50 @@ var Quest = require('model/Quest');
 var Group = require('model/Group');
 
 
-suite('rpc', function() {
+suite('rpc', function () {
 
-	setup(function() {
+	setup(function () {
 		rpc.__set__('pers', persMock);
 		persMock.reset();
 	});
 
-	teardown(function() {
+	teardown(function () {
 		persMock.reset();
 		rpc.__set__('pers', require('data/pers'));
 	});
-	
-	
-	suite('getGsid', function() {
-	
-		setup(function() {
+
+
+	suite('getGsid', function () {
+
+		setup(function () {
 			rpc.__set__('config', {
-				mapToGS: function(objOrTsid) {
-					var tsid = (typeof objOrTsid === 'string' ? objOrTsid : objOrTsid.tsid);
+				mapToGS: function (objOrTsid) {
+					var tsid = (typeof objOrTsid === 'string' ?
+						objOrTsid : objOrTsid.tsid);
 					return {gsid: 'gs-' + tsid};
 				},
 			});
 		});
-		
-		teardown(function() {
+
+		teardown(function () {
 			rpc.__set__('config', require('config'));
 		});
 
 
-		test('works for base cases (groups and locations)', function() {
+		test('works for base cases (groups and locations)', function () {
 			assert.strictEqual(rpc.getGsid('L1234'), 'gs-L1234');
 			assert.strictEqual(rpc.getGsid({tsid: 'R1234'}), 'gs-R1234');
 		});
-		
-		test('works for Geos', function() {
+
+		test('works for Geos', function () {
 			var g = new Geo({tsid: 'GXYZ'});
 			var l = new Location({tsid: 'LXYZ'}, g);
 			persMock.preAdd(g, l);
 			assert.strictEqual(rpc.getGsid(g), 'gs-LXYZ');
 			assert.strictEqual(rpc.getGsid('GXYZ'), 'gs-LXYZ');
 		});
-		
-		test('works for players', function() {
+
+		test('works for players', function () {
 			var l = new Location({tsid: 'L132'}, new Geo());
 			var p = new Player({tsid: 'P132', location: 'L132'});
 			persMock.preAdd(l, p);
@@ -65,8 +66,8 @@ suite('rpc', function() {
 			orProxy.proxify(p);
 			assert.strictEqual(rpc.getGsid(p), 'gs-L345');
 		});
-		
-		test('works for items', function() {
+
+		test('works for items', function () {
 			var l = new Location({tsid: 'LX'}, new Geo());
 			var i = new Item({tsid: 'I1', tcont: 'LX'});
 			persMock.preAdd(l, i);
@@ -79,8 +80,8 @@ suite('rpc', function() {
 			assert.strictEqual(rpc.getGsid(i), 'gs-LX');
 			assert.strictEqual(rpc.getGsid('B2'), 'gs-LX');
 		});
-		
-		test('works for quests and DCs', function() {
+
+		test('works for quests and DCs', function () {
 			// owner can be player...
 			var q = new Quest({tsid: 'Q1', owner: 'P1'});
 			var p = new Player({tsid: 'P1', location: 'L1'});

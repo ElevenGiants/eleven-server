@@ -37,7 +37,7 @@ function Geo(data) {
  * this function multiple times (e.g. when the geometry has been
  * changed).
  */
-Geo.prototype.prepConnects = function() {
+Geo.prototype.prepConnects = function prepConnects() {
 	if (this.layers && this.layers.middleground) {
 		var mg = this.layers.middleground;
 		var i, k;
@@ -76,7 +76,7 @@ function prepConnect(conn) {
  *
  * @see {@link GameObject#serialize|GameObject.serialize}
  */
-Geo.prototype.serialize = function() {
+Geo.prototype.serialize = function serialize() {
 	var ret = Geo.super_.prototype.serialize.call(this);
 	if (ret.layers && ret.layers.middleground) {
 		// make sure we're not modifying the actual object data (ret is just a
@@ -120,7 +120,7 @@ function revertConnect(conn) {
  *
  * @returns {object} shallow copy of the geometry data
  */
-Geo.prototype.getClientGeo = function() {
+Geo.prototype.getClientGeo = function getClientGeo() {
 	var ret = utils.shallowCopy(this);
 	// client expects location TSID here:
 	ret.tsid = Location.prototype.TSID_INITIAL + this.tsid.slice(1);
@@ -135,7 +135,7 @@ Geo.prototype.getClientGeo = function() {
  * @returns {object} subset of the geometry data with just a few select
  *          properties
  */
-Geo.prototype.getGeo = function() {
+Geo.prototype.getGeo = function getGeo() {
 	var ret = {
 		l: this.l,
 		r: this.r,
@@ -158,6 +158,6 @@ Geo.prototype.getGeo = function() {
  *
  * @returns {string} TSID of the corresponding {@link Location} object
  */
-Geo.prototype.getLocTsid = function() {
+Geo.prototype.getLocTsid = function getLocTsid() {
 	return Location.prototype.TSID_INITIAL + this.tsid.slice(1);
 };

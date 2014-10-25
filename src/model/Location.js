@@ -53,10 +53,10 @@ function Location(data, geo) {
 
 // define activePlayers property as read-only alias for players
 Object.defineProperty(Location.prototype, 'activePlayers', {
-	get: function() {
+	get: function get() {
 		return this.players;
 	},
-	set: function() {
+	set: function set() {
 		throw new Error('read-only property: activePlayers');
 	},
 });
@@ -67,7 +67,7 @@ Object.defineProperty(Location.prototype, 'activePlayers', {
  *
  * @returns {string} TSID of the corresponding {@link Geo} object
  */
-Location.prototype.getGeoTsid = function() {
+Location.prototype.getGeoTsid = function getGeoTsid() {
 	return Geo.prototype.TSID_INITIAL + this.tsid.slice(1);
 };
 
@@ -78,7 +78,7 @@ Location.prototype.getGeoTsid = function() {
  *
  * @see {@link GameObject#serialize|GameObject.serialize}
  */
-Location.prototype.serialize = function() {
+Location.prototype.serialize = function serialize() {
 	var ret = Location.super_.prototype.serialize.call(this);
 	ret.items = utils.hashToArray(ret.items);
 	ret.players = utils.hashToArray(ret.players);
@@ -94,7 +94,7 @@ Location.prototype.serialize = function() {
  * @param {Geo} [data] new/changed geometry data; if `undefined`,
  *        operates on the existing `Geo` object
  */
-Location.prototype.updateGeo = function(data) {
+Location.prototype.updateGeo = function updateGeo(data) {
 	log.debug('%s.updateGeo', this);
 	// optional parameter handling
 	if (!data) data = this.geometry;

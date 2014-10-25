@@ -5,45 +5,46 @@ var pp = rewire('data/persProxy');
 var rcMock = require('../../mock/RequestContext');
 
 
-suite('persProxy', function() {
+suite('persProxy', function () {
 
-	setup(function() {
+	setup(function () {
 		rcMock.reset();
 		pp.__set__('RC', rcMock);
 	});
-	
-	teardown(function() {
+
+	teardown(function () {
 		pp.__set__('RC', require('data/RequestContext'));
 	});
 
 
-	suite('makeProxy', function() {
-	
-		test('wraps game objects in persistence proxy', function() {
+	suite('makeProxy', function () {
+
+		test('wraps game objects in persistence proxy', function () {
 			var p = pp.makeProxy({
 				a: 13,
 			});
 			assert.isTrue(p.__isPP);
 			assert.strictEqual(p.a, 13, 'regular property read access');
 		});
-		
-		test('deleting properties flags object as dirty', function() {
+
+		test('deleting properties flags object as dirty', function () {
 			var o = {tsid: 'x', a: 7};
 			var p = pp.makeProxy(o);
 			delete p.a;
 			assert.notProperty(o, 'a');
 			assert.deepEqual(rcMock.getDirtyList(), ['x']);
 		});
-		
-		test('setting properties flags object as dirty', function() {
+
+		test('setting properties flags object as dirty', function () {
 			var o = {tsid: 'x', a: 7};
 			var p = pp.makeProxy(o);
 			p.a = 8;
 			assert.strictEqual(o.a, 8);
 			assert.deepEqual(rcMock.getDirtyList(), ['x']);
 		});
-		
-		test('certain property names are excluded from flagging object as dirty', function() {
+
+		test('certain property names are excluded from flagging object as dirty',
+			function () {
 			var o = {
 				tsid: 'P123',
 				x: 13,
@@ -64,8 +65,8 @@ suite('persProxy', function() {
 			assert.deepEqual(rcMock.getDirtyList(), ['P123'],
 				'nested x/y properties *should* trigger dirty flag');
 		});
-		
-		test('objref props are excluded from flagging object as dirty', function() {
+
+		test('objref props are excluded from flagging object as dirty', function () {
 			var o = {
 				tsid: 'x',
 				or: {
@@ -81,25 +82,27 @@ suite('persProxy', function() {
 				'accessing objrefs should not trigger dirty flag');
 			assert.notProperty(o.or, '__isPP');
 		});
-		
-		test('object-type props are permanently pers-proxified on access', function() {
+
+		test('object-type props are permanently pers-proxified on access', function () {
 			var o = {nested: {a: 1}};
 			var p = pp.makeProxy(o);
-			var dummy = p.nested.a;
+			/*jshint -W030 */  // the following expression is expected to have a side effect
+			p.nested.a;
 			assert.isTrue(o.nested.__isPP);
 		});
-		
-		test('read-only access does not flag object as dirty', function() {
+
+		test('read-only access does not flag object as dirty', function () {
 			var o = {
 				a: 1,
 				b: {c: 3},
 			};
 			var p = pp.makeProxy(o);
-			var dummy = p.a + p.b.c;
+			/*jshint -W030 */  // the following expression is tested for not having a side effect
+			p.a + p.b.c;
 			assert.deepEqual(rcMock.getDirtyList(), []);
 		});
-		
-		test('works with array-type properties too', function() {
+
+		test('works with array-type properties too', function () {
 			var o = {
 				tsid: 'x',
 				arr: [
@@ -121,8 +124,8 @@ suite('persProxy', function() {
 			delete p.arr[0];
 			assert.deepEqual(rcMock.getDirtyList(), ['x']);
 		});
-		
-		test('pproxy does not break JSON.stringify', function() {
+
+		test('pproxy does not break JSON.stringify', function () {
 			var o = {
 				tsid: 'x',
 				arr: [

@@ -15,12 +15,12 @@ Item.prototype.TSID_INITIAL = 'I';
 
 // define some derived properties (used by GSJS)
 Object.defineProperty(Item.prototype, 'isHidden', {
-	get: function() {
+	get: function get() {
 		return !!this.is_hidden;
 	},
 });
 Object.defineProperty(Item.prototype, 'isStack', {
-	get: function() {
+	get: function get() {
 		return this.stackmax > 1;
 	},
 });
@@ -61,7 +61,7 @@ function Item(data) {
  * Updates the item's `path` property; needs to be called whenever the
  * item was moved between containers.
  */
-Item.prototype.updatePath = function() {
+Item.prototype.updatePath = function updatePath() {
 	this.path = this.tsid;
 	// climb container chain upwards if container is a bag
 	var cont = this.container;
@@ -78,7 +78,7 @@ Item.prototype.updatePath = function() {
  * @param {number} x
  * @param {number} y
  */
-Item.prototype.setXY = function(x, y) {
+Item.prototype.setXY = function setXY(x, y) {
 	this.x = x;
 	this.y = y;
 };

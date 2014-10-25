@@ -11,7 +11,7 @@ suite('rethink', function () {
 
 	var cfg = config.get('pers:backEnd:config:rethink');
 	var TABLE = 'dummy';
-	
+
 	function connect(cb) {
 		rdb.connect({
 			host: cfg.dbhost,
@@ -20,7 +20,7 @@ suite('rethink', function () {
 			authKey: cfg.dbauth,
 		}, cb);
 	}
-	
+
 	function run(func) {
 		var args = Array.prototype.slice.call(arguments, 1, arguments.length - 1);
 		var callback = arguments[arguments.length - 1];
@@ -29,7 +29,7 @@ suite('rethink', function () {
 			func.apply(rdb, args).run(conn, callback);
 		});
 	}
-	
+
 	suiteSetup(function (done) {
 		run(rdb.dbCreate, cfg.dbname, function cb(err, res) {
 			if (err) return done(err);
@@ -44,7 +44,7 @@ suite('rethink', function () {
 			);
 		});
 	});
-	
+
 	suiteTeardown(function (done) {
 		run(rdb.dbDrop, cfg.dbname, function cb(err, res) {
 			if (err) return done(err);
@@ -52,18 +52,18 @@ suite('rethink', function () {
 			pbe.init(config.get('pers:backEnd:config:rethink'), done);
 		});
 	});
-	
+
 	setup(function (done) {
 		run(rdb.tableCreate, TABLE, {primaryKey: 'tsid'}, done);
 	});
-	
+
 	teardown(function (done) {
 		run(rdb.tableDrop, TABLE, done);
 	});
-	
+
 
 	suite('CRUD', function () {
-		
+
 		test('basic create/read', function (done) {
 			wait.launchFiber(function () {
 				var p = new Player();
@@ -75,7 +75,7 @@ suite('rethink', function () {
 				return done();
 			});
 		});
-		
+
 		test('basic create/delete', function (done) {
 			wait.launchFiber(function () {
 				var o = {tsid: 'X', ping: 'pong'};
@@ -87,7 +87,7 @@ suite('rethink', function () {
 				return done();
 			});
 		});
-		
+
 		test('basic create/update', function (done) {
 			wait.launchFiber(function () {
 				var o = {tsid: 'Y', blurp: 1, meh: true};

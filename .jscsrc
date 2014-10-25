@@ -1,0 +1,69 @@
+{
+	"excludeFiles": ["src/gsjs/**"],
+	"requireCurlyBraces": [
+		"for", "while", "do", "switch", "try", "catch"
+	],
+	"requireSpaceAfterKeywords": [
+		"if", "else", "for", "while", "do", "switch", "case", "try", "catch",
+		"return", "typeof"
+	],
+	//"requireSpaceBeforeBlockStatements": true,
+	"requireParenthesesAroundIIFE": true,
+	"requireSpacesInConditionalExpression": true,
+	"requireSpacesInFunction": {
+		"beforeOpeningCurlyBrace": true
+	},
+	"requireSpacesInAnonymousFunctionExpression": {
+		"beforeOpeningRoundBrace": true,
+		"beforeOpeningCurlyBrace": true
+	},
+	"disallowSpacesInCallExpression": true,
+	"requireBlocksOnNewline": true,
+	"disallowEmptyBlocks": true,
+	"disallowSpacesInsideObjectBrackets": true,
+	"disallowSpacesInsideArrayBrackets": true,
+	"disallowSpacesInsideParentheses": true,
+	"disallowQuotedKeysInObjects": "allButReserved",
+	"disallowSpaceAfterObjectKeys": true,
+	"requireSpaceBeforeObjectValues": true,
+	"requireCommaBeforeLineBreak": true,
+	"requireOperatorBeforeLineBreak": true,
+	"disallowSpaceAfterPrefixUnaryOperators": true,
+	"disallowSpaceBeforePostfixUnaryOperators": true,
+	"requireSpaceBeforeBinaryOperators": true,
+	"requireSpaceAfterBinaryOperators": true,
+	"requireCamelCaseOrUpperCaseIdentifiers": "ignoreProperties",
+	"disallowKeywords": ["with"],
+	"disallowMixedSpacesAndTabs": "smart",
+	"disallowTrailingWhitespace": true,
+	"requireKeywordsOnNewLine": ["else", "catch"],
+	"requireLineFeedAtFileEnd": true,
+	"maximumLineLength": {
+		"value": 90,  // the goal is 80 of course, just being a bit lenient here
+		"tabSize": 4,
+		"allowComments": true,
+		"allowRegex": true
+	},
+	"requireDotNotation": true,
+	"disallowNewlineBeforeBlockStatements": true,
+	"validateQuoteMarks": {
+		"mark": "'",
+		"escape": true
+	},
+	"validateIndentation": "\t",
+	"validateParameterSeparator": ", ",
+	"safeContextKeyword": "self",
+	"additionalRules": [
+		"node_modules/jscs-jsdoc/lib/rules/*.js"
+	],
+	"jsDoc": {
+		"checkParamNames": true,
+		"requireParamTypes": true,
+		"checkRedundantParams": true,
+		"checkReturnTypes": true,
+		"requireReturnTypes": true,
+		"checkTypes": true,
+		"checkRedundantReturns": true,
+		"checkRedundantAccess": true
+	}
+}

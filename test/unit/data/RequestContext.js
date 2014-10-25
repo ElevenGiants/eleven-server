@@ -11,20 +11,20 @@ suite('RequestContext', function () {
 		RC.__set__('pers', persMock);
 		persMock.reset();
 	});
-	
+
 	teardown(function () {
 		RC.__set__('pers', rewire('data/pers'));
 	});
-	
-	
+
+
 	suite('getContext', function () {
-		
+
 		test('fails when called outside a request context', function () {
 			assert.throw(function () {
 				RC.getContext();
 			}, assert.AssertionError);
 		});
-		
+
 		test('does its job', function (done) {
 			new RC('testlogtag').run(function () {
 				var ctx = RC.getContext();
@@ -34,10 +34,10 @@ suite('RequestContext', function () {
 			});
 		});
 	});
-	
-	
+
+
 	suite('run', function () {
-	
+
 		test('initializes request data structures', function (done) {
 			new RC().run(function () {
 				var ctx = RC.getContext();
@@ -48,7 +48,7 @@ suite('RequestContext', function () {
 				done();
 			});
 		});
-		
+
 		test('persists dirty objects after request is finished', function (done) {
 			new RC().run(
 				function () {
@@ -68,11 +68,12 @@ suite('RequestContext', function () {
 				}
 			);
 		});
-		
+
 		test('waits for persistence operation callback if desired', function (done) {
 			var persDone = false;
 			RC.__set__('pers', {
-				postRequestProc: function postRequestProc(dlist, ulist, logtag, callback) {
+				postRequestProc: function postRequestProc(dlist, ulist, logtag,
+					callback) {
 					// simulate an async persistence operation that takes 20ms
 					setTimeout(function () {
 						persDone = true;
@@ -94,14 +95,14 @@ suite('RequestContext', function () {
 			);
 			// RC.pers is restored in suite teardown
 		});
-		
+
 		test('calls post-persistence callback', function (done) {
 			var rc = new RC();
 			rc.run(function () {
 				rc.setPostPersCallback(done);
 			});
 		});
-		
+
 		test('unloads objects scheduled for unloading', function (done) {
 			var rc = new RC();
 			rc.run(
@@ -119,8 +120,9 @@ suite('RequestContext', function () {
 			);
 			done();
 		});
-		
-		test('runs request function and returns its return value in callback', function (done) {
+
+		test('runs request function and returns its return value in callback',
+			function (done) {
 			var derp = 1;
 			new RC().run(function () {
 				derp = 3;
@@ -132,8 +134,9 @@ suite('RequestContext', function () {
 				done();
 			});
 		});
-		
-		test('passes errors thrown by the request function back in callback', function (done) {
+
+		test('passes errors thrown by the request function back in callback',
+			function (done) {
 			new RC().run(function () {
 				throw new Error('meh');
 			},

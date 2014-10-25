@@ -63,14 +63,14 @@ function GameObject(data) {
  * @returns {object} shallow copy of the game object, prepared for
  *          serialization
  */
-GameObject.prototype.serialize = function() {
+GameObject.prototype.serialize = function serialize() {
 	var ret = {};
 	var keys = Object.keys(this);  // Object.keys only includes own properties
 	for (var i = 0; i < keys.length; i++) {
 		var k = keys[i];
 		if (k[0] !== '!') {
 			var val = this[k];
-			if (typeof(val) !== 'function') {
+			if (typeof val !== 'function') {
 				ret[k] = val;
 			}
 		}
@@ -82,6 +82,6 @@ GameObject.prototype.serialize = function() {
 /**
  * @returns {string}
  */
-GameObject.prototype.toString = function() {
+GameObject.prototype.toString = function toString() {
 	return '[' + this.constructor.name + '#' + this.tsid + ']';
 };

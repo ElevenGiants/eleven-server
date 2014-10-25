@@ -12,7 +12,7 @@
  * @module
  */
 
-var auth = require('comm/auth'); 
+var auth = require('comm/auth');
 var async = require('async');
 var cluster = require('cluster');
 var config = require('config');

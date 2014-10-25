@@ -28,19 +28,19 @@ suite('rpcApi', function () {
 		rpcApi.__set__('pers', pers);
 		rpc.__set__('pers', pers);
 	});
-	
-	
+
+
 	suite('getConnectData', function () {
-	
+
 		setup(function () {
 			auth.init(abePassthrough);
 		});
-		
+
 		teardown(function () {
 			auth.init(null);
 		});
-		
-	
+
+
 		test('does its job', function () {
 			var l = new Location({tsid: 'L1'}, new Geo());
 			persMock.preAdd(new Player({tsid: 'PXYZ', location: l}), l);

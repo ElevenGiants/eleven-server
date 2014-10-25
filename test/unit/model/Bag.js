@@ -1,6 +1,5 @@
 'use strict';
 
-var util = require('util');
 var Bag = require('model/Bag');
 var Item = require('model/Item');
 
@@ -8,7 +7,7 @@ var Item = require('model/Item');
 suite('Bag', function () {
 
 	suite('ctor', function () {
-	
+
 		test('initializes items and hiddenItems properties', function () {
 			var b = new Bag();
 			assert.deepEqual(b.items, {});
@@ -26,10 +25,10 @@ suite('Bag', function () {
 			assert.strictEqual(b.items.IFOO.slot, 0);  // item coordinates are initialized to 0/0
 		});
 	});
-	
+
 
 	suite('serialize', function () {
-	
+
 		test('works as expected', function () {
 			var items = [
 				new Item({tsid: 'IASDF', x: 13}),
@@ -51,10 +50,10 @@ suite('Bag', function () {
 			assert.sameMembers(bs.hiddenItems, hiddenItems);
 		});
 	});
-	
-	
+
+
 	suite('getAllItems', function () {
-	
+
 		test('works as expected', function () {
 			var i1 = new Item({tsid: 'I1'});
 			var i2 = new Item({tsid: 'I2'});
@@ -64,6 +63,7 @@ suite('Bag', function () {
 			var b3 = new Bag({tsid: 'B3', items: [i5]});
 			var b2 = new Bag({tsid: 'B2', items: [i4, b3], hiddenItems: [i3]});
 			var b1 = new Bag({tsid: 'B1', items: [i1, b2, i2]});
+			//jscs:disable disallowQuotedKeysInObjects
 			assert.deepEqual(b1.getAllItems(), {
 				'I1': i1,
 				'I2': i2,
@@ -73,6 +73,7 @@ suite('Bag', function () {
 				'B2/B3': b3,
 				'B2/B3/I5': i5,
 			});
+			//jscs:enable disallowQuotedKeysInObjects
 		});
 	});
 });

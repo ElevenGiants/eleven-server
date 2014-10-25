@@ -37,7 +37,7 @@ function Property(label, data) {
 /**
  * @returns {string}
  */
-Property.prototype.toString = function() {
+Property.prototype.toString = function toString() {
 	return '[prop.' + this.label + ':' + this.value + ']';
 };
 
@@ -49,7 +49,7 @@ Property.prototype.toString = function() {
  * @param {number} bottom new bottom limit
  * @param {number} top new top limit
  */
-Property.prototype.setLimits = function(bottom, top) {
+Property.prototype.setLimits = function setLimits(bottom, top) {
 	bottom = Math.round(bottom);
 	top = Math.round(top);
 	assert(top >= bottom, 'invalid limits: ' + bottom + '/' + top);
@@ -66,7 +66,7 @@ Property.prototype.setLimits = function(bottom, top) {
  *
  * @param {number} val new value (rounded using `Math.round`)
  */
-Property.prototype.setVal = function(val) {
+Property.prototype.setVal = function setVal(val) {
 	val = Math.round(val);
 	if (val >= this.bottom && val <= this.top) {
 		this.value = val;
@@ -85,7 +85,7 @@ Property.prototype.setVal = function(val) {
  * @returns {number} actual delta (may be different from given delta
  *          due to limits)
  */
-Property.prototype.inc = function(delta) {
+Property.prototype.inc = function inc(delta) {
 	var d = Math.min(this.top - this.value, Math.floor(delta));
 	this.value += d;
 	return d;
@@ -100,7 +100,7 @@ Property.prototype.inc = function(delta) {
  * @returns {number} actual delta (may be different from given delta
  *          due to limits)
  */
-Property.prototype.dec = function(delta) {
+Property.prototype.dec = function dec(delta) {
 	var d = Math.min(this.value - this.bottom, Math.floor(delta));
 	this.value -= d;
 	return -d;
@@ -114,7 +114,7 @@ Property.prototype.dec = function(delta) {
  * @param {number} factor multiplication factor
  * @returns {number} value delta
  */
-Property.prototype.mult = function(factor) {
+Property.prototype.mult = function mult(factor) {
 	var newval = Math.round(this.value * factor);
 	newval = Math.max(Math.min(newval, this.top), this.bottom);
 	var d = newval - this.value;
