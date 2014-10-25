@@ -142,7 +142,7 @@ Session.prototype.onSocketClose = function(hadError) {
  *
  * TODO: more elaborate error handling.
  *
- * @param {Error} error the error to handle
+ * @param {Error} err the error to handle
  * @private
  */
 Session.prototype.handleError = function(err) {
@@ -161,7 +161,7 @@ Session.prototype.handleError = function(err) {
  * `data` event is emitted (i.e. the supplied data chunk is not
  * necessarily a single, complete request).
  *
- * @param {Buffer} incoming data chunk
+ * @param {Buffer} data incoming data chunk
  * @private
  */
 Session.prototype.handleData = function(data) {

@@ -150,7 +150,7 @@ function get(tsid) {
  * automatically persisted.
  *
  * @param {GameObject} obj object to add
- * @returns the added object, wrapped in persistence proxy
+ * @returns {object} the added object, wrapped in a persistence proxy
  */
 function add(obj) {
 	log.debug('pers.add: %s', obj.tsid);
@@ -172,10 +172,10 @@ function add(obj) {
  *        (TSIDs as keys, objects as values)
  * @param {object} ulist hash containing game objects to release from
  *        the live object cache
+ * @param {string} logmsg optional information for log messages
  * @param {function} [callback] function to be called after persistence
  *        operations have finished (set by {@link
  *        RequestContext#setPostPersCallback})
- * @param {string} logmsg optional information for log messages
  */
 function postRequestProc(dlist, ulist, logmsg, callback) {
 	async.each(Object.keys(dlist),

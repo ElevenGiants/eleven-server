@@ -67,7 +67,7 @@ Bag.prototype.serialize = function() {
  *
  * @param {object} [aggregate] for internal use (recursion)
  * @param {object} [pathPrefix] for internal use (recursion)
- * @returns a hash with all contained items, as decribed above
+ * @returns {object} a hash with all contained items, as decribed above
  *          (NB: does not contain the root bag itself!)
  */
 Bag.prototype.getAllItems = function(aggregate, pathPrefix) {

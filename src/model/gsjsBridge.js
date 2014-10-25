@@ -101,8 +101,8 @@ function reset() {
  * @param {function} callback called when initialization has finished
  *        successfully, or with an error argument when something goes
  *        wrong (in which case initialization is aborted immediately)
- * @param {boolean} if `true`, **only** initialize module and GSJS
- *        dependencies, but do not load and cache prototypes (for
+ * @param {boolean} noPreload if `true`, **only** initialize module and
+ *        GSJS dependencies, but do not load and cache prototypes (for
  *        testing)
  */
 function init(callback, noPreload) {
@@ -180,11 +180,14 @@ function getProto(group, klass) {
  * @returns {GameObject} an "empty" game object of the specified type
  *          (instantiated with the default no-argument constructor)
  */
+//jscs:disable jsDoc
+// (jsDoc rule can't detect return value type here)
 function create(group, klass) {
 	/*jshint -W055 */  // ignore lowercase constructor names here
 	var ctor = getProto(group, klass).constructor;
 	return new ctor();
 }
+//jscs:enable jsDoc
 
 
 /**
@@ -197,6 +200,8 @@ function create(group, klass) {
  * @returns {GameObject} a game object of the specified type,
  *          instantiated through the default constructor with `data`
  */
+//jscs:disable jsDoc
+// (jsDoc rule can't detect return value type here)
 function createFromData(data) {
 	/*jshint -W055 */  // ignore lowercase constructor names here
 	assert(typeof data === 'object', 'object data is required');
@@ -212,6 +217,7 @@ function createFromData(data) {
 		return new groupOrClass(data);
 	}
 }
+//jscs:enable jsDoc
 
 
 /**

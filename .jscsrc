@@ -54,5 +54,18 @@
 	},
 	"validateIndentation": "\t",
 	"validateParameterSeparator": ", ",
-	"safeContextKeyword": "self"
+	"safeContextKeyword": "self",
+	"additionalRules": [
+		"node_modules/jscs-jsdoc/lib/rules/*.js"
+	],
+	"jsDoc": {
+		"checkParamNames": true,
+		"requireParamTypes": true,
+		"checkRedundantParams": true,
+		"checkReturnTypes": true,
+		"requireReturnTypes": true,
+		"checkTypes": true,
+		"checkRedundantReturns": true,
+		"checkRedundantAccess": true
+	}
 }
