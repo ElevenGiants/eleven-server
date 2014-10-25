@@ -9,7 +9,7 @@
  * correspond to the GSJS directory/file structure, which does not map
  * one-to-one to the in-game `GameObject` subclasses and `class_tsid`s.
  *
- * Valid `group` values are: 
+ * Valid `group` values are:
  * ```
  *     achievements
  *     groups
@@ -149,7 +149,9 @@ function initDependencies(testConfig, testApi) {
 	dependencies.config = compose(testConfig || config.get('gsjs:config'));
 	dependencies.api = testApi || {
 		//TODO dummy, replace with actual global API once there is one
-		valueOf: function valueOf() { return 'TODO-DUMMY-API'; }
+		valueOf: function valueOf() {
+			return 'TODO-DUMMY-API';
+		}
 	};
 }
 

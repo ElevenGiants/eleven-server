@@ -46,7 +46,7 @@ var pers = require('data/pers');
 
 /**
  * Custom error type for OR proxy related errors.
- * 
+ *
  * @param {string} [msg] error message
  * @constructor
  */
@@ -136,7 +136,7 @@ function resolve(objref) {
 
 /**
  * Recursively replaces objrefs with proxies in the supplied data
- * (in-place replacement, **the input data will be modified!**). 
+ * (in-place replacement, **the input data will be modified!**).
  *
  * @param {object} data arbitrary data containing objrefs; must not
  *        contain circular references and must not be an objref itself

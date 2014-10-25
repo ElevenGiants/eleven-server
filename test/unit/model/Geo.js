@@ -16,7 +16,7 @@ suite('Geo', function () {
 
 
 	suite('prepConnects', function () {
-	
+
 		test('prepares door/signpost connects', function () {
 			var data = getSampleData();
 			var g = new Geo(data);
@@ -36,7 +36,7 @@ suite('Geo', function () {
 				assert.typeOf(c.target, 'object', k);
 			}
 		});
-		
+
 		test('does not fail on missing layer data', function () {
 			var g = new Geo();
 			assert.instanceOf(g, Geo);
@@ -45,7 +45,7 @@ suite('Geo', function () {
 			g = new Geo({layers: {middleground: {}}});
 			assert.instanceOf(g, Geo);
 		});
-		
+
 		test('does not fail with incomplete connects', function () {
 			var g = new Geo({
 				layers: {middleground: {doors: {
@@ -65,7 +65,7 @@ suite('Geo', function () {
 			assert.property(g.layers.middleground.doors.d2.connect, 'hub_id');
 			assert.property(g.layers.middleground.doors.d2.connect, 'target');
 		});
-		
+
 		test('updates added connects', function () {
 			var g = new Geo({
 				layers: {middleground: {doors: {
@@ -80,22 +80,24 @@ suite('Geo', function () {
 			};
 			g.prepConnects();
 			// updates new connect properly:
-			assert.strictEqual(g.layers.middleground.doors.d2.connect.label, 'moscow');
-			assert.strictEqual(g.layers.middleground.doors.d2.connect.street_tsid, 'LZYX');
-			assert.typeOf(g.layers.middleground.doors.d2.connect.target, 'object');
-			assert.isFalse(g.layers.middleground.doors.d2.connect.propertyIsEnumerable('target'));
+			var d2c = g.layers.middleground.doors.d2.connect;
+			assert.strictEqual(d2c.label, 'moscow');
+			assert.strictEqual(d2c.street_tsid, 'LZYX');
+			assert.typeOf(d2c.target, 'object');
+			assert.isFalse(d2c.propertyIsEnumerable('target'));
 			// maintains existing connect:
-			assert.deepEqual(g.layers.middleground.doors.d.connect, before);
-			assert.property(g.layers.middleground.doors.d.connect,
+			var dc = g.layers.middleground.doors.d.connect;
+			assert.deepEqual(dc, before);
+			assert.property(dc,
 				'target', 'target still there');
-			assert.isFalse(g.layers.middleground.doors.d.connect.propertyIsEnumerable('target'),
+			assert.isFalse(dc.propertyIsEnumerable('target'),
 				'target still non-enumerable');
 		});
 	});
-	
+
 
 	suite('serialize', function () {
-	
+
 		test('works as expected', function () {
 			var g = new Geo({
 				layers: {middleground: {doors: {
@@ -109,19 +111,20 @@ suite('Geo', function () {
 				}}},
 			});
 			var ser = g.serialize();
-			assert.notProperty(ser.layers.middleground.doors.d.connect, 'label');
-			assert.notProperty(ser.layers.middleground.doors.d.connect, 'street_tsid');
-			assert.property(ser.layers.middleground.doors.d.connect, 'target');
-			assert.isTrue(ser.layers.middleground.doors.d.connect.propertyIsEnumerable('target'));
-			assert.strictEqual(ser.layers.middleground.doors.d.connect.target.label, 'moon');
-			assert.strictEqual(ser.layers.middleground.doors.d.connect.target.tsid, 'LXYZ');
+			var dc = ser.layers.middleground.doors.d.connect;
+			assert.notProperty(dc, 'label');
+			assert.notProperty(dc, 'street_tsid');
+			assert.property(dc, 'target');
+			assert.isTrue(dc.propertyIsEnumerable('target'));
+			assert.strictEqual(dc.target.label, 'moon');
+			assert.strictEqual(dc.target.tsid, 'LXYZ');
 		});
-		
+
 		test('returns data equivalent to original input data', function () {
 			var ser = new Geo(getSampleData()).serialize();
 			assert.deepEqual(ser, getSampleData());
 		});
-		
+
 		test('does not modify instance data', function () {
 			var g = new Geo({
 				layers: {middleground: {doors: {
@@ -132,16 +135,17 @@ suite('Geo', function () {
 				}}},
 			});
 			g.serialize();
-			assert.strictEqual(g.layers.middleground.doors.d.connect.label, 'moon');
-			assert.strictEqual(g.layers.middleground.doors.d.connect.street_tsid, 'LXYZ');
-			assert.property(g.layers.middleground.doors.d.connect, 'target');
-			assert.isFalse(g.layers.middleground.doors.d.connect.propertyIsEnumerable('target'));
+			var dc = g.layers.middleground.doors.d.connect;
+			assert.strictEqual(dc.label, 'moon');
+			assert.strictEqual(dc.street_tsid, 'LXYZ');
+			assert.property(dc, 'target');
+			assert.isFalse(dc.propertyIsEnumerable('target'));
 		});
 	});
-	
-	
+
+
 	suite('getClientGeo', function () {
-	
+
 		test('does its job', function () {
 			var g = new Geo(getSampleData());
 			var cg = g.getClientGeo();
@@ -153,10 +157,10 @@ suite('Geo', function () {
 			assert.notProperty(g, 'foo', 'is a copy');
 		});
 	});
-	
-	
+
+
 	suite('getGeo', function () {
-	
+
 		test('does its job', function () {
 			var data = getSampleData();
 			var cg = new Geo(data).getGeo();

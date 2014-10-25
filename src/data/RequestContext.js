@@ -68,7 +68,9 @@ function RequestContext(logtag, owner, session) {
  *        operations to finish before invoking callback
  */
 RequestContext.prototype.run = function(func, callback, waitPers) {
+	//jscs:disable safeContextKeyword
 	var rc = this;
+	//jscs:enable safeContextKeyword
 	wait.launchFiber(function rcFiber() {
 		try {
 			rc.fiber = Fiber.current;

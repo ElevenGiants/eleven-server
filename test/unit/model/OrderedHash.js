@@ -6,7 +6,7 @@ var OrderedHash = require('model/OrderedHash');
 suite('OrderedHash', function () {
 
 	suite('ctor', function () {
-	
+
 		test('creates OrderedHash', function () {
 			var o = {x: 'x', y: 'y', z: 'z'};
 			var oh = new OrderedHash(o);
@@ -15,22 +15,22 @@ suite('OrderedHash', function () {
 			oh.q = 'q';
 			assert.notProperty(o, 'q', 'new properties not added to source data object');
 		});
-	
+
 		test('creates empty OrderedHash without parameter', function () {
 			var oh = new OrderedHash();
 			assert.strictEqual(oh.length(), 0);
 		});
-		
+
 		test('JSON serialization skips everything but data properties', function () {
 			var oh = new OrderedHash({x: 'x', yz: {y: 'y', z: 'z'}});
 			assert.strictEqual(JSON.stringify(oh),
 				'{"x":"x","yz":{"y":"y","z":"z"}}');
 		});
 	});
-	
-	
+
+
 	suite('first', function () {
-	
+
 		test('does its job', function () {
 			var oh = new OrderedHash({X: 'X', y: 'y', z: 'z'});
 			assert.strictEqual(oh.first(), 'X');
@@ -38,10 +38,10 @@ suite('OrderedHash', function () {
 			assert.strictEqual(oh.first(), 13);
 		});
 	});
-	
-	
+
+
 	suite('last', function () {
-	
+
 		test('does its job', function () {
 			var oh = new OrderedHash({X: 'X', y: 'y', z: 'z'});
 			assert.strictEqual(oh.last(), 'z');
@@ -49,10 +49,10 @@ suite('OrderedHash', function () {
 			assert.strictEqual(oh.last(), null);
 		});
 	});
-	
-	
+
+
 	suite('length', function () {
-	
+
 		test('does its job', function () {
 			var oh = new OrderedHash();
 			assert.strictEqual(oh.length(), 0);
@@ -66,8 +66,8 @@ suite('OrderedHash', function () {
 			assert.strictEqual(oh.length(), 2);
 		});
 	});
-	
-	
+
+
 	suite('clear', function () {
 
 		test('does its job', function () {

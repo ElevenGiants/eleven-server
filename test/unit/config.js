@@ -9,19 +9,19 @@ suite('config', function () {
 	var MINIMAL_CFG = {net: {gameServers: {gs01: {host: '127.0.0.1', ports: [1443]}}}};
 
 	var cfgBackup;
-	
+
 	setup(function () {
 		cfgBackup = config.get();
 		config.reset();
 	});
-	
+
 	teardown(function () {
 		config.init(true, cfgBackup);
 	});
-	
-	
+
+
 	suite('init/initClusterConfig', function () {
-	
+
 		test('init does its job (master)', function () {
 			config.init(true, MINIMAL_CFG, {net: {gameServers: {gs01: {
 				addedProp: 'x',
@@ -36,20 +36,20 @@ suite('config', function () {
 			assert.strictEqual(config.get().net.gameServers.gs01.ports[0],
 				12345, 'replaced value');
 		});
-		
+
 		test('init does its job (worker)', function () {
 			process.env.gsid = 'gs01-01';
 			config.init(false, MINIMAL_CFG, {});
 			assert.strictEqual(config.getGsid(), 'gs01-01', 'GSID for worker');
 			delete process.env.gsid;
 		});
-		
+
 		test('insufficient net configuration causes ConfigError', function () {
 			assert.throw(function () {
 				config.init(true, {}, {});
 			}, config.ConfigError);
 		});
-		
+
 		test('cluster configuration is created correctly', function () {
 			config.init(true, {
 				net: {gameServers: {
@@ -84,10 +84,10 @@ suite('config', function () {
 			});
 		});
 	});
-	
-	
+
+
 	suite('setGsid', function () {
-	
+
 		test('cannot be called twice', function () {
 			var setGsid = config.__get__('setGsid');
 			setGsid('asdf');
@@ -98,20 +98,20 @@ suite('config', function () {
 			assert.strictEqual(config.getGsid(), 'asdf');
 		});
 	});
-	
-	
+
+
 	suite('isLocal', function () {
-	
+
 		test('does its job', function () {
 			var isLocal = config.__get__('isLocal');
 			assert.isTrue(isLocal('127.0.0.1'));
 			assert.isFalse(isLocal('123.456.789.0'));
 		});
 	});
-	
-	
+
+
 	suite('get', function () {
-	
+
 		test('does its job', function () {
 			config.init(true, MINIMAL_CFG, {test: {a: 'foo', b: {c: 'xyz'}}});
 			assert.strictEqual(config.get().test.a, 'foo');
@@ -123,10 +123,10 @@ suite('config', function () {
 			}, config.ConfigError);
 		});
 	});
-	
-	
+
+
 	suite('forEachGS/forEachLocalGS/forEachRemoteGS', function () {
-	
+
 		test('do their job', function () {
 			config.init(true, {
 				net: {gameServers: {
@@ -150,10 +150,10 @@ suite('config', function () {
 			});
 		});
 	});
-	
-	
+
+
 	suite('mapToGS', function () {
-	
+
 		test('does its job', function () {
 			config.init(true, {
 				net: {gameServers: {
@@ -174,10 +174,10 @@ suite('config', function () {
 			});
 		});
 	});
-	
-	
+
+
 	suite('getServicePort', function () {
-	
+
 		test('does its job', function () {
 			config.init(true, {
 				net: {gameServers: {
@@ -194,15 +194,17 @@ suite('config', function () {
 			assert.strictEqual(config.getServicePort(100, 'meh'), 100);
 		});
 	});
-	
-	
+
+
 	suite('getGSConf', function () {
-	
+
 		test('does its job (master server)', function () {
-			config.init(true, {net: {gameServers: {gs1: {host: '127.0.0.1', ports: [1]}}}}, {});
-			assert.strictEqual(config.getGSConf(), undefined, 'no GS config entry for master server');
+			config.init(true, {net: {gameServers: {gs1: {host: '127.0.0.1',
+				ports: [1]}}}}, {});
+			assert.strictEqual(config.getGSConf(), undefined,
+				'no GS config entry for master server');
 		});
-		
+
 		test('does its job (worker server)', function () {
 			config.init(false, {
 				net: {gameServers: {
@@ -216,7 +218,7 @@ suite('config', function () {
 			assert.strictEqual(config.getGSConf('gs1-01').gsid, 'gs1-01');
 			assert.strictEqual(config.getGSConf('gs2-01').gsid, 'gs2-01');
 		});
-		
+
 		test('error for invalid GSID', function () {
 			config.init(true, MINIMAL_CFG, {});
 			assert.throw(function () {

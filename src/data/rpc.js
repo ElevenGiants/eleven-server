@@ -48,7 +48,7 @@ var gsjsBridge = require('model/gsjsBridge');
 
 /**
  * Custom error type for errors during RPC requests.
- * 
+ *
  * @param {string} [msg] error message
  * @constructor
  */
@@ -197,7 +197,7 @@ function makeProxy(obj) {
  * server for the respective game object.
  * Returns the result either via callback or synchronously using
  * {@link https://github.com/luciotato/waitfor|wait.for/fibers}.
- * 
+ *
  * @param {GameObject|string} objOrTsid game object on which the
  *        function is being called (or more precisely, its local {@link
  *        module:data/rpcProxy|rpcProxy}-wrapped copy), or its TSID
@@ -226,10 +226,12 @@ function sendRequest(objOrTsid, fname, args, callback) {
 	catch (e) {
 		// caller has to handle this, like any other "regular" error the
 		// called function might have thrown locally
-		throw new RpcError(util.format('could not get RPC client to %s for %s', gsid, objOrTsid), e);
+		throw new RpcError(util.format('could not get RPC client to %s for %s',
+			gsid, objOrTsid), e);
 	}
 	if (!client) {
-		throw new RpcError(util.format('no RPC client to %s found for %s', gsid, objOrTsid));
+		throw new RpcError(util.format('no RPC client to %s found for %s',
+			gsid, objOrTsid));
 	}
 	// argument marshalling (replace objref proxies with actual objrefs)
 	args = orProxy.refify(args);
@@ -261,7 +263,7 @@ function sendRequest(objOrTsid, fname, args, callback) {
  * Server-side RPC request handler. Executes a function on an object
  * specified by TSID (within a separate request context) and returns
  * the result to the remote caller.
- * 
+ *
  * @param {string} callerId ID of the component requesting the function
  *        call (for logging)
  * @param {object|string} objOrTsid either an object whose function
@@ -344,7 +346,9 @@ function objectRequest(callerId, tsid, fname, args, callback) {
 function globalApiRequest(callerId, fname, args, callback) {
 	//TODO dummy, replace with actual global API once there is one:
 	var dummyApi = {
-		valueOf: function valueOf() { return 'TODO-DUMMY-API'; }
+		valueOf: function valueOf() {
+			return 'TODO-DUMMY-API';
+		}
 	};
 	handleRequest(callerId, dummyApi, fname, args, callback);
 }
@@ -428,7 +432,8 @@ function getGsid(objOrTsid) {
 	}
 	// quests or DCs mapped by their owner (location, player or group)
 	if (utils.isQuest(obj) || utils.isDC(obj)) {
-		assert(utils.isLoc(obj.owner) || utils.isPlayer(obj.owner) || utils.isGroup(obj.owner),
+		assert(utils.isLoc(obj.owner) || utils.isPlayer(obj.owner) ||
+			utils.isGroup(obj.owner),
 			util.format('invalid owner for %s: %s', obj, obj.owner));
 		return getGsid(obj.owner);
 	}

@@ -9,15 +9,15 @@ var orproxy = rewire('data/objrefProxy');
 
 
 suite('utils', function () {
-	
+
 	suite('makeTsid', function () {
-	
+
 		test('does its job', function () {
 			assert.strictEqual(utils.makeTsid('G', 'gs01-01')[0], 'G');
 			assert.strictEqual(utils.makeTsid('p', 'gs01-02')[0], 'P');
 			assert.isTrue(utils.makeTsid('X', 'gs01-01').length >= 18);
 		});
-		
+
 		test('fails with invalid parameters', function () {
 			assert.throw(function () {
 				utils.makeTsid();
@@ -41,7 +41,7 @@ suite('utils', function () {
 				utils.makeTsid('A', '');
 			}, assert.AssertionError);
 		});
-		
+
 		test('consecutive calls never return same TSID', function () {
 			this.slow(400);  // prevent mocha from flagging this test as slow
 			var tsid, prev;
@@ -52,10 +52,10 @@ suite('utils', function () {
 			}
 		});
 	});
-	
-	
+
+
 	suite('checkUniqueGsidHashes', function () {
-	
+
 		test('does its job', function () {
 			utils.checkUniqueHashes(['gs01', 'gs01-01', 'gs02', 'gs02-01', 'gs02-02']);
 			assert.throw(function () {
@@ -63,10 +63,10 @@ suite('utils', function () {
 			}, assert.AssertionError);
 		});
 	});
-	
-	
+
+
 	suite('copyProps', function () {
-	
+
 		test('does its job', function () {
 			var O = function () {
 				this.z = 3;
@@ -89,7 +89,7 @@ suite('utils', function () {
 			assert.notProperty(o2, 'f');
 			assert.notProperty(o2, 'x');
 		});
-		
+
 		test('works as intended on prototypes', function () {
 			var O = function () {};
 			var P = function () {};
@@ -104,7 +104,7 @@ suite('utils', function () {
 			assert.property(p, 'x');
 			assert.strictEqual(p.x, 13);
 		});
-		
+
 		test('only makes shallow copies of properties', function () {
 			var o = {o: {s: 'everybodyshake'}};
 			var p = {};
@@ -114,9 +114,9 @@ suite('utils', function () {
 		});
 	});
 
-	
+
 	suite('isInt', function () {
-	
+
 		test('confirms that ints are ints', function () {
 			assert.isTrue(utils.isInt(123));
 			assert.isTrue(utils.isInt(-10));
@@ -125,19 +125,19 @@ suite('utils', function () {
 			assert.isTrue(utils.isInt(0x1f));
 			assert.isTrue(utils.isInt(1e9));
 		});
-		
+
 		test('works for strings too', function () {
 			assert.isTrue(utils.isInt('123'));
 			assert.isTrue(utils.isInt('-10'));
 			assert.isTrue(utils.isInt('0x1f'));
 		});
-		
+
 		test('returns false for non-integer numbers', function () {
 			assert.isFalse(utils.isInt(1e-9));
 			assert.isFalse(utils.isInt(0.1));
 			assert.isFalse(utils.isInt('.1'));
 		});
-		
+
 		test('returns false for anything else', function () {
 			assert.isFalse(utils.isInt(''), 'empty string');
 			assert.isFalse(utils.isInt('1a'), 'non-numeric string');
@@ -149,10 +149,10 @@ suite('utils', function () {
 			assert.isFalse(utils.isInt(true), 'true');
 		});
 	});
-	
-	
+
+
 	suite('makeNonEnumerable', function () {
-	
+
 		test('does its job', function () {
 			var o = {x: 1, y: 2};
 			utils.makeNonEnumerable(o, 'y');
@@ -162,26 +162,26 @@ suite('utils', function () {
 				assert.notStrictEqual(k, 'y');
 			}
 		});
-		
+
 		test('non-enumerable sticks even when reassigning value', function () {
-			var o = {x: {'y': 'blah'}};
+			var o = {x: {y: 'blah'}};
 			utils.makeNonEnumerable(o, 'x');
-			o.x = {'a': 'blub'};
+			o.x = {a: 'blub'};
 			assert.strictEqual(o.x.a, 'blub', 'assignment actually works');
 			assert.isFalse(o.propertyIsEnumerable('x'), 'still not enumerable');
 		});
 	});
-	
-	
+
+
 	suite('addNonEnumerable', function () {
-	
+
 		test('does its job', function () {
 			var o = {x: 12};
 			utils.addNonEnumerable(o, 'y', 'argl');
 			assert.strictEqual(o.y, 'argl');
 			assert.deepEqual(Object.keys(o), ['x']);
 		});
-		
+
 		test('creates writable properties', function () {
 			var o = {};
 			utils.addNonEnumerable(o, 'y', 'argl');
@@ -190,10 +190,10 @@ suite('utils', function () {
 			assert.strictEqual(o.y, 'moo');
 		});
 	});
-	
-	
+
+
 	suite('isBag', function () {
-		
+
 		test('does its job', function () {
 			assert.isTrue(utils.isBag(new Bag()));
 			assert.isTrue(utils.isBag(new Player()));
@@ -202,7 +202,7 @@ suite('utils', function () {
 			assert.isFalse(utils.isBag('ASDF'));
 			assert.isFalse(utils.isBag('bXYZ', 'case sensitive'));
 		});
-		
+
 		test('does not resolve objref', function () {
 			orproxy.__set__('pers', {
 				get: function () {
@@ -216,10 +216,10 @@ suite('utils', function () {
 			orproxy.__set__('pers', require('data/pers'));  // restore
 		});
 	});
-	
-	
+
+
 	suite('arrayToHash', function () {
-	
+
 		test('does its job', function () {
 			var a = [{tsid: 'X'}, {tsid: 'Y'}, {tsid: 'Z', test: 'foo'}];
 			assert.deepEqual(utils.arrayToHash(a), {
@@ -228,23 +228,23 @@ suite('utils', function () {
 				Z: {tsid: 'Z', test: 'foo'},
 			});
 		});
-		
+
 		test('throws an error when an object does not have a TSID', function () {
 			var a = [1, 'x', {b: 'moo'}];
 			assert.throw(function () {
 				utils.arrayToHash(a);
 			}, Error);
 		});
-		
+
 		test('works with undefined/null input', function () {
 			assert.deepEqual(utils.arrayToHash(), {});
 			assert.deepEqual(utils.arrayToHash(null), {});
 		});
 	});
-	
-	
+
+
 	suite('hashToArray', function () {
-	
+
 		test('does its job', function () {
 			var h = {
 				X: {tsid: 'X'},
@@ -257,16 +257,16 @@ suite('utils', function () {
 				{tsid: 'Z', test: 'foo'},
 			]);
 		});
-		
+
 		test('works with undefined/null input', function () {
 			assert.deepEqual(utils.hashToArray(), []);
 			assert.deepEqual(utils.hashToArray(null), []);
 		});
 	});
-	
-	
+
+
 	suite('shallowCopy', function () {
-	
+
 		test('does its job', function () {
 			var o = {
 				p: {x: 1, y: 2},
@@ -281,7 +281,7 @@ suite('utils', function () {
 			oc.s = 'moo';
 			assert.notProperty(o, 's');
 		});
-		
+
 		test('does not copy functions and inherited properties', function () {
 			var O = function () {
 				this.a = 'A';
@@ -294,7 +294,7 @@ suite('utils', function () {
 			assert.property(oc, 'a');
 			assert.notProperty(oc, 'b', 'does not copy inherited props');
 		});
-		
+
 		test('fails on invalid parameter types', function () {
 			var vals = [null, 1, 'x', [1, 2, 3], function () {}];
 			for (var i = 0; i < vals.length; i++) {
@@ -308,10 +308,10 @@ suite('utils', function () {
 			}
 		});
 	});
-	
-	
+
+
 	suite('padLeft', function () {
-	
+
 		test('does its job', function () {
 			assert.strictEqual(utils.padLeft('', 'x', 5), 'xxxxx');
 			assert.strictEqual(utils.padLeft('A', 'x', 5), 'xxxxA');
@@ -319,5 +319,5 @@ suite('utils', function () {
 			assert.strictEqual(utils.padLeft(24, 0, 4), '0024');
 			assert.strictEqual(utils.padLeft(1234, 0, 2), '1234');
 		});
-	});	
+	});
 });

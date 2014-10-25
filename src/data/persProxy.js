@@ -55,35 +55,38 @@ function makeProxy(obj, prop) {
 				};
 			}
 			var ret = target[name];
-			if (typeof ret === 'object' && ret !== null && !ret.__isORP && !ret.__isPP && target.propertyIsEnumerable(name) && name[0] !== '!') {
+			if (typeof ret === 'object' && ret !== null && !ret.__isORP &&
+				!ret.__isPP && target.propertyIsEnumerable(name) && name[0] !== '!') {
 				// nested helper proxy with same container game object
 				ret = makeProxy(obj, ret);
 				// replace property with proxy (so proxy only needs to be created once)
 				target[name] = ret;
 			}
 			return ret;
-		}, 
+		},
 		set: function(target, name, val, receiver) {
 			// only set dirty flag for actual value changes
 			if (val !== target[name]) {
 				target[name] = val;
 				if (name[0] !== '!' && target.propertyIsEnumerable(name)) {
 					// performance hack: don't persist x/y changes for players
-					if (target !== obj || obj.tsid[0] !== 'P' || (name !== 'x' && name !== 'y')) {
+					if (target !== obj || obj.tsid[0] !== 'P' ||
+						(name !== 'x' && name !== 'y')) {
 						RC.getContext().setDirty(obj);
 					}
 				}
 			}
-		}, 
+		},
 		deleteProperty: function(target, name) {
 			if (name in target) {
-				if (name[0] !== '!' && target.hasOwnProperty(name) && target.propertyIsEnumerable(name)) {
+				if (name[0] !== '!' && target.hasOwnProperty(name) &&
+					target.propertyIsEnumerable(name)) {
 					RC.getContext().setDirty(obj);
 				}
 				return delete target[name];
 			}
 			return true;  // default delete behavior: return 'true' if property doesn't exist
-		}, 
+		},
 	});
 	return ret;
 }

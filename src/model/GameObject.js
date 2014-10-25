@@ -70,7 +70,7 @@ GameObject.prototype.serialize = function() {
 		var k = keys[i];
 		if (k[0] !== '!') {
 			var val = this[k];
-			if (typeof(val) !== 'function') {
+			if (typeof val !== 'function') {
 				ret[k] = val;
 			}
 		}

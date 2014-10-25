@@ -11,14 +11,14 @@ suite('persProxy', function () {
 		rcMock.reset();
 		pp.__set__('RC', rcMock);
 	});
-	
+
 	teardown(function () {
 		pp.__set__('RC', require('data/RequestContext'));
 	});
 
 
 	suite('makeProxy', function () {
-	
+
 		test('wraps game objects in persistence proxy', function () {
 			var p = pp.makeProxy({
 				a: 13,
@@ -26,7 +26,7 @@ suite('persProxy', function () {
 			assert.isTrue(p.__isPP);
 			assert.strictEqual(p.a, 13, 'regular property read access');
 		});
-		
+
 		test('deleting properties flags object as dirty', function () {
 			var o = {tsid: 'x', a: 7};
 			var p = pp.makeProxy(o);
@@ -34,7 +34,7 @@ suite('persProxy', function () {
 			assert.notProperty(o, 'a');
 			assert.deepEqual(rcMock.getDirtyList(), ['x']);
 		});
-		
+
 		test('setting properties flags object as dirty', function () {
 			var o = {tsid: 'x', a: 7};
 			var p = pp.makeProxy(o);
@@ -42,8 +42,9 @@ suite('persProxy', function () {
 			assert.strictEqual(o.a, 8);
 			assert.deepEqual(rcMock.getDirtyList(), ['x']);
 		});
-		
-		test('certain property names are excluded from flagging object as dirty', function () {
+
+		test('certain property names are excluded from flagging object as dirty',
+			function () {
 			var o = {
 				tsid: 'P123',
 				x: 13,
@@ -64,7 +65,7 @@ suite('persProxy', function () {
 			assert.deepEqual(rcMock.getDirtyList(), ['P123'],
 				'nested x/y properties *should* trigger dirty flag');
 		});
-		
+
 		test('objref props are excluded from flagging object as dirty', function () {
 			var o = {
 				tsid: 'x',
@@ -81,7 +82,7 @@ suite('persProxy', function () {
 				'accessing objrefs should not trigger dirty flag');
 			assert.notProperty(o.or, '__isPP');
 		});
-		
+
 		test('object-type props are permanently pers-proxified on access', function () {
 			var o = {nested: {a: 1}};
 			var p = pp.makeProxy(o);
@@ -89,7 +90,7 @@ suite('persProxy', function () {
 			p.nested.a;
 			assert.isTrue(o.nested.__isPP);
 		});
-		
+
 		test('read-only access does not flag object as dirty', function () {
 			var o = {
 				a: 1,
@@ -100,7 +101,7 @@ suite('persProxy', function () {
 			p.a + p.b.c;
 			assert.deepEqual(rcMock.getDirtyList(), []);
 		});
-		
+
 		test('works with array-type properties too', function () {
 			var o = {
 				tsid: 'x',
@@ -123,7 +124,7 @@ suite('persProxy', function () {
 			delete p.arr[0];
 			assert.deepEqual(rcMock.getDirtyList(), ['x']);
 		});
-		
+
 		test('pproxy does not break JSON.stringify', function () {
 			var o = {
 				tsid: 'x',

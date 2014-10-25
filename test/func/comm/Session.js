@@ -17,10 +17,10 @@ var gsjsBridge = require('model/gsjsBridge');
 
 
 suite('Session', function () {
-	
+
 	var server;
 	var cfg = config.getGSConf('gs01-01');
-	
+
 	suiteSetup(function () {
 		sessionMgr.init();
 		server = net.createServer(function (socket) {
@@ -30,18 +30,18 @@ suite('Session', function () {
 			};
 		}).listen(cfg.port, cfg.host);
 	});
-	
+
 	suiteTeardown(function () {
 		server.close();
 		sessionMgr.init();
 	});
-	
-	
+
+
 	suite('connection and data transmission', function () {
-	
+
 		this.timeout(5000);
 		this.slow(2000);
-		
+
 		test('works as expected over local TCP connection', function (done) {
 			var sock = net.connect(cfg.port, cfg.host);
 			sock.on('data', function (data) {
@@ -54,7 +54,7 @@ suite('Session', function () {
 			});
 			sock.write(helpers.amfEnc({type: 'foo'}));
 		});
-		
+
 		test('works with a number of concurrent connections', function (done) {
 			var numbers = Array.apply(null, {length: 1000}).map(Number.call, Number);
 			async.eachLimit(numbers, 10,
@@ -76,34 +76,34 @@ suite('Session', function () {
 			);
 		});
 	});
-	
-	
+
+
 	suite('special request processing', function () {
-	
+
 		this.timeout(10000);
 		this.slow(2000);
-		
+
 		suiteSetup(function (done) {
 			// initialize gsjsBridge data structures (empty) without loading all the prototypes
 			gsjsBridge.init(done, true);
 			auth.init(abePassthrough);
 		});
-		
+
 		suiteTeardown(function () {
 			// reset gsjsBridge so the cached prototypes don't influence other tests
 			gsjsBridge.reset();
 			auth.init(null);
 		});
-		
+
 		setup(function (done) {
 			pers.init(pbeMock, path.resolve(path.join(__dirname, '../fixtures')), done);
 		});
-		
+
 		teardown(function () {
 			pers.init();  // disable mock back-end
 			Session.__set__('gsjsMain', require('gsjs/main'));
 		});
-		
+
 		test('login_start', function (done) {
 			var onLoginCalled = false;
 			Session.__set__('gsjsMain', {
@@ -128,7 +128,7 @@ suite('Session', function () {
 				});
 			});
 		});
-		
+
 		test('login_end', function () {
 			var onPlayerEnterCalled = false;
 			Session.__set__('gsjsMain', {

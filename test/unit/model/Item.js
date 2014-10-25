@@ -10,14 +10,14 @@ var OrderedHash = require('model/OrderedHash');
 suite('Item', function () {
 
 	suite('ctor', function () {
-	
+
 		test('enforces presence of core properties', function () {
 			var i = new Item();
 			assert.property(i, 'x');
 			assert.property(i, 'y');
 			assert.property(i, 'count');
 		});
-		
+
 		test('enables collision detection where appropriate', function () {
 			var i = new Item();
 			assert.isFalse(i.collDet);
@@ -25,32 +25,32 @@ suite('Item', function () {
 			assert.isTrue(i.collDet);
 			assert.property(i, '!colliders');
 		});
-		
+
 		test('initializes message_queue as OrderedHash', function () {
 			var i = new Item({message_queue: {b: 'b', a: 'a'}});
 			assert.instanceOf(i.message_queue, OrderedHash);
 			assert.strictEqual(i.message_queue.first(), 'a');
 		});
 	});
-	
+
 
 	suite('isHidden', function () {
-	
+
 		test('works as expected', function () {
 			var i = new Item();
 			assert.isFalse(i.isHidden);
-			i = new Item({'is_hidden': true});
+			i = new Item({is_hidden: true});
 			assert.isTrue(i.isHidden);
 		});
-		
+
 		test('is not enumerable', function () {
 			assert.notInclude(Object.keys(new Item()), 'isHidden');
 		});
 	});
-	
-	
+
+
 	suite('isStack', function () {
-	
+
 		test('works as expected', function () {
 			var i = new Item();
 			assert.isFalse(i.isStack);
@@ -61,10 +61,10 @@ suite('Item', function () {
 			assert.isTrue(i.isStack);
 		});
 	});
-	
-	
+
+
 	suite('updatePath', function () {
-	
+
 		test('does its job', function () {
 			var p = new Player({tsid: 'P1'});
 			var b1 = new Bag({tsid: 'B1'});
@@ -81,10 +81,10 @@ suite('Item', function () {
 			assert.strictEqual(i.path, 'B1/B2/I1', 'player not included');
 		});
 	});
-	
-	
+
+
 	suite('serialize', function () {
-	
+
 		test('does not include internal (non-enumerable) properties', function () {
 			var data = {
 				tsid: 'IFOO',

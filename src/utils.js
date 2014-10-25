@@ -130,7 +130,7 @@ function isInt(i) {
  */
 function isBag(gameObjOrTsid) {
 	var i = getInitial(gameObjOrTsid);
-	return  i === 'P' || i === 'B';
+	return i === 'P' || i === 'B';
 }
 
 
@@ -321,7 +321,7 @@ function shallowCopy(obj) {
 		'invalid type: ' + typeof obj);
 	var ret = {};
 	for (var k in obj) {
-		if (obj.hasOwnProperty(k) && typeof(obj[k]) !== 'function') {
+		if (obj.hasOwnProperty(k) && typeof obj[k] !== 'function') {
 			ret[k] = obj[k];
 		}
 	}

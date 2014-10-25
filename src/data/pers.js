@@ -181,11 +181,13 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
 	async.each(Object.keys(dlist),
 		function iterate(k, iterCallback) {
 			var obj = dlist[k];
+			//TODO: stop game object timers/intervals
+			/*
 			if (obj.deleted || k in ulist) {
 				// stop timers/intervals for deleted objects and objects about
 				// to be unloaded from cache
-				//TODO: stop game object timers/intervals
 			}
+			*/
 			var op = obj.deleted ? del : write;
 			op(obj, logmsg, function cb(err, res) {
 				// silently ignore errors (we're not interested in them here,

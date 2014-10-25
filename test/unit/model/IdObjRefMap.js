@@ -6,22 +6,22 @@ var IdObjRefMap = require('model/IdObjRefMap');
 suite('IdObjRefMap', function () {
 
 	suite('ctor', function () {
-	
+
 		test('creates empty IdObjRefMap without parameter', function () {
 			var oh = new IdObjRefMap();
 			assert.strictEqual(oh.length, 0);
 		});
-		
+
 		test('JSON serialization skips everything but data properties', function () {
 			var iorm = new IdObjRefMap({x: 'x', y: {z: 'z'}});
 			assert.strictEqual(JSON.stringify(iorm),
 				'{"x":"x","y":{"z":"z"}}');
 		});
 	});
-	
-	
+
+
 	suite('length', function () {
-	
+
 		test('does its job', function () {
 			var iorm = new IdObjRefMap();
 			assert.strictEqual(iorm.length, 0);
@@ -35,8 +35,8 @@ suite('IdObjRefMap', function () {
 			assert.strictEqual(iorm.length, 2);
 		});
 	});
-	
-	
+
+
 	suite('apiIterate', function () {
 
 		test('works without class_tsid parameter', function () {

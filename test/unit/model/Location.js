@@ -14,14 +14,14 @@ suite('Location', function () {
 
 
 	suite('ctor', function () {
-	
+
 		test('initializes core properties', function () {
 			var l = new Location({}, getDummyGeo());
 			assert.deepEqual(l.players, {});
 			assert.deepEqual(l.activePlayers, {});
 			assert.deepEqual(l.items, {});
 		});
-		
+
 		test('converts players and items lists to IdObjRefMaps', function () {
 			var l = new Location({
 				players: [
@@ -38,10 +38,10 @@ suite('Location', function () {
 			assert.strictEqual(l.items.length, 3);
 		});
 	});
-	
-	
+
+
 	suite('updateGeo', function () {
-	
+
 		test('does its job', function () {
 			var l = new Location({}, new Geo({layers: {middleground: {doors: {}}}}));
 			l.geometry.layers.middleground.doors.d = {
@@ -54,7 +54,9 @@ suite('Location', function () {
 			assert.strictEqual(doors.d.connect.street_tsid, 'LABC');
 			assert.typeOf(doors.d.connect.target, 'object');
 			assert.isFalse(doors.d.connect.propertyIsEnumerable('target'));
-			assert.strictEqual(l.clientGeometry.layers.middleground.doors.d.connect.street_tsid, 'LABC');
+			assert.strictEqual(
+				l.clientGeometry.layers.middleground.doors.d.connect.street_tsid,
+				'LABC');
 			assert.strictEqual(l.geo.doors.d.connect.street_tsid, 'LABC');
 			assert.strictEqual(l.geo.l, -1234);
 			// check that removing stuff also works:

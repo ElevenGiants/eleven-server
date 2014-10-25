@@ -19,7 +19,7 @@ suite('pers', function () {
 		rpcMock.reset(true);
 		pers.init(pbeMock, undefined, done);
 	});
-	
+
 	teardown(function () {
 		pers.__set__('gsjsBridge', require('model/gsjsBridge'));
 		pers.__set__('rpc', require('data/rpc'));
@@ -28,12 +28,12 @@ suite('pers', function () {
 		rcMock.reset();
 		rpcMock.reset(true);
 	});
-	
+
 
 	suite('load', function () {
-		
+
 		var load = pers.__get__('load');
-		
+
 		test('loads local objects and proxifies them', function () {
 			var o = {tsid: 'ITEST', some: 'data'};
 			pbeMock.write(o);
@@ -44,7 +44,7 @@ suite('pers', function () {
 			assert.strictEqual(cache[o.tsid].some, 'data');
 			assert.isTrue(cache[o.tsid].__isPP);
 		});
-		
+
 		test('calls onLoad event', function () {
 			var onLoadCalled = false;
 			var o = {
@@ -57,7 +57,7 @@ suite('pers', function () {
 			load(o.tsid);
 			assert.isTrue(onLoadCalled);
 		});
-		
+
 		test('does not choke on objref cycles', function () {
 			var a = {
 				tsid: 'IA',
@@ -75,14 +75,14 @@ suite('pers', function () {
 			assert.isTrue(la.ref.__isORP);
 			assert.strictEqual(la.ref.tsid, 'IB');
 		});
-		
+
 		test('does not choke on unavailable objrefs', function () {
 			var o = {tsid: 'IO', ref: {objref: true, tsid: 'IUNAVAILABLE'}};
 			pbeMock.write(o);
 			var lo = load(o.tsid);
 			assert.isTrue(lo.ref.__isORP);
 		});
-		
+
 		test('handles remote objects properly', function () {
 			rpcMock.reset(false);
 			var o = {tsid: 'ITEST', some: 'data'};
@@ -91,13 +91,14 @@ suite('pers', function () {
 			assert.isTrue(lo.__isRP, 'is wrapped in RPC proxy');
 			assert.isUndefined(lo.__isPP, 'is not wrapped in persistence proxy');
 			assert.isDefined(rcMock.getContext().cache.ITEST, 'in request cache');
-			assert.notProperty(pers.__get__('cache'), 'ITEST', 'not in live object cache');
+			assert.notProperty(pers.__get__('cache'), 'ITEST',
+				'not in live object cache');
 		});
 	});
 
 
 	suite('get', function () {
-		
+
 		test('getting an already loaded object reads it from cache', function () {
 			var onLoadCalls = 0;
 			pbeMock.write({
@@ -113,18 +114,20 @@ suite('pers', function () {
 			assert.strictEqual(pbeMock.getCounts().read, 1);
 			assert.strictEqual(onLoadCalls, 1);
 		});
-		
-		test('if an object is already in the request cache, get it from there', function () {
+
+		test('if an object is already in the request cache, get it from there',
+			function () {
 			rcMock.getContext().cache.IA = {tsid: 'IA'};
 			assert.strictEqual(pers.get('IA').tsid, 'IA');
 			assert.strictEqual(pbeMock.getCounts().read, 0);
 		});
 	});
-	
-	
+
+
 	suite('add', function () {
 
-		test('adds objects to the live object cache, proxifies them and flags them as dirty', function () {
+		test('adds objects to the live object cache, proxifies them and ' +
+			'flags them as dirty', function () {
 			var o = {
 				tsid: 'I123',
 				something: 'dumb',
@@ -138,10 +141,10 @@ suite('pers', function () {
 			assert.deepEqual(rcMock.getDirtyList(), ['I123']);
 		});
 	});
-	
-	
+
+
 	suite('postRequestProc/write/del/unload', function () {
-	
+
 		test('does the job', function () {
 			var dlist = {
 				I1: new GameObject({tsid: 'I1'}),
@@ -152,7 +155,7 @@ suite('pers', function () {
 			assert.strictEqual(pbeMock.getCounts().write, 2);
 			assert.strictEqual(pbeMock.getCounts().del, 1);
 		});
-		
+
 		test('unloads objects from cache', function () {
 			var o1 = new GameObject({tsid: 'I1'});
 			var o2 = new GameObject({tsid: 'I2'});
@@ -163,7 +166,7 @@ suite('pers', function () {
 			assert.strictEqual(pbeMock.getCounts().del, 0);
 			assert.deepEqual(pers.__get__('cache'), {I1: o1});
 		});
-		
+
 		test('calls callback after persistence operations', function (done) {
 			var o1 = new GameObject({tsid: 'I1'});
 			pers.__set__('cache', {I1: o1});
