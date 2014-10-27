@@ -3,7 +3,9 @@
 module.exports = Bag;
 
 
+var assert = require('assert');
 var Item = require('model/Item');
+var pers = require('data/pers');
 var util = require('util');
 var utils = require('utils');
 
@@ -35,6 +37,20 @@ function Bag(data) {
 		this.hiddenItems = utils.arrayToHash(this.hiddenItems);
 	}
 }
+
+
+/**
+ * Creates a new `Bag` instance and adds it to persistence.
+ *
+ * @param {string} classTsid specific class of the item
+ * @returns {object} a `Bag` instance wrapped in a {@link
+ * module:data/persProxy|persistence proxy}
+ */
+Bag.create = function create(classTsid) {
+	assert(classTsid.substr(0, 4) === 'bag_', util.format(
+		'invalid class TSID for Bag: %s', classTsid));
+	return pers.create(Bag, {class_tsid: classTsid});
+};
 
 
 /**

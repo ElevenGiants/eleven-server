@@ -13,7 +13,7 @@ var data = JSON.parse(f);
 var go = new GameObject(data);
 gsjsBridge.reset();
 var proto = gsjsBridge.getProto('players', 'human');
-var goWithProto = gsjsBridge.createFromData(data);
+var goWithProto = gsjsBridge.create(data);
 
 
 suite.add('GameObject instantiation (no parent prototypes)', function() {

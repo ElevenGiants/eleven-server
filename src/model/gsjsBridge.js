@@ -30,7 +30,6 @@ module.exports = {
 	init: init,
 	getProto: getProto,
 	create: create,
-	createFromData: createFromData,
 	getAdmin: getAdmin,
 };
 
@@ -42,11 +41,11 @@ var fs = require('fs');
 var path = require('path');
 var util = require('util');
 var utils = require('utils');
+var Player = require('model/Player');
 var Bag = require('model/Bag');
 var Group = require('model/Group');
 var Item = require('model/Item');
 var Location = require('model/Location');
-var Player = require('model/Player');
 var Quest = require('model/Quest');
 var Geo = require('model/Geo');
 var DataContainer = require('model/DataContainer');
@@ -58,7 +57,7 @@ var GSJS_PATH = path.resolve(path.join(process.env.NODE_PATH, 'gsjs'));
 // mapping between TSID initials and GSJS model groups or base classes
 var TSID_INITIALS_MAP = {
 	G: Geo,
-	B: 'bags',
+	B: 'items',
 	L: 'locations',
 	I: 'items',
 	P: 'players',
@@ -165,6 +164,7 @@ function initDependencies(testConfig, testApi) {
  * @returns {object} corresponding game object prototype
  */
 function getProto(group, klass) {
+	assert(group in prototypes, 'invalid GSJS object group: ' + group);
 	if (!prototypes[group][klass]) {
 		loadProto(group, klass);
 	}
@@ -174,40 +174,36 @@ function getProto(group, klass) {
 
 /**
  * Instantiates and returns a new game object.
- *
- * @param {string} group general type of the object (see above)
- * @param {string} klass specific type of the object (see above)
- * @returns {GameObject} an "empty" game object of the specified type
- *          (instantiated with the default no-argument constructor)
- */
-//jscs:disable jsDoc
-// (jsDoc rule can't detect return value type here)
-function create(group, klass) {
-	/*jshint -W055 */  // ignore lowercase constructor names here
-	var ctor = getProto(group, klass).constructor;
-	return new ctor();
-}
-//jscs:enable jsDoc
-
-
-/**
- * Instantiates and returns a new game object from the supplied data
- * (must contain `tsid` and optionally (depending on object type)
- * `class_tsid` properties).
+ * The desired type must either be stated explicitly, or through a
+ * `tsid` property in the given object data.
+ * Depending on the type, the data may also need to contain a
+ * `class_tsid` property.
  *
  * @param {object} data initialization data used to determine the right
- *        prototype, and passed through to the game object constructor
+ *        prototype (if not specified explicitly via `modelType`), and
+ *        passed through to the game object constructor
+ * @param {function} [modelType] the desired game object model type
+ *        (i.e. a constructor like `Player` or `Geo`)
  * @returns {GameObject} a game object of the specified type,
  *          instantiated through the default constructor with `data`
  */
 //jscs:disable jsDoc
 // (jsDoc rule can't detect return value type here)
-function createFromData(data) {
+function create(data, modelType) {
 	/*jshint -W055 */  // ignore lowercase constructor names here
 	assert(typeof data === 'object', 'object data is required');
-	assert(typeof data.tsid === 'string' && data.tsid.length > 1,
-		util.format('valid TSID is required (got: %s)', data.tsid));
-	var groupOrClass = TSID_INITIALS_MAP[data.tsid[0]];
+	var tsidInitial;
+	if (modelType) {
+		tsidInitial = modelType.prototype.TSID_INITIAL;
+		assert(!('tsid' in data) || data.tsid[0] === tsidInitial, util.format(
+			'invalid custom TSID %s for model type %s', data.tsid, modelType.name));
+	}
+	else {
+		assert(typeof data.tsid === 'string' && data.tsid.length > 1,
+			util.format('valid TSID is required (got: %s)', data.tsid));
+		tsidInitial = data.tsid[0];
+	}
+	var groupOrClass = TSID_INITIALS_MAP[tsidInitial];
 	if (typeof groupOrClass === 'string') {
 		var klass = data.class_tsid || groupOrClass.slice(0, -1);
 		var ctor = getProto(groupOrClass, klass).constructor;

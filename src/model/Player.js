@@ -8,6 +8,7 @@ var auth = require('comm/auth');
 var config = require('config');
 var Prop = require('model/Property');
 var Bag = require('model/Bag');
+var pers = require('data/pers');
 var rpc = require('data/rpc');
 var RC = require('data/RequestContext');
 var util = require('util');
@@ -53,6 +54,29 @@ function Player(data) {
 		}
 	}
 }
+
+
+/**
+ * Creates a new `Player` instance and adds it to persistence.
+ *
+ * @param {object} [data] player data; must contain everything required
+ *        for a new player
+ * @returns {object} a `Player` instance wrapped in a {@link
+ * module:data/persProxy|persistence proxy}
+ */
+Player.create = function create(data) {
+	assert(typeof data === 'object', 'minimal player data set required');
+	assert(typeof data.userid === 'string' && data.userid.length > 0,
+		util.format('invalid user ID: "%s"', data.userid));
+	assert(typeof data.label === 'string' && data.label.length > 2,
+		util.format('invalid player label: "%s"', data.label));
+	assert(utils.isLoc(data.location), 'location required');
+	//TODO: a lot more data validation should probably happen here
+	data.class_tsid = data.class_tsid || 'human';
+	var ret = pers.create(Player, data);
+	log.info('%s was imagined!', ret);
+	return ret;
+};
 
 
 /**

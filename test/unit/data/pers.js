@@ -3,6 +3,7 @@
 var rewire = require('rewire');
 var pers = rewire('data/pers');
 var GameObject = require('model/GameObject');
+var Item = require('model/Item');
 var gsjsBridgeMock = require('../../mock/gsjsBridge');
 var pbeMock = require('../../mock/pbe');
 var rpcMock = require('../../mock/rpc');
@@ -124,21 +125,36 @@ suite('pers', function () {
 	});
 
 
-	suite('add', function () {
+	suite('create', function () {
 
-		test('adds objects to the live object cache, proxifies them and ' +
-			'flags them as dirty', function () {
-			var o = {
+		test('adds created objects to the live object cache, proxifies them ' +
+			'and flags them as dirty', function () {
+			var p = pers.create(Item, {
 				tsid: 'I123',
 				something: 'dumb',
-			};
-			var p = pers.add(o);
+			});
 			var cache = pers.__get__('cache');
-			assert.property(cache, o.tsid);
-			assert.strictEqual(cache[o.tsid].something, 'dumb');
+			assert.property(cache, 'I123');
+			assert.strictEqual(cache.I123.something, 'dumb');
 			assert.isTrue(p.__isPP);
-			assert.isTrue(cache[o.tsid].__isPP);
+			assert.isTrue(cache.I123.__isPP);
 			assert.deepEqual(rcMock.getDirtyList(), ['I123']);
+		});
+
+		test('fails with TSID of an already existing object', function () {
+			pers.__get__('cache').ITEST = 'foo';
+			assert.throw(function () {
+				pers.create(Item, {tsid: 'ITEST'});
+			}, assert.AssertionError);
+		});
+
+		test('calls onCreate handler', function (done) {
+			pers.create(Item, {
+				tsid: 'I456',
+				onCreate: function onCreate() {
+					done();
+				},
+			});
 		});
 	});
 

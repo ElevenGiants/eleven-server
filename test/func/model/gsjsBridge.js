@@ -5,6 +5,7 @@ var gsjsBridge = rewire('model/gsjsBridge');
 var Bag = require('model/Bag');
 var GameObject = require('model/GameObject');
 var Item = require('model/Item');
+var Player = require('model/Player');
 
 
 suite('gsjsBridge', function () {
@@ -72,7 +73,7 @@ suite('gsjsBridge', function () {
 			assert.property(pi, 'estimateDigit', 'pi-specific function');
 			assert.property(pi, 'distanceFromPlayer', 'property from item.js');
 			assert.property(pi, 'is_food', 'property from include/food.js');
-			var bag = gsjsBridge.create('items', 'bag_bigger');
+			var bag = gsjsBridge.create({class_tsid: 'bag_bigger'}, Bag);
 			assert.instanceOf(bag, Bag);
 			assert.instanceOf(bag, Item);
 			assert.instanceOf(bag, GameObject);
@@ -94,7 +95,7 @@ suite('gsjsBridge', function () {
 		});
 
 		test('itemDef is initialized properly', function () {
-			var jar = gsjsBridge.create('items', 'firefly_jar');
+			var jar = gsjsBridge.create({class_tsid: 'firefly_jar'}, Item);
 			assert.property(jar, 'itemDef');
 			assert.isFalse(jar.hasOwnProperty('itemDef'),
 				'itemDef is inherited from prototype');
@@ -104,7 +105,7 @@ suite('gsjsBridge', function () {
 
 		test('GSJS utils and config are loaded', function () {
 			gsjsBridge.__get__('initDependencies')('config_prod');
-			var human = gsjsBridge.create('players', 'human');
+			var human = gsjsBridge.create({class_tsid: 'human'}, Player);
 			assert.strictEqual(human.skills_get('alchemy_2').name, 'Alchemy',
 				'config is loaded (including includes)');
 			assert.strictEqual(human.skills_get_name('alchemy_2'), 'Alchemy II',
@@ -118,7 +119,7 @@ suite('gsjsBridge', function () {
 					done();
 				},
 			});
-			var human = gsjsBridge.create('players', 'human');
+			var human = gsjsBridge.create({class_tsid: 'human'}, Player);
 			human.isOnline();
 		});
 	});

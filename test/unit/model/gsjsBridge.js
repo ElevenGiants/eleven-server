@@ -10,7 +10,7 @@ var DataContainer = require('model/DataContainer');
 
 suite('gsjsBridge', function () {
 
-	suite('createFromData', function () {
+	suite('create', function () {
 
 		function createDummyProtos() {
 			var ret = {
@@ -30,7 +30,7 @@ suite('gsjsBridge', function () {
 		});
 
 		test('does its job', function () {
-			var o = gsjsBridge.createFromData({
+			var o = gsjsBridge.create({
 				tsid: 'IXYZ',
 				class_tsid: 'thingie',
 				blargh: 'oomph',
@@ -43,9 +43,9 @@ suite('gsjsBridge', function () {
 		});
 
 		test('geo and DC objects are instantiated from their base classes', function () {
-			var g = gsjsBridge.createFromData({tsid: 'GXYZ'});
+			var g = gsjsBridge.create({tsid: 'GXYZ'});
 			assert.instanceOf(g, Geo);
-			var d = gsjsBridge.createFromData({tsid: 'DXYZ'});
+			var d = gsjsBridge.create({tsid: 'DXYZ'});
 			assert.instanceOf(d, DataContainer);
 		});
 	});

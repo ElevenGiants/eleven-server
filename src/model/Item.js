@@ -3,8 +3,10 @@
 module.exports = Item;
 
 
+var assert = require('assert');
 var GameObject = require('model/GameObject');
 var OrderedHash = require('model/OrderedHash');
+var pers = require('data/pers');
 var util = require('util');
 var utils = require('utils');
 
@@ -55,6 +57,25 @@ function Item(data) {
 	}
 	this.updatePath();
 }
+
+
+/**
+ * Creates a new `Item` instance and adds it to persistence.
+ *
+ * @param {string} classTsid specific class of the item
+ * @param {number} [count] item stack size (1 by default)
+ * @returns {object} an `Item` instance wrapped in a {@link
+ * module:data/persProxy|persistence proxy}
+ */
+Item.create = function create(classTsid, count) {
+	assert(classTsid.substr(0, 4) !== 'bag_', util.format(
+		'invalid class TSID for Item: %s', classTsid));
+	var data = {class_tsid: classTsid};
+	if (utils.isInt(count)) {
+		data.count = count;
+	}
+	return pers.create(Item, data);
+};
 
 
 /**

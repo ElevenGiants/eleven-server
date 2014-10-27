@@ -3,6 +3,7 @@
 module.exports = Location;
 
 
+var assert = require('assert');
 var GameObject = require('model/GameObject');
 var Geo = require('model/Geo');
 var IdObjRefMap = require('model/IdObjRefMap');
@@ -47,8 +48,27 @@ function Location(data, geo) {
 	utils.addNonEnumerable(this, 'geometry');
 	utils.addNonEnumerable(this, 'clientGeometry');
 	utils.addNonEnumerable(this, 'geo');
-	this.updateGeo(geo || pers.get(this.getGeoTsid()));
+	var geoData = geo || pers.get(this.getGeoTsid());
+	assert(typeof geoData === 'object', 'no geometry data for ' + this);
+	this.updateGeo(geoData);
 }
+
+
+/**
+ * Creates a new `Location` instance and adds it to persistence.
+ *
+ * @param {Geo} geo geometry data (location TSID will be derived from
+ *        `geo.tsid`)
+ * @param {object} [data] additional properties
+ * @returns {object} a `Location` instance wrapped in a {@link
+ * module:data/persProxy|persistence proxy}
+ */
+Location.create = function create(geo, data) {
+	data = data || {};
+	data.tsid = geo.getLocTsid();
+	data.class_tsid = data.class_tsid || 'town';
+	return pers.create(Location, data);
+};
 
 
 // define activePlayers property as read-only alias for players
@@ -102,7 +122,7 @@ Location.prototype.updateGeo = function updateGeo(data) {
 	// workaround for GSJS functions that replace the whole geometry property
 	if (!(this.geometry instanceof Geo)) {
 		this.geometry.tsid = this.getGeoTsid();  // make sure new data does not have a template TSID
-		this.geometry = pers.add(new Geo(this.geometry));
+		this.geometry = Geo.create(this.geometry);
 	}
 	// process connects for GSJS
 	this.geometry.prepConnects();

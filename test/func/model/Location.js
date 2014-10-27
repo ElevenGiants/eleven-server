@@ -8,6 +8,7 @@ var pbeMock = require('../../mock/pbe');
 var Location = require('model/Location');
 var Geo = require('model/Geo');
 var gsjsBridge = require('model/gsjsBridge');
+var utils = require('utils');
 
 
 suite('Location', function () {
@@ -97,6 +98,49 @@ suite('Location', function () {
 				assert.strictEqual(pbeMock.getCounts().write, 0);
 				assert.strictEqual(pbeMock.getCounts().del, 0);
 			}, done);
+		});
+	});
+
+
+	suite('create', function () {
+
+		setup(function () {
+			gsjsBridge.reset();
+			pers.init(pbeMock);
+		});
+
+		teardown(function () {
+			gsjsBridge.reset();
+			pers.init();  // disable mock back-end
+		});
+
+
+		test('does its job and creates "town" by default', function (done) {
+			new RC().run(
+				function () {
+					var g = Geo.create();
+					var l = Location.create(g);
+					assert.isTrue(l.__isPP);
+					assert.isTrue(utils.isLoc(l));
+					assert.strictEqual(l.class_tsid, 'town');
+					assert.strictEqual(l.tsid.substr(1), g.tsid.substr(1));
+				},
+				function cb(err, res) {
+					if (err) return done(err);
+					var db = pbeMock.getDB();
+					assert.strictEqual(pbeMock.getCounts().write, 2);
+					assert.strictEqual(Object.keys(db).length, 2);
+					done();
+				}
+			);
+		});
+
+		test('fails if Geo object not available in persistence', function () {
+			assert.throw(function () {
+				new RC().run(function () {
+					Location.create(new Geo());
+				});
+			}, assert.AssertionError);
 		});
 	});
 });

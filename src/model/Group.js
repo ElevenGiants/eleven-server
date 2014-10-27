@@ -4,6 +4,7 @@ module.exports = Group;
 
 
 var GameObject = require('model/GameObject');
+var pers = require('data/pers');
 var util = require('util');
 
 
@@ -23,3 +24,23 @@ Group.prototype.TSID_INITIAL = 'R';
 function Group(data) {
 	Group.super_.call(this, data);
 }
+
+
+/**
+ * Creates a new `Group` instance and adds it to persistence.
+ *
+ * @param {string} [classTsid] specific class of the group
+ * @param {string} [hubId] hub to attach the group to
+ * @returns {object} a `Group` instance wrapped in a {@link
+ * module:data/persProxy|persistence proxy}
+ */
+Group.create = function create(classTsid, hubId) {
+	var data = {};
+	if (classTsid) {
+		data.class_tsid = classTsid;
+	}
+	if (hubId) {
+		data.hubid = hubId;
+	}
+	return pers.create(Group, data);
+};
