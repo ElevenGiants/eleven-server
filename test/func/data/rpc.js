@@ -32,7 +32,7 @@ suite('rpc', function () {
 	});
 
 	suiteTeardown(function () {
-		config.init(false, cfgBackup);
+		config.init(false, cfgBackup, {});
 	});
 
 
