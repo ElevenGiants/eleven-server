@@ -16,7 +16,7 @@ suite('config', function () {
 	});
 
 	teardown(function () {
-		config.init(true, cfgBackup, {});
+		config.init(false, cfgBackup, {});
 	});
 
 

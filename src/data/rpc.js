@@ -28,6 +28,7 @@ module.exports = {
 	sendRequest: sendRequest,
 	isLocal: isLocal,
 	getGsid: getGsid,
+	makeLocalTsid: makeLocalTsid,
 };
 
 
@@ -407,17 +408,13 @@ function isLocal(objOrTsid) {
  * @returns {string} ID of the server managing the object
  */
 function getGsid(objOrTsid) {
-	// locations and groups mapped by their own tsid
-	if (utils.isLoc(objOrTsid) || utils.isGroup(objOrTsid)) {
+	// locations, geos and groups mapped by their own tsid
+	if (utils.isLoc(objOrTsid) || utils.isGroup(objOrTsid) || utils.isGeo(objOrTsid)) {
 		return config.mapToGS(objOrTsid).gsid;
 	}
 	// for all other classes, we need the actual game object
 	var obj = typeof objOrTsid === 'string' ? pers.get(objOrTsid) : objOrTsid;
 	assert(obj !== undefined, 'cannot map nonexistent game object: ' + objOrTsid);
-	// geo mapped by corresponding location
-	if (utils.isGeo(obj)) {
-		return getGsid(obj.getLocTsid());
-	}
 	// player mapped by current location
 	if (utils.isPlayer(obj)) {
 		assert(utils.isLoc(obj.location),
@@ -438,6 +435,38 @@ function getGsid(objOrTsid) {
 		return getGsid(obj.owner);
 	}
 	throw new Error('invalid game object type: ' + objOrTsid);
+}
+
+
+/**
+ * Generates a TSID for a game object that will be mapped to this game
+ * server instance. *Only works for group, location and geo objects.*
+ * This is essentially a naive/brute force loop application of {@link
+ * module:utils~makeTsid|utils.makeTsid}.
+ *
+ * @param {string} initial first letter of the returned TSID,
+ *        corresponding to a game object type; must be 'G', 'L' or 'R'
+ * @param {string} [customTsid] when a predefined TSID is supplied
+ *        here, test if it maps to this GS instance (`initial` is
+ *        ignored in this case)
+ * @returns {string} the generated game object TSID (or `customTsid` if
+ *          specified and mapped to this GS)
+ * @throws {AssertionError} if an invalid `initial` was supplied, or
+ *         when the `customTsid` is not mapped to this GS instance
+ */
+function makeLocalTsid(initial, customTsid) {
+	if (customTsid) {
+		assert(isLocal(customTsid), util.format(
+			'TSID is not mapped to this GS: %s', customTsid));
+		return customTsid;
+	}
+	// generate a TSID that is mapped here
+	//TODO: this is a hack that does not scale to more than a handful of GSs
+	var tsid;
+	while (!tsid || !isLocal(tsid)) {
+		tsid = utils.makeTsid(initial, config.getGsid());
+	}
+	return tsid;
 }
 
 

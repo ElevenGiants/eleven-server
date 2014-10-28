@@ -9,6 +9,7 @@ var Geo = require('model/Geo');
 var IdObjRefMap = require('model/IdObjRefMap');
 var OrderedHash = require('model/OrderedHash');
 var pers = require('data/pers');
+var rpc = require('data/rpc');
 var util = require('util');
 var utils = require('utils');
 
@@ -30,6 +31,8 @@ Location.prototype.TSID_INITIAL = 'L';
  * @augments GameObject
  */
 function Location(data, geo) {
+	data = data || {};
+	data.tsid = rpc.makeLocalTsid(Location.prototype.TSID_INITIAL, data.tsid);
 	Location.super_.call(this, data);
 	// initialize items and players, convert to IdObjRefMap
 	if (!this.players || this.players instanceof Array) {

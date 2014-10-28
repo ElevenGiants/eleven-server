@@ -5,6 +5,7 @@ module.exports = Group;
 
 var GameObject = require('model/GameObject');
 var pers = require('data/pers');
+var rpc = require('data/rpc');
 var util = require('util');
 
 
@@ -22,6 +23,8 @@ Group.prototype.TSID_INITIAL = 'R';
  * @augments GameObject
  */
 function Group(data) {
+	data = data || {};
+	data.tsid = rpc.makeLocalTsid(Group.prototype.TSID_INITIAL, data.tsid);
 	Group.super_.call(this, data);
 }
 

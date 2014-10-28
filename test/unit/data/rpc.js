@@ -1,6 +1,7 @@
 'use strict';
 
 var rewire = require('rewire');
+var config = rewire('config');
 var rpc = rewire('data/rpc');
 var persMock = require('../../mock/pers');
 var orProxy = require('data/objrefProxy');
@@ -42,17 +43,10 @@ suite('rpc', function () {
 		});
 
 
-		test('works for base cases (groups and locations)', function () {
+		test('works for base cases (groups, locations, geos)', function () {
 			assert.strictEqual(rpc.getGsid('L1234'), 'gs-L1234');
 			assert.strictEqual(rpc.getGsid({tsid: 'R1234'}), 'gs-R1234');
-		});
-
-		test('works for Geos', function () {
-			var g = new Geo({tsid: 'GXYZ'});
-			var l = new Location({tsid: 'LXYZ'}, g);
-			persMock.preAdd(g, l);
-			assert.strictEqual(rpc.getGsid(g), 'gs-LXYZ');
-			assert.strictEqual(rpc.getGsid('GXYZ'), 'gs-LXYZ');
+			assert.strictEqual(rpc.getGsid({tsid: 'G1234'}), 'gs-G1234');
 		});
 
 		test('works for players', function () {
@@ -101,6 +95,60 @@ suite('rpc', function () {
 			q.owner = g;
 			assert.strictEqual(rpc.getGsid(q), 'gs-RX');
 			assert.strictEqual(rpc.getGsid('Q1'), 'gs-RX');
+		});
+	});
+
+
+	suite('makeLocalTsid', function () {
+
+		this.slow(250);
+
+		var cfgBackup;
+
+		suiteSetup(function () {
+			cfgBackup = config.get();
+			// simulate a 20 server config (just the pieces relevant for the test)
+			config.__set__('gameServers', {});
+			for (var i = 0; i < 20; i++) {
+				var gsid = 'gs01-' + i;
+				config.__get__('gameServers')[gsid] = {gsid: gsid};
+			}
+			config.__set__('gsids', Object.keys(config.__get__('gameServers')));
+			config.__set__('gsid', 'gs01-1');
+			rpc.__set__('config', config);
+		});
+
+		suiteTeardown(function () {
+			config.reset();
+			config.init(false, cfgBackup, {});
+			rpc.__set__('config', require('config'));
+		});
+
+
+		test('works as expected', function () {
+			for (var i = 0; i < 50; i++) {
+				var tsid = rpc.makeLocalTsid('R');
+				assert.strictEqual(config.mapToGS(tsid).gsid, 'gs01-1');
+			}
+		});
+
+		test('works for Geos, too', function () {
+			var tsid = rpc.makeLocalTsid('G');
+			assert.strictEqual(config.mapToGS(tsid).gsid, 'gs01-1');
+			var locTsid = 'L' + tsid.substr(1);
+			assert.strictEqual(config.mapToGS(locTsid).gsid, 'gs01-1',
+				'location and geo are always mapped to the same GS');
+		});
+
+		test('fails for non-top-level object types', function () {
+			var initials = ['I', 'B', 'D', 'P', 'Q'];
+			for (var i = 0; i < initials.length; i++) {
+				/*jshint -W083 */
+				assert.throw(function () {
+					rpc.makeLocalTsid(initials[i]);
+				}, assert.AssertionError);
+				/*jshint +W083 */
+			}
 		});
 	});
 });
