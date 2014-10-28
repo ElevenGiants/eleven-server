@@ -149,7 +149,8 @@ function get(tsid) {
  * @returns {object} the new object, wrapped in a persistence proxy
  */
 function create(modelType, data) {
-	log.debug('pers.create: %s', modelType);
+	log.debug('pers.create: %s%s', modelType.name,
+		(typeof data === 'object' && data.tsid) ? ('#' + data.tsid) : '');
 	data = data || {};
 	var obj = gsjsBridge.create(data, modelType);
 	assert(!(obj.tsid in cache), 'object already exists: ' + obj.tsid);

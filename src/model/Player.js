@@ -66,12 +66,7 @@ function Player(data) {
  */
 Player.create = function create(data) {
 	assert(typeof data === 'object', 'minimal player data set required');
-	assert(typeof data.userid === 'string' && data.userid.length > 0,
-		util.format('invalid user ID: "%s"', data.userid));
-	assert(typeof data.label === 'string' && data.label.length > 2,
-		util.format('invalid player label: "%s"', data.label));
 	assert(utils.isLoc(data.location), 'location required');
-	//TODO: a lot more data validation should probably happen here
 	data.class_tsid = data.class_tsid || 'human';
 	var ret = pers.create(Player, data);
 	log.info('%s was imagined!', ret);
