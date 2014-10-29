@@ -100,4 +100,28 @@ suite('Item', function () {
 			assert.deepEqual(i.serialize(), data);
 		});
 	});
+
+
+	suite('del', function () {
+
+		test('does its job', function () {
+			var it = new Item();
+			var b = new Bag({items: [it]});
+			it.container = b;
+			it.del();
+			assert.deepEqual(b.items, {});
+			assert.notProperty(it, 'container');
+			assert.isTrue(it.deleted);
+		});
+
+		test('also deletes from container\'s hidden items list', function () {
+			var it = new Item();
+			var b = new Bag({hiddenItems: [it]});
+			it.container = b;
+			it.del();
+			assert.deepEqual(b.hiddenItems, {});
+			assert.notProperty(it, 'container');
+			assert.isTrue(it.deleted);
+		});
+	});
 });

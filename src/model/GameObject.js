@@ -29,6 +29,8 @@ function GameObject(data) {
 		this.class_tsid = data.class_tsid || data.class_id;
 		utils.addNonEnumerable(this, 'class_id', this.class_tsid);  // deprecated
 	}
+	// add non-enumerable internal properties
+	utils.addNonEnumerable(this, 'deleted', false);
 	// copy supplied data
 	// TODO: remove 'dynamic' partition in fixture data, and get rid of special handling here
 	var key;
@@ -84,4 +86,12 @@ GameObject.prototype.serialize = function serialize() {
  */
 GameObject.prototype.toString = function toString() {
 	return '[' + this.constructor.name + '#' + this.tsid + ']';
+};
+
+
+/**
+ * Schedules this object for deletion after the current request.
+ */
+GameObject.prototype.del = function del() {
+	this.deleted = true;
 };

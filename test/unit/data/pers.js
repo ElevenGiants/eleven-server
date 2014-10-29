@@ -164,9 +164,11 @@ suite('pers', function () {
 		test('does the job', function () {
 			var dlist = {
 				I1: new GameObject({tsid: 'I1'}),
-				I2: new GameObject({tsid: 'I2', deleted: true}),
-				P1: new GameObject({tsid: 'P1', deleted: false}),
+				I2: new GameObject({tsid: 'I2'}),
+				P1: new GameObject({tsid: 'P1'}),
 			};
+			dlist.I2.deleted = true;
+			dlist.P1.deleted = false;
 			pers.postRequestProc(dlist, {});
 			assert.strictEqual(pbeMock.getCounts().write, 2);
 			assert.strictEqual(pbeMock.getCounts().del, 1);

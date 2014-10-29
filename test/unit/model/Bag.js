@@ -76,4 +76,30 @@ suite('Bag', function () {
 			//jscs:enable disallowQuotedKeysInObjects
 		});
 	});
+
+
+	suite('del', function () {
+
+		test('deletes contents recursively', function () {
+			var i1 = new Item({tsid: 'I1'});
+			var i2 = new Item({tsid: 'I2'});
+			var b3 = new Bag({tsid: 'B3', items: [i2]});
+			i2.container = b3;
+			var b2 = new Bag({tsid: 'B2', items: [b3], hiddenItems: [i1]});
+			b3.container = b2;
+			i1.container = b2;
+			var b1 = new Bag({tsid: 'B1', items: [b2]});
+			b2.container = b1;
+			b1.del();
+			assert.isTrue(i1.deleted);
+			assert.isTrue(i2.deleted);
+			assert.isTrue(b1.deleted);
+			assert.isTrue(b2.deleted);
+			assert.isTrue(b3.deleted);
+			assert.deepEqual(b1.items, {});
+			assert.deepEqual(b2.items, {});
+			assert.deepEqual(b3.items, {});
+			assert.deepEqual(b2.hiddenItems, {});
+		});
+	});
 });

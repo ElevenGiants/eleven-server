@@ -74,4 +74,16 @@ suite('GameObject', function () {
 			assert.notProperty(ser, 'class_id');
 		});
 	});
+
+
+	suite('del', function () {
+
+		test('flags object for deletion', function () {
+			var go = new GameObject();
+			assert.property(go, 'deleted');
+			assert.isFalse(go.deleted);
+			go.del();
+			assert.isTrue(go.deleted);
+		});
+	});
 });

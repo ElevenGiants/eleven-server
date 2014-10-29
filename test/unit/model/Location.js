@@ -2,6 +2,9 @@
 
 var Location = require('model/Location');
 var Geo = require('model/Geo');
+var Item = require('model/Item');
+var Bag = require('model/Bag');
+var Player = require('model/Player');
 
 
 suite('Location', function () {
@@ -64,6 +67,31 @@ suite('Location', function () {
 			l.updateGeo();
 			assert.notProperty(l.clientGeometry.layers.middleground.doors, 'd');
 			assert.notProperty(l.geo.doors, 'd');
+		});
+	});
+
+
+	suite('del', function () {
+
+		test('works as expected', function () {
+			var i = new Item({tsid: 'I1'});
+			var b = new Bag({tsid: 'B1', items: [i]});
+			i.container = b;
+			var l = new Location({items: [b]}, new Geo());
+			b.container = l;
+			l.del();
+			assert.isTrue(l.deleted);
+			assert.isTrue(l.geometry.deleted);
+			assert.isTrue(b.deleted);
+			assert.isTrue(i.deleted);
+		});
+
+		test('fails if there are players in the location', function () {
+			var p = new Player();
+			var l = new Location({players: [p]}, new Geo());
+			assert.throw(function () {
+				l.del();
+			}, assert.AssertionError);
 		});
 	});
 });

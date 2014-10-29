@@ -54,6 +54,20 @@ Bag.create = function create(classTsid) {
 
 
 /**
+ * Schedules this bag and all contained items for deletion after the
+ * current request.
+ */
+Bag.prototype.del = function del() {
+	[this.items, this.hiddenItems].forEach(function iter(itemHash) {
+		for (var k in itemHash) {
+			itemHash[k].del();
+		}
+	});
+	Bag.super_.prototype.del.call(this);
+};
+
+
+/**
  * Creates a processed shallow copy of this bag's data, prepared for
  * serialization.
  *

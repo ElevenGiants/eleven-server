@@ -44,7 +44,6 @@ function Item(data) {
 	if (!utils.isInt(this.count)) this.count = 1;
 	// add some non-enumerable properties (used internally or by GSJS)
 	utils.addNonEnumerable(this, 'collDet', false);
-	utils.addNonEnumerable(this, 'deleted', false);  // see apiDelete/apiIsDeleted functions
 	utils.addNonEnumerable(this, 'slot', undefined);
 	utils.addNonEnumerable(this, 'path', this.tsid);
 	// enable collision detection if we have a handler function
@@ -75,6 +74,19 @@ Item.create = function create(classTsid, count) {
 		data.count = count;
 	}
 	return pers.create(Item, data);
+};
+
+
+/**
+ * Schedules this item for deletion after the current request.
+ */
+Item.prototype.del = function del() {
+	Item.super_.prototype.del.call(this);
+	if (this.container) {
+		delete this.container.items[this.tsid];
+		delete this.container.hiddenItems[this.tsid];
+		delete this.container;
+	}
 };
 
 

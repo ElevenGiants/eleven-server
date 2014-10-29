@@ -57,6 +57,25 @@ function Location(data, geo) {
 }
 
 
+// dummy property just so we can more easily "inherit" some functions from Bag
+Object.defineProperty(Location.prototype, 'hiddenItems', {
+	get: function get() {
+		return {};
+	},
+});
+
+
+// define activePlayers property as read-only alias for players
+Object.defineProperty(Location.prototype, 'activePlayers', {
+	get: function get() {
+		return this.players;
+	},
+	set: function set() {
+		throw new Error('read-only property: activePlayers');
+	},
+});
+
+
 /**
  * Creates a new `Location` instance and adds it to persistence.
  *
@@ -74,15 +93,18 @@ Location.create = function create(geo, data) {
 };
 
 
-// define activePlayers property as read-only alias for players
-Object.defineProperty(Location.prototype, 'activePlayers', {
-	get: function get() {
-		return this.players;
-	},
-	set: function set() {
-		throw new Error('read-only property: activePlayers');
-	},
-});
+/**
+ * Schedules this location, its geometry object and all items in it for
+ * deletion after the current request.
+ */
+Location.prototype.del = function del() {
+	assert(Object.keys(this.players).length === 0, 'there are people here!');
+	for (var k in this.items) {
+		this.items[k].del();
+	}
+	this.geometry.del();
+	Location.super_.prototype.del.call(this);
+};
 
 
 /**

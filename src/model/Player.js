@@ -75,6 +75,16 @@ Player.create = function create(data) {
 
 
 /**
+ * Just overridden to prevent accidentally or maliciously deleting
+ * players.
+ * @private
+ */
+Player.prototype.del = function del() {
+	throw new Error('Bad kitty!');
+};
+
+
+/**
  * Initializes the instance for an active player; called when a client
  * is actually logging in on this GS as this player.
  *
