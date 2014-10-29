@@ -114,3 +114,99 @@ Bag.prototype.getAllItems = function getAllItems(aggregate, pathPrefix) {
 	});
 	return ret;
 };
+
+
+/**
+ * Gets a list of (non-hidden) items of a particular type from this
+ * bag's direct content (i.e. not recursively).
+ *
+ * @param {string} classTsid item class ID to filter for
+ * @param {number} [max] combined stack size limit
+ * @returns {object} found matching items (with TSIDs as keys)
+ */
+Bag.prototype.getClassItems = function getClassItems(classTsid, max) {
+	var ret = {};
+	var count = 0;
+	for (var k in this.items) {
+		if (max && count >= max) break;
+		var it = this.items[k];
+		if (it.class_tsid === classTsid) {
+			ret[k] = it;
+			count += it.count;
+		}
+	}
+	return ret;
+};
+
+
+/**
+ * Retrieves the item at a given slot position.
+ *
+ * @param {number} slot bag slot index
+ * @returns {Item|null} item in the given slot, or `null` if that slot
+ *          is empty
+ */
+Bag.prototype.getSlot = function getSlot(slot) {
+	for (var k in this.items) {
+		if (this.items[k].slot === slot) {
+			return this.items[k];
+		}
+	}
+	return null;
+};
+
+
+/**
+ * Retrieves a representation of the (non-hidden) bag inventory, i.e.
+ * an array with {@link Item} instances at positions corresponding to
+ * their respective bag slot index. Empty slots translate to `null`
+ * values in the returned array.
+ *
+ * @param {number} [count] length of the inventory to retrieve
+ *        (defaults to `this.capacity`)
+ * @returns {array} a list of items corresponding to the bag contents
+ */
+Bag.prototype.getSlots = function getSlots(count) {
+	if (!count) count = this.capacity;
+	var ret = [];
+	for (var i = 0; i < count; i++) {
+		ret[i] = null;
+	}
+	for (var k in this.items) {
+		var it = this.items[k];
+		if (it.slot < count) ret[it.slot] = it;
+	}
+	return ret;
+};
+
+
+/**
+ * Transfers (part of) an item stack to the given bag slot, if possible
+ * (merging with an existing stack if necessary).
+ *
+ * @param {Item} item the item to transfer/merge
+ * @param {number} slot target bag slot index
+ * @param {number} [amount] amount to transfer; if `undefined`, try to
+ *        add the whole item stack
+ * @returns {number} actual amount transferred
+ */
+Bag.prototype.addToSlot = function addToSlot(item, slot, amount) {
+	if (amount === undefined) {
+		amount = item.count;
+	}
+	// if the stack is bigger than allowed, don't perpetuate the error
+	amount = Math.min(amount, item.stackmax || 1);
+	// if there already is an item in that slot, try to merge
+	var slotItem = this.getSlot(slot);
+	if (slotItem) {
+		return slotItem.merge(item, amount);
+	}
+	// otherwise, add the item to that slot (splitting it if appropriate)
+	if (amount < item.count) {
+		item = item.split(amount);
+		if (!item) return 0;  // if split failed for some reason
+	}
+	item.x = item.slot = slot;
+	item.setContainer(this);
+	return item.count;
+};

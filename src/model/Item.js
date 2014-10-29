@@ -115,3 +115,33 @@ Item.prototype.setXY = function setXY(x, y) {
 	this.x = x;
 	this.y = y;
 };
+
+
+/**
+ * Assigns the item to a different container. Removes it from the
+ * previous container's item list, adds it to the new one and
+ * updates internal properties accordingly.
+ *
+ * @param {Location|Player|Bag} cont new container for the item
+ * @param {boolean} [hidden] item will be hidden in the new container
+ *        (`false` by default)
+ */
+Item.prototype.setContainer = function setContainer(cont, hidden) {
+	assert(cont !== this.container, util.format(
+		'%s is already contained in %s', this, cont));
+	var prev = this.container;
+	this.container = cont;
+	if (prev) {
+		delete prev.items[this.tsid];
+		delete prev.hiddenItems[this.tsid];
+	}
+	if (hidden) {
+		cont.hiddenItems[this.tsid] = this;
+	}
+	else {
+		cont.items[this.tsid] = this;
+	}
+	this.is_hidden = !!hidden;
+	this.tcont = cont.tcont ? cont.tcont : cont.tsid;
+	this.updatePath();
+};

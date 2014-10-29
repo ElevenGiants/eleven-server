@@ -102,6 +102,50 @@ suite('Item', function () {
 	});
 
 
+	suite('setContainer', function () {
+
+		test('does its job', function () {
+			var it = new Item({tsid: 'IT'});
+			var b = new Bag({tsid: 'BX', tcont: 'meh'});
+			it.setContainer(b);
+			assert.strictEqual(it.container, b);
+			assert.strictEqual(it.tcont, 'meh');
+			assert.strictEqual(it.path, 'BX/IT');
+			assert.strictEqual(b.items.IT, it);
+			assert.isFalse(it.isHidden);
+		});
+
+		test('adds to hidden items list if specified', function () {
+			var it = new Item({tsid: 'IT'});
+			var b = new Bag();
+			it.setContainer(b, true);
+			assert.notProperty(b.items, 'IT');
+			assert.strictEqual(b.hiddenItems.IT, it);
+			assert.isTrue(it.isHidden);
+		});
+
+		test('removes item from previous container', function () {
+			var it = new Item({tsid: 'IT'});
+			var b1 = new Bag();
+			var b2 = new Bag();
+			it.setContainer(b1);
+			assert.isTrue('IT' in b1.items);
+			it.setContainer(b2);
+			assert.isFalse('IT' in b1.items);
+			assert.isTrue('IT' in b2.items);
+		});
+
+		test('fails if item is already in that container', function () {
+			var it = new Item();
+			var b = new Bag();
+			it.setContainer(b);
+			assert.throw(function () {
+				it.setContainer(b);
+			}, assert.AssertionError);
+		});
+	});
+
+
 	suite('del', function () {
 
 		test('does its job', function () {
