@@ -14,8 +14,8 @@ suite('Player', function () {
 
 	suite('create', function () {
 
-		setup(function (done) {
-			gsjsBridge.init(done, true);
+		setup(function () {
+			gsjsBridge.init(true);
 			pers.init(pbeMock);
 		});
 

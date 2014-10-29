@@ -97,14 +97,21 @@ function reset() {
  * and loading/initializing the prototype for each of the contained
  * game object files. Should be called at server startup.
  *
- * @param {function} callback called when initialization has finished
+ * @param {boolean} [noPreload] if `true`, **only** initialize module
+ *        and GSJS dependencies, but do not load and cache prototypes
+ *        (just for testing; default behavior is `false`)
+ * @param {function} [callback] called when initialization has finished
  *        successfully, or with an error argument when something goes
  *        wrong (in which case initialization is aborted immediately)
- * @param {boolean} noPreload if `true`, **only** initialize module and
- *        GSJS dependencies, but do not load and cache prototypes (for
- *        testing)
  */
-function init(callback, noPreload) {
+function init(noPreload, callback) {
+	if (typeof noPreload === 'function') {
+		callback = noPreload;
+		noPreload = false;
+	}
+	callback = callback || function cb(err) {
+		log.error(err, 'error during GSJS bridge initialization');
+	};
 	reset();
 	initDependencies();
 	if (noPreload) return callback(null);

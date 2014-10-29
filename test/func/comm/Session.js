@@ -83,9 +83,9 @@ suite('Session', function () {
 		this.timeout(10000);
 		this.slow(2000);
 
-		suiteSetup(function (done) {
+		suiteSetup(function () {
 			// initialize gsjsBridge data structures (empty) without loading all the prototypes
-			gsjsBridge.init(done, true);
+			gsjsBridge.init(true);
 			auth.init(abePassthrough);
 		});
 

@@ -13,8 +13,8 @@ suite('rpcApi', function () {
 
 	this.slow(1000);  // player prototype loading takes some time
 
-	setup(function (done) {
-		gsjsBridge.init(done, true);
+	setup(function () {
+		gsjsBridge.init(true);
 		pers.init(pbeMock);
 	});
 

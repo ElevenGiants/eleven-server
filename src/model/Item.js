@@ -145,3 +145,58 @@ Item.prototype.setContainer = function setContainer(cont, hidden) {
 	this.tcont = cont.tcont ? cont.tcont : cont.tsid;
 	this.updatePath();
 };
+
+
+/**
+ * Splits off the given amount from the item into a separate new item.
+ * Obviously only works for stackable items, and handles invalid
+ * arguments gracefully by just not returning a new item (notably, if
+ * the given amount equals or exceeds the available stack size).
+ *
+ * @param {number} n the amount to split off
+ * @returns {Item} a new item with count `n`, or `undefined` if the
+ *          desired split is not possible
+ */
+Item.prototype.split = function split(n) {
+	if (n < 1 || !utils.isInt(n)) {
+		log.warn('invalid split amount: %s', n);
+		return;
+	}
+	if (n >= this.count) return;
+	this.count -= n;
+	var newItem = Item.create(this.class_tsid, n);
+	if (this.is_soulbound_item) {
+		newItem.is_soulbound_item = this.is_soulbound_item;
+		newItem.soulbound_to = this.soulbound_to;
+	}
+	return newItem;
+};
+
+
+/**
+ * Transfers the given amount from another item to this item; if this
+ * reduces the other item's count to 0, it is scheduled for deletion.
+ * Only works for stackable items, and handles invalid arguments
+ * gracefully (not performing any merging) as far as possible.
+ *
+ * @param {Item} that item to merge *from*
+ * @param {number} n amount to transfer
+ * @returns {number} amount actually transferred (can be less than `n`
+ *          due to maximum stack size constraint)
+ */
+Item.prototype.merge = function merge(that, n) {
+	if (n < 1 || !utils.isInt(n)) {
+		log.warn('invalid merge amount: %s', n);
+		return 0;
+	}
+	n = Math.min(n, that.count);
+	// if items are non-stackable or incompatible, just return zero
+	if (!(this.stackmax > 1 && that.stackmax > 1)) return 0;
+	if (this.class_tsid !== that.class_tsid) return 0;
+	if (this.soulbound_to !== that.soulbound_to) return 0;
+	var moved = Math.min(n, this.stackmax - this.count);
+	that.count -= moved;
+	this.count += moved;
+	if (that.count <= 0) that.del();
+	return moved;
+};
