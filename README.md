@@ -52,13 +52,13 @@ These scripts can be called using `npm run-script` (or the alias `npm run`); the
 npm -s run test
 ```
 
-Since npm currently does not have a way to provide additional arguments to
-scripts, a wildcard shell argument `ARG` can be used as a workaround, e.g.:
+To run specific tests or benchmark suites, append arguments for the test or
+benchmark runner with `--`, e.g.:
 ```bash
-ARG="--grep objrefProxy" npm -s run test
-ARG=utils.js npm -s run bench
+npm -s run test -- --grep objrefProxy
+npm -s run bench -- utils.js
 ```
-to run a specific tests or benchmark suite.
+(this requires npm >= 2.0.0)
 
 
 ## Contributing ##
