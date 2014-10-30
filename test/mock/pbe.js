@@ -11,6 +11,7 @@ module.exports = {
 	write: write,
 	del: del,
 	getCounts: getCounts,
+	getDB: getDB,
 };
 
 
@@ -27,12 +28,17 @@ function init(fixturePath, callback) {
 		write: 0,
 		del: 0,
 	};
-	callback(null);
+	if (typeof callback === 'function') callback(null);
 }
 
 
 function getCounts() {
 	return counts;
+}
+
+
+function getDB() {
+	return db;
 }
 
 

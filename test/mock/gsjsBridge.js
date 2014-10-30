@@ -2,10 +2,10 @@
 
 // public interface
 module.exports = {
-	createFromData: createFromData,
+	create: create,
 };
 
 
-function createFromData(data) {
+function create(data) {
 	return data;
 }

@@ -17,5 +17,5 @@ suite.add('loadProto', function() {
 });
 
 suite.add('createFromData', function() {
-	gsjsBridge.createFromData(data);
+	gsjsBridge.create(data);
 });

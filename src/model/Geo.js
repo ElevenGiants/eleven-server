@@ -3,6 +3,8 @@
 module.exports = Geo;
 
 
+var pers = require('data/pers');
+var rpc = require('data/rpc');
 var util = require('util');
 var utils = require('utils');
 var GameObject = require('model/GameObject');
@@ -25,9 +27,23 @@ Geo.prototype.TSID_INITIAL = 'G';
  * @augments GameObject
  */
 function Geo(data) {
+	data = data || {};
+	data.tsid = rpc.makeLocalTsid(Geo.prototype.TSID_INITIAL, data.tsid);
 	Geo.super_.call(this, data);
 	this.prepConnects();
 }
+
+
+/**
+ * Creates a new `Geo` instance and adds it to persistence.
+ *
+ * @param {object} [data] geometry data properties
+ * @returns {object} a `Geo` instance wrapped in a {@link
+ * module:data/persProxy|persistence proxy}
+ */
+Geo.create = function create(data) {
+	return pers.create(Geo, data);
+};
 
 
 /**

@@ -8,6 +8,7 @@ var auth = require('comm/auth');
 var config = require('config');
 var Prop = require('model/Property');
 var Bag = require('model/Bag');
+var pers = require('data/pers');
 var rpc = require('data/rpc');
 var RC = require('data/RequestContext');
 var util = require('util');
@@ -53,6 +54,34 @@ function Player(data) {
 		}
 	}
 }
+
+
+/**
+ * Creates a new `Player` instance and adds it to persistence.
+ *
+ * @param {object} [data] player data; must contain everything required
+ *        for a new player
+ * @returns {object} a `Player` instance wrapped in a {@link
+ * module:data/persProxy|persistence proxy}
+ */
+Player.create = function create(data) {
+	assert(typeof data === 'object', 'minimal player data set required');
+	assert(utils.isLoc(data.location), 'location required');
+	data.class_tsid = data.class_tsid || 'human';
+	var ret = pers.create(Player, data);
+	log.info('%s was imagined!', ret);
+	return ret;
+};
+
+
+/**
+ * Just overridden to prevent accidentally or maliciously deleting
+ * players.
+ * @private
+ */
+Player.prototype.del = function del() {
+	throw new Error('Bad kitty!');
+};
 
 
 /**
@@ -289,4 +318,28 @@ Player.prototype.sendServerMsg = function sendServerMsg(action, data) {
 	msg.action = action;
 	log.debug({payload: msg}, 'sending server message');
 	this.session.send(msg);
+};
+
+
+/**
+ * Distribute (part of) an item stack into a range of inventory slots
+ * of either the player itself, or one of its bags, using empty slots
+ * or merging with existing items.
+ *
+ * @param {Item} item item stack to add; may be deleted in the process
+ * @param {number} fromSlot distribution starts at this slot number
+ * @param {number} toSlot distribution ends at this slot number
+ *        (inclusive; must be >= `fromSlot`)
+ * @param {string|null} path path to target bag; if `null`, the player
+ *        inventory is targeted
+ * @param {number} [amount] amount of the item stack to add/distribute;
+ *        if not specified, the whole stack is processed
+ */
+Player.prototype.addToAnySlot = function addToAnySlot(item, fromSlot, toSlot,
+	path, amount) {
+	if (amount === undefined || amount > item.count) amount = item.count;
+	var bag = path ? pers.get(path.split('/').pop()) : this;
+	for (var slot = fromSlot; slot <= toSlot && amount > 0; slot++) {
+		amount -= bag.addToSlot(item, slot, amount);
+	}
 };

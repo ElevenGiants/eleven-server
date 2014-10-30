@@ -35,7 +35,7 @@
 module.exports = {
 	init: init,
 	get: get,
-	add: add,
+	create: create,
 	postRequestProc: postRequestProc,
 };
 
@@ -91,15 +91,10 @@ function load(tsid) {
 	assert(pbe, 'persistence back-end not set');
 	log.debug('pers.load: %s', tsid);
 	var data;
-	try {
-		data = pbe.read(tsid);
-	}
-	catch (e) {
-		log.error(e, 'could not load %s from persistence', tsid);
-		return;
-	}
+	data = pbe.read(tsid);
+	assert(typeof data === 'object', 'no or invalid data for ' + tsid);
 	orProxy.proxify(data);
-	var obj = gsjsBridge.createFromData(data);
+	var obj = gsjsBridge.create(data);
 	if (!rpc.isLocal(obj)) {
 		// wrap object in RPC proxy and add it to request cache
 		obj = rpc.makeProxy(obj);
@@ -142,24 +137,29 @@ function get(tsid) {
 
 
 /**
- * Adds a new game object to persistence.
+ * Creates a new game object of the given type and adds it to
+ * persistence. The returned object is wrapped in a ({@link
+ * module:data/persProxy|persProxy}) to make sure all future changes
+ * to the object are automatically persisted.
+ * Also calls the object's GSJS `onCreate` handler, if there is one.
  *
- * **Caution**: Only use the returned ({@link
- * module:data/persProxy|persProxy}-wrapped) object for further
- * processing, to make sure all future changes to the object are
- * automatically persisted.
- *
- * @param {GameObject} obj object to add
- * @returns {object} the added object, wrapped in a persistence proxy
+ * @param {function} modelType the desired game object model type (i.e.
+ *        a constructor like `Player` or `Geo`)
+ * @param {object} [data] additional properties for the object
+ * @returns {object} the new object, wrapped in a persistence proxy
  */
-function add(obj) {
-	log.debug('pers.add: %s', obj.tsid);
-	if (obj.tsid in cache) {
-		log.warn('object overwritten: %s', obj.tsid);
-	}
+function create(modelType, data) {
+	log.debug('pers.create: %s%s', modelType.name,
+		(typeof data === 'object' && data.tsid) ? ('#' + data.tsid) : '');
+	data = data || {};
+	var obj = gsjsBridge.create(data, modelType);
+	assert(!(obj.tsid in cache), 'object already exists: ' + obj.tsid);
 	obj = persProxy.makeProxy(obj);
 	cache[obj.tsid] = obj;
 	RC.getContext().setDirty(obj);
+	if (typeof obj.onCreate === 'function') {
+		obj.onCreate();
+	}
 	return obj;
 }
 

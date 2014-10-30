@@ -331,9 +331,10 @@ function mapToGS(objOrTsid) {
 	assert(typeof tsid === 'string' && tsid.length > 0,
 		util.format('invalid TSID for %s: %s', objOrTsid, tsid));
 	// using simple charcode summation for now - we may need something more
-	// sophisticated later (e.g. if we need manual influence on the mapping)
+	// sophisticated later (e.g. if we need manual influence on the mapping);
+	// first character ignored so Locs and Geos are always mapped to the same GS
 	var sum = 0;
-	for (var i = 0; i < tsid.length; i++) {
+	for (var i = 1; i < tsid.length; i++) {
 		sum += tsid.charCodeAt(i);
 	}
 	var id = gsids[sum % gsids.length];
