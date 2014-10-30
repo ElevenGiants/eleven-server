@@ -319,3 +319,27 @@ Player.prototype.sendServerMsg = function sendServerMsg(action, data) {
 	log.debug({payload: msg}, 'sending server message');
 	this.session.send(msg);
 };
+
+
+/**
+ * Distribute (part of) an item stack into a range of inventory slots
+ * of either the player itself, or one of its bags, using empty slots
+ * or merging with existing items.
+ *
+ * @param {Item} item item stack to add; may be deleted in the process
+ * @param {number} fromSlot distribution starts at this slot number
+ * @param {number} toSlot distribution ends at this slot number
+ *        (inclusive; must be >= `fromSlot`)
+ * @param {string|null} path path to target bag; if `null`, the player
+ *        inventory is targeted
+ * @param {number} [amount] amount of the item stack to add/distribute;
+ *        if not specified, the whole stack is processed
+ */
+Player.prototype.addToAnySlot = function addToAnySlot(item, fromSlot, toSlot,
+	path, amount) {
+	if (amount === undefined || amount > item.count) amount = item.count;
+	var bag = path ? pers.get(path.split('/').pop()) : this;
+	for (var slot = fromSlot; slot <= toSlot && amount > 0; slot++) {
+		amount -= bag.addToSlot(item, slot, amount);
+	}
+};
