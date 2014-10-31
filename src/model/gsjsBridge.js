@@ -31,6 +31,7 @@ module.exports = {
 	getProto: getProto,
 	create: create,
 	getAdmin: getAdmin,
+	getMain: getMain,
 };
 
 
@@ -72,6 +73,8 @@ var prototypes = {};
 var dependencies = {};
 // GSJS admin functions singleton object (initialized in getAdmin())
 var gsjsAdmin = null;
+// GSJS request handler singleton object (initialized in getMain())
+var gsjsMain = null;
 
 
 /**
@@ -80,6 +83,7 @@ var gsjsAdmin = null;
  */
 function reset() {
 	gsjsAdmin = null;
+	gsjsMain = null;
 	dependencies = {};
 	prototypes = {
 		achievements: {},
@@ -152,15 +156,15 @@ function init(noPreload, callback) {
  * @private
  */
 function initDependencies(testConfig, testApi) {
-	require(path.resolve(path.join(GSJS_PATH, 'common')));
-	dependencies.utils = compose('utils');
-	dependencies.config = compose(testConfig || config.get('gsjs:config'));
 	dependencies.api = testApi || {
 		//TODO dummy, replace with actual global API once there is one
 		valueOf: function valueOf() {
 			return 'TODO-DUMMY-API';
 		}
 	};
+	dependencies.config = compose(testConfig || config.get('gsjs:config'));
+	dependencies.utils = compose('utils');
+	include(GSJS_PATH, 'common');
 }
 
 
@@ -359,4 +363,13 @@ function getAdmin() {
 		include(GSJS_PATH, 'admin', gsjsAdmin);
 	}
 	return gsjsAdmin;
+}
+
+
+function getMain() {
+	if (!gsjsMain) {
+		gsjsMain = {};
+		include(GSJS_PATH, 'main', gsjsMain);
+	}
+	return gsjsMain;
 }
