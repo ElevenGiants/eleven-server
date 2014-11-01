@@ -36,11 +36,15 @@ All actions are invoked via [`npm`](https://www.npmjs.org/doc/cli/npm.html).
 The following operations are available:
 
 * `test` run the unit tests (with [mocha](https://visionmedia.github.io/mocha/))
-* `functest` run the functional/integration tests
+* `functest` run functional tests
+* `inttest` run integration tests (depends on external components)
+* `alltests` run all tests back-to-back with reduced output (also includes the
+  `lint` task below); handy as a basic smoke test before committing
 * `bench` run benchmarks
-* `lint` perform static code analysis with [JSHint](http://www.jshint.com/)
+* `lint` perform static code analysis with [JSHint](http://www.jshint.com/) and
+  [JSCS](https://github.com/jscs-dev/node-jscs/)
 * `docs` generate HTML documentation with [JSDoc](http://usejsdoc.org/)
-* `start` run the server (not doing much at the moment)
+* `start` run the server
 
 These scripts can be called using `npm run-script` (or the alias `npm run`); the
 `-s` flag hides distracting additional output, e.g.:
@@ -48,19 +52,14 @@ These scripts can be called using `npm run-script` (or the alias `npm run`); the
 npm -s run test
 ```
 
-Since npm currently does not have a way to provide additional arguments to
-scripts, a wildcard shell argument `ARG` can be used as a workaround, e.g.:
+To run specific tests or benchmark suites, append arguments for the test or
+benchmark runner with `--`, e.g.:
 ```bash
-ARG="--grep objrefProxy" npm -s run test
-ARG=utils.js npm -s run bench
+npm -s run test -- --grep objrefProxy
+npm -s run bench -- utils.js
 ```
-to run a specific tests or benchmark suite.
+(this requires npm >= 2.0.0)
 
-The following may be handy as a basic smoke test one-liner with less verbose
-output, e.g. before committing some changes:
-```bash
-ARG="--reporter progress" sh -c 'npm -s run lint && npm -s run test && npm -s run functest'
-```
 
 ## Contributing ##
 Help is always welcome! If you are interested, please [get in touch]

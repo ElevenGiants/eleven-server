@@ -45,9 +45,11 @@
   "scripts": {
     "preproc": "python tools/gsjs-preproc.py",
     "start": "NODE_PATH=src node --harmony ./src/server.js | node_modules/bunyan/bin/bunyan -o short",
-    "test": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony $ARG test/unit",
-    "functest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony $ARG test/func",
-    "bench": "NODE_PATH=src node --harmony bench/runner.js $ARG",
+    "test": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/unit",
+    "functest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/func",
+    "inttest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/int",
+    "alltests": "NODE_PATH=src sh -c 'npm run lint && npm run test -- -R progress && npm run functest -- -R progress && npm run inttest -- -R progress'",
+    "bench": "NODE_PATH=src node --harmony bench/runner.js",
     "lint": "node_modules/jshint/bin/jshint --verbose --exclude src/gsjs src test && node_modules/jscs/bin/jscs --verbose --reporter inline src test",
     "docs": "node node_modules/jsdoc/jsdoc.js --destination docs --configure jsdoc-conf.json src"
   }
