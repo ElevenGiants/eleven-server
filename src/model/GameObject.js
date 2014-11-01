@@ -95,3 +95,41 @@ GameObject.prototype.toString = function toString() {
 GameObject.prototype.del = function del() {
 	this.deleted = true;
 };
+
+
+/**
+ * Helper function originally defined in <gsjs/common.js>. All the
+ * functions there should really be added to all game object prototypes
+ * in gsjsBridge (then this here wouldn't be necessary), but that would
+ * require prefixing a zillion calls in GSJS code with 'this.'.
+ * @private
+ */
+GameObject.prototype.getProp = function getProp(key) {
+	return this[key];
+};
+
+
+/**
+ * Helper function originally defined in <gsjs/common.js>. All the
+ * functions there should really be added to all game object prototypes
+ * in gsjsBridge (then this here wouldn't be necessary), but that would
+ * require prefixing a zillion calls in GSJS code with 'this.'.
+ * @private
+ */
+GameObject.prototype.setProp = function setProp(key, val) {
+	this[key] = val;
+};
+
+
+/**
+ * Helper function originally defined in <gsjs/common.js>. All the
+ * functions there should really be added to all game object prototypes
+ * in gsjsBridge (then this here wouldn't be necessary), but that would
+ * require prefixing a zillion calls in GSJS code with 'this.'.
+ * @private
+ */
+GameObject.prototype.setProps = function setProps(props) {
+	for (var k in props) {
+		this[k] = props[k];
+	}
+};
