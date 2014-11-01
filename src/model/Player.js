@@ -50,6 +50,7 @@ var PROPS_CHANGES = {
  *        shallow-copied into the instance)
  * @constructor
  * @augments Bag
+ * @mixes PlayerApi
  */
 function Player(data) {
 	Player.super_.call(this, data);
@@ -66,6 +67,8 @@ function Player(data) {
 		}
 	}
 }
+
+utils.copyProps(require('model/PlayerApi').prototype, Player.prototype);
 
 
 /**

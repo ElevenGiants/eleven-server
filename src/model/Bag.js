@@ -22,6 +22,7 @@ Bag.prototype.TSID_INITIAL = 'B';
  *        shallow-copied into the bag)
  * @constructor
  * @augments Item
+ * @mixes BagApi
  */
 function Bag(data) {
 	Bag.super_.call(this, data);
@@ -37,6 +38,8 @@ function Bag(data) {
 		this.hiddenItems = utils.arrayToHash(this.hiddenItems);
 	}
 }
+
+utils.copyProps(require('model/BagApi').prototype, Bag.prototype);
 
 
 /**

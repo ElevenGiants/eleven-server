@@ -36,6 +36,7 @@ Object.defineProperty(Item.prototype, 'isStack', {
  *        shallow-copied into the item)
  * @constructor
  * @augments GameObject
+ * @mixes ItemApi
  */
 function Item(data) {
 	Item.super_.call(this, data);
@@ -56,6 +57,8 @@ function Item(data) {
 	}
 	this.updatePath();
 }
+
+utils.copyProps(require('model/ItemApi').prototype, Item.prototype);
 
 
 /**

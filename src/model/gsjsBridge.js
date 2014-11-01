@@ -50,6 +50,7 @@ var Location = require('model/Location');
 var Quest = require('model/Quest');
 var Geo = require('model/Geo');
 var DataContainer = require('model/DataContainer');
+var globalApi = require('model/globalApi');
 
 
 // require calls are significantly faster with absolute path
@@ -159,12 +160,7 @@ function init(noPreload, callback) {
  * @private
  */
 function initDependencies(testConfig, testApi) {
-	dependencies.api = testApi || {
-		//TODO dummy, replace with actual global API once there is one
-		valueOf: function valueOf() {
-			return 'TODO-DUMMY-API';
-		}
-	};
+	dependencies.api = testApi || globalApi;
 	dependencies.config = compose(testConfig || config.get('gsjs:config'));
 	dependencies.utils = compose('utils');
 	include(GSJS_PATH, 'common');

@@ -29,6 +29,7 @@ Location.prototype.TSID_INITIAL = 'L';
  *        persistence
  * @constructor
  * @augments GameObject
+ * @mixes LocationApi
  */
 function Location(data, geo) {
 	data = data || {};
@@ -55,6 +56,8 @@ function Location(data, geo) {
 	assert(typeof geoData === 'object', 'no geometry data for ' + this);
 	this.updateGeo(geoData);
 }
+
+utils.copyProps(require('model/LocationApi').prototype, Location.prototype);
 
 
 // dummy property just so we can more easily "inherit" some functions from Bag
