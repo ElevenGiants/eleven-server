@@ -264,9 +264,13 @@ function loadProto(group, klass) {
 	if (group !== 'achievements') {
 		compose(group, baseName, proto);
 	}
-	// special case for bags
-	if (group === 'items' && klass.indexOf('bag') === 0 && klass !== 'bag') {
+	// special cases for bags and players
+	if (group === 'items' && klass.substr(0, 4) === 'bag_') {
 		compose(group, 'bag', proto);
+	}
+	if (group === 'players') {
+		compose('items', 'item', proto);
+		compose('items', 'bag', proto);
 	}
 	// copy over props from object class itself
 	if (klass !== baseName) {
@@ -290,7 +294,7 @@ function getModelClass(group, klass) {
 		case 'groups':
 			return Group;
 		case 'items':
-			if (klass.indexOf('bag') === 0) return Bag;
+			if (klass.substr(0, 3) === 'bag') return Bag;
 			return Item;
 		case 'locations':
 			return Location;
