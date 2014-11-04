@@ -30,6 +30,16 @@ var PROPS = {
 		'alph', 'cosma', 'friendly', 'grendaline', 'humbaba', 'lem', 'mab',
 		'pot', 'spriggan', 'ti', 'zille'],
 };
+// indicates which of the above PROPS will be included in the 'changes' segment
+// of outgoing messages (i.e. value updates sent to the client)
+var PROPS_CHANGES = {
+	metabolics: true,
+	daily_favor: true,
+	stats: {
+		xp: true, currants: true, imagination: true, credits: true,
+		quoins_today: true, meditation_today: true,
+	},
+};
 
 
 /**
@@ -407,7 +417,11 @@ Player.prototype.send = function send(msg, skipChanges) {
 	// generage "changes" segment
 	if (!skipChanges) {
 		var changes = this.mergeChanges();
-		//TODO: properties
+		var propChanges = this.getPropChanges();
+		if (propChanges) {
+			changes = changes || {};
+			changes.stat_values = propChanges;
+		}
 		if (changes) {
 			msg.changes = changes;
 		}
@@ -450,6 +464,37 @@ Player.prototype.mergeChanges = function mergeChanges() {
 		if (c.location_tsid === this.location.tsid) {
 			for (k in c.itemstack_values.location) {
 				ret.itemstack_values.location[k] = c.itemstack_values.location[k];
+			}
+		}
+	}
+	return ret;
+};
+
+
+/**
+ * Combines the current values of the player's properties (that is,
+ * `Property` instances like `metabolics.energy`, `stats.xp` etc.) into
+ * an object suitable for inclusion in the `changes` segment of an
+ * outgoing message to the client.
+ * Only a specific, fixed subset of the available properties are
+ * included (and among those, only the ones that changed since the last
+ * message).
+ *
+ * @returns {object} an object containing property values, e.g.
+ *          ```{energy: 60, xp: 555, alph: 12}```
+ */
+Player.prototype.getPropChanges = function getPropChanges() {
+	var ret;
+	for (var group in PROPS) {
+		if (!this[group] || !PROPS_CHANGES[group]) continue;
+		for (var i = 0; i < PROPS[group].length; i++) {
+			var key = PROPS[group][i];
+			var send = PROPS_CHANGES[group] === true || PROPS_CHANGES[group][key];
+			var prop = this[group][key];
+			if (send && prop && prop.changed) {
+				ret = ret || {};
+				ret[prop.label] = prop.value;
+				prop.changed = false;
 			}
 		}
 	}
