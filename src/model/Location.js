@@ -164,9 +164,11 @@ Location.prototype.updateGeo = function updateGeo(data) {
  *
  * @param {Item} item the changed/changing item
  * @param {boolean} [removed] if `true`, queues a *removal* change
+ * @param {boolean} [compact] if `true`, queues a *short* change record
+ *        (only coordinates and state, for NPC movement)
  */
-Location.prototype.queueChanges = function queueChanges(item, removed) {
+Location.prototype.queueChanges = function queueChanges(item, removed, compact) {
 	for (var tsid in this.players) {
-		this.players[tsid].queueChanges(item, removed);
+		this.players[tsid].queueChanges(item, removed, compact);
 	}
 };

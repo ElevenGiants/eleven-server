@@ -244,6 +244,19 @@ suite('Item', function () {
 				assert.notProperty(it.getChangeData(), 'slot');
 			}, done);
 		});
+
+		//TODO: test fails because of missing API functions and should be activated once they are available
+		test.skip('creates compact change set if desired', function (done) {
+			new RC().run(function () {
+				var it = Item.create('npc_piggy');
+				var cd = it.getChangeData(null, false, true);
+				assert.deepEqual(cd, {
+					x: 0,
+					y: 0,
+					s: 'look_screen',
+				});
+			}, done);
+		});
 	});
 
 

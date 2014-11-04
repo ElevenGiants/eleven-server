@@ -356,16 +356,18 @@ Player.prototype.addToAnySlot = function addToAnySlot(item, fromSlot, toSlot,
  *
  * @param {Item} item the changed/changing item
  * @param {boolean} [removed] if `true`, queues a *removal* change
+ * @param {boolean} [compact] if `true`, queues a *short* change record
+ *        (only coordinates and state, for NPC movement)
  */
-Player.prototype.queueChanges = function queueChanges(item, removed) {
+Player.prototype.queueChanges = function queueChanges(item, removed, compact) {
 	log.trace('generating changes for %s%s', item, removed ? ' (removed)' : '');
 	var pcChanges = {};
 	var locChanges = {};
 	if (item.tcont === this.tsid) {
-		pcChanges[item.tsid] = item.getChangeData(this, removed);
+		pcChanges[item.tsid] = item.getChangeData(this, removed, compact);
 	}
 	else if (item.tcont === this.location.tsid) {
-		locChanges[item.tsid] = item.getChangeData(this, removed);
+		locChanges[item.tsid] = item.getChangeData(this, removed, compact);
 	}
 	var changes = {
 		location_tsid: this.location.tsid,

@@ -160,10 +160,12 @@ Item.prototype.setContainer = function setContainer(cont, hidden) {
  * in the location, if the top container is a `Location`).
  *
  * @param {boolean} [removed] if `true`, create a removal change record
+ * @param {boolean} [compact] if `true`, create a *short* change record
+ *        (only coordinates and state, for NPC movement)
  */
-Item.prototype.queueChanges = function queueChanges(removed) {
+Item.prototype.queueChanges = function queueChanges(removed, compact) {
 	if (this.tcont) {
-		pers.get(this.tcont).queueChanges(this, removed);
+		pers.get(this.tcont).queueChanges(this, removed, compact);
 	}
 };
 
@@ -179,21 +181,26 @@ Item.prototype.queueChanges = function queueChanges(removed) {
  *        item as deleted (used when items change containers, in which
  *        case they are marked deleted in the changes for the previous
  *        container)
+ * @param {boolean} [compact] if `true`, create a *short* change record
+ *        (only coordinates and state, for NPC movement)
  * @returns {object} changes data set
  */
-Item.prototype.getChangeData = function getChangeData(pc, removed) {
-	var ret = {
-		x: this.x,
-		y: this.y,
-		path_tsid: this.path,
-		class_tsid: this.class_tsid,
-		count: (removed || this.deleted) ? 0 : this.count,
-		label: this.getLabel ? this.getLabel() : this.label,
-	};
+/*jshint -W071 */  // suppress "too many statements" warning (this is a fairly trivial function)
+Item.prototype.getChangeData = function getChangeData(pc, removed, compact) {
+	var ret = {};
+	ret.x = this.x;
+	ret.y = this.y;
+	if (this.state) ret.s = this.buildState(pc);
+	if (compact) {
+		return ret;
+	}
+	ret.path_tsid = this.path;
+	ret.class_tsid = this.class_tsid;
+	ret.count = (removed || this.deleted) ? 0 : this.count;
+	ret.label = this.getLabel ? this.getLabel() : this.label;
 	if (!removed && this.slot !== undefined) ret.slot = this.slot;
 	if (this.z) ret.z = this.z;
 	if (this.rs) ret.rs = this.rs;
-	if (this.state) ret.s = this.buildState(pc);
 	if (this.isSelectable && !this.isSelectable(pc)) {
 		ret.not_selectable = true;
 	}
@@ -207,6 +214,7 @@ Item.prototype.getChangeData = function getChangeData(pc, removed) {
 	if (this.onStatus) ret.status = this.onStatus(pc);
 	return ret;
 };
+/*jshint +W071 */
 
 
 /**
