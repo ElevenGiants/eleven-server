@@ -213,7 +213,6 @@ Bag.prototype.addToSlot = function addToSlot(item, slot, amount) {
 		item = item.split(amount);
 		if (!item) return 0;  // if split failed for some reason
 	}
-	item.x = item.slot = slot;
-	item.setContainer(this);
+	item.setContainer(this, slot);
 	return item.count;
 };

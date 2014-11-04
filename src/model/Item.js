@@ -125,10 +125,12 @@ Item.prototype.setXY = function setXY(x, y) {
  * updates internal properties accordingly.
  *
  * @param {Location|Player|Bag} cont new container for the item
+ * @param {number} [slot] slot number in the new container (only
+ *        applies when adding to a bag, mandatory in that case)
  * @param {boolean} [hidden] item will be hidden in the new container
  *        (`false` by default)
  */
-Item.prototype.setContainer = function setContainer(cont, hidden) {
+Item.prototype.setContainer = function setContainer(cont, slot, hidden) {
 	assert(cont !== this.container, util.format(
 		'%s is already contained in %s', this, cont));
 	var prev = this.container;
@@ -149,6 +151,14 @@ Item.prototype.setContainer = function setContainer(cont, hidden) {
 		'tcont for %s is neither player nor location: %s', this, tcont));
 	this.queueChanges(true);
 	this.tcont = tcont;
+	if (utils.isBag(cont)) {
+		assert(utils.isInt(slot), util.format('invalid slot number for %s: %s',
+			this, slot));
+		this.x = this.slot = slot;
+	}
+	else {
+		this.slot = undefined;
+	}
 	this.updatePath();
 	this.queueChanges();
 };
@@ -272,4 +282,21 @@ Item.prototype.merge = function merge(that, n) {
 	else that.queueChanges();
 	this.queueChanges();
 	return moved;
+};
+
+
+/**
+ * Decreases the item count by `n` (or by `count`, if `n > count`).
+ * If the count is 0 afterwards, the item is flagged for deletion.
+ *
+ * @param {number} n the amount to decrease the item count by
+ * @returns {number} actual amount of consumed items
+ */
+Item.prototype.consume = function consume(n) {
+	assert(utils.isInt(n) && n >= 0, 'invalid consumption amount: ' + n);
+	n = Math.min(n, this.count);
+	this.count -= n;
+	if (this.count <= 0) this.del();
+	else this.queueChanges();
+	return n;
 };

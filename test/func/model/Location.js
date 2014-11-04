@@ -7,26 +7,30 @@ var RC = require('data/RequestContext');
 var pbeMock = require('../../mock/pbe');
 var Location = require('model/Location');
 var Geo = require('model/Geo');
+var Item = require('model/Item');
 var gsjsBridge = require('model/gsjsBridge');
 var utils = require('utils');
 
 
 suite('Location', function () {
 
+	setup(function () {
+		// initialize gsjsBridge data structures (empty) without loading all the prototypes
+		gsjsBridge.init(true);
+		pers.init(pbeMock);
+	});
+
+	teardown(function () {
+		// reset gsjsBridge so the cached prototypes don't influence other tests
+		gsjsBridge.reset();
+		pers.init();  // disable mock back-end
+	});
+
+
 	suite('Location/Geo integration', function () {
 
 		this.timeout(10000);
 		this.slow(4000);
-
-		suiteSetup(function () {
-			// initialize gsjsBridge data structures (empty) without loading all the prototypes
-			gsjsBridge.reset();
-		});
-
-		suiteTeardown(function () {
-			// reset gsjsBridge so the cached prototypes don't influence other tests
-			gsjsBridge.reset();
-		});
 
 		setup(function (done) {
 			pers.init(pbeMock, path.resolve(path.join(__dirname, '../fixtures')), done);
@@ -104,17 +108,6 @@ suite('Location', function () {
 
 	suite('create', function () {
 
-		setup(function () {
-			gsjsBridge.reset();
-			pers.init(pbeMock);
-		});
-
-		teardown(function () {
-			gsjsBridge.reset();
-			pers.init();  // disable mock back-end
-		});
-
-
 		test('does its job and creates "town" by default', function (done) {
 			new RC().run(
 				function () {
@@ -141,6 +134,25 @@ suite('Location', function () {
 					Location.create(new Geo());
 				});
 			}, assert.AssertionError);
+		});
+	});
+
+
+	suite('addItem', function () {
+
+		test('does its job', function (done) {
+			new RC().run(function () {
+				var l = Location.create(Geo.create());
+				var i = Item.create('apple', 5);
+				i.slot = 12;  // just to test if slot is cleared
+				l.addItem(i, 123, -456);
+				assert.strictEqual(l.items[i.tsid], i);
+				assert.strictEqual(i.container, l);
+				assert.strictEqual(i.tcont, l.tsid);
+				assert.isUndefined(i.slot);
+				assert.strictEqual(i.x, 123);
+				assert.strictEqual(i.y, -456);
+			}, done);
 		});
 	});
 });

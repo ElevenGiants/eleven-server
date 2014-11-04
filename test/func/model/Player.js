@@ -92,7 +92,7 @@ suite('Player', function () {
 				var b = Bag.create('bag_bigger_gray');
 				var p = new Player({location: {tsid: 'LDUMMY'}});
 				rc.cache[p.tsid] = p;
-				b.setContainer(p);
+				b.setContainer(p, 1);
 				var i1 = Item.create('apple', 3);
 				b.addToSlot(i1, 0);
 				var i2 = Item.create('apple', 3);

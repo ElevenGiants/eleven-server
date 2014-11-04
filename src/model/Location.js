@@ -172,3 +172,20 @@ Location.prototype.queueChanges = function queueChanges(item, removed, compact) 
 		this.players[tsid].queueChanges(item, removed, compact);
 	}
 };
+
+
+/**
+ * Puts the item into the location at the given position, merging it
+ * with existing nearby items of the same class.
+ *
+ * @param {Item} item the item to place
+ * @param {number} x x coordinate of the item's position
+ * @param {number} y y coordinate of the item's position
+ * @param {boolean} [noMerge] if `true`, item will **not** be merged
+ *        with other nearby items
+ */
+Location.prototype.addItem = function addItem(item, x, y, noMerge) {
+	item.setContainer(this);
+	item.setXY(x, y);
+	//TODO: merging
+};
