@@ -94,4 +94,17 @@ suite('Location', function () {
 			}, assert.AssertionError);
 		});
 	});
+
+
+	suite('queueAnnc', function () {
+
+		test('works as expected', function () {
+			var p1 = new Player();
+			var p2 = new Player();
+			var l = new Location({players: [p1]}, new Geo());
+			l.queueAnnc({gargle: 'marbles'});
+			assert.deepEqual(p1.anncs, [{gargle: 'marbles'}]);
+			assert.deepEqual(p2.anncs, [], 'not queued for p2 (not in this loc)');
+		});
+	});
 });
