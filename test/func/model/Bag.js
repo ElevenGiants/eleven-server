@@ -4,6 +4,9 @@ var gsjsBridge = require('model/gsjsBridge');
 var RC = require('data/RequestContext');
 var Bag = require('model/Bag');
 var Item = require('model/Item');
+var Player = require('model/Player');
+var Location = require('model/Location');
+var Geo = require('model/Geo');
 var pers = require('data/pers');
 var utils = require('utils');
 var pbeMock = require('../../mock/pbe');
@@ -12,7 +15,7 @@ var pbeMock = require('../../mock/pbe');
 suite('Bag', function () {
 
 	setup(function () {
-		gsjsBridge.reset();
+		gsjsBridge.init(true);
 		pers.init(pbeMock);
 	});
 
@@ -57,8 +60,9 @@ suite('Bag', function () {
 
 		test('adds whole itemstack to empty slot', function (done) {
 			var i = new Item({tsid: 'I1'});
-			var b = new Bag({tsid: 'B1'});
-			new RC().run(function (done) {
+			i.queueChanges = function noop() {};  // changeset creation not tested here
+			var b = new Bag({tsid: 'B1', tcont: 'PDUMMY'});
+			new RC().run(function () {
 				var merged = b.addToSlot(i, 3);
 				assert.strictEqual(merged, 1);
 				assert.deepEqual(b.items, {I1: i});
@@ -69,10 +73,12 @@ suite('Bag', function () {
 		});
 
 		test('merges partial itemstack with existing item', function (done) {
-			new RC().run(function (done) {
+			new RC().run(function () {
 				var i1 = Item.create('apple', 5);
+				i1.queueChanges = function noop() {};  // changes not tested here
 				var i2 = Item.create('apple', 8);
 				var b = Bag.create('bag_bigger_gray');
+				b.tcont = 'PDUMMY';
 				i1.setContainer(b);
 				i1.slot = 3;
 				var merged = b.addToSlot(i2, 3, 2);
@@ -85,10 +91,14 @@ suite('Bag', function () {
 		});
 
 		test('does not add more than stackmax', function (done) {
-			new RC().run(function (done) {
+			var rc = new RC();
+			rc.run(function () {
+				var p = new Player({tsid: 'PX', location: {tsid: 'LDUMMY'}});
+				rc.cache[p.tsid] = p;
 				var i = Item.create('apple', 80);
 				i.stackmax = 30;
 				var b = Bag.create('bag_bigger_gray');
+				b.tcont = 'PX';
 				var merged = b.addToSlot(i, 0);
 				assert.strictEqual(merged, 30);
 				assert.strictEqual(b.getSlot(0).class_tsid, 'apple');
@@ -99,10 +109,12 @@ suite('Bag', function () {
 		});
 
 		test('does not merge incompatible items', function (done) {
-			new RC().run(function (done) {
+			new RC().run(function () {
 				var i1 = Item.create('apple', 5);
+				i1.queueChanges = function noop() {};  // changes not tested here
 				var i2 = Item.create('pi');
 				var b = Bag.create('bag_bigger_gray');
+				b.tcont = 'PDUMMY';
 				i1.setContainer(b);
 				i1.slot = 3;
 				var merged = b.addToSlot(i2, 3);
@@ -111,6 +123,48 @@ suite('Bag', function () {
 				assert.strictEqual(i1.container, b);
 				assert.strictEqual(i2.count, 1);
 				assert.isUndefined(i2.container);
+			}, done);
+		});
+
+		test('queues appropriate changes when moving an item from a player ' +
+			'inventory bag to a location bag (e.g. furniture)', function (done) {
+			var rc = new RC();
+			rc.run(function () {
+				var l = Location.create(Geo.create());
+				var p = new Player({tsid: 'PX', location: l});
+				l.players[p.tsid] = rc.cache[p.tsid] = p;
+				var fbag = Bag.create('bag_bigger_green');
+				fbag.setContainer(l);
+				var i = Item.create('pi');
+				var bag = Bag.create('bag_bigger_gray');
+				bag.setContainer(p);
+				bag.addToSlot(i, 0);
+				p.changes = [];  // dump previous changes, we're testing the following
+				fbag.addToSlot(i, 3);
+				assert.lengthOf(p.changes, 2);
+				var cd = p.changes[0].itemstack_values.pc[i.tsid];
+				assert.strictEqual(cd.count, 0, 'removed from bag in inventory');
+				assert.strictEqual(cd.path_tsid, bag.tsid + '/' + i.tsid);
+				assert.notProperty(cd, 'slot');
+				cd = p.changes[1].itemstack_values.location[i.tsid];
+				assert.strictEqual(cd.path_tsid, fbag.tsid + '/' + i.tsid);
+				assert.strictEqual(cd.count, 1, 'added to bag in location');
+				assert.strictEqual(cd.slot, 3);
+			}, done);
+		});
+	});
+
+
+	suite('getChangeData', function () {
+
+		test('works as expected (simple bag)', function (done) {
+			new RC().run(function () {
+				var b = Bag.create('bag_bigger_gray');
+				var cd = b.getChangeData();
+				assert.strictEqual(cd.class_tsid, 'bag_bigger_gray');
+				assert.strictEqual(cd.count, 1);
+				assert.strictEqual(cd.path_tsid, b.tsid);
+				assert.strictEqual(cd.slots, 16);
 			}, done);
 		});
 	});

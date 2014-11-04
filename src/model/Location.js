@@ -155,3 +155,18 @@ Location.prototype.updateGeo = function updateGeo(data) {
 	this.clientGeometry = this.geometry.getClientGeo();
 	this.geo = this.geometry.getGeo();
 };
+
+
+/**
+ * Creates a change data record for the given item and queues it to be
+ * sent with the next outgoing message to each client of a player in
+ * the location. See {@link Player#queueChanges} for details.
+ *
+ * @param {Item} item the changed/changing item
+ * @param {boolean} [removed] if `true`, queues a *removal* change
+ */
+Location.prototype.queueChanges = function queueChanges(item, removed) {
+	for (var tsid in this.players) {
+		this.players[tsid].queueChanges(item, removed);
+	}
+};

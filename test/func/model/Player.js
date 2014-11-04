@@ -71,9 +71,11 @@ suite('Player', function () {
 
 		test('adds to player inventory, splits items if necessary',
 			function (done) {
-			new RC().run(function () {
+			var rc = new RC();
+			rc.run(function () {
 				//var b = Bag.create('bag_bigger_gray');
-				var p = new Player();
+				var p = new Player({location: {tsid: 'LDUMMY'}});
+				rc.cache[p.tsid] = p;
 				var i1 = Item.create('apple', 3);
 				p.addToAnySlot(i1, 0, 16, null, 2);
 				assert.strictEqual(i1.count, 1);
@@ -86,9 +88,11 @@ suite('Player', function () {
 
 		test('adds to bag in inventory, deletes source item if necessary',
 			function (done) {
-			new RC().run(function () {
+			var rc = new RC();
+			rc.run(function () {
 				var b = Bag.create('bag_bigger_gray');
-				var p = new Player();
+				var p = new Player({location: {tsid: 'LDUMMY'}});
+				rc.cache[p.tsid] = p;
 				b.setContainer(p);
 				var i1 = Item.create('apple', 3);
 				b.addToSlot(i1, 0);
@@ -102,8 +106,10 @@ suite('Player', function () {
 		});
 
 		test('distributes across multiple slots', function (done) {
-			new RC().run(function () {
-				var p = new Player();
+			var rc = new RC();
+			rc.run(function () {
+				var p = new Player({location: {tsid: 'LDUMMY'}});
+				rc.cache[p.tsid] = p;
 				var i1 = Item.create('apple', 3);
 				i1.stackmax = 5;
 				p.addToSlot(i1, 0);
@@ -113,6 +119,55 @@ suite('Player', function () {
 				assert.strictEqual(p.getSlot(1), i2);
 				assert.strictEqual(i1.count, 5);
 				assert.strictEqual(i2.count, 4);
+			}, done);
+		});
+	});
+
+
+	suite('queueChanges', function () {
+
+		test('works as expected (basic changeset)', function (done) {
+			new RC().run(function () {
+				var p = new Player({tsid: 'PX', location: {tsid: 'LDUMMY'}});
+				var it = new Item(
+					{tsid: 'IX', class_tsid: 'meat', count: 3, tcont: 'PX'});
+				p.queueChanges(it);
+				assert.lengthOf(p.changes, 1);
+				var cs = p.changes[0];
+				assert.strictEqual(cs.location_tsid, 'LDUMMY');
+				assert.lengthOf(Object.keys(cs.itemstack_values.pc), 1);
+				assert.lengthOf(Object.keys(cs.itemstack_values.location), 0);
+				var cd = cs.itemstack_values.pc[it.tsid];
+				assert.strictEqual(cd.class_tsid, 'meat');
+				assert.strictEqual(cd.count, 3);
+				assert.strictEqual(cd.path_tsid, it.tsid);
+			}, done);
+		});
+
+		test('works as expected (basic removal changeset)', function (done) {
+			new RC().run(function () {
+				var p = new Player({tsid: 'PX', location: {tsid: 'LDUMMY'}});
+				var it = new Item(
+					{tsid: 'IX', class_tsid: 'meat', count: 3, tcont: 'PX'});
+				p.queueChanges(it, true);
+				var cs = p.changes[0];
+				assert.lengthOf(Object.keys(cs.itemstack_values.pc), 1);
+				assert.lengthOf(Object.keys(cs.itemstack_values.location), 0);
+				assert.strictEqual(cs.itemstack_values.pc[it.tsid].count, 0);
+			}, done);
+		});
+
+		test('works as expected (location changesets)', function (done) {
+			new RC().run(function () {
+				var p = new Player({tsid: 'PX', location: {tsid: 'LX'}});
+				var it = new Item({tsid: 'IX', class_tsid: 'apple', tcont: 'LX'});
+				p.queueChanges(it);  // added to location
+				p.queueChanges(it, true);  // removed from location again
+				assert.lengthOf(p.changes, 2);
+				assert.strictEqual(
+					p.changes[0].itemstack_values.location[it.tsid].count, 1);
+				assert.strictEqual(
+					p.changes[1].itemstack_values.location[it.tsid].count, 0);
 			}, done);
 		});
 	});

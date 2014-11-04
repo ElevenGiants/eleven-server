@@ -81,6 +81,13 @@ Bag.prototype.serialize = function serialize() {
 };
 
 
+Bag.prototype.getChangeData = function getChangeData(pc) {
+	var ret = Bag.super_.prototype.getChangeData.call(this, pc);
+	if (this.hasTag && !this.hasTag('not_openable')) ret.slots = this.capacity;
+	return ret;
+};
+
+
 /**
  * Recursively collects the contents of this bag and all bags within
  * it, adding them to a flat data structure with TSID "paths" as keys,

@@ -81,11 +81,13 @@ Item.create = function create(classTsid, count) {
  * Schedules this item for deletion after the current request.
  */
 Item.prototype.del = function del() {
+	log.trace('del %s', this);
 	Item.super_.prototype.del.call(this);
 	if (this.container) {
 		delete this.container.items[this.tsid];
 		delete this.container.hiddenItems[this.tsid];
 		delete this.container;
+		this.queueChanges();
 	}
 };
 
@@ -142,8 +144,68 @@ Item.prototype.setContainer = function setContainer(cont, hidden) {
 		cont.items[this.tsid] = this;
 	}
 	this.is_hidden = !!hidden;
-	this.tcont = cont.tcont ? cont.tcont : cont.tsid;
+	var tcont = cont.tcont ? cont.tcont : cont.tsid;
+	assert(utils.isPlayer(tcont) || utils.isLoc(tcont), util.format(
+		'tcont for %s is neither player nor location: %s', this, tcont));
+	this.queueChanges(true);
+	this.tcont = tcont;
 	this.updatePath();
+	this.queueChanges();
+};
+
+
+/**
+ * Tells the item's top level container to include changes for this
+ * item in the next message to the client (resp. all clients of players
+ * in the location, if the top container is a `Location`).
+ *
+ * @param {boolean} [removed] if `true`, create a removal change record
+ */
+Item.prototype.queueChanges = function queueChanges(removed) {
+	if (this.tcont) {
+		pers.get(this.tcont).queueChanges(this, removed);
+	}
+};
+
+
+/**
+ * Generates a data record with information about the current state of
+ * the item, for inclusion in the `changes` segment of a message to the
+ * client.
+ *
+ * @param {Player} pc player whose client this data will be sent to
+ *        (required because some of the fields are "personalized")
+ * @param {boolean} [removed] if `true`, this record will mark the
+ *        item as deleted (used when items change containers, in which
+ *        case they are marked deleted in the changes for the previous
+ *        container)
+ * @returns {object} changes data set
+ */
+Item.prototype.getChangeData = function getChangeData(pc, removed) {
+	var ret = {
+		x: this.x,
+		y: this.y,
+		path_tsid: this.path,
+		class_tsid: this.class_tsid,
+		count: (removed || this.deleted) ? 0 : this.count,
+		label: this.getLabel ? this.getLabel() : this.label,
+	};
+	if (!removed && this.slot !== undefined) ret.slot = this.slot;
+	if (this.z) ret.z = this.z;
+	if (this.rs) ret.rs = this.rs;
+	if (this.state) ret.s = this.buildState(pc);
+	if (this.isSelectable && !this.isSelectable(pc)) {
+		ret.not_selectable = true;
+	}
+	if (this.isSoulbound && this.isSoulbound() && this.soulbound_to) {
+		ret.soulbound_to = this.soulbound_to;
+	}
+	if (this.is_tool) ret.tool_state = this.get_tool_state();
+	if (this.is_consumable) ret.consumable_state = this.get_consumable_state();
+	if (this.getTooltipLabel) ret.tooltip_label = this.getTooltipLabel();
+	if (this.make_config) ret.config = this.make_config();
+	if (this.onStatus) ret.status = this.onStatus(pc);
+	return ret;
 };
 
 
@@ -169,6 +231,7 @@ Item.prototype.split = function split(n) {
 		newItem.is_soulbound_item = this.is_soulbound_item;
 		newItem.soulbound_to = this.soulbound_to;
 	}
+	this.queueChanges();
 	return newItem;
 };
 
@@ -198,5 +261,7 @@ Item.prototype.merge = function merge(that, n) {
 	that.count -= moved;
 	this.count += moved;
 	if (that.count <= 0) that.del();
+	else that.queueChanges();
+	this.queueChanges();
 	return moved;
 };

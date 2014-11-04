@@ -44,6 +44,7 @@ var PROPS = {
 function Player(data) {
 	Player.super_.call(this, data);
 	utils.addNonEnumerable(this, 'session');
+	utils.addNonEnumerable(this, 'changes', []);
 	// convert selected properties to "Property" instances (works with simple
 	// int values as well as serialized Property instances)
 	for (var group in PROPS) {
@@ -342,4 +343,37 @@ Player.prototype.addToAnySlot = function addToAnySlot(item, fromSlot, toSlot,
 	for (var slot = fromSlot; slot <= toSlot && amount > 0; slot++) {
 		amount -= bag.addToSlot(item, slot, amount);
 	}
+};
+
+
+/**
+ * Creates a change data record for the given item and queues it to be
+ * sent with the next message to the client. For container changes,
+ * this must be called *before* the `tcont` property is changed (to the
+ * new container TSID) in order to queue the change representing the
+ * removal of the item from the previous container, and then again
+ * *afterwards* for the addition to the new container.
+ *
+ * @param {Item} item the changed/changing item
+ * @param {boolean} [removed] if `true`, queues a *removal* change
+ */
+Player.prototype.queueChanges = function queueChanges(item, removed) {
+	log.trace('generating changes for %s%s', item, removed ? ' (removed)' : '');
+	var pcChanges = {};
+	var locChanges = {};
+	if (item.tcont === this.tsid) {
+		pcChanges[item.tsid] = item.getChangeData(this, removed);
+	}
+	else if (item.tcont === this.location.tsid) {
+		locChanges[item.tsid] = item.getChangeData(this, removed);
+	}
+	var changes = {
+		location_tsid: this.location.tsid,
+		itemstack_values: {
+			pc: pcChanges,
+			location: locChanges,
+		},
+	};
+	log.trace({changes: changes}, 'queueing changes for %s', item);
+	this.changes.push(changes);
 };
