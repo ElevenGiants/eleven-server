@@ -379,3 +379,61 @@ Player.prototype.queueChanges = function queueChanges(item, removed, compact) {
 	log.trace({changes: changes}, 'queueing changes for %s', item);
 	this.changes.push(changes);
 };
+
+
+/**
+ * Sends a message to the player's client, including queued
+ * announcements, property and item changes.
+ *
+ * @param {object} msg the message to send; must not contain anything
+ *        that cannot be encoded in AMF3 (e.g. circular references)
+ * @param {boolean} [skipChanges] if `true`, queued property and item
+ *        changes are **not** included
+ */
+Player.prototype.send = function send(msg, skipChanges) {
+	if (!skipChanges) {
+		var changes = this.mergeChanges();
+		//TODO: properties
+		if (changes) {
+			msg.changes = changes;
+		}
+	}
+	//TODO: announcements
+	this.session.send(msg);
+};
+
+
+/**
+ * Merges the currently queued item changes into a single object,
+ * suitable for the `changes` segment of an outgoing message.
+ * Changes for items in a location are only included if they refer to
+ * the player's current location. If multiple changes for the same item
+ * are queued, the last one "wins".
+ *
+ * @returns {object|undefined} a record of item changes ready to be
+ *          included in the next message sent to the client, or
+ *          `undefined` when no changes are queued
+ */
+Player.prototype.mergeChanges = function mergeChanges() {
+	var ret;
+	while (this.changes.length > 0) {
+		ret = ret || {
+			location_tsid: this.location.tsid,
+			itemstack_values: {
+				pc: {},
+				location: {},
+			},
+		};
+		var c = this.changes.shift();
+		var k;
+		for (k in c.itemstack_values.pc) {
+			ret.itemstack_values.pc[k] = c.itemstack_values.pc[k];
+		}
+		if (c.location_tsid === this.location.tsid) {
+			for (k in c.itemstack_values.location) {
+				ret.itemstack_values.location[k] = c.itemstack_values.location[k];
+			}
+		}
+	}
+	return ret;
+};

@@ -409,4 +409,120 @@ suite('Player', function () {
 			);
 		});
 	});
+
+
+	suite('mergeChanges', function () {
+
+		test('combines queued changes', function () {
+			var p = new Player();
+			p.location = {tsid: 'L1Q8BNQAR14BZ7T3O8C'};
+			p.changes = [
+				{
+					location_tsid: 'L1Q8BNQAR14BZ7T3O8C',
+					itemstack_values: {
+						pc: {},
+						location: {
+							I1Q8BNQAR14BZA22MG4: {
+								x: 3, y: 0, slot: 3, count: 1,
+								path_tsid: 'B1Q8BNQAR14BZA0ABK0/I1Q8BNQAR14BZA22MG4',
+								class_tsid: 'pi',
+								label: 'Pi',
+				}}}}, {
+					location_tsid: 'L1Q8BNQAR14BZ7T3O8C',
+					itemstack_values: {
+						pc: {
+							I1Q8BNQAR14BZA22MG4: {
+								x: 3, y: 0, slot: 3, count: 0,
+								path_tsid: 'B1Q8BNQAR14BZA0ABK0/I1Q8BNQAR14BZA22MG4',
+								class_tsid: 'pi',
+								label: 'Pi',
+						}},
+						location: {},
+				}},
+			];
+			assert.deepEqual(p.mergeChanges(), {
+				location_tsid: 'L1Q8BNQAR14BZ7T3O8C',
+				itemstack_values: {
+					pc: {
+						I1Q8BNQAR14BZA22MG4: {
+							x: 3, y: 0, slot: 3, count: 0,
+							path_tsid: 'B1Q8BNQAR14BZA0ABK0/I1Q8BNQAR14BZA22MG4',
+							class_tsid: 'pi',
+							label: 'Pi',
+					}},
+					location: {
+						I1Q8BNQAR14BZA22MG4: {
+							x: 3, y: 0, slot: 3, count: 1,
+							path_tsid: 'B1Q8BNQAR14BZA0ABK0/I1Q8BNQAR14BZA22MG4',
+							class_tsid: 'pi',
+							label: 'Pi',
+				}}}
+			});
+		});
+
+		test('works when no changes are queued', function () {
+			var p = new Player();
+			assert.isUndefined(p.mergeChanges());
+		});
+
+		test('skips irrelevant location item changes', function () {
+			var p = new Player();
+			p.location = {tsid: 'LPANAMA'};
+			p.changes = [
+				{
+					location_tsid: 'LPANAMA',
+					itemstack_values: {
+						pc: {},
+						location: {
+							IX: {path_tsid: 'IX'},
+				}}},
+				{
+					location_tsid: 'LCANADA',
+					itemstack_values: {
+						pc: {
+							IZ: {path_tsid: 'IZ'},
+						},
+						location: {
+							IY: {path_tsid: 'IY'},
+				}}},
+			];
+			assert.deepEqual(p.mergeChanges(), {
+				location_tsid: 'LPANAMA',
+				itemstack_values: {
+					pc: {
+						// location_tsid not relevant for changes in inventory, so this is kept
+						IZ: {path_tsid: 'IZ'},
+					},
+					location: {
+						IX: {path_tsid: 'IX'},
+			}}});
+		});
+
+		test('picks last change if multiple changes for the same item are queued',
+			function () {
+			var p = new Player();
+			p.location = {tsid: 'L1'};
+			p.changes = [
+				{
+					location_tsid: 'L1',
+					itemstack_values: {
+						location: {
+							IX: {path_tsid: 'IX', count: 2},
+				}}},
+				{
+					location_tsid: 'L1',
+					itemstack_values: {
+						location: {
+							IX: {path_tsid: 'IX', count: 3},
+				}}},
+			];
+			assert.deepEqual(p.mergeChanges(), {
+				location_tsid: 'L1',
+				itemstack_values: {
+					pc: {},
+					location: {
+						IX: {path_tsid: 'IX', count: 3},
+			}}});
+		});
+	});
 });

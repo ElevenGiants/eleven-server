@@ -73,7 +73,6 @@ suite('Player', function () {
 			function (done) {
 			var rc = new RC();
 			rc.run(function () {
-				//var b = Bag.create('bag_bigger_gray');
 				var p = new Player({location: {tsid: 'LDUMMY'}});
 				rc.cache[p.tsid] = p;
 				var i1 = Item.create('apple', 3);
@@ -169,6 +168,43 @@ suite('Player', function () {
 				assert.strictEqual(
 					p.changes[1].itemstack_values.location[it.tsid].count, 0);
 			}, done);
+		});
+	});
+
+
+	suite('send', function () {
+
+		test('includes combined changes', function (done) {
+			var rc = new RC();
+			rc.run(
+				function () {
+					var g = Geo.create();
+					var l = Location.create(g);
+					var p = new Player({tsid: 'PX', location: l});
+					l.players[p.tsid] = p;
+					rc.cache[g.tsid] = g;
+					rc.cache[l.tsid] = l;
+					rc.cache[p.tsid] = p;
+					var it = new Item({tsid: 'IX', class_tsid: 'pi', tcont: l.tsid});
+					p.addToSlot(it, 5);
+					p.session = {
+						send: function send(msg) {
+							assert.strictEqual(msg.changes.location_tsid, l.tsid);
+							var iv = msg.changes.itemstack_values;
+							assert.lengthOf(Object.keys(iv.pc), 1);
+							assert.lengthOf(Object.keys(iv.location), 1);
+							assert.strictEqual(iv.pc.IX.count, 1);
+							assert.strictEqual(iv.pc.IX.slot, 5);
+							assert.strictEqual(iv.location.IX.count, 0);
+							done();
+						},
+					};
+					p.send({});
+				},
+				function (err, res) {
+					if (err) return done(err);
+				}
+			);
 		});
 	});
 });
