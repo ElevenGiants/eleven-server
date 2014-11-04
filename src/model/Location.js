@@ -175,6 +175,23 @@ Location.prototype.queueChanges = function queueChanges(item, removed, compact) 
 
 
 /**
+ * Adds an announcement to the announcements queue for all players in
+ * the location.
+ *
+ * @param {object} annc announcement data
+ * @param {Player} [skipPlayer] announcement is **not** queued for this
+ *        player
+ */
+Location.prototype.queueAnnc = function queueAnnc(annc, skipPlayer) {
+	for (var tsid in this.players) {
+		if (!skipPlayer || tsid !== skipPlayer.tsid) {
+			this.players[tsid].queueAnnc(annc);
+		}
+	}
+};
+
+
+/**
  * Puts the item into the location at the given position, merging it
  * with existing nearby items of the same class.
  *

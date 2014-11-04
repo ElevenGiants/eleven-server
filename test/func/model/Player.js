@@ -206,5 +206,29 @@ suite('Player', function () {
 				}
 			);
 		});
+
+		test('includes queued announcements', function (done) {
+			new RC().run(
+				function () {
+					var p = new Player();
+					p.queueAnnc({id: 'someAnnc', data: 5});
+					p.queueAnnc({mo1: 'money', mo2: 'problems'});
+					p.session = {
+						send: function send(msg) {
+							var anncs = msg.announcements;
+							assert.lengthOf(anncs, 2);
+							assert.deepEqual(p.anncs, []);
+							assert.strictEqual(anncs[0].id, 'someAnnc');
+							assert.strictEqual(anncs[1].mo2, 'problems');
+							done();
+						},
+					};
+					p.send({});
+				},
+				function (err, res) {
+					if (err) return done(err);
+				}
+			);
+		});
 	});
 });

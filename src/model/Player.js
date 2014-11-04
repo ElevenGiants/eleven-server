@@ -45,6 +45,7 @@ function Player(data) {
 	Player.super_.call(this, data);
 	utils.addNonEnumerable(this, 'session');
 	utils.addNonEnumerable(this, 'changes', []);
+	utils.addNonEnumerable(this, 'anncs', []);
 	// convert selected properties to "Property" instances (works with simple
 	// int values as well as serialized Property instances)
 	for (var group in PROPS) {
@@ -382,6 +383,18 @@ Player.prototype.queueChanges = function queueChanges(item, removed, compact) {
 
 
 /**
+ * Adds an announcement to the queue of announcements to be sent to the
+ * client with the next outgoing message.
+ *
+ * @param {object} annc announcement data
+ */
+Player.prototype.queueAnnc = function queueAnnc(annc) {
+	log.trace({annc: annc}, 'queueing annc: %s');
+	this.anncs.push(annc);
+};
+
+
+/**
  * Sends a message to the player's client, including queued
  * announcements, property and item changes.
  *
@@ -391,6 +404,7 @@ Player.prototype.queueChanges = function queueChanges(item, removed, compact) {
  *        changes are **not** included
  */
 Player.prototype.send = function send(msg, skipChanges) {
+	// generage "changes" segment
 	if (!skipChanges) {
 		var changes = this.mergeChanges();
 		//TODO: properties
@@ -398,7 +412,11 @@ Player.prototype.send = function send(msg, skipChanges) {
 			msg.changes = changes;
 		}
 	}
-	//TODO: announcements
+	// append "announcements" segment
+	if (this.anncs.length > 0) {
+		msg.announcements = this.anncs;
+		this.anncs = [];
+	}
 	this.session.send(msg);
 };
 
