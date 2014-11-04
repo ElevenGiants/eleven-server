@@ -230,5 +230,26 @@ suite('Player', function () {
 				}
 			);
 		});
+
+		test('includes property changes', function (done) {
+			new RC().run(
+				function () {
+					var p = new Player();
+					p.stats.xp.setLimits(0, 1000);
+					p.stats.xp.setVal(555);
+					p.session = {
+						send: function send(msg) {
+							assert.deepEqual(msg.changes.stat_values, {xp: 555});
+							assert.strictEqual(msg.moo, 'far');
+							done();
+						},
+					};
+					p.send({moo: 'far'});
+				},
+				function (err, res) {
+					if (err) return done(err);
+				}
+			);
+		});
 	});
 });

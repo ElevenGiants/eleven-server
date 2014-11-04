@@ -13,12 +13,15 @@ suite('Property', function () {
 			assert.strictEqual(p.value, 0);
 			assert.strictEqual(p.bottom, 0);
 			assert.strictEqual(p.top, 0);
+			assert.isFalse(p.changed);
 			p = new Prop('test', {value: -3, bottom: -7, top: 8000});
 			assert.strictEqual(p.value, -3);
 			assert.strictEqual(p.bottom, -7);
 			assert.strictEqual(p.top, 8000);
+			assert.isFalse(p.changed);
 			p = new Prop('', {top: 5, value: 3});
 			assert.strictEqual(p.bottom, 3, 'unspecified limits are set to value');
+			assert.isFalse(p.changed);
 		});
 
 		test('works with single value as data', function () {
@@ -75,8 +78,10 @@ suite('Property', function () {
 			var p = new Prop('a', {bottom: 0, top: 20});
 			p.setVal(12);
 			assert.strictEqual(p.value, 12);
+			assert.isTrue(p.changed);
 			p.setVal(11.0001);
 			assert.strictEqual(p.value, 11);
+			assert.isTrue(p.changed);
 		});
 
 		test('silently ignores values exceeding limits', function () {
@@ -85,6 +90,7 @@ suite('Property', function () {
 			assert.strictEqual(p.value, 3);
 			p.setVal(22);
 			assert.strictEqual(p.value, 3);
+			assert.isFalse(p.changed);
 		});
 	});
 
@@ -96,6 +102,7 @@ suite('Property', function () {
 			var d = p.inc(12);
 			assert.strictEqual(p.value, 12);
 			assert.strictEqual(d, 12);
+			assert.isTrue(p.changed);
 			d = p.inc(0.1);
 			assert.strictEqual(p.value, 12);
 			assert.strictEqual(d, 0);
@@ -119,10 +126,12 @@ suite('Property', function () {
 			var d = p.mult(3);
 			assert.strictEqual(p.value, 0);
 			assert.strictEqual(d, 0);
+			assert.isFalse(p.changed);
 			p.value = 5;
 			d = p.mult(2.87);
 			assert.strictEqual(p.value, 14);
 			assert.strictEqual(d, 9);
+			assert.isTrue(p.changed);
 			d = p.mult(0.5);
 			assert.strictEqual(p.value, 7);
 			assert.strictEqual(d, -7);

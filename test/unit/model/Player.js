@@ -525,4 +525,38 @@ suite('Player', function () {
 			}}});
 		});
 	});
+
+
+	suite('getPropChanges', function () {
+
+		test('works as expected', function () {
+			var p = new Player();
+			p.metabolics.energy.setLimits(0, 100);
+			p.metabolics.energy.inc(60);
+			p.stats.xp.setLimits(0, 1000);
+			p.stats.xp.setVal(555);
+			p.daily_favor.ti.setLimits(0, 100);
+			p.daily_favor.ti.inc(12);
+			assert.deepEqual(p.getPropChanges(), {
+				energy: 60, xp: 555, ti: 12,
+			});
+			assert.isFalse(p.metabolics.energy.changed);
+			assert.isFalse(p.stats.xp.changed);
+			assert.isFalse(p.daily_favor.ti.changed);
+		});
+
+		test('ignores changed props for which no changes should be sent', function () {
+			var p = new Player();
+			p.metabolics.energy.setLimits(0, 100);
+			p.metabolics.energy.inc(60);
+			p.stats.donation_xp_today.setLimits(0, 10);
+			p.stats.donation_xp_today.setVal(1);
+			assert.isTrue(p.stats.donation_xp_today.changed);
+			assert.deepEqual(p.getPropChanges(), {energy: 60});
+		});
+
+		test('returns undefined when nothing changed', function () {
+			assert.isUndefined(new Player().getPropChanges());
+		});
+	});
 });
