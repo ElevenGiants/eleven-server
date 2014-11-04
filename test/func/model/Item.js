@@ -293,7 +293,7 @@ suite('Item', function () {
 				l.players[p2.tsid] = p2;
 				rc.cache[p.tsid] = p;
 				var it = new Item({tsid: 'IX', class_tsid: 'meat', tcont: l.tsid});
-				it.setContainer(p);
+				it.setContainer(p, 0);
 				assert.lengthOf(p.changes, 2);
 				var cd = p.changes[0].itemstack_values.location[it.tsid];
 				assert.strictEqual(cd.path_tsid, it.tsid);

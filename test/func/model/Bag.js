@@ -79,8 +79,7 @@ suite('Bag', function () {
 				var i2 = Item.create('apple', 8);
 				var b = Bag.create('bag_bigger_gray');
 				b.tcont = 'PDUMMY';
-				i1.setContainer(b);
-				i1.slot = 3;
+				i1.setContainer(b, 3);
 				var merged = b.addToSlot(i2, 3, 2);
 				assert.strictEqual(merged, 2);
 				assert.strictEqual(i1.count, 7);
@@ -115,8 +114,7 @@ suite('Bag', function () {
 				var i2 = Item.create('pi');
 				var b = Bag.create('bag_bigger_gray');
 				b.tcont = 'PDUMMY';
-				i1.setContainer(b);
-				i1.slot = 3;
+				i1.setContainer(b, 3);
 				var merged = b.addToSlot(i2, 3);
 				assert.strictEqual(merged, 0);
 				assert.strictEqual(i1.count, 5);
@@ -137,7 +135,7 @@ suite('Bag', function () {
 				fbag.setContainer(l);
 				var i = Item.create('pi');
 				var bag = Bag.create('bag_bigger_gray');
-				bag.setContainer(p);
+				bag.setContainer(p, 1);
 				bag.addToSlot(i, 0);
 				p.changes = [];  // dump previous changes, we're testing the following
 				fbag.addToSlot(i, 3);
