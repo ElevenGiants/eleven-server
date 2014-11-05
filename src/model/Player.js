@@ -137,7 +137,11 @@ Player.prototype.onDisconnect = function onDisconnect() {
 		this.startMove();
 		// GSJS logout event
 		this.onLogout();
-		//TODO: send pc_logout message to let other clients in same location know we're gone
+		// let other clients in same location know we're gone
+		this.location.send({
+			type: 'pc_logout',
+			pc: {tsid: this.tsid, label: this.label},
+		}, false, this);
 	}
 	// in any case, stop timers etc and unload from live object cache
 	this.unload();
