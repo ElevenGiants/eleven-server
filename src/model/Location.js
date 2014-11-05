@@ -192,6 +192,29 @@ Location.prototype.queueAnnc = function queueAnnc(annc, skipPlayer) {
 
 
 /**
+ * Sends a message to all players in this location (except those in the
+ * optional exclusion parameter).
+ *
+ * @param {object} msg the message to send; must not contain anything
+ *        that cannot be encoded in AMF3 (e.g. circular references)
+ * @param {boolean} [skipChanges] if `true`, queued property and item
+ *        changes are **not** included
+ * @param {object|array|string|Player} exclude players **not** to send
+ *        the message to; may be either a single `Player` instance or
+ *        TSID, an object with player TSIDs as keys, or an array of
+ *        TSIDs or `Player`s
+ */
+Location.prototype.send = function send(msg, skipChanges, exclude) {
+	var excl = utils.playersArgToList(exclude);
+	for (var tsid in this.players) {
+		if (excl.indexOf(tsid) === -1) {
+			this.players[tsid].send(msg, skipChanges);
+		}
+	}
+};
+
+
+/**
  * Puts the item into the location at the given position, merging it
  * with existing nearby items of the same class.
  *

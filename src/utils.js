@@ -26,6 +26,7 @@ module.exports = {
 	hashToArray: hashToArray,
 	shallowCopy: shallowCopy,
 	padLeft: padLeft,
+	playersArgToList: playersArgToList,
 };
 
 
@@ -344,6 +345,37 @@ function padLeft(str, pad, len) {
 	var ret = str.toString();
 	while (ret.length < len) {
 		ret = pad + ret;
+	}
+	return ret;
+}
+
+
+/**
+ * Helper function for converting a loosely typed player list argument
+ * (as used by several model API functions) to an array of TSIDs.
+ *
+ * @param {object|array|string|Player} players may be either a hash
+ *        (object with TSIDs as keys and `Player` instances as values),
+ *        an array containing TSIDs or `Player`s, a player TSID string,
+ *        or a single `Player` instance
+ * @returns {array} an array or player TSID strings
+ */
+function playersArgToList(players) {
+	var ret = [];
+	// handle single Player instance or single TSID string as 1-element array
+	if (isPlayer(players)) players = [players];
+	// if it's an object, assume it's a hash with TSIDs as keys
+	if (players && typeof players === 'object' && !(players instanceof Array)) {
+		players = Object.keys(players);
+	}
+	if (players instanceof Array) {
+		// could be an array of TSIDs or an array of Player instances
+		for (var i = 0; i < players.length; i++) {
+			var p = players[i];
+			if (isPlayer(p)) {
+				ret.push(typeof p === 'string' ? p : p.tsid);
+			}
+		}
 	}
 	return ret;
 }

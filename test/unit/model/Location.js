@@ -107,4 +107,30 @@ suite('Location', function () {
 			assert.deepEqual(p2.anncs, [], 'not queued for p2 (not in this loc)');
 		});
 	});
+
+
+	suite('send', function () {
+
+		function dummyPlayer(tsid, results) {
+			var p = new Player({tsid: tsid});
+			p.send = function () {
+				results.push(p.tsid);
+			};
+			return p;
+		}
+
+		test('works as expected', function () {
+			var res = [];
+			var l = new Location({players: [
+				dummyPlayer('P1', res),
+				dummyPlayer('P2', res),
+				dummyPlayer('P3', res),
+			]}, new Geo());
+			l.send({});
+			assert.deepEqual(res, ['P1', 'P2', 'P3']);
+			res.length = 0;  // reset res
+			l.send({}, false, ['P1', 'P4']);
+			assert.deepEqual(res, ['P2', 'P3']);
+		});
+	});
 });
