@@ -80,11 +80,14 @@ var gsjsMain = null;
 /**
  * Initializes the game object prototype cache (according to the GSJS
  * directory structure) and GSJS import dependencies.
+ *
+ * @param {object} [testDeps] stub/mock GSJS dependencies (for testing)
  */
-function reset() {
-	gsjsAdmin = null;
-	gsjsMain = null;
-	dependencies = {};
+function reset(testDeps) {
+	testDeps = testDeps || {};
+	gsjsAdmin = testDeps.gsjsAdmin || null;
+	gsjsMain = testDeps.gsjsMain || null;
+	dependencies = testDeps.dependencies || {};
 	prototypes = {
 		achievements: {},
 		groups: {},

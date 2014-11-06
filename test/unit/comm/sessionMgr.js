@@ -3,16 +3,24 @@
 var rewire = require('rewire');
 var sessionMgr = rewire('comm/sessionMgr');
 var getDummySocket = require('../../helpers').getDummySocket;
+var gsjsBridge = require('model/gsjsBridge');
 
 
 suite('sessionMgr', function () {
 
-	setup(function () {
-		sessionMgr.init();
+	suiteSetup(function () {
+		gsjsBridge.reset({gsjsMain: {
+			processMessage: function dummy() {},
+		}});
 	});
 
 	suiteTeardown(function () {
+		gsjsBridge.reset();
 		// just in case any other test relies on sessionMgr
+		sessionMgr.init();
+	});
+
+	setup(function () {
 		sessionMgr.init();
 	});
 
