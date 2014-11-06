@@ -409,4 +409,154 @@ suite('Player', function () {
 			);
 		});
 	});
+
+
+	suite('mergeChanges', function () {
+
+		test('combines queued changes', function () {
+			var p = new Player();
+			p.location = {tsid: 'L1Q8BNQAR14BZ7T3O8C'};
+			p.changes = [
+				{
+					location_tsid: 'L1Q8BNQAR14BZ7T3O8C',
+					itemstack_values: {
+						pc: {},
+						location: {
+							I1Q8BNQAR14BZA22MG4: {
+								x: 3, y: 0, slot: 3, count: 1,
+								path_tsid: 'B1Q8BNQAR14BZA0ABK0/I1Q8BNQAR14BZA22MG4',
+								class_tsid: 'pi',
+								label: 'Pi',
+				}}}}, {
+					location_tsid: 'L1Q8BNQAR14BZ7T3O8C',
+					itemstack_values: {
+						pc: {
+							I1Q8BNQAR14BZA22MG4: {
+								x: 3, y: 0, slot: 3, count: 0,
+								path_tsid: 'B1Q8BNQAR14BZA0ABK0/I1Q8BNQAR14BZA22MG4',
+								class_tsid: 'pi',
+								label: 'Pi',
+						}},
+						location: {},
+				}},
+			];
+			assert.deepEqual(p.mergeChanges(), {
+				location_tsid: 'L1Q8BNQAR14BZ7T3O8C',
+				itemstack_values: {
+					pc: {
+						I1Q8BNQAR14BZA22MG4: {
+							x: 3, y: 0, slot: 3, count: 0,
+							path_tsid: 'B1Q8BNQAR14BZA0ABK0/I1Q8BNQAR14BZA22MG4',
+							class_tsid: 'pi',
+							label: 'Pi',
+					}},
+					location: {
+						I1Q8BNQAR14BZA22MG4: {
+							x: 3, y: 0, slot: 3, count: 1,
+							path_tsid: 'B1Q8BNQAR14BZA0ABK0/I1Q8BNQAR14BZA22MG4',
+							class_tsid: 'pi',
+							label: 'Pi',
+				}}}
+			});
+		});
+
+		test('works when no changes are queued', function () {
+			var p = new Player();
+			assert.isUndefined(p.mergeChanges());
+		});
+
+		test('skips irrelevant location item changes', function () {
+			var p = new Player();
+			p.location = {tsid: 'LPANAMA'};
+			p.changes = [
+				{
+					location_tsid: 'LPANAMA',
+					itemstack_values: {
+						pc: {},
+						location: {
+							IX: {path_tsid: 'IX'},
+				}}},
+				{
+					location_tsid: 'LCANADA',
+					itemstack_values: {
+						pc: {
+							IZ: {path_tsid: 'IZ'},
+						},
+						location: {
+							IY: {path_tsid: 'IY'},
+				}}},
+			];
+			assert.deepEqual(p.mergeChanges(), {
+				location_tsid: 'LPANAMA',
+				itemstack_values: {
+					pc: {
+						// location_tsid not relevant for changes in inventory, so this is kept
+						IZ: {path_tsid: 'IZ'},
+					},
+					location: {
+						IX: {path_tsid: 'IX'},
+			}}});
+		});
+
+		test('picks last change if multiple changes for the same item are queued',
+			function () {
+			var p = new Player();
+			p.location = {tsid: 'L1'};
+			p.changes = [
+				{
+					location_tsid: 'L1',
+					itemstack_values: {
+						location: {
+							IX: {path_tsid: 'IX', count: 2},
+				}}},
+				{
+					location_tsid: 'L1',
+					itemstack_values: {
+						location: {
+							IX: {path_tsid: 'IX', count: 3},
+				}}},
+			];
+			assert.deepEqual(p.mergeChanges(), {
+				location_tsid: 'L1',
+				itemstack_values: {
+					pc: {},
+					location: {
+						IX: {path_tsid: 'IX', count: 3},
+			}}});
+		});
+	});
+
+
+	suite('getPropChanges', function () {
+
+		test('works as expected', function () {
+			var p = new Player();
+			p.metabolics.energy.setLimits(0, 100);
+			p.metabolics.energy.inc(60);
+			p.stats.xp.setLimits(0, 1000);
+			p.stats.xp.setVal(555);
+			p.daily_favor.ti.setLimits(0, 100);
+			p.daily_favor.ti.inc(12);
+			assert.deepEqual(p.getPropChanges(), {
+				energy: 60, xp: 555, ti: 12,
+			});
+			assert.isFalse(p.metabolics.energy.changed);
+			assert.isFalse(p.stats.xp.changed);
+			assert.isFalse(p.daily_favor.ti.changed);
+		});
+
+		test('ignores changed props for which no changes should be sent', function () {
+			var p = new Player();
+			p.metabolics.energy.setLimits(0, 100);
+			p.metabolics.energy.inc(60);
+			p.stats.donation_xp_today.setLimits(0, 10);
+			p.stats.donation_xp_today.setVal(1);
+			assert.isTrue(p.stats.donation_xp_today.changed);
+			assert.deepEqual(p.getPropChanges(), {energy: 60});
+		});
+
+		test('returns undefined when nothing changed', function () {
+			assert.isUndefined(new Player().getPropChanges());
+		});
+	});
 });

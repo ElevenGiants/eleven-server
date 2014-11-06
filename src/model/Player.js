@@ -30,6 +30,16 @@ var PROPS = {
 		'alph', 'cosma', 'friendly', 'grendaline', 'humbaba', 'lem', 'mab',
 		'pot', 'spriggan', 'ti', 'zille'],
 };
+// indicates which of the above PROPS will be included in the 'changes' segment
+// of outgoing messages (i.e. value updates sent to the client)
+var PROPS_CHANGES = {
+	metabolics: true,
+	daily_favor: true,
+	stats: {
+		xp: true, currants: true, imagination: true, credits: true,
+		quoins_today: true, meditation_today: true,
+	},
+};
 
 
 /**
@@ -44,6 +54,8 @@ var PROPS = {
 function Player(data) {
 	Player.super_.call(this, data);
 	utils.addNonEnumerable(this, 'session');
+	utils.addNonEnumerable(this, 'changes', []);
+	utils.addNonEnumerable(this, 'anncs', []);
 	// convert selected properties to "Property" instances (works with simple
 	// int values as well as serialized Property instances)
 	for (var group in PROPS) {
@@ -125,7 +137,11 @@ Player.prototype.onDisconnect = function onDisconnect() {
 		this.startMove();
 		// GSJS logout event
 		this.onLogout();
-		//TODO: send pc_logout message to let other clients in same location know we're gone
+		// let other clients in same location know we're gone
+		this.location.send({
+			type: 'pc_logout',
+			pc: {tsid: this.tsid, label: this.label},
+		}, false, this);
 	}
 	// in any case, stop timers etc and unload from live object cache
 	this.unload();
@@ -342,4 +358,149 @@ Player.prototype.addToAnySlot = function addToAnySlot(item, fromSlot, toSlot,
 	for (var slot = fromSlot; slot <= toSlot && amount > 0; slot++) {
 		amount -= bag.addToSlot(item, slot, amount);
 	}
+};
+
+
+/**
+ * Creates a change data record for the given item and queues it to be
+ * sent with the next message to the client. For container changes,
+ * this must be called *before* the `tcont` property is changed (to the
+ * new container TSID) in order to queue the change representing the
+ * removal of the item from the previous container, and then again
+ * *afterwards* for the addition to the new container.
+ *
+ * @param {Item} item the changed/changing item
+ * @param {boolean} [removed] if `true`, queues a *removal* change
+ * @param {boolean} [compact] if `true`, queues a *short* change record
+ *        (only coordinates and state, for NPC movement)
+ */
+Player.prototype.queueChanges = function queueChanges(item, removed, compact) {
+	log.trace('generating changes for %s%s', item, removed ? ' (removed)' : '');
+	var pcChanges = {};
+	var locChanges = {};
+	if (item.tcont === this.tsid) {
+		pcChanges[item.tsid] = item.getChangeData(this, removed, compact);
+	}
+	else if (item.tcont === this.location.tsid) {
+		locChanges[item.tsid] = item.getChangeData(this, removed, compact);
+	}
+	var changes = {
+		location_tsid: this.location.tsid,
+		itemstack_values: {
+			pc: pcChanges,
+			location: locChanges,
+		},
+	};
+	log.trace({changes: changes}, 'queueing changes for %s', item);
+	this.changes.push(changes);
+};
+
+
+/**
+ * Adds an announcement to the queue of announcements to be sent to the
+ * client with the next outgoing message.
+ *
+ * @param {object} annc announcement data
+ */
+Player.prototype.queueAnnc = function queueAnnc(annc) {
+	log.trace({annc: annc}, 'queueing annc: %s');
+	this.anncs.push(annc);
+};
+
+
+/**
+ * Sends a message to the player's client, including queued
+ * announcements, property and item changes.
+ *
+ * @param {object} msg the message to send; must not contain anything
+ *        that cannot be encoded in AMF3 (e.g. circular references)
+ * @param {boolean} [skipChanges] if `true`, queued property and item
+ *        changes are **not** included
+ */
+Player.prototype.send = function send(msg, skipChanges) {
+	// generage "changes" segment
+	if (!skipChanges) {
+		var changes = this.mergeChanges();
+		var propChanges = this.getPropChanges();
+		if (propChanges) {
+			changes = changes || {};
+			changes.stat_values = propChanges;
+		}
+		if (changes) {
+			msg.changes = changes;
+		}
+	}
+	// append "announcements" segment
+	if (this.anncs.length > 0) {
+		msg.announcements = this.anncs;
+		this.anncs = [];
+	}
+	this.session.send(msg);
+};
+
+
+/**
+ * Merges the currently queued item changes into a single object,
+ * suitable for the `changes` segment of an outgoing message.
+ * Changes for items in a location are only included if they refer to
+ * the player's current location. If multiple changes for the same item
+ * are queued, the last one "wins".
+ *
+ * @returns {object|undefined} a record of item changes ready to be
+ *          included in the next message sent to the client, or
+ *          `undefined` when no changes are queued
+ */
+Player.prototype.mergeChanges = function mergeChanges() {
+	var ret;
+	while (this.changes.length > 0) {
+		ret = ret || {
+			location_tsid: this.location.tsid,
+			itemstack_values: {
+				pc: {},
+				location: {},
+			},
+		};
+		var c = this.changes.shift();
+		var k;
+		for (k in c.itemstack_values.pc) {
+			ret.itemstack_values.pc[k] = c.itemstack_values.pc[k];
+		}
+		if (c.location_tsid === this.location.tsid) {
+			for (k in c.itemstack_values.location) {
+				ret.itemstack_values.location[k] = c.itemstack_values.location[k];
+			}
+		}
+	}
+	return ret;
+};
+
+
+/**
+ * Combines the current values of the player's properties (that is,
+ * `Property` instances like `metabolics.energy`, `stats.xp` etc.) into
+ * an object suitable for inclusion in the `changes` segment of an
+ * outgoing message to the client.
+ * Only a specific, fixed subset of the available properties are
+ * included (and among those, only the ones that changed since the last
+ * message).
+ *
+ * @returns {object} an object containing property values, e.g.
+ *          ```{energy: 60, xp: 555, alph: 12}```
+ */
+Player.prototype.getPropChanges = function getPropChanges() {
+	var ret;
+	for (var group in PROPS) {
+		if (!this[group] || !PROPS_CHANGES[group]) continue;
+		for (var i = 0; i < PROPS[group].length; i++) {
+			var key = PROPS[group][i];
+			var send = PROPS_CHANGES[group] === true || PROPS_CHANGES[group][key];
+			var prop = this[group][key];
+			if (send && prop && prop.changed) {
+				ret = ret || {};
+				ret[prop.label] = prop.value;
+				prop.changed = false;
+			}
+		}
+	}
+	return ret;
 };

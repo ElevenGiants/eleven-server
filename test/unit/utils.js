@@ -320,4 +320,60 @@ suite('utils', function () {
 			assert.strictEqual(utils.padLeft(1234, 0, 2), '1234');
 		});
 	});
+
+
+	suite('playersArgToList', function () {
+
+		test('works with a player hash', function () {
+			var arg = {
+				P1: new Player({tsid: 'P1'}),
+				P2: new Player({tsid: 'P2'}),
+				P3: new Player({tsid: 'P3'}),
+			};
+			var res = utils.playersArgToList(arg);
+			assert.sameMembers(res, ['P1', 'P2', 'P3']);
+		});
+
+		test('works with a player array', function () {
+			var arg = [
+				new Player({tsid: 'P1'}),
+				new Player({tsid: 'P2'}),
+				new Player({tsid: 'P3'}),
+			];
+			var res = utils.playersArgToList(arg);
+			assert.sameMembers(res, ['P1', 'P2', 'P3']);
+		});
+
+		test('works with a TSID array', function () {
+			var arg = ['PX', 'P123', 'PASDF'];
+			var res = utils.playersArgToList(arg);
+			assert.sameMembers(res, ['PX', 'P123', 'PASDF']);
+		});
+
+		test('works with a single Player instance', function () {
+			var res = utils.playersArgToList(new Player({tsid: 'PPP'}));
+			assert.sameMembers(res, ['PPP']);
+		});
+
+		test('works with a single player TSID string', function () {
+			var res = utils.playersArgToList('PFOO');
+			assert.sameMembers(res, ['PFOO']);
+		});
+
+		test('does not include non-player TSIDs', function () {
+			var arg = ['PASD', 'PXY', 'p213', 'IYXC'];
+			var res = utils.playersArgToList(arg);
+			assert.sameMembers(res, ['PASD', 'PXY']);
+		});
+
+		test('handles invalid/unexpected input gracefully', function () {
+			assert.deepEqual(utils.playersArgToList(), []);
+			assert.deepEqual(utils.playersArgToList([]), []);
+			assert.deepEqual(utils.playersArgToList({}), []);
+			assert.deepEqual(utils.playersArgToList('asdf'), []);
+			assert.deepEqual(utils.playersArgToList(123), []);
+			assert.deepEqual(utils.playersArgToList(null), []);
+			assert.deepEqual(utils.playersArgToList(new Bag()), []);
+		});
+	});
 });

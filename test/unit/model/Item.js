@@ -4,6 +4,8 @@ var util = require('util');
 var Item = require('model/Item');
 var Bag = require('model/Bag');
 var Player = require('model/Player');
+var Geo = require('model/Geo');
+var Location = require('model/Location');
 var OrderedHash = require('model/OrderedHash');
 
 
@@ -106,39 +108,76 @@ suite('Item', function () {
 
 		test('does its job', function () {
 			var it = new Item({tsid: 'IT'});
-			var b = new Bag({tsid: 'BX', tcont: 'meh'});
-			it.setContainer(b);
+			it.queueChanges = function noop() {};  // this part is not tested here
+			var b = new Bag({tsid: 'BX', tcont: 'LDUMMY'});
+			it.setContainer(b, 3);
 			assert.strictEqual(it.container, b);
-			assert.strictEqual(it.tcont, 'meh');
+			assert.strictEqual(it.tcont, 'LDUMMY');
 			assert.strictEqual(it.path, 'BX/IT');
+			assert.strictEqual(it.slot, 3);
 			assert.strictEqual(b.items.IT, it);
 			assert.isFalse(it.isHidden);
 		});
 
 		test('adds to hidden items list if specified', function () {
 			var it = new Item({tsid: 'IT'});
-			var b = new Bag();
-			it.setContainer(b, true);
+			it.queueChanges = function noop() {};
+			var b = new Bag({tcont: 'LFOO'});
+			it.setContainer(b, 3, true);
 			assert.notProperty(b.items, 'IT');
 			assert.strictEqual(b.hiddenItems.IT, it);
+			assert.strictEqual(it.slot, undefined, 'no slot number for hidden items');
 			assert.isTrue(it.isHidden);
 		});
 
 		test('removes item from previous container', function () {
 			var it = new Item({tsid: 'IT'});
-			var b1 = new Bag();
-			var b2 = new Bag();
-			it.setContainer(b1);
+			it.queueChanges = function noop() {};
+			var b1 = new Bag({tcont: 'PCHEECH'});
+			var b2 = new Bag({tcont: 'PCHONG'});
+			it.setContainer(b1, 0);
 			assert.isTrue('IT' in b1.items);
-			it.setContainer(b2);
+			it.setContainer(b2, 1);
 			assert.isFalse('IT' in b1.items);
 			assert.isTrue('IT' in b2.items);
 		});
 
+		test('removes slot property when adding to a location', function () {
+			var it = new Item({tsid: 'IT'});
+			it.queueChanges = function noop() {};
+			it.slot = 7;
+			var l = new Location({}, new Geo());
+			it.setContainer(l);
+			assert.isUndefined(it.slot);
+			it.container = undefined;  // just so we can try again
+			it.setContainer(l, 13);
+			assert.isUndefined(it.slot, 'slot number argument is ignored');
+		});
+
 		test('fails if item is already in that container', function () {
 			var it = new Item();
+			it.queueChanges = function noop() {};
+			var b = new Bag({tcont: 'LFOO'});
+			it.setContainer(b, 7);
+			assert.throw(function () {
+				it.setContainer(b);
+			}, assert.AssertionError);
+		});
+
+		test('fails with an invalid tcont property', function () {
+			var it = new Item();
 			var b = new Bag();
-			it.setContainer(b);
+			assert.throw(function () {
+				it.setContainer(b);
+			}, assert.AssertionError);
+		});
+
+		test('fails with invalid or missing slot number', function () {
+			var it = new Item();
+			var b = new Bag({tsid: 'BX', tcont: 'LDUMMY'});
+			assert.throw(function () {
+				it.setContainer(b, 'a');
+			}, assert.AssertionError);
 			assert.throw(function () {
 				it.setContainer(b);
 			}, assert.AssertionError);
@@ -166,6 +205,32 @@ suite('Item', function () {
 			assert.deepEqual(b.hiddenItems, {});
 			assert.notProperty(it, 'container');
 			assert.isTrue(it.deleted);
+		});
+	});
+
+
+	suite('consume', function () {
+
+		test('works as expected', function () {
+			var it = new Item({count: 7});
+			var res = it.consume(5);
+			assert.strictEqual(res, 5);
+			assert.strictEqual(it.count, 2);
+			assert.isFalse(it.deleted);
+			res = it.consume(4);
+			assert.strictEqual(res, 2);
+			assert.strictEqual(it.count, 0);
+			assert.isTrue(it.deleted);
+		});
+
+		test('fails with invalid argument', function () {
+			var it = new Item({count: 7});
+			assert.throw(function () {
+				it.consume(-3);
+			}, assert.AssertionError);
+			assert.throw(function () {
+				it.consume('moo');
+			}, assert.AssertionError);
 		});
 	});
 });

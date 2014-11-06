@@ -81,11 +81,13 @@ Item.create = function create(classTsid, count) {
  * Schedules this item for deletion after the current request.
  */
 Item.prototype.del = function del() {
+	log.trace('del %s', this);
 	Item.super_.prototype.del.call(this);
 	if (this.container) {
 		delete this.container.items[this.tsid];
 		delete this.container.hiddenItems[this.tsid];
 		delete this.container;
+		this.queueChanges();
 	}
 };
 
@@ -123,10 +125,13 @@ Item.prototype.setXY = function setXY(x, y) {
  * updates internal properties accordingly.
  *
  * @param {Location|Player|Bag} cont new container for the item
+ * @param {number} [slot] slot number in the new container (only
+ *        applies when adding a non-hidden item to a bag, mandatory
+ *        in that case)
  * @param {boolean} [hidden] item will be hidden in the new container
  *        (`false` by default)
  */
-Item.prototype.setContainer = function setContainer(cont, hidden) {
+Item.prototype.setContainer = function setContainer(cont, slot, hidden) {
 	assert(cont !== this.container, util.format(
 		'%s is already contained in %s', this, cont));
 	var prev = this.container;
@@ -142,9 +147,85 @@ Item.prototype.setContainer = function setContainer(cont, hidden) {
 		cont.items[this.tsid] = this;
 	}
 	this.is_hidden = !!hidden;
-	this.tcont = cont.tcont ? cont.tcont : cont.tsid;
+	var tcont = cont.tcont ? cont.tcont : cont.tsid;
+	assert(utils.isPlayer(tcont) || utils.isLoc(tcont), util.format(
+		'tcont for %s is neither player nor location: %s', this, tcont));
+	this.queueChanges(true);
+	this.tcont = tcont;
+	if (utils.isBag(cont) && !hidden) {
+		assert(utils.isInt(slot), util.format('invalid slot number for %s: %s',
+			this, slot));
+		this.x = this.slot = slot;
+	}
+	else {
+		this.slot = undefined;
+	}
 	this.updatePath();
+	this.queueChanges();
 };
+
+
+/**
+ * Tells the item's top level container to include changes for this
+ * item in the next message to the client (resp. all clients of players
+ * in the location, if the top container is a `Location`).
+ *
+ * @param {boolean} [removed] if `true`, create a removal change record
+ * @param {boolean} [compact] if `true`, create a *short* change record
+ *        (only coordinates and state, for NPC movement)
+ */
+Item.prototype.queueChanges = function queueChanges(removed, compact) {
+	if (this.tcont) {
+		pers.get(this.tcont).queueChanges(this, removed, compact);
+	}
+};
+
+
+/**
+ * Generates a data record with information about the current state of
+ * the item, for inclusion in the `changes` segment of a message to the
+ * client.
+ *
+ * @param {Player} pc player whose client this data will be sent to
+ *        (required because some of the fields are "personalized")
+ * @param {boolean} [removed] if `true`, this record will mark the
+ *        item as deleted (used when items change containers, in which
+ *        case they are marked deleted in the changes for the previous
+ *        container)
+ * @param {boolean} [compact] if `true`, create a *short* change record
+ *        (only coordinates and state, for NPC movement)
+ * @returns {object} changes data set
+ */
+/*jshint -W071 */  // suppress "too many statements" warning (this is a fairly trivial function)
+Item.prototype.getChangeData = function getChangeData(pc, removed, compact) {
+	var ret = {};
+	ret.x = this.x;
+	ret.y = this.y;
+	if (this.state) ret.s = this.buildState(pc);
+	if (compact) {
+		return ret;
+	}
+	ret.path_tsid = this.path;
+	ret.class_tsid = this.class_tsid;
+	ret.count = (removed || this.deleted) ? 0 : this.count;
+	ret.label = this.getLabel ? this.getLabel() : this.label;
+	if (!removed && this.slot !== undefined) ret.slot = this.slot;
+	if (this.z) ret.z = this.z;
+	if (this.rs) ret.rs = this.rs;
+	if (this.isSelectable && !this.isSelectable(pc)) {
+		ret.not_selectable = true;
+	}
+	if (this.isSoulbound && this.isSoulbound() && this.soulbound_to) {
+		ret.soulbound_to = this.soulbound_to;
+	}
+	if (this.is_tool) ret.tool_state = this.get_tool_state();
+	if (this.is_consumable) ret.consumable_state = this.get_consumable_state();
+	if (this.getTooltipLabel) ret.tooltip_label = this.getTooltipLabel();
+	if (this.make_config) ret.config = this.make_config();
+	if (this.onStatus) ret.status = this.onStatus(pc);
+	return ret;
+};
+/*jshint +W071 */
 
 
 /**
@@ -169,6 +250,7 @@ Item.prototype.split = function split(n) {
 		newItem.is_soulbound_item = this.is_soulbound_item;
 		newItem.soulbound_to = this.soulbound_to;
 	}
+	this.queueChanges();
 	return newItem;
 };
 
@@ -198,5 +280,24 @@ Item.prototype.merge = function merge(that, n) {
 	that.count -= moved;
 	this.count += moved;
 	if (that.count <= 0) that.del();
+	else that.queueChanges();
+	this.queueChanges();
 	return moved;
+};
+
+
+/**
+ * Decreases the item count by `n` (or by `count`, if `n > count`).
+ * If the count is 0 afterwards, the item is flagged for deletion.
+ *
+ * @param {number} n the amount to decrease the item count by
+ * @returns {number} actual amount of consumed items
+ */
+Item.prototype.consume = function consume(n) {
+	assert(utils.isInt(n) && n >= 0, 'invalid consumption amount: ' + n);
+	n = Math.min(n, this.count);
+	this.count -= n;
+	if (this.count <= 0) this.del();
+	else this.queueChanges();
+	return n;
 };

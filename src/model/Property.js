@@ -4,6 +4,7 @@ module.exports = Property;
 
 
 var assert = require('assert');
+var utils = require('utils');
 
 
 /**
@@ -31,6 +32,9 @@ function Property(label, data) {
 	this.setLimits(
 		typeof data.bottom === 'number' ? data.bottom : this.value,
 		typeof data.top === 'number' ? data.top : this.value);
+	// add a flag that indicates whether an update for this property's value
+	// needs to be sent to the client
+	utils.addNonEnumerable(this, 'changed', false);
 }
 
 
@@ -69,7 +73,10 @@ Property.prototype.setLimits = function setLimits(bottom, top) {
 Property.prototype.setVal = function setVal(val) {
 	val = Math.round(val);
 	if (val >= this.bottom && val <= this.top) {
-		this.value = val;
+		if (this.value !== val) {
+			this.value = val;
+			this.changed = true;
+		}
 	}
 	else {
 		log.error('invalid value for %s: %s', this, val);
@@ -87,7 +94,10 @@ Property.prototype.setVal = function setVal(val) {
  */
 Property.prototype.inc = function inc(delta) {
 	var d = Math.min(this.top - this.value, Math.floor(delta));
-	this.value += d;
+	if (d !== 0) {
+		this.value += d;
+		this.changed = true;
+	}
 	return d;
 };
 
@@ -102,7 +112,10 @@ Property.prototype.inc = function inc(delta) {
  */
 Property.prototype.dec = function dec(delta) {
 	var d = Math.min(this.value - this.bottom, Math.floor(delta));
-	this.value -= d;
+	if (d !== 0) {
+		this.value -= d;
+		this.changed = true;
+	}
 	return -d;
 };
 
@@ -118,6 +131,9 @@ Property.prototype.mult = function mult(factor) {
 	var newval = Math.round(this.value * factor);
 	newval = Math.max(Math.min(newval, this.top), this.bottom);
 	var d = newval - this.value;
-	this.value = newval;
+	if (d !== 0) {
+		this.value = newval;
+		this.changed = true;
+	}
 	return d;
 };

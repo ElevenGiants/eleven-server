@@ -3,6 +3,9 @@
 var gsjsBridge = require('model/gsjsBridge');
 var RC = require('data/RequestContext');
 var Item = require('model/Item');
+var Player = require('model/Player');
+var Location = require('model/Location');
+var Geo = require('model/Geo');
 var pers = require('data/pers');
 var utils = require('utils');
 var pbeMock = require('../../mock/pbe');
@@ -11,7 +14,7 @@ var pbeMock = require('../../mock/pbe');
 suite('Item', function () {
 
 	setup(function () {
-		gsjsBridge.reset();
+		gsjsBridge.init(true);
 		pers.init(pbeMock);
 	});
 
@@ -97,6 +100,21 @@ suite('Item', function () {
 			var it = new Item({class_tsid: 'trant_bubble'});
 			assert.isUndefined(it.split(1));
 		});
+
+		test('queues appropriate changes', function (done) {
+			var rc = new RC();
+			rc.run(function () {
+				var p = new Player({tsid: 'PX', location: {tsid: 'LDUMMY'}});
+				rc.cache[p.tsid] = p;  // add to RC cache so pers.get('PX') works
+				var it = new Item(
+					{tsid: 'IX', class_tsid: 'meat', count: 5, tcont: 'PX'});
+				it.split(3);
+				assert.lengthOf(p.changes, 1);
+				var cd = p.changes[0].itemstack_values.pc[it.tsid];
+				assert.strictEqual(cd.path_tsid, it.tsid);
+				assert.strictEqual(cd.count, 2);
+			}, done);
+		});
 	});
 
 
@@ -156,6 +174,138 @@ suite('Item', function () {
 				var from = new Item({class_tsid: 'apple', count: 5, soulbound_to: 'me'});
 				var to = new Item({class_tsid: 'apple', count: 5, soulbound_to: 'you'});
 				assert.strictEqual(to.merge(from, 3), 0);
+			}, done);
+		});
+
+		test('queues appropriate changes', function (done) {
+			var rc = new RC();
+			rc.run(function () {
+				var p = new Player({tsid: 'PX', location: {tsid: 'LDUMMY'}});
+				rc.cache[p.tsid] = p;  // add to RC cache so pers.get('PX') works
+				var it = Item.create('meat', 5);
+				it.tcont = p.tsid;
+				it.merge(Item.create('meat', 2), 2);
+				assert.lengthOf(p.changes, 1);
+				var cd = p.changes[0].itemstack_values.pc[it.tsid];
+				assert.strictEqual(cd.path_tsid, it.tsid);
+				assert.strictEqual(cd.count, 7);
+			}, done);
+		});
+	});
+
+
+	suite('getChangeData', function () {
+
+		test('works as expected (simple item)', function (done) {
+			new RC().run(function () {
+				var it = Item.create('meat', 7);
+				assert.deepEqual(it.getChangeData(), {
+					class_tsid: 'meat',
+					count: 7,
+					label: 'Meat',
+					path_tsid: it.tsid,
+					x: 0,
+					y: 0,
+				});
+			}, done);
+		});
+
+		test('works as expected (tool)', function (done) {
+			new RC().run(function () {
+				var it = Item.create('high_class_hoe');
+				var cd = it.getChangeData();
+				assert.strictEqual(cd.class_tsid, 'high_class_hoe');
+				assert.strictEqual(cd.count, 1);
+				assert.strictEqual(cd.path_tsid, it.tsid);
+				assert.isObject(cd.tool_state);
+				assert.isBoolean(cd.tool_state.is_broken);
+				assert.isNumber(cd.tool_state.points_capacity);
+				assert.isNumber(cd.tool_state.points_remaining);
+				assert.isString(cd.tooltip_label);
+			}, done);
+		});
+
+		test('creates appropriate data for removed items', function (done) {
+			new RC().run(function () {
+				var it = Item.create('meat', 7);
+				var cd = it.getChangeData(null, true);
+				assert.strictEqual(cd.count, 0);
+			}, done);
+		});
+
+		test('includes slot property (only if defined)', function (done) {
+			new RC().run(function () {
+				var it = Item.create('meat', 7);
+				it.slot = 3;
+				assert.strictEqual(it.getChangeData().slot, 3);
+				it.slot = 0;
+				assert.strictEqual(it.getChangeData().slot, 0);
+				it.slot = undefined;
+				assert.notProperty(it.getChangeData(), 'slot');
+			}, done);
+		});
+
+		//TODO: test fails because of missing API functions and should be activated once they are available
+		test.skip('creates compact change set if desired', function (done) {
+			new RC().run(function () {
+				var it = Item.create('npc_piggy');
+				var cd = it.getChangeData(null, false, true);
+				assert.deepEqual(cd, {
+					x: 0,
+					y: 0,
+					s: 'look_screen',
+				});
+			}, done);
+		});
+	});
+
+
+	suite('del', function () {
+
+		test('queues appropriate changes', function (done) {
+			var rc = new RC();
+			rc.run(function () {
+				var p = new Player({tsid: 'PX', location: {tsid: 'LDUMMY'}});
+				rc.cache[p.tsid] = p;  // add to RC cache so pers.get('PX') works
+				var it = new Item({tsid: 'IX', class_tsid: 'meat', tcont: 'PX'});
+				it.container = p;
+				p.items[it.tsid] = it;
+				it.del();
+				assert.lengthOf(p.changes, 1);
+				var cd = p.changes[0].itemstack_values.pc[it.tsid];
+				assert.strictEqual(cd.class_tsid, 'meat');
+				assert.strictEqual(cd.path_tsid, it.tsid);
+				assert.strictEqual(cd.count, 0);
+			}, done);
+		});
+	});
+
+
+	suite('setContainer', function () {
+
+		test('queues appropriate changes', function (done) {
+			var rc = new RC();
+			rc.run(function () {
+				var l = Location.create(Geo.create());
+				var p = new Player({tsid: 'PX', location: l});
+				var p2 = new Player({tsid: 'PY', location: l});
+				l.players[p.tsid] = p;
+				l.players[p2.tsid] = p2;
+				rc.cache[p.tsid] = p;
+				var it = new Item({tsid: 'IX', class_tsid: 'meat', tcont: l.tsid});
+				it.setContainer(p, 0);
+				assert.lengthOf(p.changes, 2);
+				var cd = p.changes[0].itemstack_values.location[it.tsid];
+				assert.strictEqual(cd.path_tsid, it.tsid);
+				assert.strictEqual(cd.count, 0, 'removed from location');
+				cd = p.changes[1].itemstack_values.pc[it.tsid];
+				assert.strictEqual(cd.path_tsid, it.tsid);
+				assert.strictEqual(cd.count, 1, 'added to pc');
+				// other player in loc is also notified of removal:
+				assert.lengthOf(p2.changes, 1);
+				cd = p2.changes[0].itemstack_values.location[it.tsid];
+				assert.strictEqual(cd.path_tsid, it.tsid);
+				assert.strictEqual(cd.count, 0, 'removed from location');
 			}, done);
 		});
 	});

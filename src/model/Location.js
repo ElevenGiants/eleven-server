@@ -155,3 +155,77 @@ Location.prototype.updateGeo = function updateGeo(data) {
 	this.clientGeometry = this.geometry.getClientGeo();
 	this.geo = this.geometry.getGeo();
 };
+
+
+/**
+ * Creates a change data record for the given item and queues it to be
+ * sent with the next outgoing message to each client of a player in
+ * the location. See {@link Player#queueChanges} for details.
+ *
+ * @param {Item} item the changed/changing item
+ * @param {boolean} [removed] if `true`, queues a *removal* change
+ * @param {boolean} [compact] if `true`, queues a *short* change record
+ *        (only coordinates and state, for NPC movement)
+ */
+Location.prototype.queueChanges = function queueChanges(item, removed, compact) {
+	for (var tsid in this.players) {
+		this.players[tsid].queueChanges(item, removed, compact);
+	}
+};
+
+
+/**
+ * Adds an announcement to the announcements queue for all players in
+ * the location.
+ *
+ * @param {object} annc announcement data
+ * @param {Player} [skipPlayer] announcement is **not** queued for this
+ *        player
+ */
+Location.prototype.queueAnnc = function queueAnnc(annc, skipPlayer) {
+	for (var tsid in this.players) {
+		if (!skipPlayer || tsid !== skipPlayer.tsid) {
+			this.players[tsid].queueAnnc(annc);
+		}
+	}
+};
+
+
+/**
+ * Sends a message to all players in this location (except those in the
+ * optional exclusion parameter).
+ *
+ * @param {object} msg the message to send; must not contain anything
+ *        that cannot be encoded in AMF3 (e.g. circular references)
+ * @param {boolean} [skipChanges] if `true`, queued property and item
+ *        changes are **not** included
+ * @param {object|array|string|Player} exclude players **not** to send
+ *        the message to; may be either a single `Player` instance or
+ *        TSID, an object with player TSIDs as keys, or an array of
+ *        TSIDs or `Player`s
+ */
+Location.prototype.send = function send(msg, skipChanges, exclude) {
+	var excl = utils.playersArgToList(exclude);
+	for (var tsid in this.players) {
+		if (excl.indexOf(tsid) === -1) {
+			this.players[tsid].send(msg, skipChanges);
+		}
+	}
+};
+
+
+/**
+ * Puts the item into the location at the given position, merging it
+ * with existing nearby items of the same class.
+ *
+ * @param {Item} item the item to place
+ * @param {number} x x coordinate of the item's position
+ * @param {number} y y coordinate of the item's position
+ * @param {boolean} [noMerge] if `true`, item will **not** be merged
+ *        with other nearby items
+ */
+Location.prototype.addItem = function addItem(item, x, y, noMerge) {
+	item.setContainer(this);
+	item.setXY(x, y);
+	//TODO: merging
+};
