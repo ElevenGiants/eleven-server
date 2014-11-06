@@ -15,7 +15,7 @@ suite('rpc', function () {
 		gameServers: {
 			gs01: {host: '127.0.0.1', ports: [3000]},
 		},
-		rpc: {basePort: 7000},
+		rpc: {basePort: 17000},
 	}};
 	// fake client GS connection to make rpc module establish client
 	// connection to its own server:
@@ -50,7 +50,7 @@ suite('rpc', function () {
 					// multitransport-jsonrpc specific stuff:
 					var client = rpc.__get__('clients')['gs01-loopback'];
 					assert.deepEqual(client.transport.tcpConfig,
-						{host: '127.0.0.1', port: 7000});
+						{host: '127.0.0.1', port: 17000});
 					var server = rpc.__get__('server');
 					assert.strictEqual(Object.keys(server.transport.connections).length,
 						1, 'exactly one client connected to server');
@@ -87,7 +87,7 @@ suite('rpc', function () {
 			config.init(false, CONFIG, {gsid: 'gs01-01'});
 			rpc.__get__('initServer')(function serverStarted() {
 				// meddle with base port to get a loopback client in worker process
-				require('nconf').overrides({net: {rpc: {basePort: 7001}}});
+				require('nconf').overrides({net: {rpc: {basePort: 17001}}});
 				rpc.__get__('initClient')(GSCONF_LOOPBACK, function clientStarted() {
 					done();
 				});
@@ -156,7 +156,7 @@ suite('rpc', function () {
 				tsid: 'LXYZ',
 				func: function () {},  // implicitly returns undefined
 			}));
-			var socket = net.connect({port: 7001}, function () {
+			var socket = net.connect({port: 17001}, function () {
 				socket.on('data', function (data) {
 					var length = data.readUInt32BE(0);
 					var s = data.toString('utf8', 4);
