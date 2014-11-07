@@ -5,7 +5,7 @@ module.exports = {
 	reset: reset,
 	isLocal: isLocal,
 	makeProxy: makeProxy,
-	sendRequest: sendRequest,
+	sendObjRequest: sendObjRequest,
 	getRequests: getRequests,
 	getGsid: getGsid,
 };
@@ -32,7 +32,7 @@ function makeProxy(obj) {
 }
 
 
-function sendRequest(obj, fname, args) {
+function sendObjRequest(obj, fname, args) {
 	requests.push({obj: obj, fname: fname, args: args});
 	return obj[fname].apply(obj, args);
 }

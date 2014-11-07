@@ -68,6 +68,6 @@ function proxyGet(target, name, receiver) {
 	return function rpcWrapper() {
 		// convert function arguments to a proper array
 		var args = Array.prototype.slice.call(arguments);
-		return rpc.sendRequest(target, name, args);
+		return rpc.sendObjRequest(target, name, args);
 	};
 }

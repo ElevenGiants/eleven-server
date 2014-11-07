@@ -13,7 +13,7 @@ suite('rpc', function () {
 
 	var CONFIG = {net: {
 		gameServers: {
-			gs01: {host: '127.0.0.1', ports: [3000]},
+			gs01: {host: '127.0.0.1', ports: [3000, 3001]},
 		},
 		rpc: {basePort: 17000},
 	}};
@@ -121,7 +121,7 @@ suite('rpc', function () {
 		test('function call on actual game object', function (done) {
 			// make fake client RPC connection available under our own GSID (so
 			// requests on objects we are managing go to our own RPC server):
-			rpc.__get__('clients')['gs01-01'] = rpc.__get__('clients')['gs01-loopback'];
+			rpc.__get__('clients')['gs01-02'] = rpc.__get__('clients')['gs01-loopback'];
 			// create dummy object with a test function (we're the only
 			// configured GS, so we are authoritative for it):
 			var go = new GameObject({
@@ -132,26 +132,25 @@ suite('rpc', function () {
 			});
 			persMock.preAdd(go);
 			rcMock.run(function () {
-				var res = rpc.sendRequest(go, 'foo', [17, 4]);
+				var res = rpc.sendObjRequest(go, 'foo', [17, 4]);
 				assert.strictEqual(res, 21, 'function is actually called');
 			}, null, null, done);
 		});
 
 		test('return null if called function returns undefined', function (done) {
-			rpc.__get__('clients')['gs01-01'] = rpc.__get__('clients')['gs01-loopback'];
+			rpc.__get__('clients')['gs01-02'] = rpc.__get__('clients')['gs01-loopback'];
 			persMock.preAdd(new GameObject({
 				tsid: 'LXYZ',
 				func: function () {},  // implicitly returns undefined
 			}));
 			rcMock.run(function () {
-				var res = rpc.sendRequest('LXYZ', 'func', []);
+				var res = rpc.sendObjRequest('LXYZ', 'func', []);
 				assert.isNull(res, 'undefined (unknown in JSON) is converted to null');
 			}, null, null, done);
 		});
 
 		test('return proper RPC result object if called function returns undefined',
 			function (done) {
-			rpc.__get__('clients')['gs01-01'] = rpc.__get__('clients')['gs01-loopback'];
 			persMock.preAdd(new GameObject({
 				tsid: 'LXYZ',
 				func: function () {},  // implicitly returns undefined

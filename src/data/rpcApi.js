@@ -14,6 +14,8 @@ module.exports = {
 	createPlayer: createPlayer,
 };
 
+var NEW_PLAYER_LOC = 'LLI32G3NUTD100I';
+
 
 var assert = require('assert');
 var auth = require('comm/auth');
@@ -62,6 +64,12 @@ function getConnectData(playerTsid) {
  * @returns {string} the new player's TSID
  */
 function createPlayer(userId, name) {
+	if (!rpc.isLocal(NEW_PLAYER_LOC)) {
+		// forward call to appropriate GS instance if necessary
+		var gsid = rpc.getGsid(NEW_PLAYER_LOC);
+		return rpc.sendRequest(gsid, 'gs',
+			['createPlayer', Array.prototype.slice.call(arguments)]);
+	}
 	log.info('rpcApi.createPlayer(%s, %s)', userId, name);
 	assert(typeof userId === 'string' && userId.trim().length > 0,
 		util.format('invalid user ID: "%s"', userId));
@@ -85,7 +93,7 @@ function createPlayer(userId, name) {
 		// first newxp location, as configured in GSJS config (either initialized
 		// here, or in GSJS somewhere)
 		skip_newux: true,
-		location: pers.get('LLI32G3NUTD100I'),
+		location: pers.get(NEW_PLAYER_LOC),
 		x: 2750,
 		y: -55,
 	});
