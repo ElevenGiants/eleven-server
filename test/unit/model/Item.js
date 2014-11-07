@@ -185,6 +185,45 @@ suite('Item', function () {
 	});
 
 
+	suite('getPosObject', function () {
+
+		test('works with item in player inventory', function () {
+			var it = new Item();
+			var p = new Player();
+			it.container = p;
+			assert.strictEqual(it.getPosObject(), p, 'directly in player inventory');
+			var b = new Bag();
+			b.container = p;
+			it.container = b;
+			assert.strictEqual(it.getPosObject(), p, 'in a bag in inventory');
+			var b2 = new Bag();
+			b2.container = b;
+			it.container = b2;
+			assert.strictEqual(it.getPosObject(), p, 'in a nested bag in inventory');
+		});
+
+		test('works with item in location', function () {
+			var it = new Item();
+			var l = new Location({}, new Geo());
+			it.container = l;
+			assert.strictEqual(it.getPosObject(), it, 'directly in a location');
+			var b = new Bag();
+			b.container = l;
+			it.container = b;
+			assert.strictEqual(it.getPosObject(), b, 'in a bag in location');
+			var b2 = new Bag();
+			b2.container = b;
+			it.container = b2;
+			assert.strictEqual(it.getPosObject(), b, 'in a nested bag in location');
+		});
+
+		test('handles item without any container gracefully', function () {
+			var it = new Item();
+			assert.strictEqual(it.getPosObject(), it, 'falls back to item itself');
+		});
+	});
+
+
 	suite('del', function () {
 
 		test('does its job', function () {

@@ -166,6 +166,27 @@ Item.prototype.setContainer = function setContainer(cont, slot, hidden) {
 
 
 /**
+ * Retrieves the object that determines the actual position of this
+ * item in its current location (i.e. the x/y coordinates). This is
+ * either a player, a bag in a location, or the item itself.
+ *
+ * @returns {Player|Bag|Item} the game object that determines the
+ *          actual x/y position of the item
+ */
+Item.prototype.getPosObject = function getPosObject() {
+	//jscs:disable safeContextKeyword
+	var ret = this;
+	// traverse container chain until we reach a player or a
+	// direct child item of a location
+	while (ret.container && !utils.isPlayer(ret) && !utils.isLoc(ret.container)) {
+		ret = ret.container;
+	}
+	return ret;
+	//jscs:enable safeContextKeyword
+};
+
+
+/**
  * Tells the item's top level container to include changes for this
  * item in the next message to the client (resp. all clients of players
  * in the location, if the top container is a `Location`).
