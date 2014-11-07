@@ -76,7 +76,8 @@ suite('Player', function () {
 				var p = new Player({location: {tsid: 'LDUMMY'}});
 				rc.cache[p.tsid] = p;
 				var i1 = Item.create('apple', 3);
-				p.addToAnySlot(i1, 0, 16, null, 2);
+				var remaining = p.addToAnySlot(i1, 0, 16, null, 2);
+				assert.strictEqual(remaining, 0);
 				assert.strictEqual(i1.count, 1);
 				assert.lengthOf(Object.keys(p.items), 1);
 				var i2 = p.getSlot(0);
@@ -96,7 +97,8 @@ suite('Player', function () {
 				var i1 = Item.create('apple', 3);
 				b.addToSlot(i1, 0);
 				var i2 = Item.create('apple', 3);
-				p.addToAnySlot(i2, 0, 16, b.path);
+				var remaining = p.addToAnySlot(i2, 0, 16, b.path);
+				assert.strictEqual(remaining, 0);
 				assert.strictEqual(b.getSlot(0), i1);
 				assert.strictEqual(i1.count, 6);
 				assert.strictEqual(i2.count, 0);
@@ -113,11 +115,26 @@ suite('Player', function () {
 				i1.stackmax = 5;
 				p.addToSlot(i1, 0);
 				var i2 = Item.create('apple', 6);
-				p.addToAnySlot(i2, 0, 16);
+				var remaining = p.addToAnySlot(i2, 0, 16);
+				assert.strictEqual(remaining, 0);
 				assert.strictEqual(p.getSlot(0), i1);
 				assert.strictEqual(p.getSlot(1), i2);
 				assert.strictEqual(i1.count, 5);
 				assert.strictEqual(i2.count, 4);
+			}, done);
+		});
+
+		test('returns number of remaining items', function (done) {
+			var rc = new RC();
+			rc.run(function () {
+				var p = new Player({location: {tsid: 'LDUMMY'}});
+				rc.cache[p.tsid] = p;
+				var i1 = Item.create('apple', 3);
+				i1.stackmax = 5;
+				p.addToSlot(i1, 0);
+				var i2 = Item.create('apple', 6);
+				var remaining = p.addToAnySlot(i2, 0, 0);  // only allow slot 0
+				assert.strictEqual(remaining, 4);
 			}, done);
 		});
 	});

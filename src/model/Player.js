@@ -350,6 +350,8 @@ Player.prototype.sendServerMsg = function sendServerMsg(action, data) {
  *        inventory is targeted
  * @param {number} [amount] amount of the item stack to add/distribute;
  *        if not specified, the whole stack is processed
+ * @returns {number} amount of remaining items (i.e. that could not be
+ *          distributed)
  */
 Player.prototype.addToAnySlot = function addToAnySlot(item, fromSlot, toSlot,
 	path, amount) {
@@ -358,6 +360,7 @@ Player.prototype.addToAnySlot = function addToAnySlot(item, fromSlot, toSlot,
 	for (var slot = fromSlot; slot <= toSlot && amount > 0; slot++) {
 		amount -= bag.addToSlot(item, slot, amount);
 	}
+	return amount;
 };
 
 
