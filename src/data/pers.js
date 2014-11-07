@@ -85,7 +85,8 @@ function init(backEnd, config, callback) {
  * or {@link module:data/rpcProxy|rpcProxy}.
  *
  * @param {string} tsid TSID of the object to load
- * @returns {GameObject} the requested object, undefined if not found
+ * @returns {GameObject} the requested object
+ * @throws {AssertionError} if no object with the given TSID was found
  */
 function load(tsid) {
 	assert(pbe, 'persistence back-end not set');
@@ -123,7 +124,8 @@ function load(tsid) {
  * persistence back-end.
  *
  * @param {string} tsid TSID of the object to retrieve
- * @returns {GameObject} the requested object, undefined if not found
+ * @returns {GameObject} the requested object
+ * @throws {AssertionError} if no object with the given TSID was found
  */
 function get(tsid) {
 	// get "live" objects from server memory
