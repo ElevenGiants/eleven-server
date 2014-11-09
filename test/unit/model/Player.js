@@ -59,11 +59,37 @@ suite('Player', function () {
 
 	suite('serialize', function () {
 
-		test('properties are serialized as full objects', function () {
+		test('properties are serialized correctly', function () {
 			var p = new Player({tsid: 'P1', stats: {xp: 23}});
-			var data = JSON.parse(JSON.stringify(p.serialize()));
+			var data = p.serialize();
 			assert.deepEqual(data.stats.xp,
-				{value: 23, bottom: 23, top: 23, label: 'xp'});
+				{value: 23, bottom: 23, top: 23});
+		});
+
+		test('does not add properties that are not there yet already', function () {
+			var p = new Player({tsid: 'P1'});
+			p.stats = {xp: new Property('xp', 1)};
+			p.metabolics = {energy: new Property('energy', 2)};
+			var data = p.serialize();
+			assert.sameMembers(Object.keys(data.stats), ['xp']);
+			assert.sameMembers(Object.keys(data.metabolics), ['energy']);
+		});
+
+		test('stores non-property members too', function () {
+			var p = new Player({tsid: 'P1', stats: {blerg: 12}});
+			var data = p.serialize();
+			assert.strictEqual(data.stats.blerg, 12);
+		});
+
+		test('stores data in a way that allows restoring properties correctly',
+			function () {
+			var p = new Player({tsid: 'P1',
+				daily_favor: {alph: {value: 17, bottom: 2, top: 20}}});
+			p = new Player(p.serialize());
+			assert.strictEqual(p.daily_favor.alph.bottom, 2);
+			assert.strictEqual(p.daily_favor.alph.top, 20);
+			assert.strictEqual(p.daily_favor.alph.value, 17);
+			assert.strictEqual(p.daily_favor.alph.label, 'alph');
 		});
 	});
 
