@@ -85,7 +85,8 @@ function init(backEnd, config, callback) {
  * or {@link module:data/rpcProxy|rpcProxy}.
  *
  * @param {string} tsid TSID of the object to load
- * @returns {GameObject} the requested object, undefined if not found
+ * @returns {GameObject} the requested object
+ * @throws {AssertionError} if no object with the given TSID was found
  */
 function load(tsid) {
 	assert(pbe, 'persistence back-end not set');
@@ -95,14 +96,18 @@ function load(tsid) {
 	assert(typeof data === 'object', 'no or invalid data for ' + tsid);
 	orProxy.proxify(data);
 	var obj = gsjsBridge.create(data);
+	// store in request cache (necessary to prevent infinite loops when loading
+	// structures with circular objref dependencies, e.g. Players with Items)
+	RC.getContext().cache[tsid] = obj;
 	if (!rpc.isLocal(obj)) {
-		// wrap object in RPC proxy and add it to request cache
+		// wrap object in RPC proxy and update request cache reference
 		obj = rpc.makeProxy(obj);
 		RC.getContext().cache[tsid] = obj;
 	}
 	else {
 		// make sure any changes to the object are persisted
 		obj = persProxy.makeProxy(obj);
+		RC.getContext().cache[tsid] = obj;
 		// send onLoad event if there is a handler
 		if (obj.onLoad) {
 			obj.onLoad();
@@ -119,7 +124,8 @@ function load(tsid) {
  * persistence back-end.
  *
  * @param {string} tsid TSID of the object to retrieve
- * @returns {GameObject} the requested object, undefined if not found
+ * @returns {GameObject} the requested object
+ * @throws {AssertionError} if no object with the given TSID was found
  */
 function get(tsid) {
 	// get "live" objects from server memory

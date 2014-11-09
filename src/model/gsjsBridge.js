@@ -110,7 +110,9 @@ function init(noPreload, callback) {
 		noPreload = false;
 	}
 	callback = callback || function cb(err) {
-		log.error(err, 'error during GSJS bridge initialization');
+		if (err) {
+			log.error(err, 'error during GSJS bridge initialization');
+		}
 	};
 	reset();
 	initDependencies();
