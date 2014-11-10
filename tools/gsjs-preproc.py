@@ -90,7 +90,7 @@ def process_export_functions(module, lines):
             if module in GLOBAL_EXPORT:
                 namespace = 'global'
             elif module in MODULE_EXPORT:
-                namespace = 'exports'
+                namespace = 'this'
             lines.insert(i, '%s.%s = %s;' % (namespace, fname, fname))
             i += 1
         i += 1
@@ -102,9 +102,8 @@ def process_classify(module, lines):
     game server to append specific properties to "bare" game object
     prototypes.
     Makes all top-level variables and functions properties of 'this',
-    which will be set to the prototype (via a wrapper that is called
-    through Javascript's Function.prototype.call) when the GS loads
-    the file.
+    which will be set to the prototype when the GS loads the file
+    (see import_wrap function).
     '''
     log.debug('converting %s to prototype class template' % (module))
     i = 0
@@ -130,6 +129,16 @@ def process_classify(module, lines):
                 if lines[i].startswith('%s.' % v):
                     lines[i] = 'this.%s' % (lines[i])
             i += 1
+
+
+def import_wrap(module, lines):
+    '''
+    Wraps the whole module in a function that the GS calls when
+    importing it (through Javascript's Function.prototype.call,
+    setting the 'this' keyword to the respective class prototype).
+    This allows us to "inject" the values for 'api', 'utils' and
+    'config' at runtime.
+    '''
     # wrap in prototype composer function (see gsjsBridge in GS)
     lines.insert(0, 'module.exports = function (include, api, utils, config) {  // GS import wrapper START')
     lines.insert(1, '')
@@ -176,6 +185,7 @@ def process(module):
         process_export_functions(module, lines)
     else:
         process_classify(module, lines)
+    import_wrap(module, lines)
     lines = process_includes(module, lines)
     apify(module, lines)
     # output

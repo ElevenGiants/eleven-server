@@ -13,7 +13,7 @@ var pers = require('data/pers');
 var rpc = require('data/rpc');
 var util = require('util');
 var RC = require('data/RequestContext');
-var gsjsMain = require('gsjs/main');
+var gsjsBridge = require('model/gsjsBridge');
 
 
 util.inherits(Session, events.EventEmitter);
@@ -66,6 +66,7 @@ function Session(id, socket) {
 	this.dom.add(this.socket);
 	this.dom.on('error', this.handleError.bind(this));
 	this.setupSocketEventHandlers();
+	this.gsjsProcessMessage = gsjsBridge.getMain().processMessage;
 	log.info({session: this}, 'new session created');
 }
 
@@ -232,7 +233,7 @@ Session.prototype.processRequest = function processRequest(req) {
 	log.trace({data: req}, 'handling %s request', req.type);
 	var abort = this.preRequestProc(req);
 	if (abort) return;
-	gsjsMain.processMessage(this.pc, req);
+	this.gsjsProcessMessage(this.pc, req);
 	this.postRequestProc(req);
 };
 

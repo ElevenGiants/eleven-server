@@ -31,6 +31,7 @@ module.exports = {
 	getProto: getProto,
 	create: create,
 	getAdmin: getAdmin,
+	getMain: getMain,
 };
 
 
@@ -72,15 +73,21 @@ var prototypes = {};
 var dependencies = {};
 // GSJS admin functions singleton object (initialized in getAdmin())
 var gsjsAdmin = null;
+// GSJS request handler singleton object (initialized in getMain())
+var gsjsMain = null;
 
 
 /**
  * Initializes the game object prototype cache (according to the GSJS
  * directory structure) and GSJS import dependencies.
+ *
+ * @param {object} [testDeps] stub/mock GSJS dependencies (for testing)
  */
-function reset() {
-	gsjsAdmin = null;
-	dependencies = {};
+function reset(testDeps) {
+	testDeps = testDeps || {};
+	gsjsAdmin = testDeps.gsjsAdmin || null;
+	gsjsMain = testDeps.gsjsMain || null;
+	dependencies = testDeps.dependencies || {};
 	prototypes = {
 		achievements: {},
 		groups: {},
@@ -152,15 +159,15 @@ function init(noPreload, callback) {
  * @private
  */
 function initDependencies(testConfig, testApi) {
-	require(path.resolve(path.join(GSJS_PATH, 'common')));
-	dependencies.utils = compose('utils');
-	dependencies.config = compose(testConfig || config.get('gsjs:config'));
 	dependencies.api = testApi || {
 		//TODO dummy, replace with actual global API once there is one
 		valueOf: function valueOf() {
 			return 'TODO-DUMMY-API';
 		}
 	};
+	dependencies.config = compose(testConfig || config.get('gsjs:config'));
+	dependencies.utils = compose('utils');
+	include(GSJS_PATH, 'common');
 }
 
 
@@ -260,9 +267,13 @@ function loadProto(group, klass) {
 	if (group !== 'achievements') {
 		compose(group, baseName, proto);
 	}
-	// special case for bags
-	if (group === 'items' && klass.indexOf('bag') === 0 && klass !== 'bag') {
+	// special cases for bags and players
+	if (group === 'items' && klass.substr(0, 4) === 'bag_') {
 		compose(group, 'bag', proto);
+	}
+	if (group === 'players') {
+		compose('items', 'item', proto);
+		compose('items', 'bag', proto);
 	}
 	// copy over props from object class itself
 	if (klass !== baseName) {
@@ -286,7 +297,7 @@ function getModelClass(group, klass) {
 		case 'groups':
 			return Group;
 		case 'items':
-			if (klass.indexOf('bag') === 0) return Bag;
+			if (klass.substr(0, 3) === 'bag') return Bag;
 			return Item;
 		case 'locations':
 			return Location;
@@ -359,4 +370,13 @@ function getAdmin() {
 		include(GSJS_PATH, 'admin', gsjsAdmin);
 	}
 	return gsjsAdmin;
+}
+
+
+function getMain() {
+	if (!gsjsMain) {
+		gsjsMain = {};
+		include(GSJS_PATH, 'main', gsjsMain);
+	}
+	return gsjsMain;
 }

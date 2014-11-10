@@ -5,11 +5,10 @@ var auth = require('comm/auth');
 var abePassthrough = require('comm/abe/passthrough');
 var net = require('net');
 var path = require('path');
-var rewire = require('rewire');
 var config = require('config');
 var helpers = require('../../helpers');
 var RC = require('data/RequestContext');
-var Session = rewire('comm/Session');
+var Session = require('comm/Session');
 var sessionMgr = require('comm/sessionMgr');
 var pers = require('data/pers');
 var pbeMock = require('../../mock/pbe');
@@ -101,20 +100,17 @@ suite('Session', function () {
 
 		teardown(function () {
 			pers.init();  // disable mock back-end
-			Session.__set__('gsjsMain', require('gsjs/main'));
 		});
 
 		test('login_start', function (done) {
 			var onLoginCalled = false;
-			Session.__set__('gsjsMain', {
-				processMessage: function (pc, req) {
-					assert.strictEqual(pc.tsid, 'P00000000000001');
-					assert.strictEqual(req.type, 'login_start');
-					assert.isTrue(onLoginCalled);
-					done();
-				},
-			});
 			var s = new Session('TEST', helpers.getDummySocket());
+			s.gsjsProcessMessage = function (pc, req) {
+				assert.strictEqual(pc.tsid, 'P00000000000001');
+				assert.strictEqual(req.type, 'login_start');
+				assert.isTrue(onLoginCalled);
+				done();
+			};
 			var rc = new RC('login_start TEST', undefined, s);
 			rc.run(function () {
 				var p = pers.get('P00000000000001');
@@ -131,11 +127,8 @@ suite('Session', function () {
 
 		test('login_end', function () {
 			var onPlayerEnterCalled = false;
-			Session.__set__('gsjsMain', {
-				// just a placeholder to prevent calling the "real" function
-				processMessage: function dummy() {},
-			});
 			var s = new Session('TEST', helpers.getDummySocket());
+			s.gsjsProcessMessage = function dummy() {};  // just a placeholder to prevent calling the "real" function
 			var rc = new RC('login_end TEST', undefined, s);
 			rc.run(function () {
 				var l = pers.get('LLI32G3NUTD100I');
