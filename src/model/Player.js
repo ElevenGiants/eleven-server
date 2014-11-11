@@ -453,6 +453,11 @@ Player.prototype.queueAnnc = function queueAnnc(annc) {
  *        changes are **not** included
  */
 Player.prototype.send = function send(msg, skipChanges) {
+	if (!this.session) {
+		log.info(new Error('dummy error for stack trace'),
+			'trying to send message to offline player %s', this);
+		return;
+	}
 	// generage "changes" segment
 	if (!skipChanges) {
 		var changes = this.mergeChanges();
