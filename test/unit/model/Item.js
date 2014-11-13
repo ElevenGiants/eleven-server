@@ -142,10 +142,9 @@ suite('Item', function () {
 			assert.isTrue('IT' in b2.items);
 		});
 
-		test('removes slot property when adding to a location', function () {
+		test('ignores slot property when adding to a location', function () {
 			var it = new Item({tsid: 'IT'});
 			it.queueChanges = function noop() {};
-			it.slot = 7;
 			var l = new Location({}, new Geo());
 			it.setContainer(l);
 			assert.isUndefined(it.slot);

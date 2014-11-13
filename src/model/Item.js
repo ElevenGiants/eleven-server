@@ -26,6 +26,11 @@ Object.defineProperty(Item.prototype, 'isStack', {
 		return this.stackmax > 1;
 	},
 });
+Object.defineProperty(Item.prototype, 'slot', {
+	get: function get() {
+		if (utils.isBag(this.container) && !this.is_hidden) return this.x;
+	},
+});
 
 
 /**
@@ -45,7 +50,6 @@ function Item(data) {
 	if (!utils.isInt(this.count)) this.count = 1;
 	// add some non-enumerable properties (used internally or by GSJS)
 	utils.addNonEnumerable(this, 'collDet', false);
-	utils.addNonEnumerable(this, 'slot', undefined);
 	utils.addNonEnumerable(this, 'path', this.tsid);
 	// enable collision detection if we have a handler function
 	if (typeof this.onPlayerCollision === 'function') {
@@ -158,10 +162,7 @@ Item.prototype.setContainer = function setContainer(cont, slot, hidden) {
 	if (utils.isBag(cont) && !hidden) {
 		assert(utils.isInt(slot), util.format('invalid slot number for %s: %s',
 			this, slot));
-		this.x = this.slot = slot;
-	}
-	else {
-		this.slot = undefined;
+		this.x = slot;
 	}
 	this.updatePath();
 	this.queueChanges();

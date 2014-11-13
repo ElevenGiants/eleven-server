@@ -73,9 +73,6 @@ Object.defineProperty(Location.prototype, 'activePlayers', {
 	get: function get() {
 		return this.players;
 	},
-	set: function set() {
-		throw new Error('read-only property: activePlayers');
-	},
 });
 
 

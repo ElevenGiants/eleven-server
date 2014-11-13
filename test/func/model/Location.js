@@ -144,7 +144,6 @@ suite('Location', function () {
 			new RC().run(function () {
 				var l = Location.create(Geo.create());
 				var i = Item.create('apple', 5);
-				i.slot = 12;  // just to test if slot is cleared
 				l.addItem(i, 123, -456);
 				assert.strictEqual(l.items[i.tsid], i);
 				assert.strictEqual(i.container, l);

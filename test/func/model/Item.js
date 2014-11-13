@@ -234,13 +234,17 @@ suite('Item', function () {
 		});
 
 		test('includes slot property (only if defined)', function (done) {
-			new RC().run(function () {
+			var rc = new RC();
+			rc.run(function () {
+				var p = new Player({tsid: 'PX', location: {tsid: 'LDUMMY'}});
+				var l = Location.create(Geo.create());
+				rc.cache[p.tsid] = p;
 				var it = Item.create('meat', 7);
-				it.slot = 3;
+				it.setContainer(p, 3);
 				assert.strictEqual(it.getChangeData().slot, 3);
-				it.slot = 0;
+				it.x = 0;
 				assert.strictEqual(it.getChangeData().slot, 0);
-				it.slot = undefined;
+				it.setContainer(l);
 				assert.notProperty(it.getChangeData(), 'slot');
 			}, done);
 		});

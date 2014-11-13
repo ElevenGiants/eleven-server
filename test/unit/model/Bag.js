@@ -14,8 +14,8 @@ suite('Bag', function () {
 			assert.deepEqual(b.hiddenItems, {});
 			b = new Bag({
 				items: [
-					new Item({tsid: 'IASDF', x: 13}),
-					new Item({tsid: 'IFOO'}),
+					new Item({tsid: 'IASDF', x: 13, container: b}),
+					new Item({tsid: 'IFOO', container: b}),
 				],
 			});
 			assert.property(b.items, 'IASDF');

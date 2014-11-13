@@ -30,9 +30,6 @@ function Bag(data) {
 	if (this.items instanceof Array) {
 		this.items = utils.arrayToHash(this.items);
 	}
-	for (var key in this.items) {
-		this.items[key].slot = this.items[key].x;
-	}
 	if (!this.hiddenItems) this.hiddenItems = {};
 	if (this.hiddenItems instanceof Array) {
 		this.hiddenItems = utils.arrayToHash(this.hiddenItems);
@@ -158,7 +155,7 @@ Bag.prototype.getClassItems = function getClassItems(classTsid, max) {
  */
 Bag.prototype.getSlot = function getSlot(slot) {
 	for (var k in this.items) {
-		if (this.items[k].slot === slot) {
+		if (this.items[k].x === slot) {
 			return this.items[k];
 		}
 	}
@@ -184,7 +181,7 @@ Bag.prototype.getSlots = function getSlots(count) {
 	}
 	for (var k in this.items) {
 		var it = this.items[k];
-		if (it.slot < count) ret[it.slot] = it;
+		if (it.x < count) ret[it.x] = it;
 	}
 	return ret;
 };
