@@ -138,10 +138,12 @@ function resolve(objref) {
  * Recursively replaces objrefs with proxies in the supplied data
  * (in-place replacement, **the input data will be modified!**).
  *
- * @param {object} data arbitrary data containing objrefs; must not
- *        contain circular references and must not be an objref itself
+ * @param {object} data arbitrary data containing objrefs; must not be
+ *        an objref itself
+ * @param {array} [handled] for internal use (cycle detection)
  */
-function proxify(data) {
+function proxify(data, handled) {
+	handled = handled || [];
 	for (var k in data) {
 		var v = data[k];
 		if (v instanceof Object) {
@@ -149,7 +151,9 @@ function proxify(data) {
 				data[k] = makeProxy(v);
 			}
 			else {
-				proxify(v);
+				if (handled.indexOf(v) !== -1) continue;  // circular ref, v is already covered
+				handled.push(v);
+				proxify(v, handled);
 			}
 		}
 	}
