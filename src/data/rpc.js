@@ -466,21 +466,10 @@ function getGsid(objOrTsid) {
  *
  * @param {string} initial first letter of the returned TSID,
  *        corresponding to a game object type; must be 'G', 'L' or 'R'
- * @param {string} [customTsid] when a predefined TSID is supplied
- *        here, test if it maps to this GS instance (`initial` is
- *        ignored in this case)
- * @returns {string} the generated game object TSID (or `customTsid` if
- *          specified and mapped to this GS)
- * @throws {AssertionError} if an invalid `initial` was supplied, or
- *         when the `customTsid` is not mapped to this GS instance
+ * @returns {string} the generated game object TSID
+ * @throws {AssertionError} if an invalid `initial` was supplied
  */
-function makeLocalTsid(initial, customTsid) {
-	if (customTsid) {
-		assert(isLocal(customTsid), util.format(
-			'TSID is not mapped to this GS: %s', customTsid));
-		return customTsid;
-	}
-	// generate a TSID that is mapped here
+function makeLocalTsid(initial) {
 	//TODO: this is a hack that does not scale to more than a handful of GSs
 	var tsid;
 	while (!tsid || !isLocal(tsid)) {

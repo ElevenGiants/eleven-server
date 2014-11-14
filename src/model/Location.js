@@ -33,7 +33,14 @@ Location.prototype.TSID_INITIAL = 'L';
  */
 function Location(data, geo) {
 	data = data || {};
-	data.tsid = rpc.makeLocalTsid(Location.prototype.TSID_INITIAL, data.tsid);
+	if (!data.tsid) {
+		if (geo) {
+			data.tsid = geo.getLocTsid();
+		}
+		else {
+			data.tsid = rpc.makeLocalTsid(Location.prototype.TSID_INITIAL);
+		}
+	}
 	Location.super_.call(this, data);
 	// initialize items and players, convert to IdObjRefMap
 	if (!this.players || this.players instanceof Array) {

@@ -24,7 +24,7 @@ Group.prototype.TSID_INITIAL = 'R';
  */
 function Group(data) {
 	data = data || {};
-	data.tsid = rpc.makeLocalTsid(Group.prototype.TSID_INITIAL, data.tsid);
+	if (!data.tsid) data.tsid = rpc.makeLocalTsid(Group.prototype.TSID_INITIAL);
 	Group.super_.call(this, data);
 }
 
