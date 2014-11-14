@@ -17,6 +17,7 @@ GameObject.prototype.__isGO = true;
  * @param {object} [data] initialization values (properties are
  *        shallow-copied into the game object)
  * @constructor
+ * @mixes GameObjectApi
  */
 function GameObject(data) {
 	if (!data) data = {};
@@ -48,6 +49,8 @@ function GameObject(data) {
 		this.ts = new Date().getTime();
 	}
 }
+
+utils.copyProps(require('model/GameObjectApi').prototype, GameObject.prototype);
 
 
 /**

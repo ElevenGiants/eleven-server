@@ -45,6 +45,7 @@ var utils = require('utils');
 var util = require('util');
 var wait = require('wait.for');
 var gsjsBridge = require('model/gsjsBridge');
+var globalApi = require('model/globalApi');
 
 
 /**
@@ -345,13 +346,7 @@ function objectRequest(callerId, tsid, fname, args, callback) {
  *        the result (or errors) to the remote caller
  */
 function globalApiRequest(callerId, fname, args, callback) {
-	//TODO dummy, replace with actual global API once there is one:
-	var dummyApi = {
-		valueOf: function valueOf() {
-			return 'TODO-DUMMY-API';
-		}
-	};
-	handleRequest(callerId, dummyApi, fname, args, callback);
+	handleRequest(callerId, globalApi, fname, args, callback);
 }
 
 

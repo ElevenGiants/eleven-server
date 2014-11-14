@@ -16,6 +16,7 @@ var utils = require('utils');
  *        an object containing extended configuration like:
  *        ```{val: 3, bottom: -3, top: 8000}```
  * @constructor
+ * @mixes PropertyApi
  */
 function Property(label, data) {
 	this.label = label;
@@ -36,6 +37,8 @@ function Property(label, data) {
 	// needs to be sent to the client
 	utils.addNonEnumerable(this, 'changed', false);
 }
+
+utils.copyProps(require('model/PropertyApi').prototype, Property.prototype);
 
 
 /**
