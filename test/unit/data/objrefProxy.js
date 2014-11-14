@@ -30,8 +30,8 @@ suite('objrefProxy', function () {
 					throw new Error('should not be called');
 				},
 			});
-			var proxy = orproxy.makeProxy({tsid: 'TEST', data: 'refdata'});
-			assert.strictEqual(proxy.data, 'refdata');
+			var proxy = orproxy.makeProxy({tsid: 'TEST', label: 'refdata'});
+			assert.strictEqual(proxy.label, 'refdata');
 		});
 
 		test('proxy resolves objref when accessing properties not contained ' +
@@ -247,6 +247,13 @@ suite('objrefProxy', function () {
 			assert.strictEqual(orproxy.refify(5), 5);
 			assert.strictEqual(orproxy.refify('y'), 'y');
 			assert.strictEqual(orproxy.refify(null), null);
+		});
+
+		test('does not resolve objref proxies that do not have a label', function () {
+			var p = orproxy.makeProxy(new GameObject({tsid: 'IX', objref: true}));
+			var refd = orproxy.refify(p);  // would throw an ObjRefProxyError if it tried to resolve
+			assert.isFalse('label' in refd, 'resulting objref does not have ' +
+				'a "label" property');
 		});
 	});
 });

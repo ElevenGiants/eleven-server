@@ -83,7 +83,7 @@ function makeProxy(objref) {
 					return '^O[' + target.tsid + ']';
 				};
 			}
-			if (name in target) {
+			if (name === 'objref' || name === 'tsid' || name === 'label') {
 				// what's in the objref can be returned without loading actual object
 				return Reflect.get(target, name, receiver);
 			}
@@ -206,9 +206,10 @@ function refify(data, ret) {
  * @private
  */
 function makeRef(obj) {
-	return {
+	var ret = {
 		tsid: obj.tsid,
-		label: obj.label,
 		objref: true,
 	};
+	if (obj.label !== undefined) ret.label = obj.label;
+	return ret;
 }
