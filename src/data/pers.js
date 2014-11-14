@@ -124,6 +124,7 @@ function load(tsid) {
  * @throws {AssertionError} if no object with the given TSID was found
  */
 function get(tsid) {
+	assert(gsjsBridge.isTsid(tsid), 'not a valid TSID: "' + tsid + '"');
 	// get "live" objects from server memory
 	if (tsid in cache) {
 		return cache[tsid];

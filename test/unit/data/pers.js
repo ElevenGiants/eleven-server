@@ -122,6 +122,12 @@ suite('pers', function () {
 			assert.strictEqual(pers.get('IA').tsid, 'IA');
 			assert.strictEqual(pbeMock.getCounts().read, 0);
 		});
+
+		test('fails early when given an invalid TSID', function () {
+			assert.throw(function () {
+				pers.get('');
+			}, assert.AssertionError);
+		});
 	});
 
 
