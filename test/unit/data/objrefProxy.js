@@ -2,6 +2,7 @@
 
 var rewire = require('rewire');
 var GameObject = require('model/GameObject');
+var persProxy = require('data/persProxy');
 var orproxy = rewire('data/objrefProxy');
 var persMock = require('../../mock/pers');
 // workaround to make Proxy available in orproxy module after rewiring:
@@ -113,6 +114,18 @@ suite('objrefProxy', function () {
 			assert.isTrue(({}).hasOwnProperty.call(proxy, 'tsid'));
 			assert.isTrue(({}).hasOwnProperty.call(proxy, 'x'));
 			assert.isFalse(({}).hasOwnProperty.call(proxy, 'y'));
+		});
+
+		test('"enumerate" trap works with nested proxies', function () {
+			var o = {tsid: 'IX', a: 1, b: 2, c: 3};
+			o = persProxy.makeProxy(o);
+			persMock.add(o);
+			var proxy = orproxy.makeProxy({tsid: 'IX'});
+			var list = [];
+			for (var prop in proxy) {
+				list.push(prop);
+			}
+			assert.sameMembers(list, ['tsid', 'a', 'b', 'c']);
 		});
 	});
 

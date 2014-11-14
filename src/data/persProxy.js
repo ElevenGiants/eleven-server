@@ -24,7 +24,7 @@ var RC = require('data/RequestContext');
 /**
  * Wraps a game object in a persistence proxy (see module docs above).
  *
- * @param {GameObjeect} obj game object to wrap
+ * @param {GameObject} obj game object to wrap
  * @param {object} [prop] internal
  * @returns {Proxy} wrapped game object
  */
