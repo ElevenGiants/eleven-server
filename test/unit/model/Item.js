@@ -216,9 +216,9 @@ suite('Item', function () {
 			assert.strictEqual(it.getPosObject(), b, 'in a nested bag in location');
 		});
 
-		test('handles item without any container gracefully', function () {
+		test('returns undefined for item without any container', function () {
 			var it = new Item();
-			assert.strictEqual(it.getPosObject(), it, 'falls back to item itself');
+			assert.isUndefined(it.getPosObject());
 		});
 	});
 

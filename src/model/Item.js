@@ -175,9 +175,12 @@ Item.prototype.setContainer = function setContainer(cont, slot, hidden) {
  * either a player, a bag in a location, or the item itself.
  *
  * @returns {Player|Bag|Item} the game object that determines the
- *          actual x/y position of the item
+ *          actual x/y position of the item, or `undefined` if no such
+ *          object exists (e.g. while the item is being created)
  */
 Item.prototype.getPosObject = function getPosObject() {
+	// special case: no container (yet, i.e. during item creation)
+	if (!this.container) return;
 	//jscs:disable safeContextKeyword
 	var ret = this;
 	// traverse container chain until we reach a player or a
