@@ -297,8 +297,13 @@ Session.prototype.postRequestProc = function postRequestProc(req) {
 Session.prototype.handleAmfReqError = function handleAmfReqError(err, req) {
 	if (typeof err === 'object' && err.type === 'stack_overflow') {
 		// special treatment for stack overflow errors
-		// see <https://github.com/trentm/node-bunyan/issues/127>
+		// see https://github.com/trentm/node-bunyan/issues/127
 		err = new Error(err.message);
+	}
+	if (typeof err === 'string') {
+		// catch malcontents throwing strings instead of Errors, e.g.
+		// https://github.com/tvcutsem/harmony-reflect/issues/38
+		err = new Error(err);
 	}
 	log.error(err, 'error processing %s request for %s', req.type, this.pc);
 	if (this.pc && req.id) {

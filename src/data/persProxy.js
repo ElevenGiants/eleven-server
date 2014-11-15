@@ -40,6 +40,12 @@ function makeProxy(obj, prop) {
 			if (name === '__isPP') {
 				return true;
 			}
+			if (name === 'sort' && typeof target.sort === 'function' &&
+				target instanceof Array) {
+				// workaround for builtin Array.prototype.sort (calling it on a
+				// proxied array throws "illegal access" string otherwise)
+				return target.sort.bind(target);
+			}
 			if (name === 'valueOf' || name === 'toString') {
 				return function () {
 					return '^P' + target.toString();
