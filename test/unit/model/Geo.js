@@ -3,6 +3,8 @@
 var fs = require('fs');
 var path = require('path');
 var Geo = require('model/Geo');
+var pers = require('data/pers');
+var pbeMock = require('../../mock/pbe');
 
 
 suite('Geo', function () {
@@ -13,6 +15,14 @@ suite('Geo', function () {
 		var data = fs.readFileSync(path.join(FIXTURES_PATH, 'GLI32G3NUTD100I.json'));
 		return JSON.parse(data);
 	}
+
+	setup(function () {
+		pers.init(pbeMock);
+	});
+
+	teardown(function () {
+		pers.init();  // disable mock back-end
+	});
 
 
 	suite('prepConnects', function () {

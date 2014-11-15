@@ -118,15 +118,12 @@ function read(tsid, queryOpts, callback) {
 	if (callback) {
 		// async version
 		runQuery(query, queryOpts, function cb(err, data) {
-			if (!err && !data) log.error(new Error('object not found: ' + tsid));
 			return callback(err, data);
 		});
 	}
 	else {
 		// sync (fibers) version
-		var data = wait.for(runQuery, query, queryOpts);
-		if (!data) log.error(new Error('object not found: ' + tsid));
-		return data;
+		return wait.for(runQuery, query, queryOpts);
 	}
 }
 
