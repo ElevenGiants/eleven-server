@@ -30,6 +30,7 @@ module.exports = {
 			},
 			// add entries here (e.g. gs02, gs03, ...) for additional GS hosts
 		},
+		flashPolicyPort: 1843,
 		assetServer: {
 			host: '127.0.0.1',
 			port: 8000,
