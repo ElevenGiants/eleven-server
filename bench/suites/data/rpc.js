@@ -95,14 +95,14 @@ suite.on('complete', function() {
 
 suite.add('game object function call (w/ wait.for)', function(deferred) {
 	wait.launchFiber(function rpcFiber() {
-		rpc.sendRequest(DUMMY_OBJ, 'add', [1, 2]);
+		rpc.sendObjRequest(DUMMY_OBJ, 'add', [1, 2]);
 		deferred.resolve();
 	});
 }, {defer: true});
 
 
 suite.add('game object function call (w/ callback)', function(deferred) {
-	rpc.sendRequest(DUMMY_OBJ, 'add', [1, 2], function(err, res) {
+	rpc.sendObjRequest(DUMMY_OBJ, 'add', [1, 2], function(err, res) {
 		if (err) throw err;
 		deferred.resolve();
 	});

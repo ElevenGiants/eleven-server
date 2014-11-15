@@ -169,6 +169,20 @@ suite('objrefProxy', function () {
 			assert.isTrue(x[0].__isORP);
 			assert.isTrue(x[1].__isORP);
 		});
+
+		test('copes with circular references', function () {
+			// simple (direct) cycle
+			var o = {};
+			o.o = o;
+			orproxy.proxify(o);
+			assert.strictEqual(o.o, o);
+			// indirect cycle
+			var x = {};
+			var y = {x: x};
+			x.y = y;
+			orproxy.proxify(x);
+			assert.strictEqual(x.y.x, x);
+		});
 	});
 
 

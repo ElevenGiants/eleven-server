@@ -26,6 +26,7 @@ module.exports = {
 	shutdown: shutdown,
 	makeProxy: makeProxy,
 	sendRequest: sendRequest,
+	sendObjRequest: sendObjRequest,
 	isLocal: isLocal,
 	getGsid: getGsid,
 	makeLocalTsid: makeLocalTsid,
@@ -194,11 +195,10 @@ function makeProxy(obj) {
 
 
 /**
- * Client-side RPC handler; used by the {@link module:data/rpcProxy|
- * rpcProxy} to forward a function call to the authoritative game
- * server for the respective game object.
- * Returns the result either via callback or synchronously using
- * {@link https://github.com/luciotato/waitfor|wait.for/fibers}.
+ * Forwards a function call on a game oject to the authoritative game
+ * server for the respective object. Returns the result either via
+ * callback or synchronously (see {@link module:data/rpc~sendRequest|
+ * sendRequest}).
  *
  * @param {GameObject|string} objOrTsid game object on which the
  *        function is being called (or more precisely, its local {@link
@@ -218,12 +218,10 @@ function makeProxy(obj) {
  * @throws {RpcError} in case something bad happens during the RPC and
  *         no callback was supplied
  */
-function sendRequest(objOrTsid, fname, args, callback) {
+function sendObjRequest(objOrTsid, fname, args, callback) {
 	var gsid;
-	var client;
 	try {
 		gsid = getGsid(objOrTsid);
-		client = clients[gsid];
 	}
 	catch (e) {
 		// caller has to handle this, like any other "regular" error the
@@ -231,26 +229,53 @@ function sendRequest(objOrTsid, fname, args, callback) {
 		throw new RpcError(util.format('could not get RPC client to %s for %s',
 			gsid, objOrTsid), e);
 	}
+	var tsid = typeof objOrTsid === 'string' ? objOrTsid : objOrTsid.tsid;
+	return sendRequest(gsid, 'obj', [tsid, fname, args], callback);
+}
+
+
+/**
+ * Sends an RPC request to another game server instance, taking care of
+ * proper argument and return value (de)serialization.
+ * Returns the result either via callback or synchronously using
+ * {@link https://github.com/luciotato/waitfor|wait.for/fibers}.
+ *
+ * @param {string} gsid ID of the game server to forward the call to
+ * @param {string} rpcFunc RPC function to call (must be `obj`, `api`,
+ *        `admin` or `gs`)
+ * @param {array} args function arguments; the obligatory source GS ID
+ *        parameter (required for any RPC function) is prepended here
+ * @param {function} [callback]
+ * ```
+ * callback(err, res)
+ * ```
+ * called with the function result (`res`) or an error (`err`) when the
+ * RPC returns; if not supplied, the function behaves synchronously and
+ * returns the result (or throws an exception)
+ * @returns {*} result of the remote function call if no callback was
+ *          supplied (`undefined` otherwise)
+ * @throws {RpcError} in case something bad happens during the RPC and
+ *         no callback was supplied
+ */
+function sendRequest(gsid, rpcFunc, args, callback) {
+	assert(gsid !== config.getGsid(), 'RPC to self');
+	var client = clients[gsid];
 	if (!client) {
-		throw new RpcError(util.format('no RPC client to %s found for %s',
-			gsid, objOrTsid));
+		throw new RpcError(util.format('no RPC client found for "%s"', gsid));
 	}
 	// argument marshalling (replace objref proxies with actual objrefs)
 	args = orProxy.refify(args);
-	var logmsg = util.format('%s.%s(%s) via RPC on %s', objOrTsid, fname,
-		args.join(', '), gsid);
+	var logmsg = util.format('%s(%s) @%s', rpcFunc, args.join(', '), gsid);
 	log.debug('calling %s', logmsg);
-	var tsid = typeof objOrTsid === 'string' ? objOrTsid : objOrTsid.tsid;
-	var rpcArgs = [config.getGsid(), tsid, fname, args];
+	var rpcArgs = [config.getGsid()].concat(args);
 	if (callback) {
-		client.request('obj', rpcArgs, function cb(err, res) {
-			if (!err) orProxy.proxify(res);
+		client.request(rpcFunc, rpcArgs, function cb(err, res) {
 			callback(err, res);
 		});
 	}
 	else {
 		try {
-			var ret = wait.forMethod(client, 'request', 'obj', rpcArgs);
+			var ret = wait.forMethod(client, 'request', rpcFunc, rpcArgs);
 			orProxy.proxify(ret);
 			return ret;
 		}

@@ -27,27 +27,36 @@ suite('Player', function () {
 
 	suite('create', function () {
 
-		//TODO: test fails because of missing API functions and should be activated once they are available
-		test.skip('does its job', function (done) {
-			new RC().run(
+		test('does its job', function (done) {
+			var p;
+			var rc = new RC();
+			rc.run(
 				function () {
 					var g = Geo.create();
+					rc.cache[g.tsid] = g;
 					var l = Location.create(g);
-					var p = Player.create({
+					rc.cache[l.tsid] = l;
+					p = Player.create({
 						label: 'Edgar',
 						userid: '123',
 						location: l,
+						skip_newux: true,  // just so we're not reliant on newux location data
 					});
 					assert.isTrue(p.__isPP);
 					assert.isTrue(utils.isPlayer(p));
 					assert.strictEqual(p.class_tsid, 'human');
 					assert.strictEqual(p.label, 'Edgar');
+					assert.isTrue(utils.isDC(p.skills));
+					assert.isTrue(utils.isDC(p.quests.todo));
 				},
 				function cb(err, res) {
 					if (err) return done(err);
 					var db = pbeMock.getDB();
-					assert.strictEqual(pbeMock.getCounts().write, 1);
-					assert.strictEqual(Object.keys(db).length, 1);
+					assert.isTrue(pbeMock.getCounts().write > 1);
+					assert.property(db, p.tsid);
+					assert.property(db, p.skills.tsid);
+					assert.property(db, p.groups.tsid);
+					assert.property(db, p.furniture.storage_tsid);
 					done();
 				}
 			);

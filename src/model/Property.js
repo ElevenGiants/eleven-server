@@ -50,6 +50,23 @@ Property.prototype.toString = function toString() {
 
 
 /**
+ * Creates a compact representation of this property for persistent
+ * serialization. The result can be used to reconstruct an equivalent
+ * property (except for the label, which is stored as the property
+ * name in the parent object).
+ *
+ * @returns {object} representation of the property for persistence
+ */
+Property.prototype.serialize = function serialize() {
+	return {
+		value: this.value,
+		bottom: this.bottom,
+		top: this.top,
+	};
+};
+
+
+/**
  * Sets new limits for values of the property. Limits are rounded
  * using `Math.round`.
  *

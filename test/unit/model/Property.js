@@ -47,6 +47,18 @@ suite('Property', function () {
 	});
 
 
+	suite('serialize', function () {
+
+		test('does its job', function () {
+			var p = new Prop('xyz', 1);
+			assert.deepEqual(p.serialize(), {value: 1, bottom: 1, top: 1});
+			p = new Prop('test', -3);
+			p.setLimits(-7, 8000);
+			assert.deepEqual(p.serialize(), {value: -3, bottom: -7, top: 8000});
+		});
+	});
+
+
 	suite('setLimits', function () {
 
 		test('does its job', function () {
@@ -138,27 +150,6 @@ suite('Property', function () {
 			d = p.mult(-1.6);
 			assert.strictEqual(p.value, 0);
 			assert.strictEqual(d, -7);
-		});
-	});
-
-
-	suite('serialization', function () {
-
-		test('JSON.stringify generates the right structure for Player json files',
-			function () {
-			var p = new Prop('test', {value: -3, bottom: -7, top: 8000});
-			var procd = JSON.parse(JSON.stringify(p));
-			assert.deepEqual(procd, {value: -3, bottom: -7, top: 8000, label: 'test'});
-		});
-
-		test('Property can be recreated from JSON.stringify data', function () {
-			var p = new Prop('test', {value: -3, bottom: -7, top: 8000});
-			var pclone = new Prop(p.label, JSON.parse(JSON.stringify(p)));
-			assert.instanceOf(pclone, Prop);
-			assert.strictEqual(pclone.label, p.label);
-			assert.strictEqual(pclone.value, -3);
-			assert.strictEqual(pclone.bottom, -7);
-			assert.strictEqual(pclone.top, 8000);
 		});
 	});
 });

@@ -11,6 +11,8 @@ var DataContainer = require('model/DataContainer');
 var Item = require('model/Item');
 var Bag = require('model/Bag');
 var pers = require('data/pers');
+var orProxy = require('data/objrefProxy');
+var lodash = require('lodash');
 
 
 function getItemType(classTsid) {
@@ -122,6 +124,27 @@ exports.apiCallMethodForOnlinePlayers =
 	log.warn('TODO global.apiCallMethodForOnlinePlayers not implemented yet');
 	return {ok: 0, error: 'not implemented'};
 
+};
+
+
+/**
+ * Creates a deep copy of an object, copying all direct properties
+ * (i.e. those not inherited from a prototype). Can deal with circular
+ * references. {@link module:data/objrefProxy|Objref proxies} are not
+ * resolved in the process.
+ *
+ * @param {object} obj object to copy
+ * @returns {object} copy of the given object
+ */
+exports.apiCopyHash = function apiCopyHash(obj) {
+	log.trace('global.apiCopyHash');
+	var ret = lodash.clone(obj, true, function handleObjRefs(val) {
+		if (typeof val === 'object' && val !== null && val.__isORP) {
+			return orProxy.refify(val);
+		}
+	});
+	orProxy.proxify(ret);
+	return ret;
 };
 
 

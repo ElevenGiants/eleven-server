@@ -100,6 +100,35 @@ Player.prototype.del = function del() {
 
 
 /**
+ * Creates a processed shallow copy of this player instance for
+ * serialization.
+ *
+ * @see {@link GameObject#serialize|GameObject.serialize}
+ */
+Player.prototype.serialize = function serialize() {
+	var ret = Player.super_.prototype.serialize.call(this);
+	for (var group in PROPS) {
+		if (this[group]) {
+			ret[group] = {};  // ret is just a shallow copy
+			var key;
+			for (var i = 0; i < PROPS[group].length; i++) {
+				key = PROPS[group][i];
+				if (this[group][key]) {
+					ret[group][key] = this[group][key].serialize();
+				}
+			}
+			// property groups have non-property members (e.g.
+			// metabolics.tank), add those too
+			for (key in this[group]) {
+				if (!(key in ret[group])) ret[group][key] = this[group][key];
+			}
+		}
+	}
+	return ret;
+};
+
+
+/**
  * Initializes the instance for an active player; called when a client
  * is actually logging in on this GS as this player.
  *
@@ -424,6 +453,11 @@ Player.prototype.queueAnnc = function queueAnnc(annc) {
  *        changes are **not** included
  */
 Player.prototype.send = function send(msg, skipChanges) {
+	if (!this.session) {
+		log.info(new Error('dummy error for stack trace'),
+			'trying to send message to offline player %s', this);
+		return;
+	}
 	// generage "changes" segment
 	if (!skipChanges) {
 		var changes = this.mergeChanges();

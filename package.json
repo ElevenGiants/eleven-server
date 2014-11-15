@@ -25,6 +25,7 @@
     "async": "^0.9.0",
     "bunyan": "^1.0.1",
     "harmony-reflect": "^1.1.0",
+    "lodash": "^2.4.1",
     "multitransport-jsonrpc": "^0.6.1",
     "murmurhash-js": "^1.0.0",
     "nconf": "^0.6.9",
