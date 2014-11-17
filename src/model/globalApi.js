@@ -63,15 +63,21 @@ exports.apiNewItemStack = function apiNewItemStack(classTsid, count) {
 
 
 /**
- * Retrieves a game object. Throws an Error if no object with the
- * given TSID is found.
+ * Retrieves a game object.
  *
  * @param {string} tsid TSID of the desired object
- * @returns {GameObject} the requested object
+ * @returns {GameObject|null} the requested object, or `null` if no
+ *          object found for the given TSID
  */
 exports.apiFindObject = function apiFindObject(tsid) {
 	log.trace('global.apiFindObject(%s)', tsid);
-	return pers.get(tsid);
+	// GSJS code is calling this with invalid TSID, but does not expect it to
+	// throw (e.g. in groups/hi_variants_tracker.reset)
+	var ret = null;
+	if (gsjsBridge.isTsid(tsid)) {
+		ret = pers.get(tsid);
+	}
+	return ret;
 };
 
 
@@ -111,8 +117,49 @@ exports.apiLogAction = function apiLogAction() {
  * @returns {object} the prototype object
  */
 exports.apiFindItemPrototype = function apiFindItemPrototype(classTsid) {
-	log.debug('global.apiFindItemPrototype(%s)', classTsid);
+	log.trace('global.apiFindItemPrototype(%s)', classTsid);
 	return gsjsBridge.getProto('items', classTsid);
+};
+
+
+/**
+ * Retrieves the prototype for a quest class.
+ *
+ * @param {string} classTsid ID of the desired quest class
+ * @returns {object} the prototype object
+ */
+exports.apiFindQuestPrototype = function apiFindQuestPrototype(classTsid) {
+	log.debug('global.apiFindQuestPrototype(%s)', classTsid);
+	return gsjsBridge.getProto('quests', classTsid);
+};
+
+
+/**
+ * Retrieves a game object prototype by path.
+ *
+ * @param {string} path file system path of the desired game object
+ *        prototype (relative to the GSJS root directory)
+ * @returns {object} the prototype object
+ */
+exports.apiGetJSFileObject = function apiGetJSFileObject(path) {
+	log.debug('global.apiGetJSFileObject(%s)', path);
+	if (path.slice(-3).toLowerCase() === '.js') {
+		path = path.slice(0, -3);
+	}
+	return gsjsBridge.getProto.apply(gsjsBridge, path.split('/'));
+};
+
+
+exports.apiCallMethod = function apiCallMethod(fname, targets) {
+	log.debug('%s.apiCallMethod(%s)', this,
+		Array.prototype.slice.call(arguments).join(', '));
+	//TODO: implement&document me
+	log.warn('TODO global.apiCallMethod not implemented yet');
+	var ret = {};
+	for (var tsid in targets) {
+		ret[tsid] = {ok: 0, offline: true};
+	}
+	return ret;
 };
 
 
@@ -122,7 +169,11 @@ exports.apiCallMethodForOnlinePlayers =
 		Array.prototype.slice.call(arguments).join(', '));
 	//TODO: implement&document me
 	log.warn('TODO global.apiCallMethodForOnlinePlayers not implemented yet');
-	return {ok: 0, error: 'not implemented'};
+	var ret = {};
+	for (var tsid in targets) {
+		ret[tsid] = {ok: 0, offline: true};
+	}
+	return ret;
 
 };
 
@@ -158,6 +209,13 @@ exports.apiSendToAll = function apiSendToAll(msg) {
 exports.apiSendToGroup = function apiSendToGroup(msg, targets) {
 	log.debug('global.apiSendToGroup(%s, %s)', msg, targets);
 	log.warn('TODO global.apiSendToGroup not implemented yet');
+	//TODO: implement&document me
+};
+
+
+exports.apiAsyncHttpCall = function apiAsyncHttpCall(url, header, postParams, tsid) {
+	log.debug('global.apiAsyncHttpCall(%s, %s, %s, %s)', url, header, postParams, tsid);
+	log.warn('TODO global.apiAsyncHttpCall not implemented yet');
 	//TODO: implement&document me
 };
 

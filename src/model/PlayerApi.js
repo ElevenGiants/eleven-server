@@ -182,3 +182,24 @@ PlayerApi.prototype.apiEndLocationMove = function apiEndLocationMove(newLoc) {
 	log.debug('%s.apiEndLocationMove(%s)', this, newLoc);
 	//TODO: implement&document me
 };
+
+
+PlayerApi.prototype.apiStartFollowing = function apiStartFollowing(leaderTsid) {
+	log.debug('%s.apiStartFollowing(%s)', this, leaderTsid);
+	//TODO: implement&document me
+	log.warn('TODO Player.apiStartFollowing not implemented yet');
+};
+
+
+PlayerApi.prototype.apiStopFollowing = function apiStopFollowing() {
+	log.debug('%s.apiStopFollowing', this);
+	//TODO: implement&document me
+	log.warn('TODO Player.apiStopFollowing not implemented yet');
+};
+
+
+PlayerApi.prototype.apiRemoveAllFollowers = function apiRemoveAllFollowers() {
+	log.debug('%s.apiRemoveAllFollowers', this);
+	//TODO: implement&document me
+	log.warn('TODO Player.apiRemoveAllFollowers not implemented yet');
+};

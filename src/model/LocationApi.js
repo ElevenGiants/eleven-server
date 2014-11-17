@@ -24,7 +24,28 @@ var LocationApi = module.exports = function LocationApi() {};
  */
 LocationApi.prototype.apiPutItemIntoPosition =
 	function apiPutItemIntoPosition(item, x, y, merge) {
+	log.debug('%s.apiPutItemIntoPosition(%s, %s, %s, %s)', this, item, x, y, merge);
 	this.addItem(item, x, y, typeof merge === 'boolean' ? !merge : false);
+};
+
+
+LocationApi.prototype.apiGetPointOnTheClosestPlatformLineBelow =
+	function apiGetPointOnTheClosestPlatformLineBelow(x, y) {
+	log.debug('%s.apiGetPointOnTheClosestPlatformLineBelow(%s, %s)', this, x, y);
+	//TODO implement&document me
+	log.warn('TODO Location.apiGetPointOnTheClosestPlatformLineBelow not ' +
+		'implemented yet');
+	return {x: 1, y: 1};
+};
+
+
+LocationApi.prototype.apiGetPointOnTheClosestPlatformLineAbove =
+	function apiGetPointOnTheClosestPlatformLineAbove(x, y) {
+	log.debug('%s.apiGetPointOnTheClosestPlatformLineAbove(%s, %s)', this, x, y);
+	//TODO implement&document me
+	log.warn('TODO Location.apiGetPointOnTheClosestPlatformLineAbove not ' +
+		'implemented yet');
+	return {x: 1, y: 1};
 };
 
 
