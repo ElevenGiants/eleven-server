@@ -31,6 +31,11 @@ Object.defineProperty(Item.prototype, 'slot', {
 		if (utils.isBag(this.container) && !this.is_hidden) return this.x;
 	},
 });
+Object.defineProperty(Item.prototype, 'type', {
+	get: function get() {
+		return this.class_tsid;
+	},
+});
 
 
 /**
