@@ -103,3 +103,63 @@ PlayerApi.prototype.apiSendAnnouncement = function apiSendAnnouncement(annc) {
 		'' : (annc.type + '/' + annc.uid));
 	this.queueAnnc(annc);
 };
+
+
+/**
+ * Checks if moving to another location requires reconnecting to a
+ * different game server, and returns the appropriate connection data
+ * if so. Also prepares the client for the move if necessary.
+ *
+ * @param {string} locTsid TSID of the location the player is moving to
+ * @returns {object|null} `null` if no reconnection to another server
+ *          necessary, otherwise an object like:
+ * ```{
+ *     hostAndPort: "<host>:<port>",
+ *     token: "<TOKEN_FOR_CONNECTION_TO_OTHER_GS>"
+ * }```
+ */
+PlayerApi.prototype.apiCheckIfNeedToMoveToAnotherGSAndGetMoveData = function
+	apiCheckIfNeedToMoveToAnotherGSAndGetMoveData(locTsid) {
+	log.debug('%s.apiCheckIfNeedToMoveToAnotherGSAndGetMoveData(%s)', this, locTsid);
+	var moveData = this.gsMoveCheck(locTsid);
+	if (moveData) {
+		return {hostAndPort: moveData.hostPort, token: moveData.token};
+	}
+	return null;
+};
+
+
+/**
+ * Initiates a GS-local location move by removing this player from the
+ * current location, calling various "onExit" handlers and updating the
+ * `location` property with the new location.
+ *
+ * @param {Location} newLoc the target location
+ * @param {number} x x coordinate of the player in the new location
+ * @param {number} y y coordinate of the player in the new location
+ */
+PlayerApi.prototype.apiStartLocationMoveX = function
+	apiStartLocationMoveX(newLoc, x, y) {
+	log.debug('%s.apiStartLocationMoveX(%s, %s, %s)', this, newLoc, x, y);
+	this.startMove(newLoc, x, y);
+};
+
+
+/**
+ * Finishes a GS-local location move by adding the player to the list
+ * of players in the new location, and calling various "onEnter"
+ * handlers. The player's `location` property already needs to
+ * reference the "new" location at this point.
+ *
+ * @param {Location} oldLoc the player's previous location
+ */
+PlayerApi.prototype.apiEndLocationMoveX = function apiEndLocationMoveX(oldLoc) {
+	log.debug('%s.apiEndLocationMoveX(%s)', this, oldLoc);
+	this.endMove();
+};
+
+
+PlayerApi.prototype.apiEndLocationMove = function apiEndLocationMove(newLoc) {
+	log.debug('%s.apiEndLocationMove(%s)', this, newLoc);
+	//TODO: implement&document me
+};

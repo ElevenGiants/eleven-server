@@ -322,6 +322,10 @@ Player.prototype.endMove = function endMove() {
  * client.
  *
  * @param {string} newLocId TSID of the location the player is moving to
+ * @returns {object|undefined} a game server configuration record (see
+ *          {@link module:config~getGSConf|getGSConf}) with an added
+ *          `token` element, or `undefined` if the new location is on
+ *          the same GS as the current one
  */
 Player.prototype.gsMoveCheck = function gsMoveCheck(newLocId) {
 	if (rpc.isLocal(newLocId)) {
@@ -344,7 +348,9 @@ Player.prototype.gsMoveCheck = function gsMoveCheck(newLocId) {
 	RC.getContext().setPostPersCallback(function triggerReconnect() {
 		self.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
 	});
-	return gsConf;
+	var ret = utils.shallowCopy(gsConf);
+	ret.token = token;
+	return ret;
 };
 
 
