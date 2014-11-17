@@ -3,7 +3,7 @@
 module.exports = Session;
 
 
-var amf = require('amflib/node-amf/amf');
+var amf = require('node_amf_cc');
 var assert = require('assert');
 var auth = require('comm/auth');
 var config = require('config');
@@ -185,26 +185,25 @@ Session.prototype.checkForMessages = function checkForMessages() {
 	// buffer can contain multiple messages (and the last one may be incomplete);
 	// since we don't have message length data, all we can do is try parsing
 	// messages repeatedly until all data is consumed, or deserialization fails
-	var index = 0;  // AMF deserializer index
 	var bufstr = this.buffer.toString('binary');
-	var deser = amf.deserializer(bufstr);
-	while (index < bufstr.length) {
+	while (bufstr.length > 0) {
 		var msg;
 		try {
-			msg = deser.readValue(amf.AMF3);
+			var deser = amf.deserialize(bufstr);
+			msg = deser.value;
+			bufstr = bufstr.substr(deser.consumed);
 		}
 		catch (e) {
 			// incomplete message; abort and preserve remaining (unparsed) data
 			// for next round
-			log.debug('%s bytes remaining', bufstr.length - index);
-			this.buffer = new Buffer(bufstr.substr(index), 'binary');
+			log.debug('%s bytes remaining', bufstr.length);
+			this.buffer = new Buffer(bufstr, 'binary');
 			break;
 		}
-		// still here? then update index and schedule message handling
-		index = deser.i;
+		// still here? then schedule message handling
 		setImmediate(this.handleMessage.bind(this), msg);
 	}
-	if (index >= bufstr.length) {
+	if (bufstr.length === 0) {
 		delete this.buffer;  // buffer fully processed
 	}
 	// protection against broken/malicious clients
@@ -338,8 +337,12 @@ Session.prototype.handleAmfReqError = function handleAmfReqError(err, req) {
  *        that cannot be encoded in AMF3 (e.g. circular references)
  */
 Session.prototype.send = function send(msg) {
+	// JSON roundtrip workaround because AMF serialization currently does not
+	// work for ES6 proxies - see e.g. https://github.com/joyent/node/issues/7526
+	//TODO: remove this when it's no longer necessary
+	msg = JSON.parse(JSON.stringify(msg));
 	log.trace({data: msg}, 'sending %s message', msg.type);
-	var data = amf.serializer().writeObject(msg);
+	var data = amf.serialize(msg);
 	var size = Buffer.byteLength(data, 'binary');
 	var buf = new Buffer(4 + size);
 	buf.writeUInt32BE(size, 0);

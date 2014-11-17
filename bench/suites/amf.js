@@ -6,7 +6,7 @@ module.exports = suite;
 
 
 var fs = require('fs');
-var amflib = require('amflib/node-amf/amf');
+var amflib = require('node_amf_cc');
 
 
 // load test fixtures
@@ -34,14 +34,16 @@ var jsonData = {};
 
 Object.keys(amfData).forEach(function iter(type) {
 	suite.add('amflib/deserialize ' + type, function () {
-		var deser = amflib.deserializer(amfDataStr[type]);
-		deser.readValue(amflib.AMF3);
+		amflib.deserialize(amfDataStr[type]);
 	});
 });
 
 
 Object.keys(jsonData).forEach(function iter(type) {
 	suite.add('amflib/serialize ' + type, function () {
-		amflib.serializer().writeObject(jsonData[type]);
+		//amflib.serialize(jsonData[type]);
+		// JSON dance to be more realistic for the time being - see proxy
+		// workaround in comm.Session.prototype.send
+		amflib.serialize(JSON.parse(JSON.stringify(jsonData[type])));
 	});
 });

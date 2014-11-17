@@ -1,9 +1,11 @@
 'use strict';
 
+var amf = require('node_amf_cc');
 var config = require('config');
 var Session = require('comm/Session');
 var getDummySocket = require('../../helpers').getDummySocket;
 var gsjsBridge = require('model/gsjsBridge');
+var persProxy = require('data/persProxy');
 
 
 var TEST_AMF3_MSG = ('0a 0b 01 09 74 79 70 65 06 09 74 65 73 74 0d 6d 73 67 ' +
@@ -22,7 +24,7 @@ function getTestSession(id, socket) {
 }
 
 
-suite('session', function () {
+suite('Session', function () {
 
 	suiteSetup(function () {
 		gsjsBridge.reset({gsjsMain: {
@@ -210,11 +212,28 @@ suite('session', function () {
 			var socket = getDummySocket();
 			var s = getTestSession('test', socket);
 			socket.write = function (data) {
-				assert.strictEqual(data.toString('hex'), '0000001f0a0b0d4f626' +
-					'a65637409747970650609746573740d6d73675f696406033101');
+				assert.strictEqual(data.toString('hex'), '0000001d0a0b0d4f626' +
+					'a65637407666f6f06076261720d6d73675f696406033101');
 				done();
 			};
-			s.send({type: 'test', msg_id: '1'});
+			s.send({foo: 'bar', msg_id: '1'});
+		});
+
+		test('works with proxies', function (done) {
+			var o = {
+				a: [1, 2, 3],
+				b: {giant: 'humbaba'},
+			};
+			var p = persProxy.makeProxy(o);
+			var socket = getDummySocket();
+			var s = getTestSession('test', socket);
+			socket.write = function (data) {
+				data = data.slice(4);  // snip length header
+				var res = amf.deserialize(data.toString('binary')).value;
+				assert.deepEqual(res, o);
+				done();
+			};
+			s.send(p);
 		});
 	});
 });
