@@ -148,6 +148,20 @@ exports.apiCopyHash = function apiCopyHash(obj) {
 };
 
 
+exports.apiSendToAll = function apiSendToAll(msg) {
+	log.debug('global.apiSendToAll(%s)', msg);
+	log.warn('TODO global.apiSendToAll not implemented yet');
+	//TODO: implement&document me
+};
+
+
+exports.apiSendToGroup = function apiSendToGroup(msg, targets) {
+	log.debug('global.apiSendToGroup(%s, %s)', msg, targets);
+	log.warn('TODO global.apiSendToGroup not implemented yet');
+	//TODO: implement&document me
+};
+
+
 // dummy for original GS's CPU profiling function
 //TODO: remove calls from GSJS code
 exports.apiResetThreadCPUClock = function apiResetThreadCPUClock(statName) {
