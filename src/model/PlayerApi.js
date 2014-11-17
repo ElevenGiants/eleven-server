@@ -12,18 +12,6 @@ var PlayerApi = module.exports = function PlayerApi() {};
 
 
 /**
- * Enqueues an announcement for the player.
- *
- * @param {object} annc announcement data
- */
-PlayerApi.prototype.apiSendAnnouncement = function apiSendAnnouncement(annc) {
-	log.debug('%s.apiSendAnnouncement(%s)', this, typeof annc !== 'object' ?
-		'' : (annc.type + '/' + annc.uid));
-	this.queueAnnc(annc);
-};
-
-
-/**
  * Checks if the player is holding an editing lock for his/her current
  * location.
  *
@@ -67,4 +55,51 @@ PlayerApi.prototype.apiAddStackAnywhere =
 PlayerApi.prototype.apiSendMsg = function apiSendMsg(msg) {
 	log.debug('%s.apiSendMsg', this);
 	this.send(msg);
+};
+
+
+/**
+ * Sends a message to the player's client, without adding the 'changes'
+ * segment.
+ *
+ * @param {object} msg the message to send
+ */
+PlayerApi.prototype.apiSendMsgAsIs = function apiSendMsgAsIs(msg) {
+	log.debug('%s.apiSendMsgAsIs', this);
+	this.send(msg, true);
+};
+
+
+/**
+ * Sends a message to all players in this player's location.
+ *
+ * @param {object} msg the message to send
+ */
+PlayerApi.prototype.apiSendLocMsg = function apiSendLocMsg(msg) {
+	log.debug('%s.apiSendLocMsg', this);
+	this.location.send(msg);
+};
+
+
+/**
+ * Sends a message to all players in this player's location, excluding
+ * the player him/herself.
+ *
+ * @param {object} msg the message to send
+ */
+PlayerApi.prototype.apiSendLocMsgX = function apiSendLocMsgX(msg) {
+	log.debug('%s.apiSendLocMsgX', this);
+	this.location.send(msg, false, this);
+};
+
+
+/**
+ * Enqueues an announcement for the player.
+ *
+ * @param {object} annc announcement data
+ */
+PlayerApi.prototype.apiSendAnnouncement = function apiSendAnnouncement(annc) {
+	log.debug('%s.apiSendAnnouncement(%s)', this, typeof annc !== 'object' ?
+		'' : (annc.type + '/' + annc.uid));
+	this.queueAnnc(annc);
 };
