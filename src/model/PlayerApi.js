@@ -27,6 +27,25 @@ PlayerApi.prototype.apiPlayerHasLockForCurrentLocation =
 
 
 /**
+ * Tries to acquire an exclusive access lock on an item in the player's
+ * inventory (e.g. for item verb processing). The lock is released
+ * automatically at the end of the current request.
+ *
+ * Locking is an "expensive" operation and should only be used
+ * where necessary.
+ *
+ * @param {number|string} slotOrPath a slot number or a path string
+ * @returns {Item|null} the requested item, or `null` if not found or
+ *          if the lock could not be acquired
+ */
+PlayerApi.prototype.apiLockStack = function apiLockStack(slotOrPath) {
+	log.trace('%s.apiLockStack(%s)', this, slotOrPath);
+	//TODO: locking
+	return this.getSlotOrPath(slotOrPath);
+};
+
+
+/**
  * Distribute (part of) an item stack into a range of inventory slots
  * of either the player itself, or one of its bags, using empty slots
  * or merging with existing items.

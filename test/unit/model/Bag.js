@@ -132,6 +132,32 @@ suite('Bag', function () {
 	});
 
 
+	suite('getSlotOrPath', function () {
+
+		test('does its job', function () {
+			var i1 = new Item({tsid: 'I1', x: 0});
+			var i2 = new Item({tsid: 'I1', x: 4});
+			var b1 = new Bag({tsid: 'B1', items: [i1], x: 3});
+			var b2 = new Bag({tsid: 'B2', items: [b1, i2]});
+			assert.strictEqual(b2.getSlotOrPath(0), null);
+			assert.strictEqual(b2.getSlotOrPath(4), i2);
+			assert.strictEqual(b2.getSlotOrPath(3), b1);
+			assert.strictEqual(b2.getSlotOrPath('B1'), b1);
+			assert.strictEqual(b1.getSlotOrPath(0), i1);
+			assert.strictEqual(b1.getSlotOrPath('I1'), i1);
+			assert.strictEqual(b2.getSlotOrPath('B1/I1'), i1);
+		});
+
+		test('returns null for invalid argument', function () {
+			var b = new Bag({tsid: 'BB'});
+			assert.isNull(b.getSlotOrPath());
+			assert.isNull(b.getSlotOrPath(null));
+			assert.isNull(b.getSlotOrPath('mofo'));
+			assert.isNull(b.getSlotOrPath(8000));
+		});
+	});
+
+
 	suite('getSlots', function () {
 
 		test('does its job', function () {

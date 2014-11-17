@@ -28,3 +28,9 @@ ItemApi.prototype.apiGetLocatableContainerOrSelf =
 	log.trace('%s.apiGetLocatableContainerOrSelf()', this);
 	return this.getPosObject();
 };
+
+
+ItemApi.prototype.apiPutBack = function apiPutBack() {
+	log.trace('%s.apiPutBack', this);
+	//TODO: implement&document me
+};

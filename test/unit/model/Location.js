@@ -143,4 +143,44 @@ suite('Location', function () {
 			assert.deepEqual(res, ['P2', 'P3']);
 		});
 	});
+
+
+	suite('getAllItems', function () {
+
+		test('works as expected', function () {
+			var i1 = new Item({tsid: 'I1'});
+			var i3 = new Item({tsid: 'I3'});
+			var i5 = new Item({tsid: 'I5'});
+			var b3 = new Bag({tsid: 'B3', items: [i5]});
+			var b2 = new Bag({tsid: 'B2', items: [b3], hiddenItems: [i3]});
+			var l = new Location({tsid: 'L1', items: [i1, b2]}, new Geo());
+			//jscs:disable disallowQuotedKeysInObjects
+			assert.deepEqual(l.getAllItems(), {
+				'I1': i1,
+				'B2': b2,
+				'B2/I3': i3,
+				'B2/B3': b3,
+				'B2/B3/I5': i5,
+			});
+			//jscs:enable disallowQuotedKeysInObjects
+		});
+	});
+
+
+	suite('getPath', function () {
+
+		test('works as expected', function () {
+			var i1 = new Item({tsid: 'I1'});
+			var i2 = new Item({tsid: 'I2'});
+			var i3 = new Item({tsid: 'I3'});
+			var b = new Bag({tsid: 'B1', items: [i2], hiddenItems: [i1]});
+			var l = new Location({tsid: 'L1', items: [b, i3]}, new Geo());
+			assert.strictEqual(l.getPath('I3'), i3);
+			assert.strictEqual(l.getPath('B1'), b);
+			assert.strictEqual(l.getPath('B1/I1'), i1);
+			assert.strictEqual(l.getPath('B1/I2'), i2);
+			assert.isNull(l.getPath('BFOO/IBAR'), 'returns null if path not found');
+			assert.isNull(l.getPath(), 'returns null for invalid argument');
+		});
+	});
 });

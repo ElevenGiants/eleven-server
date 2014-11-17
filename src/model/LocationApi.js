@@ -135,3 +135,23 @@ LocationApi.prototype.apiMoveIn = function apiMoveIn(pc) {
 	log.debug('%s.apiMoveIn(%s)', this, pc);
 	pc.endMove();
 };
+
+
+/**
+ * Tries to acquire a lock on an item in the location for exclusive
+ * access (e.g. for item verb processing). The lock is released
+ * automatically at the end of the current request.
+ *
+ * Locking is an "expensive" operation and should only be used
+ * where necessary.
+ *
+ * @param {string} path a path string pointing to an item in this
+ *        location (like "B1/B2/I3")
+ * @returns {Item|null} the requested item, or `null` if not found or
+ *          if the lock could not be acquired
+ */
+LocationApi.prototype.apiLockStack = function apiLockStack(path) {
+	log.trace('%s.apiLockStack(%s)', this, path);
+	//TODO: locking
+	return this.getPath(path);
+};

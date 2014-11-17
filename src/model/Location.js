@@ -6,6 +6,7 @@ module.exports = Location;
 var assert = require('assert');
 var GameObject = require('model/GameObject');
 var Geo = require('model/Geo');
+var Bag = require('model/Bag');
 var IdObjRefMap = require('model/IdObjRefMap');
 var OrderedHash = require('model/OrderedHash');
 var pers = require('data/pers');
@@ -235,4 +236,26 @@ Location.prototype.addItem = function addItem(item, x, y, noMerge) {
 	item.setContainer(this);
 	item.setXY(x, y);
 	//TODO: merging
+};
+
+
+/**
+ * Recursively collects the items in this location, adding them to a
+ * flat data structure with TSID "paths" as keys (see {@link
+ * Bag#getAllItems} for an example).
+ *
+ * @returns {object} a hash with all items in the location
+ */
+Location.prototype.getAllItems = Bag.prototype.getAllItems;
+
+
+/**
+ * Retrieves an item in the location by path.
+ *
+ * @param {string} path a path string pointing to an item in this
+ *        location (like "B1/B2/I3")
+ * @returns {Item|null} the requested item, or `null` if not found
+ */
+Location.prototype.getPath = function getPath(path) {
+	return this.getAllItems()[path] || null;
 };

@@ -164,6 +164,27 @@ Bag.prototype.getSlot = function getSlot(slot) {
 
 
 /**
+ * Retrieves an item specified by slot number or path.
+ *
+ * @param {number|string} slotOrPath a bag slot number or a path string
+ *        (like "BAGID1/ITEMID2") pointing to an item in this bag
+ * @returns {Item|null} the requested item, or `null` if not found
+ */
+Bag.prototype.getSlotOrPath = function getSlotOrPath(slotOrPath) {
+	var ret = null;
+	if (slotOrPath !== undefined && slotOrPath !== null) {
+		if (utils.isInt(slotOrPath)) {
+			ret = this.getSlot(slotOrPath) || null;
+		}
+		else {
+			ret = this.getAllItems()[slotOrPath] || null;
+		}
+	}
+	return ret;
+};
+
+
+/**
  * Retrieves a representation of the (non-hidden) bag inventory, i.e.
  * an array with {@link Item} instances at positions corresponding to
  * their respective bag slot index. Empty slots translate to `null`
