@@ -29,6 +29,7 @@
     "multitransport-jsonrpc": "^0.6.1",
     "murmurhash-js": "^1.0.0",
     "nconf": "^0.6.9",
+    "node_amf_cc": "^1.0.7",
     "rethinkdb": "^1.15.0-0",
     "token": "0.0.0",
     "wait.for": "^0.6.4"
