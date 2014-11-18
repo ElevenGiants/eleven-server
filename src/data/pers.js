@@ -177,8 +177,7 @@ function create(modelType, data) {
  *        the live object cache
  * @param {string} logmsg optional information for log messages
  * @param {function} [callback] function to be called after persistence
- *        operations have finished (set by {@link
- *        RequestContext#setPostPersCallback})
+ *        operations have finished
  */
 function postRequestProc(dlist, ulist, logmsg, callback) {
 	async.each(Object.keys(dlist),
@@ -191,12 +190,20 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
 				// to be unloaded from cache
 			}
 			*/
+			// perform write or del operation; we're not inside the fiber
+			// anymore (due to async), so handle errors carefully here
 			var op = obj.deleted ? del : write;
-			op(obj, logmsg, function cb(err, res) {
-				// silently ignore errors (we're not interested in them here,
-				// but we want to call callback when *all* ops have finished)
+			try {
+				op(obj, logmsg, function cb(err, res) {
+					// silently ignore errors (we're not interested in them here,
+					// but we want to call callback when *all* ops have finished)
+					iterCallback(null);
+				});
+			}
+			catch (e) {
+				log.error(e, 'failed to %s %s', op.name, obj);
 				iterCallback(null);
-			});
+			}
 		},
 		function cb() {
 			for (var k in ulist) {
