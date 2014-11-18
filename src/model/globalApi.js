@@ -62,6 +62,34 @@ exports.apiNewItemStack = function apiNewItemStack(classTsid, count) {
 };
 
 
+exports.apiNewItemStackFromSource = function apiNewItemStackFromSource(
+	classTsid, count, sourceItem) {
+	log.debug('global.apiNewItemStackFromSource(%s, %s, %s)', classTsid, count,
+		sourceItem);
+	//TODO: adjust&document once itemstack animations are available
+	return getItemType(classTsid).create(classTsid, count);
+};
+
+
+exports.apiNewItemStackFromFamiliar = function apiNewItemStackFromFamiliar(
+	classTsid, count) {
+	log.debug('global.apiNewItemStackFromFamiliar(%s, %s)', classTsid, count);
+	//TODO: adjust&document once itemstack animations are available
+	return getItemType(classTsid).create(classTsid, count);
+};
+
+
+exports.apiNewItemStackFromXY = function apiNewItemStackFromXY(
+	classTsid, count, x, y) {
+	log.debug('global.apiNewItemStackFromXY(%s, %s, %s, %s)', classTsid, count,
+		x, y);
+	//TODO: adjust&document once itemstack animations are available
+	var ret = getItemType(classTsid).create(classTsid, count);
+	ret.setXY(x, y);
+	return ret;
+};
+
+
 /**
  * Retrieves a game object.
  *

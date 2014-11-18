@@ -46,6 +46,25 @@ PlayerApi.prototype.apiLockStack = function apiLockStack(slotOrPath) {
 
 
 /**
+ * Add (part of) an item stack into a specific slot of either the
+ * player inventory, or one of the bags therein, merging with an
+ * existing item in that slot if necessary.
+ *
+ * @param {Item} item item stack to add; may be deleted in the process
+ * @param {number} slot slot index in player inventory or bag to add to
+ * @param {string} [path] path to target bag; if `null`, the player
+ *        inventory is targeted
+ * @param {number} [amount] amount of the item stack to add/distribute;
+ *        if not specified, the whole stack is processed
+ * @returns {number} amount of remaining items
+ */
+PlayerApi.prototype.apiAddStack = function apiAddStack(item, slot, path, amount) {
+	log.debug('%s.apiAddStack(%s, %s, %s, %s)', this, item, slot, path, amount);
+	return this.addToAnySlot(item, slot, slot, path, amount);
+};
+
+
+/**
  * Distribute (part of) an item stack into a range of inventory slots
  * of either the player itself, or one of its bags, using empty slots
  * or merging with existing items.
