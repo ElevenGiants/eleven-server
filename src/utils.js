@@ -263,6 +263,7 @@ function makeNonEnumerable(obj, propName) {
 function addNonEnumerable(obj, propName, val) {
 	Object.defineProperty(obj, propName, {
 		value: val,
+		configurable: true,
 		enumerable: false,
 		writable: true,
 	});

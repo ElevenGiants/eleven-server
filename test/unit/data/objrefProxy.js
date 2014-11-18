@@ -127,6 +127,18 @@ suite('objrefProxy', function () {
 			}
 			assert.sameMembers(list, ['tsid', 'a', 'b', 'c']);
 		});
+
+		test('proxy supports game object serialization', function () {
+			var go = new GameObject();
+			persMock.add(go);
+			var p = orproxy.makeProxy({tsid: go.tsid});
+			// we're just testing that the following does not throw - which it
+			// does if the GameObject contains non-configurable properties,
+			// because that breaks an invariant (proxy must not report a
+			// non-configurable descriptor for a property that the proxy target
+			// (the objref) does not contain)
+			p.serialize();
+		});
 	});
 
 

@@ -1,11 +1,14 @@
 'use strict';
 
 var rewire = require('rewire');
+var RC = require('data/RequestContext');
 var utils = require('utils');
 var GameObject = require('model/GameObject');
 var Bag = require('model/Bag');
 var Player = require('model/Player');
 var orproxy = rewire('data/objrefProxy');
+var pers = require('data/pers');
+var pbeMock = require('../mock/pbe');
 
 
 suite('utils', function () {
@@ -175,6 +178,15 @@ suite('utils', function () {
 
 	suite('addNonEnumerable', function () {
 
+		setup(function () {
+			pers.init(pbeMock);
+		});
+
+		teardown(function () {
+			pers.init();  // disable mock back-end
+		});
+
+
 		test('does its job', function () {
 			var o = {x: 12};
 			utils.addNonEnumerable(o, 'y', 'argl');
@@ -188,6 +200,22 @@ suite('utils', function () {
 			assert.strictEqual(o.y, 'argl');
 			o.y = 'moo';
 			assert.strictEqual(o.y, 'moo');
+		});
+
+		test('does not break key enumeration on objref proxies', function (done) {
+			new RC().run(function () {
+				var o = {tsid: 'G1'};
+				utils.addNonEnumerable(o, 'xyz', 1);
+				pbeMock.getDB()[o.tsid] = o;
+				var p = orproxy.makeProxy(o);
+				// the following line throws an error if the object contains
+				// non-configurable properties (which the proxy target (i.e. the
+				// objref) does not contain):
+				// "TypeError: ownKeys trap failed to include non-configurable property 'xyz'"
+				var keys = Object.keys(p);
+				assert.include(keys, 'tsid');
+				assert.notInclude(keys, 'xyz');
+			}, done);
 		});
 	});
 
