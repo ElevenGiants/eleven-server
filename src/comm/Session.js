@@ -127,8 +127,9 @@ Session.prototype.onSocketClose = function onSocketClose(hadError) {
 		// if pc is still linked to session, socket has been closed without a
 		// "logout" request; could be an error/unexpected connection loss or a
 		// move to another GS (Player#onDisconnect will act accordingly)
-		var rc = new RC('socketClose', this.pc, this);
-		rc.run(this.pc.onDisconnect.bind(this.pc));
+		new RC('socketClose', this.pc, this).run(
+			this.pc.onDisconnect.bind(this.pc),
+			this.handleAmfReqError.bind(this));
 	}
 	this.emit('close', this);
 };
@@ -295,6 +296,8 @@ Session.prototype.postRequestProc = function postRequestProc(req) {
 
 
 Session.prototype.handleAmfReqError = function handleAmfReqError(err, req) {
+	if (!err) return;
+	if (typeof req !== 'object') req = {};
 	if (typeof err === 'object' && err.type === 'stack_overflow') {
 		// special treatment for stack overflow errors
 		// see https://github.com/trentm/node-bunyan/issues/127
