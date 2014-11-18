@@ -246,7 +246,7 @@ function write(obj, logmsg, callback) {
 function del(obj, logmsg, callback) {
 	log.debug('pers.del: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	delete cache[obj.tsid];
-	pbe.del(obj.tsid, function db(err, res) {
+	pbe.del(obj, function db(err, res) {
 		if (err) log.error(err, 'could not delete: %s', obj.tsid);
 		if (callback) return callback(err, res);
 	});
