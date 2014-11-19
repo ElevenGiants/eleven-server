@@ -1,6 +1,6 @@
 'use strict';
 
-var amf = require('amflib/node-amf/amf');
+var amf = require('node_amf_cc');
 var events = require('events');
 
 
@@ -15,7 +15,8 @@ exports.getDummySocket = function getDummySocket() {
 
 
 exports.amfEnc = function amfEnc(data) {
-	data = amf.serializer().writeObject(data);
+	data = JSON.parse(JSON.stringify(data));
+	data = amf.serialize(data);
 	var ret = new Buffer(Buffer.byteLength(data, 'binary'));
 	ret.write(data, 0, ret.length, 'binary');
 	return ret;
