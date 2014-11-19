@@ -132,20 +132,33 @@ Item.prototype.setXY = function setXY(x, y) {
 
 
 /**
- * Assigns the item to a different container. Removes it from the
+ * Assigns the item to a container (may be the current container, e.g.
+ * when moving an item to a different bag slot). Removes it from the
  * previous container's item list, adds it to the new one and
  * updates internal properties accordingly.
  *
  * @param {Location|Player|Bag} cont new container for the item
- * @param {number} [slot] slot number in the new container (only
- *        applies when adding a non-hidden item to a bag, mandatory
- *        in that case)
+ * @param {number} x x coordinate in the new location, or slot number
+ *        if the container is a player or bag (irrelevant when adding
+ *        as hidden item)
+ * @param {number} y y coordinate in the new location (irrelevant when
+ *        adding to player/bag)
  * @param {boolean} [hidden] item will be hidden in the new container
  *        (`false` by default)
  */
-Item.prototype.setContainer = function setContainer(cont, slot, hidden) {
-	assert(cont !== this.container, util.format(
-		'%s is already contained in %s', this, cont));
+Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
+	var tcont = cont.tcont ? cont.tcont : cont.tsid;
+	assert(utils.isPlayer(tcont) || utils.isLoc(tcont), util.format(
+		'tcont for %s is neither player nor location: %s', this, tcont));
+	if (!utils.isLoc(cont)) {  // bag or player
+		y = -888888888;
+		x = hidden ? -888888888 : x;
+		if (!hidden) {
+			assert(utils.isInt(x) && x < cont.capacity,
+				util.format('invalid slot number for %s: %s', this, x));
+		}
+	}
+	// change entries in old and new container
 	var prev = this.container;
 	this.container = cont;
 	if (prev) {
@@ -159,16 +172,13 @@ Item.prototype.setContainer = function setContainer(cont, slot, hidden) {
 		cont.items[this.tsid] = this;
 	}
 	this.is_hidden = !!hidden;
-	var tcont = cont.tcont ? cont.tcont : cont.tsid;
-	assert(utils.isPlayer(tcont) || utils.isLoc(tcont), util.format(
-		'tcont for %s is neither player nor location: %s', this, tcont));
-	this.queueChanges(true);
-	this.tcont = tcont;
-	if (utils.isBag(cont) && !hidden) {
-		assert(utils.isInt(slot), util.format('invalid slot number for %s: %s',
-			this, slot));
-		this.x = slot;
+	// queue removal change
+	if (prev && prev !== cont) {
+		this.queueChanges(true);
 	}
+	// assign to new container and queue addition/update changes
+	this.tcont = tcont;
+	this.setXY(x, y);
 	this.updatePath();
 	this.queueChanges();
 };

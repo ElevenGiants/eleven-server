@@ -233,8 +233,7 @@ Location.prototype.send = function send(msg, skipChanges, exclude) {
  *        with other nearby items
  */
 Location.prototype.addItem = function addItem(item, x, y, noMerge) {
-	item.setContainer(this);
-	item.setXY(x, y);
+	item.setContainer(this, x, y);
 	//TODO: merging
 };
 

@@ -26,6 +26,7 @@ Bag.prototype.TSID_INITIAL = 'B';
  */
 function Bag(data) {
 	Bag.super_.call(this, data);
+	if (!('capacity' in this)) this.capacity = 16;
 	if (!this.items) this.items = {};
 	if (this.items instanceof Array) {
 		this.items = utils.arrayToHash(this.items);
