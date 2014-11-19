@@ -32,6 +32,7 @@ module.exports = {
 	create: create,
 	getAdmin: getAdmin,
 	getMain: getMain,
+	isTsid: isTsid,
 };
 
 
@@ -375,4 +376,15 @@ function getMain() {
 		include(GSJS_PATH, 'main', gsjsMain);
 	}
 	return gsjsMain;
+}
+
+
+/**
+ * Checks if a string is a valid TSID.
+ *
+ * @param {string} tsid string to test
+ * @returns {boolean} `true` if the given string is a valid TSID
+ */
+function isTsid(tsid) {
+	return typeof tsid === 'string' && tsid[0] in TSID_INITIALS_MAP;
 }

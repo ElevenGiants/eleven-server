@@ -28,7 +28,7 @@ Geo.prototype.TSID_INITIAL = 'G';
  */
 function Geo(data) {
 	data = data || {};
-	data.tsid = rpc.makeLocalTsid(Geo.prototype.TSID_INITIAL, data.tsid);
+	if (!data.tsid) data.tsid = rpc.makeLocalTsid(Geo.prototype.TSID_INITIAL);
 	Geo.super_.call(this, data);
 	this.prepConnects();
 }

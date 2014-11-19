@@ -142,10 +142,9 @@ suite('Item', function () {
 			assert.isTrue('IT' in b2.items);
 		});
 
-		test('removes slot property when adding to a location', function () {
+		test('ignores slot property when adding to a location', function () {
 			var it = new Item({tsid: 'IT'});
 			it.queueChanges = function noop() {};
-			it.slot = 7;
 			var l = new Location({}, new Geo());
 			it.setContainer(l);
 			assert.isUndefined(it.slot);
@@ -217,9 +216,9 @@ suite('Item', function () {
 			assert.strictEqual(it.getPosObject(), b, 'in a nested bag in location');
 		});
 
-		test('handles item without any container gracefully', function () {
+		test('returns undefined for item without any container', function () {
 			var it = new Item();
-			assert.strictEqual(it.getPosObject(), it, 'falls back to item itself');
+			assert.isUndefined(it.getPosObject());
 		});
 	});
 

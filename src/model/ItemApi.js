@@ -20,7 +20,8 @@ var ItemApi = module.exports = function ItemApi() {};
  * * item is in a bag within a location: return the top-level bag
  *
  * @returns {Player|Bag|Item} the game object that determines the
- *          item's actual x/y position
+ *          item's actual x/y position, or `undefined` if no such
+ *          object exists (e.g. while the item is being created)
  */
 ItemApi.prototype.apiGetLocatableContainerOrSelf =
 	function apiGetLocatableContainerOrSelf() {

@@ -96,18 +96,14 @@ function load(tsid) {
 	assert(typeof data === 'object', 'no or invalid data for ' + tsid);
 	orProxy.proxify(data);
 	var obj = gsjsBridge.create(data);
-	// store in request cache (necessary to prevent infinite loops when loading
-	// structures with circular objref dependencies, e.g. Players with Items)
-	RC.getContext().cache[tsid] = obj;
 	if (!rpc.isLocal(obj)) {
-		// wrap object in RPC proxy and update request cache reference
+		// wrap object in RPC proxy and add it to request cache
 		obj = rpc.makeProxy(obj);
 		RC.getContext().cache[tsid] = obj;
 	}
 	else {
 		// make sure any changes to the object are persisted
 		obj = persProxy.makeProxy(obj);
-		RC.getContext().cache[tsid] = obj;
 		// send onLoad event if there is a handler
 		if (obj.onLoad) {
 			obj.onLoad();
@@ -128,6 +124,7 @@ function load(tsid) {
  * @throws {AssertionError} if no object with the given TSID was found
  */
 function get(tsid) {
+	assert(gsjsBridge.isTsid(tsid), 'not a valid TSID: "' + tsid + '"');
 	// get "live" objects from server memory
 	if (tsid in cache) {
 		return cache[tsid];
@@ -180,8 +177,7 @@ function create(modelType, data) {
  *        the live object cache
  * @param {string} logmsg optional information for log messages
  * @param {function} [callback] function to be called after persistence
- *        operations have finished (set by {@link
- *        RequestContext#setPostPersCallback})
+ *        operations have finished
  */
 function postRequestProc(dlist, ulist, logmsg, callback) {
 	async.each(Object.keys(dlist),
@@ -194,12 +190,20 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
 				// to be unloaded from cache
 			}
 			*/
+			// perform write or del operation; we're not inside the fiber
+			// anymore (due to async), so handle errors carefully here
 			var op = obj.deleted ? del : write;
-			op(obj, logmsg, function cb(err, res) {
-				// silently ignore errors (we're not interested in them here,
-				// but we want to call callback when *all* ops have finished)
+			try {
+				op(obj, logmsg, function cb(err, res) {
+					// silently ignore errors (we're not interested in them here,
+					// but we want to call callback when *all* ops have finished)
+					iterCallback(null);
+				});
+			}
+			catch (e) {
+				log.error(e, 'failed to %s %s', op.name, obj);
 				iterCallback(null);
-			});
+			}
 		},
 		function cb() {
 			for (var k in ulist) {
@@ -242,7 +246,7 @@ function write(obj, logmsg, callback) {
 function del(obj, logmsg, callback) {
 	log.debug('pers.del: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	delete cache[obj.tsid];
-	pbe.del(obj.tsid, function db(err, res) {
+	pbe.del(obj, function db(err, res) {
 		if (err) log.error(err, 'could not delete: %s', obj.tsid);
 		if (callback) return callback(err, res);
 	});

@@ -25,6 +25,41 @@ suite('Bag', function () {
 	});
 
 
+	suite('ctor', function () {
+
+		test('loads items correctly (without infinite loop due to container reference)',
+			function (done) {
+			pbeMock.getDB().B1 = {
+				class_tsid: 'bag_furniture',
+				tsid: 'B1',
+				tcont: 'LX',
+				items: [
+					{
+						label: 'Chair',
+						objref: true,
+						tsid: 'I1',
+					},
+				],
+			};
+			pbeMock.getDB().I1 = {
+				class_tsid: 'furniture_chair',
+				tsid: 'I1',
+				tcont: 'LX',
+				container: {
+					label: 'Private Furniture Storage',
+					objref: true,
+					tsid:  'B1',
+					},
+					x: 0, y: 0,
+			};
+			new RC().run(function () {
+				Location.create(Geo.create({tsid: 'GX'}));
+				pers.get('B1');
+			}, done);
+		});
+	});
+
+
 	suite('create', function () {
 
 		test('does its job', function (done) {

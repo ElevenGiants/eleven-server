@@ -26,6 +26,16 @@ Object.defineProperty(Item.prototype, 'isStack', {
 		return this.stackmax > 1;
 	},
 });
+Object.defineProperty(Item.prototype, 'slot', {
+	get: function get() {
+		if (utils.isBag(this.container) && !this.is_hidden) return this.x;
+	},
+});
+Object.defineProperty(Item.prototype, 'type', {
+	get: function get() {
+		return this.class_tsid;
+	},
+});
 
 
 /**
@@ -45,7 +55,6 @@ function Item(data) {
 	if (!utils.isInt(this.count)) this.count = 1;
 	// add some non-enumerable properties (used internally or by GSJS)
 	utils.addNonEnumerable(this, 'collDet', false);
-	utils.addNonEnumerable(this, 'slot', undefined);
 	utils.addNonEnumerable(this, 'path', this.tsid);
 	// enable collision detection if we have a handler function
 	if (typeof this.onPlayerCollision === 'function') {
@@ -158,10 +167,7 @@ Item.prototype.setContainer = function setContainer(cont, slot, hidden) {
 	if (utils.isBag(cont) && !hidden) {
 		assert(utils.isInt(slot), util.format('invalid slot number for %s: %s',
 			this, slot));
-		this.x = this.slot = slot;
-	}
-	else {
-		this.slot = undefined;
+		this.x = slot;
 	}
 	this.updatePath();
 	this.queueChanges();
@@ -174,9 +180,12 @@ Item.prototype.setContainer = function setContainer(cont, slot, hidden) {
  * either a player, a bag in a location, or the item itself.
  *
  * @returns {Player|Bag|Item} the game object that determines the
- *          actual x/y position of the item
+ *          actual x/y position of the item, or `undefined` if no such
+ *          object exists (e.g. while the item is being created)
  */
 Item.prototype.getPosObject = function getPosObject() {
+	// special case: no container (yet, i.e. during item creation)
+	if (!this.container) return;
 	//jscs:disable safeContextKeyword
 	var ret = this;
 	// traverse container chain until we reach a player or a

@@ -49,4 +49,18 @@ suite('gsjsBridge', function () {
 			assert.instanceOf(d, DataContainer);
 		});
 	});
+
+
+	suite('isTsid', function () {
+
+		test('works as expected', function () {
+			assert.isTrue(gsjsBridge.isTsid('PXYZ'));
+			assert.isTrue(gsjsBridge.isTsid('IA'));
+			assert.isFalse(gsjsBridge.isTsid('pXYZ'));
+			assert.isFalse(gsjsBridge.isTsid('FOO'));
+			assert.isFalse(gsjsBridge.isTsid(null));
+			assert.isFalse(gsjsBridge.isTsid(undefined));
+			assert.isFalse(gsjsBridge.isTsid(''));
+		});
+	});
 });

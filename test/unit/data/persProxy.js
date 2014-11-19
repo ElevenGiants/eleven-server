@@ -138,5 +138,14 @@ suite('persProxy', function () {
 			assert.strictEqual(JSON.stringify(p),
 				'{"tsid":"x","arr":[{"x":3},[1,2,3]]}');
 		});
+
+		test('pproxy does not break Array.sort', function () {
+			var arr = ['alph', 'humbaba', 'cosma', 'spriggan'];
+			var p = pp.makeProxy(arr);
+			var sorted = p.sort(function (a, b) {
+				return a < b;
+			});
+			assert.deepEqual(sorted, ['spriggan', 'humbaba', 'cosma', 'alph']);
+		});
 	});
 });

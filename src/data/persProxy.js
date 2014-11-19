@@ -24,7 +24,7 @@ var RC = require('data/RequestContext');
 /**
  * Wraps a game object in a persistence proxy (see module docs above).
  *
- * @param {GameObjeect} obj game object to wrap
+ * @param {GameObject} obj game object to wrap
  * @param {object} [prop] internal
  * @returns {Proxy} wrapped game object
  */
@@ -39,6 +39,12 @@ function makeProxy(obj, prop) {
 		get: function get(target, name, receiver) {
 			if (name === '__isPP') {
 				return true;
+			}
+			if (name === 'sort' && typeof target.sort === 'function' &&
+				target instanceof Array) {
+				// workaround for builtin Array.prototype.sort (calling it on a
+				// proxied array throws "illegal access" string otherwise)
+				return target.sort.bind(target);
 			}
 			if (name === 'valueOf' || name === 'toString') {
 				return function () {

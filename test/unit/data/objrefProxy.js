@@ -2,6 +2,7 @@
 
 var rewire = require('rewire');
 var GameObject = require('model/GameObject');
+var persProxy = require('data/persProxy');
 var orproxy = rewire('data/objrefProxy');
 var persMock = require('../../mock/pers');
 // workaround to make Proxy available in orproxy module after rewiring:
@@ -30,8 +31,8 @@ suite('objrefProxy', function () {
 					throw new Error('should not be called');
 				},
 			});
-			var proxy = orproxy.makeProxy({tsid: 'TEST', data: 'refdata'});
-			assert.strictEqual(proxy.data, 'refdata');
+			var proxy = orproxy.makeProxy({tsid: 'TEST', label: 'refdata'});
+			assert.strictEqual(proxy.label, 'refdata');
 		});
 
 		test('proxy resolves objref when accessing properties not contained ' +
@@ -113,6 +114,30 @@ suite('objrefProxy', function () {
 			assert.isTrue(({}).hasOwnProperty.call(proxy, 'tsid'));
 			assert.isTrue(({}).hasOwnProperty.call(proxy, 'x'));
 			assert.isFalse(({}).hasOwnProperty.call(proxy, 'y'));
+		});
+
+		test('"enumerate" trap works with nested proxies', function () {
+			var o = {tsid: 'IX', a: 1, b: 2, c: 3};
+			o = persProxy.makeProxy(o);
+			persMock.add(o);
+			var proxy = orproxy.makeProxy({tsid: 'IX'});
+			var list = [];
+			for (var prop in proxy) {
+				list.push(prop);
+			}
+			assert.sameMembers(list, ['tsid', 'a', 'b', 'c']);
+		});
+
+		test('proxy supports game object serialization', function () {
+			var go = new GameObject();
+			persMock.add(go);
+			var p = orproxy.makeProxy({tsid: go.tsid});
+			// we're just testing that the following does not throw - which it
+			// does if the GameObject contains non-configurable properties,
+			// because that breaks an invariant (proxy must not report a
+			// non-configurable descriptor for a property that the proxy target
+			// (the objref) does not contain)
+			p.serialize();
 		});
 	});
 
@@ -247,6 +272,13 @@ suite('objrefProxy', function () {
 			assert.strictEqual(orproxy.refify(5), 5);
 			assert.strictEqual(orproxy.refify('y'), 'y');
 			assert.strictEqual(orproxy.refify(null), null);
+		});
+
+		test('does not resolve objref proxies that do not have a label', function () {
+			var p = orproxy.makeProxy(new GameObject({tsid: 'IX', objref: true}));
+			var refd = orproxy.refify(p);  // would throw an ObjRefProxyError if it tried to resolve
+			assert.isFalse('label' in refd, 'resulting objref does not have ' +
+				'a "label" property');
 		});
 	});
 });

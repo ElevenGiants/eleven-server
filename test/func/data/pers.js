@@ -1,5 +1,6 @@
 'use strict';
 
+var config = require('config');
 var path = require('path');
 var pers = require('data/pers');
 var gsjsBridge = require('model/gsjsBridge');
@@ -55,6 +56,26 @@ suite('pers', function () {
 				assert.instanceOf(p, Player);
 				assert.deepEqual(Object.keys(p.items), ['I00000000000002']);
 				assert.isTrue(p.items.I00000000000002.__isORP);
+			}, done);
+		});
+
+		test('remote and local objects are loaded and proxified correctly in' +
+			 ' a cluster setup', function (done) {
+			var cfgBackup = config.get();
+			config.init(false, {net: {gameServers: {
+					gs01: {host: '127.0.0.1', ports: [3000, 3001]},
+				}, rpc: {basePort: 17000},
+			}}, {gsid: 'gs01-01'});
+			// this is dependent on the specific implementation of the TSID ->
+			// server mapping, and will have to be adjusted when that changes
+			pbeMock.getDB().R1 = {tsid: 'R1'};
+			pbeMock.getDB().R2 = {tsid: 'R2'};
+			new RC().run(function () {
+				var group1 = pers.get('R1');
+				assert.isTrue(group1.__isRP);
+				var group2 = pers.get('R2');
+				assert.notProperty(group2, '__isRP');
+				config.init(false, cfgBackup, {});  // restore default test config
 			}, done);
 		});
 	});
