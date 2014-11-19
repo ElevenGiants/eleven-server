@@ -45,7 +45,14 @@ function getDB() {
 function read(tsid) {
 	// load test fixture from disk if we have a fixtures path
 	if (fpath && !(tsid in db)) {
-		var data = fs.readFileSync(path.join(fpath, tsid + '.json'));
+		var data;
+		try {
+			data = fs.readFileSync(path.join(fpath, tsid + '.json'));
+		}
+		catch (e) {
+			if (e.code === 'ENOENT') return null;
+			throw e;
+		}
 		db[tsid] = JSON.parse(data);
 	}
 	counts.read++;

@@ -5,6 +5,8 @@ var Geo = require('model/Geo');
 var Item = require('model/Item');
 var Bag = require('model/Bag');
 var Player = require('model/Player');
+var pers = require('data/pers');
+var pbeMock = require('../../mock/pbe');
 
 
 suite('Location', function () {
@@ -44,6 +46,14 @@ suite('Location', function () {
 
 
 	suite('updateGeo', function () {
+
+		setup(function () {
+			pers.init(pbeMock);
+		});
+
+		teardown(function () {
+			pers.init();  // disable mock back-end
+		});
 
 		test('does its job', function () {
 			var l = new Location({}, new Geo({layers: {middleground: {doors: {}}}}));

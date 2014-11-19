@@ -98,7 +98,7 @@ suite('Location', function () {
 				var door = l.clientGeometry.layers.middleground.doors.door_1300233269757;
 				assert.strictEqual(door.connect.street_tsid, 'LCR177QO65T1EON');
 				assert.isTrue(door.connect.target.__isORP);
-				assert.strictEqual(pbeMock.getCounts().read, 2);
+				assert.strictEqual(pbeMock.getCounts().read, 4);
 				assert.strictEqual(pbeMock.getCounts().write, 0);
 				assert.strictEqual(pbeMock.getCounts().del, 0);
 			}, done);

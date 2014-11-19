@@ -61,11 +61,23 @@ Geo.prototype.prepConnects = function prepConnects() {
 			var signpost = mg.signposts[k];
 			for (i in signpost.connects) {
 				signpost.connects[i] = prepConnect(signpost.connects[i]);
+				// remove links to unavailable locations:
+				if (!pers.exists(signpost.connects[i].street_tsid)) {
+					log.info('%s: removing unavailable signpost connect %s',
+						this, signpost.connects[i].street_tsid);
+					delete signpost.connects[i];
+				}
 			}
 		}
 		for (k in mg.doors) {
 			var door = mg.doors[k];
 			door.connect = prepConnect(door.connect);
+			// remove links to unavailable locations:
+			if (!pers.exists(door.connect.street_tsid)) {
+				log.info('%s: removing unavailable door connect %s',
+					this, door.connect.street_tsid);
+				delete mg.doors[k];
+			}
 		}
 	}
 };

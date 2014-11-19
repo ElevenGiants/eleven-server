@@ -8,7 +8,7 @@
  * ```
  *     init(config, callback)
  *     close(callback)
- *     read(tsid) -> gameObjectData
+ *     read(tsid) -> object
  *     write(obj, callback)
  *     del(obj, callback)
  * ```
@@ -34,6 +34,7 @@
 // public interface
 module.exports = {
 	init: init,
+	exists: exists,
 	get: get,
 	create: create,
 	postRequestProc: postRequestProc,
@@ -79,21 +80,42 @@ function init(backEnd, config, callback) {
 
 
 /**
+ * Checks if the persistence layer contains an object with the given
+ * TSID, *without actually loading the object*. This should not be used
+ * to test if an object exists before reading or writing it
+ * (anti-pattern, potential race condition), only for specific cases
+ * where it is necessary to perform distinct actions based on the
+ * existence of an object.
+ *
+ * @param {string} tsid TSID to check
+ * @returns {boolean} `true` if the object exists, `false` otherwise
+ */
+function exists(tsid) {
+	assert(pbe, 'persistence back-end not set');
+	return pbe.read(tsid) !== null;
+}
+
+
+/**
  * Loads the game object with the given TSID from persistence.
  * Depending on whether the GS is "responsible" for this object, it
  * will be wrapped either in a {@link module:data/persProxy|persProxy}
  * or {@link module:data/rpcProxy|rpcProxy}.
  *
  * @param {string} tsid TSID of the object to load
- * @returns {GameObject} the requested object
- * @throws {AssertionError} if no object with the given TSID was found
+ * @returns {GameObject|null} the requested object, or `null` if no
+ *          object data was found for the given TSID
  */
 function load(tsid) {
 	assert(pbe, 'persistence back-end not set');
 	log.debug('pers.load: %s', tsid);
 	var data;
 	data = pbe.read(tsid);
-	assert(typeof data === 'object', 'no or invalid data for ' + tsid);
+	if (typeof data !== 'object' || data === null) {
+		log.info(new Error('dummy error for stack trace'),
+			'no or invalid data for %s', tsid);
+		return null;
+	}
 	orProxy.proxify(data);
 	var obj = gsjsBridge.create(data);
 	if (!rpc.isLocal(obj)) {

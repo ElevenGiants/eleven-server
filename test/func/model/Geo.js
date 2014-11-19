@@ -1,5 +1,6 @@
 'use strict';
 
+var path = require('path');
 var pers = require('data/pers');
 var RC = require('data/RequestContext');
 var pbeMock = require('../../mock/pbe');
@@ -10,16 +11,23 @@ var utils = require('utils');
 
 suite('Geo', function () {
 
+	setup(function (done) {
+		pers.init(pbeMock, path.resolve(path.join(__dirname, '../fixtures')), done);
+	});
+
+	teardown(function () {
+		pers.init();  // disable mock back-end
+	});
+
+
 	suite('create', function () {
 
 		setup(function () {
 			gsjsBridge.reset();
-			pers.init(pbeMock);
 		});
 
 		teardown(function () {
 			gsjsBridge.reset();
-			pers.init();  // disable mock back-end
 		});
 
 
@@ -40,11 +48,25 @@ suite('Geo', function () {
 			);
 		});
 
-
 		test('fails with invalid custom TSID', function () {
 			assert.throw(function () {
 				Geo.create({tsid: 'IXYZ'});
 			}, assert.AssertionError);
+		});
+	});
+
+
+	suite('prepConnects', function () {
+
+		this.slow(100);
+
+		test('removes unavailable connects', function (done) {
+			new RC().run(function () {
+				var g = pers.get('GLI32G3NUTD100I');
+				assert.notProperty(g.layers.middleground.doors, 'door_1300484753304');
+				var signpost = g.layers.middleground.signposts.signpost_1;
+				assert.deepEqual(signpost.connects, {});
+			}, done);
 		});
 	});
 });
