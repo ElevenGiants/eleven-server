@@ -12,11 +12,18 @@ var Item = require('model/Item');
 var Bag = require('model/Bag');
 var pers = require('data/pers');
 var orProxy = require('data/objrefProxy');
+var utils = require('utils');
 var lodash = require('lodash');
 
 
 function getItemType(classTsid) {
 	return (classTsid.substr(0, 4) === 'bag_') ? Bag : Item;
+}
+
+
+function isPlayerOnline(tsid) {
+	var p = pers.get(tsid);
+	return p !== undefined && p.isConnected();
 }
 
 
@@ -117,9 +124,7 @@ exports.apiFindObject = function apiFindObject(tsid) {
  */
 exports.apiIsPlayerOnline = function apiIsPlayerOnline(tsid) {
 	log.debug('global.apiIsPlayerOnline(%s)', tsid);
-	//TODO: implement me
-	log.warn('TODO global.apiIsPlayerOnline not implemented yet');
-	return false;
+	return isPlayerOnline(tsid);
 };
 
 
@@ -234,10 +239,22 @@ exports.apiSendToAll = function apiSendToAll(msg) {
 };
 
 
-exports.apiSendToGroup = function apiSendToGroup(msg, targets) {
-	log.debug('global.apiSendToGroup(%s, %s)', msg, targets);
-	log.warn('TODO global.apiSendToGroup not implemented yet');
-	//TODO: implement&document me
+/**
+ * Sends a message to a group of players.
+ *
+ * @param {object} msg the message to send
+ * @param {object|array|string|Player} recipients player list parameter
+ *        (see {@link module:utils~playersArgToList|playersArgToList}
+ *        for details)
+ */
+exports.apiSendToGroup = function apiSendToGroup(msg, recipients) {
+	log.debug('global.apiSendToGroup(%s, %s)', msg, recipients);
+	var tsids = utils.playersArgToList(recipients);
+	tsids.forEach(function iter(tsid) {
+		if (isPlayerOnline(tsid)) {
+			pers.get(tsid).send(msg);
+		}
+	});
 };
 
 
