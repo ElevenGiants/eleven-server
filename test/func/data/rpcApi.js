@@ -26,8 +26,7 @@ suite('rpcApi', function () {
 
 	suite('createPlayer', function () {
 
-		//TODO: test fails because of missing API functions and should be activated once they are available
-		test.skip('works as expected', function (done) {
+		test('works as expected', function (done) {
 			var g = new Geo({tsid: 'GLI32G3NUTD100I'});
 			var l = new Location({tsid: 'LLI32G3NUTD100I'}, g);
 			var db = pbeMock.getDB();
