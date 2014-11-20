@@ -211,7 +211,8 @@ suite('Player', function () {
 					rc.cache[g.tsid] = g;
 					rc.cache[l.tsid] = l;
 					rc.cache[p.tsid] = p;
-					var it = new Item({tsid: 'IX', class_tsid: 'pi', tcont: l.tsid});
+					var it = new Item({tsid: 'IX', class_tsid: 'pi',
+						tcont: l.tsid, container: l});
 					p.addToSlot(it, 5);
 					p.session = {
 						send: function send(msg) {

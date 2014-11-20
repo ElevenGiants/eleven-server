@@ -26,6 +26,7 @@ Bag.prototype.TSID_INITIAL = 'B';
  */
 function Bag(data) {
 	Bag.super_.call(this, data);
+	if (!('capacity' in this)) this.capacity = 16;
 	if (!this.items) this.items = {};
 	if (this.items instanceof Array) {
 		this.items = utils.arrayToHash(this.items);
@@ -160,6 +161,27 @@ Bag.prototype.getSlot = function getSlot(slot) {
 		}
 	}
 	return null;
+};
+
+
+/**
+ * Retrieves an item specified by slot number or path.
+ *
+ * @param {number|string} slotOrPath a bag slot number or a path string
+ *        (like "BAGID1/ITEMID2") pointing to an item in this bag
+ * @returns {Item|null} the requested item, or `null` if not found
+ */
+Bag.prototype.getSlotOrPath = function getSlotOrPath(slotOrPath) {
+	var ret = null;
+	if (slotOrPath !== undefined && slotOrPath !== null) {
+		if (utils.isInt(slotOrPath)) {
+			ret = this.getSlot(slotOrPath) || null;
+		}
+		else {
+			ret = this.getAllItems()[slotOrPath] || null;
+		}
+	}
+	return ret;
 };
 
 

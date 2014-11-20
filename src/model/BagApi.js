@@ -32,7 +32,7 @@ BagApi.prototype.apiGetAllItems = function apiGetAllItems() {
  */
 BagApi.prototype.apiAddHiddenStack = function apiAddHiddenStack(item) {
 	log.debug('%s.apiAddHiddenStack(%s)', this, item);
-	item.setContainer(this, undefined, true);
+	item.setContainer(this, undefined, undefined, true);
 };
 
 

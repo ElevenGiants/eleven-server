@@ -249,8 +249,7 @@ suite('Item', function () {
 			}, done);
 		});
 
-		//TODO: test fails because of missing API functions and should be activated once they are available
-		test.skip('creates compact change set if desired', function (done) {
+		test('creates compact change set if desired', function (done) {
 			new RC().run(function () {
 				var it = Item.create('npc_piggy');
 				var cd = it.getChangeData(null, false, true);
@@ -296,7 +295,8 @@ suite('Item', function () {
 				l.players[p.tsid] = p;
 				l.players[p2.tsid] = p2;
 				rc.cache[p.tsid] = p;
-				var it = new Item({tsid: 'IX', class_tsid: 'meat', tcont: l.tsid});
+				var it = new Item({tsid: 'IX', class_tsid: 'meat',
+					tcont: l.tsid, container: l});
 				it.setContainer(p, 0);
 				assert.lengthOf(p.changes, 2);
 				var cd = p.changes[0].itemstack_values.location[it.tsid];

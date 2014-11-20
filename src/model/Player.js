@@ -183,6 +183,16 @@ Player.prototype.onDisconnect = function onDisconnect() {
 
 
 /**
+ * Checks if a client is currently connected to the GS for this player.
+ *
+ * @returns {boolean} `true` if the player is currently online
+ */
+Player.prototype.isConnected = function isConnected() {
+	return this.session !== undefined && this.session !== null;
+};
+
+
+/**
  * Removes the player and all related objects (inventory items, DCs,
  * quests etc) from the GS live object cache (or more specifically,
  * schedules their removal at the end of the current request).
@@ -322,6 +332,10 @@ Player.prototype.endMove = function endMove() {
  * client.
  *
  * @param {string} newLocId TSID of the location the player is moving to
+ * @returns {object|undefined} a game server configuration record (see
+ *          {@link module:config~getGSConf|getGSConf}) with an added
+ *          `token` element, or `undefined` if the new location is on
+ *          the same GS as the current one
  */
 Player.prototype.gsMoveCheck = function gsMoveCheck(newLocId) {
 	if (rpc.isLocal(newLocId)) {
@@ -344,7 +358,9 @@ Player.prototype.gsMoveCheck = function gsMoveCheck(newLocId) {
 	RC.getContext().setPostPersCallback(function triggerReconnect() {
 		self.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
 	});
-	return gsConf;
+	var ret = utils.shallowCopy(gsConf);
+	ret.token = token;
+	return ret;
 };
 
 
@@ -438,7 +454,7 @@ Player.prototype.queueChanges = function queueChanges(item, removed, compact) {
  * @param {object} annc announcement data
  */
 Player.prototype.queueAnnc = function queueAnnc(annc) {
-	log.trace({annc: annc}, 'queueing annc: %s');
+	log.trace({annc: annc}, 'queueing annc');
 	this.anncs.push(annc);
 };
 

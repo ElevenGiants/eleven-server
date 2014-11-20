@@ -88,6 +88,13 @@ suite('Bag', function () {
 				Bag.create('pi');
 			}, assert.AssertionError);
 		});
+
+		test('capacity defined in GSJS overrides default', function (done) {
+			new RC().run(function () {
+				var b = Bag.create('bag_moving_box');
+				assert.strictEqual(b.capacity, 1000);
+			}, done);
+		});
 	});
 
 

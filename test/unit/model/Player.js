@@ -333,6 +333,7 @@ suite('Player', function () {
 			new RC().run(function () {
 				var res = p.gsMoveCheck('LREMOTE');
 				assert.strictEqual(res.hostPort, '12.34.56.78:1445');
+				assert.strictEqual(res.token, 'P1');
 				done();
 			});
 		});

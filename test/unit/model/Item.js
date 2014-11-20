@@ -110,11 +110,12 @@ suite('Item', function () {
 			var it = new Item({tsid: 'IT'});
 			it.queueChanges = function noop() {};  // this part is not tested here
 			var b = new Bag({tsid: 'BX', tcont: 'LDUMMY'});
-			it.setContainer(b, 3);
+			it.setContainer(b, 3, 7);
 			assert.strictEqual(it.container, b);
 			assert.strictEqual(it.tcont, 'LDUMMY');
 			assert.strictEqual(it.path, 'BX/IT');
 			assert.strictEqual(it.slot, 3);
+			assert.notStrictEqual(it.y, 7);
 			assert.strictEqual(b.items.IT, it);
 			assert.isFalse(it.isHidden);
 		});
@@ -123,7 +124,7 @@ suite('Item', function () {
 			var it = new Item({tsid: 'IT'});
 			it.queueChanges = function noop() {};
 			var b = new Bag({tcont: 'LFOO'});
-			it.setContainer(b, 3, true);
+			it.setContainer(b, 3, undefined, true);
 			assert.notProperty(b.items, 'IT');
 			assert.strictEqual(b.hiddenItems.IT, it);
 			assert.strictEqual(it.slot, undefined, 'no slot number for hidden items');
@@ -142,6 +143,25 @@ suite('Item', function () {
 			assert.isTrue('IT' in b2.items);
 		});
 
+		test('can be used to move item to another slot', function () {
+			var it = new Item({tsid: 'IT'});
+			it.queueChanges = function noop() {};
+			var b = new Bag({tcont: 'PXYZ'});
+			it.setContainer(b, 1);
+			assert.deepEqual(b.items, {IT: it});
+			assert.strictEqual(it.container, b);
+			assert.strictEqual(it.slot, 1);
+			var c = 0;
+			it.queueChanges = function count() {
+				c++;
+			};
+			it.setContainer(b, 6);
+			assert.deepEqual(b.items, {IT: it});
+			assert.strictEqual(it.container, b);
+			assert.strictEqual(it.slot, 6);
+			assert.strictEqual(c, 1, 'only one change (addition/update) queued');
+		});
+
 		test('ignores slot property when adding to a location', function () {
 			var it = new Item({tsid: 'IT'});
 			it.queueChanges = function noop() {};
@@ -149,8 +169,10 @@ suite('Item', function () {
 			it.setContainer(l);
 			assert.isUndefined(it.slot);
 			it.container = undefined;  // just so we can try again
-			it.setContainer(l, 13);
-			assert.isUndefined(it.slot, 'slot number argument is ignored');
+			it.setContainer(l, 13, 29);
+			assert.strictEqual(it.x, 13);
+			assert.strictEqual(it.y, 29);
+			assert.isUndefined(it.slot, 'does not set x coordinate as slot number');
 		});
 
 		test('fails if item is already in that container', function () {
@@ -173,12 +195,15 @@ suite('Item', function () {
 
 		test('fails with invalid or missing slot number', function () {
 			var it = new Item();
-			var b = new Bag({tsid: 'BX', tcont: 'LDUMMY'});
+			var b = new Bag({tsid: 'BX', tcont: 'LDUMMY', capacity: 10});
 			assert.throw(function () {
 				it.setContainer(b, 'a');
 			}, assert.AssertionError);
 			assert.throw(function () {
 				it.setContainer(b);
+			}, assert.AssertionError);
+			assert.throw(function () {
+				it.setContainer(b, 10);
 			}, assert.AssertionError);
 		});
 	});
