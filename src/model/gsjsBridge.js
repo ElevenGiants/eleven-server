@@ -261,7 +261,8 @@ function loadProto(group, klass) {
 	var proto = ctor.prototype;
 	// copy over props from group base class (if applicable)
 	var baseName = group.slice(0, -1);
-	if (group !== 'achievements') {
+	if (group !== 'achievements' &&
+		(group !== 'items' || klass.substr(0, 7) !== 'catalog')) {
 		compose(group, baseName, proto);
 	}
 	// special cases for bags and players
@@ -294,6 +295,7 @@ function getModelClass(group, klass) {
 		case 'groups':
 			return Group;
 		case 'items':
+			if (klass.substr(0, 7) === 'catalog') return;
 			if (klass.substr(0, 3) === 'bag') return Bag;
 			return Item;
 		case 'locations':

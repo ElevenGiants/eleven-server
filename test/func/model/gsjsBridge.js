@@ -94,6 +94,17 @@ suite('gsjsBridge', function () {
 			assert.isDefined(gsjsBridge.getProto('quests', 'quest'));
 		});
 
+		test('catalog pseudo-objects do not inherit from GameObject', function () {
+			var cat = gsjsBridge.getProto('items', 'catalog');
+			assert.notInstanceOf(cat, GameObject);
+			assert.notInstanceOf(cat, Item);
+			assert.notProperty(cat, 'isBag', 'does not inherit properties from item.js');
+			cat = gsjsBridge.getProto('items', 'catalog_buffs');
+			assert.notInstanceOf(cat, GameObject);
+			assert.notInstanceOf(cat, Item);
+			assert.notProperty(cat, 'isBag', 'does not inherit properties from item.js');
+		});
+
 		test('itemDef is initialized properly', function () {
 			var jar = gsjsBridge.create({class_tsid: 'firefly_jar'}, Item);
 			assert.property(jar, 'itemDef');

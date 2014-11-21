@@ -7,6 +7,7 @@ var rpc = rewire('data/rpc');
 var persMock = require('../../mock/pers');
 var rcMock = require('../../mock/RequestContext');
 var GameObject = require('model/GameObject');
+var gsjsBridge = require('model/gsjsBridge');
 
 
 suite('rpc', function () {
@@ -193,6 +194,34 @@ suite('rpc', function () {
 					done();
 				});
 			});
+		});
+	});
+
+
+	suite('model API global function calls', function () {
+
+		setup(function () {
+			config.init(true, CONFIG, {gsjs: {
+				config: 'config_prod',
+			}});
+			gsjsBridge.init(true);
+		});
+
+		teardown(function () {
+			gsjsBridge.reset();
+		});
+
+
+		test('apiFindItemPrototype retrieves catalog objects properly', function (done) {
+			var func = rpc.__get__('globalApiRequest');
+			func('TEST', 'apiFindItemPrototype', ['catalog'],
+				function cb(err, res) {
+					if (err) return done(err);
+					assert.notProperty(res, 'objref');
+					assert.isObject(res, 'class_tsids');
+					done();
+				}
+			);
 		});
 	});
 });
