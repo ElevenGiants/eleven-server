@@ -12,6 +12,7 @@ module.exports = {
 	toString: toString,
 	getConnectData: getConnectData,
 	createPlayer: createPlayer,
+	getGsjsConfig: getGsjsConfig,
 };
 
 var NEW_PLAYER_LOC = 'LLI32G3NUTD100I';
@@ -23,6 +24,7 @@ var config = require('config');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
 var util = require('util');
+var gsjsBridge = require('model/gsjsBridge');
 var Player = require('model/Player');
 
 
@@ -99,4 +101,9 @@ function createPlayer(userId, name) {
 	});
 	pc.unload();
 	return pc.tsid;
+}
+
+
+function getGsjsConfig() {
+	return gsjsBridge.getConfig();
 }
