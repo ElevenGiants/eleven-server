@@ -31,6 +31,7 @@ module.exports = {
 	getProto: getProto,
 	create: create,
 	getAdmin: getAdmin,
+	getConfig: getConfig,
 	getMain: getMain,
 	isTsid: isTsid,
 };
@@ -162,7 +163,7 @@ function init(noPreload, callback) {
  */
 function initDependencies(testConfig, testApi) {
 	dependencies.api = testApi || globalApi;
-	dependencies.config = compose(testConfig || config.get('gsjs:config'));
+	dependencies.config = testConfig || compose(config.get('gsjs:config'));
 	dependencies.utils = compose('utils');
 	include(GSJS_PATH, 'common');
 }
@@ -378,6 +379,11 @@ function getMain() {
 		include(GSJS_PATH, 'main', gsjsMain);
 	}
 	return gsjsMain;
+}
+
+
+function getConfig() {
+	return dependencies.config;
 }
 
 

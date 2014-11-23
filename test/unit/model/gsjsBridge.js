@@ -63,4 +63,22 @@ suite('gsjsBridge', function () {
 			assert.isFalse(gsjsBridge.isTsid(''));
 		});
 	});
+
+
+	suite('getConfig', function () {
+
+		setup(function () {
+			gsjsBridge.init(true);
+		});
+
+		teardown(function () {
+			gsjsBridge.reset();
+		});
+
+
+		test('works as expected', function () {
+			gsjsBridge.__get__('initDependencies')({dummy: 'config'}, {});
+			assert.strictEqual(gsjsBridge.getConfig().dummy, 'config');
+		});
+	});
 });

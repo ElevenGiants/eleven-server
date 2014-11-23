@@ -115,7 +115,7 @@ suite('gsjsBridge', function () {
 		});
 
 		test('GSJS utils and config are loaded', function () {
-			gsjsBridge.__get__('initDependencies')('config_prod');
+			gsjsBridge.__get__('initDependencies')();
 			var human = gsjsBridge.create({class_tsid: 'human'}, Player);
 			assert.strictEqual(human.skills_get('alchemy_2').name, 'Alchemy',
 				'config is loaded (including includes)');
@@ -124,7 +124,7 @@ suite('gsjsBridge', function () {
 		});
 
 		test('global API functions can be used', function (done) {
-			gsjsBridge.__get__('initDependencies')('config_prod', {
+			gsjsBridge.__get__('initDependencies')({}, {
 				apiIsPlayerOnline: function apiIsPlayerOnline(tsid) {
 					assert.strictEqual(tsid, human.tsid);
 					done();

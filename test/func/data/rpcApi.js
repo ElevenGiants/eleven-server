@@ -50,4 +50,17 @@ suite('rpcApi', function () {
 			);
 		});
 	});
+
+
+	suite('getGsjsConfig', function () {
+
+		test('works as expected', function (done) {
+			new RC().run(function () {
+				var cfg = api.getGsjsConfig();
+				assert.isObject(cfg.physics_configs, 'from config_base.js');
+				assert.isObject(cfg.music_map, 'from inc_data_sounds.js');
+				assert.isObject(cfg.data_skills, 'from inc_data_skills.js');
+			}, done);
+		});
+	});
 });
