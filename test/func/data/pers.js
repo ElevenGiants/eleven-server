@@ -79,4 +79,27 @@ suite('pers', function () {
 			}, done);
 		});
 	});
+
+
+	suite('postRequestProc', function () {
+
+		test('suspends timers when deleting/unloading', function (done) {
+			var go1 = new GameObject({tsid: 'GO1'});
+			go1.deleted = true;
+			var go2 = new GameObject({tsid: 'GO2'});
+			var called = false;
+			go1.foo = go2.foo = function foo() {
+				called = true;
+			};
+			go1.setGsTimer({fname: 'foo', delay: 5});
+			go2.setGsTimer({fname: 'foo', delay: 10, interval: true});
+			pers.postRequestProc({GO1: go1, GO2: go2}, {GO2: go2});
+			assert.notProperty(go1.gsTimers.timer.foo, 'handle');
+			assert.notProperty(go2.gsTimers.interval.foo, 'handle');
+			setTimeout(function wait() {
+				assert.isFalse(called);
+				done();
+			}, 20);
+		});
+	});
 });
