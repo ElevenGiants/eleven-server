@@ -139,7 +139,7 @@ Player.prototype.serialize = function serialize() {
  */
 Player.prototype.onLoginStart = function onLoginStart(session, isRelogin) {
 	this.session = session;
-	//TODO: start onTimePlaying interval
+	this.setGsTimer({fname: 'onTimePlaying', delay: 60000, interval: true});
 	if (isRelogin) {
 		this.onRelogin();
 	}
@@ -164,7 +164,8 @@ Player.prototype.onDisconnect = function onDisconnect() {
 	// error/connection loss (in case of an inter-GS moves, the location already
 	// points to another castle^Wserver)
 	if (rpc.isLocal(this.location)) {
-		//TODO: clear onTimePlaying interval
+		// clear onTimePlaying interval
+		this.cancelGsTimer('onTimePlaying', true);
 		// remove from location, onExit callbacks etc.
 		this.startMove();
 		// GSJS logout event
