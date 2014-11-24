@@ -12,16 +12,17 @@ import errno
 import logging
 import os
 import os.path
-from os.path import sep
 import re
 import sys
 
 
 LOGLEVEL_TRACE = 5  # custom log level
 
+SEP = '/'  # universally works as path separator in node
+
 SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 SRC_PATH = os.path.realpath(os.path.join(SCRIPT_PATH, '../../eleven-gsjs'))
-DST_PATH = os.path.realpath(os.path.join(SCRIPT_PATH, '../src/gsjs'))  # take care - script will overwrite things in here without warning! 
+DST_PATH = os.path.realpath(os.path.join(SCRIPT_PATH, '../src/gsjs'))  # take care - script will overwrite things in here without warning!
 
 INCLUDE_PREFIX = '//#include'
 
@@ -58,7 +59,7 @@ def process_includes(module, lines):
         else:
             log.trace('#include directive: %s' % line.strip())
             incfiles = line[line.find(INCLUDE_PREFIX) + len(INCLUDE_PREFIX):].split()
-            incfiles = ['.%s%s' % (sep, s.strip(',')) for s in incfiles if s.strip != '']
+            incfiles = ['.%s%s' % (SEP, s.strip(',')) for s in incfiles if s.strip != '']
             for incfile in incfiles:
                 out.append('include(__dirname, \'%s\', this);' % incfile)
     return out
@@ -119,7 +120,7 @@ def process_classify(module, lines):
             varname = varname[:varname.find('=')].strip()
             varnames.append(varname)
             lines[i] = lines[i].replace('var ', 'this.', 1)
-        # horrible special cases for items: 
+        # horrible special cases for items:
         elif lines[i].strip() == 'if (this.consumable_label_single) itemDef.consumable_label_single = this.consumable_label_single;':
             lines[i] = 'if (this.consumable_label_single) this.itemDef.consumable_label_single = this.consumable_label_single;'
         elif lines[i].strip() == 'if (this.consumable_label_plural) itemDef.consumable_label_plural = this.consumable_label_plural;':
@@ -164,9 +165,9 @@ def apify(module, lines):
 
 def mk_dest_dir(module):
     path = DST_PATH
-    if module.find(sep) != -1:
-        dir = module[:module.rfind(sep)]
-        path = sep.join([DST_PATH, dir])
+    if module.find(SEP) != -1:
+        dir = module[:module.rfind(SEP)]
+        path = SEP.join([DST_PATH, dir])
     try:
         os.makedirs(path)
     except OSError as e:
@@ -179,7 +180,7 @@ def mk_dest_dir(module):
 def process(module):
     log.debug('processing %s' % module)
     mk_dest_dir(module)
-    with open(sep.join([SRC_PATH, module])) as f:
+    with open(SEP.join([SRC_PATH, module])) as f:
         lines = f.readlines()
     if module in GLOBAL_EXPORT or module in MODULE_EXPORT:
         process_export_functions(module, lines)
@@ -189,7 +190,7 @@ def process(module):
     lines = process_includes(module, lines)
     apify(module, lines)
     # output
-    outfile = sep.join([DST_PATH, module])
+    outfile = SEP.join([DST_PATH, module])
     log.trace('writing %s' % outfile)
     with open(outfile, 'w') as f:
         for line in lines:
@@ -238,7 +239,7 @@ def main():
             if reldir == '':
                 modpath = file
             else:
-                modpath = sep.join([reldir, file])
+                modpath = SEP.join([reldir, file])
             if not file.endswith('.js'):
                 log.debug('skipping non-JS file %s' % modpath)
                 continue
