@@ -168,16 +168,22 @@ suite('pers', function () {
 	suite('postRequestProc/write/del/unload', function () {
 
 		test('does the job', function () {
-			var dlist = {
-				I1: new GameObject({tsid: 'I1'}),
-				I2: new GameObject({tsid: 'I2'}),
-				P1: new GameObject({tsid: 'P1'}),
-			};
+			var i1 = new GameObject({tsid: 'I1'});
+			var i2 = new GameObject({tsid: 'I2'});
+			var p1 = new GameObject({tsid: 'P1'});
+			var dlist = {I1: i1, I2: i2, P1: p1};
+			pers.__set__('cache', {I1: i1, I2: i2, P1: p1});
 			dlist.I2.deleted = true;
 			dlist.P1.deleted = false;
 			pers.postRequestProc(dlist, {});
 			assert.strictEqual(pbeMock.getCounts().write, 2);
 			assert.strictEqual(pbeMock.getCounts().del, 1);
+		});
+
+		test('skips objects that are not in the live object cache', function () {
+			var i1 = new GameObject({tsid: 'I1'});
+			pers.postRequestProc({I1: i1}, {});
+			assert.strictEqual(pbeMock.getCounts().write, 0);
 		});
 
 		test('unloads objects from cache', function () {
@@ -193,7 +199,6 @@ suite('pers', function () {
 
 		test('calls callback after persistence operations', function (done) {
 			var o1 = new GameObject({tsid: 'I1'});
-			pers.__set__('cache', {I1: o1});
 			var dlist = {I1: o1};
 			var callbackCalled = false;
 			var writeCalled = false;
@@ -206,6 +211,7 @@ suite('pers', function () {
 				}
 			};
 			pers.init(pbe, undefined, function () {  // set custom back-end mock
+				pers.__set__('cache', {I1: o1});
 				pers.postRequestProc(dlist, {}, '', function cb() {
 					callbackCalled = true;
 					assert.isTrue(writeCalled);

@@ -204,6 +204,10 @@ function create(modelType, data) {
 function postRequestProc(dlist, ulist, logmsg, callback) {
 	async.each(Object.keys(dlist),
 		function iterate(k, iterCallback) {
+			// if the object is not even actually loaded, skip it (this happens
+			// in specific circumstances, e.g. for some DCs when unloading a
+			// player; dlist[k] is just an objref proxy in that case)
+			if (!(k in cache)) return iterCallback(null);
 			var obj = dlist[k];
 			//TODO: stop game object timers/intervals
 			/*

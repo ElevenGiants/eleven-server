@@ -9,6 +9,7 @@ var Player = require('model/Player');
 var Item = require('model/Item');
 var pbeMock = require('../../mock/pbe');
 var RC = require('data/RequestContext');
+var orproxy = require('data/objrefProxy');
 
 
 suite('pers', function () {
@@ -77,6 +78,33 @@ suite('pers', function () {
 				assert.notProperty(group2, '__isRP');
 				config.init(false, cfgBackup, {});  // restore default test config
 			}, done);
+		});
+	});
+
+
+	suite('postRequestProc', function () {
+
+		test('skips objects that are not in the live object cache', function (done) {
+			pbeMock.getDB().G1 = new GameObject({tsid: 'G1'});
+			pbeMock.getDB().G2 = new GameObject({tsid: 'G2'});
+			var g2p = orproxy.makeProxy({
+				tsid: 'G2',
+				objref: true,
+			});
+			var rc = new RC();
+			rc.run(
+				function () {
+					rc.setDirty(pers.get('G1'));
+					rc.setUnload(g2p);
+				},
+				function cb(err, res) {
+					if (err) return done(err);
+					var counts = pbeMock.getCounts();
+					assert.strictEqual(counts.read, 1, 'just G1 was read');
+					assert.strictEqual(counts.write, 1, 'just G1 was written');
+					done();
+				}
+			);
 		});
 	});
 });
