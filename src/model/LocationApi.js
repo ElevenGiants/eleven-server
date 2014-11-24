@@ -176,3 +176,11 @@ LocationApi.prototype.apiLockStack = function apiLockStack(path) {
 	//TODO: locking
 	return this.getPath(path);
 };
+
+
+LocationApi.prototype.apiNotifyItemStateChanged =
+	function apiNotifyItemStateChanged(item) {
+	log.debug('%s.apiNotifyItemStateChanged(%s)', this, item);
+	//TODO implement&document me
+	log.warn('TODO Location.apiNotifyItemStateChanged not implemented yet');
+};
