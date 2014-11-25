@@ -146,5 +146,20 @@ suite('RequestContext', function () {
 				done();
 			});
 		});
+
+		test('does not invoke callback twice in case of errors in callback',
+			function () {
+			var calls = 0;
+			assert.throw(function () {
+				new RC().run(
+					function dummy() {},
+					function callback(err, res) {
+						calls++;
+						assert.strictEqual(calls, 1);
+						throw new Error('error in callback');
+					}
+				);
+			}, Error, 'error in callback');
+		});
 	});
 });
