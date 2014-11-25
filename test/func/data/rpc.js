@@ -5,6 +5,7 @@ var rewire = require('rewire');
 var config = require('config');
 var rpc = rewire('data/rpc');
 var persMock = require('../../mock/pers');
+var RC = require('data/RequestContext');
 var rcMock = require('../../mock/RequestContext');
 var GameObject = require('model/GameObject');
 var gsjsBridge = require('model/gsjsBridge');
@@ -198,30 +199,65 @@ suite('rpc', function () {
 	});
 
 
-	suite('model API global function calls', function () {
+	suite('model API function calls', function () {
 
-		setup(function () {
-			config.init(true, CONFIG, {gsjs: {
-				config: 'config_prod',
-			}});
+		setup(function (done) {
+			// set up client/server loopback connection within the same process
+			config.init(false, CONFIG, {gsid: 'gs01-01', gsjs: {config: 'config_prod'}});
 			gsjsBridge.init(true);
-		});
-
-		teardown(function () {
-			gsjsBridge.reset();
-		});
-
-
-		test('apiFindItemPrototype retrieves catalog objects properly', function (done) {
-			var func = rpc.__get__('globalApiRequest');
-			func('TEST', 'apiFindItemPrototype', ['catalog'],
-				function cb(err, res) {
-					if (err) return done(err);
-					assert.notProperty(res, 'objref');
-					assert.isObject(res, 'class_tsids');
+			rpc.__get__('initServer')(function serverStarted() {
+				// meddle with base port to get a loopback client in worker process
+				require('nconf').overrides({net: {rpc: {basePort: 17001}}});
+				rpc.__get__('initClient')(GSCONF_LOOPBACK, function clientStarted() {
+					// make fake client RPC connection available under our own GSID
+					rpc.__get__('clients')['gs01-02'] =
+						rpc.__get__('clients')['gs01-loopback'];
 					done();
-				}
-			);
+				});
+				require('nconf').overrides({});  // reset
+			});
+		});
+
+		teardown(function (done) {
+			gsjsBridge.reset();
+			rpc.shutdown(function callback() {
+				done();
+			});
+		});
+
+
+		test('apiFindItemPrototype retrieves catalog objects properly',
+			function (done) {
+			new RC().run(function () {
+				var res = rpc.sendRequest('gs01-02', 'api',
+					['apiFindItemPrototype', ['catalog']]);
+				assert.notProperty(res, 'objref', 'return value is not an objref');
+				assert.isObject(res, 'class_tsids');
+			}, done);
+		});
+
+		test('apiGetJSFileObject returns object prototypes (not objrefs)',
+			function (done) {
+			new RC().run(function () {
+				var res = rpc.sendRequest('gs01-02', 'api',
+					['apiGetJSFileObject', ['achievements/able_chopper.js']]);
+				assert.notProperty(res, 'objref', 'return value is not an objref');
+				assert.strictEqual(res.category, 'cooking');
+				res = rpc.sendRequest('gs01-02', 'api',
+					['apiGetJSFileObject', ['items/apple.js']]);
+				assert.notProperty(res, 'objref', 'return value is not an objref');
+				assert.property(res.verbs, 'lick');
+			}, done);
+		});
+
+		test('apiFindQuestPrototype returns quest prototypes (not objrefs)',
+			function (done) {
+			new RC().run(function () {
+				var res = rpc.sendRequest('gs01-02', 'api',
+					['apiFindQuestPrototype', ['an_autumn_day']]);
+				assert.notProperty(res, 'objref', 'return value is not an objref');
+				assert.strictEqual(res.title, 'An Autumn Day');
+			}, done);
 		});
 	});
 });
