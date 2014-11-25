@@ -25,6 +25,7 @@ function init(fixturePath, callback) {
 	db = {};
 	counts = {
 		read: 0,
+		readSuccess: 0,
 		write: 0,
 		del: 0,
 	};
@@ -43,6 +44,7 @@ function getDB() {
 
 
 function read(tsid) {
+	counts.read++;
 	// load test fixture from disk if we have a fixtures path
 	if (fpath && !(tsid in db)) {
 		var data;
@@ -55,7 +57,7 @@ function read(tsid) {
 		}
 		db[tsid] = JSON.parse(data);
 	}
-	counts.read++;
+	counts.readSuccess++;
 	return db[tsid];
 }
 

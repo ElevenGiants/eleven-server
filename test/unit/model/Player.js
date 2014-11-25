@@ -427,8 +427,8 @@ suite('Player', function () {
 				},
 				function callback(err, res) {
 					if (err) return done(err);
-					assert.sameMembers(Object.keys(persMock.getDirtyList()),
-						['P1', 'DC1', 'DC2', 'DC3', 'Q1']);
+					assert.deepEqual(Object.keys(persMock.getDirtyList()),
+						[], 'unloaded objects are *not* implicitly flagged dirty');
 					assert.sameMembers(Object.keys(persMock.getUnloadList()),
 						['P1', 'DC1', 'DC2', 'DC3', 'Q1']);
 					done();

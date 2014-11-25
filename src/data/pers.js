@@ -209,9 +209,8 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
 		function iterate(k, iterCallback) {
 			var obj = dlist[k];
 			try {
-				// stop timers/intervals for deleted objects and objects about
-				// to be unloaded from cache
-				if ((obj.deleted || k in ulist) && obj.suspendGsTimers) {
+				// stop timers/intervals for deleted objects
+				if (obj.deleted && obj.suspendGsTimers) {
 					obj.suspendGsTimers();
 				}
 				// perform write or del operation; we're not inside the fiber
@@ -229,8 +228,20 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
 			}
 		},
 		function cb() {
+			// unload objects scheduled to be released from cache (take care not
+			// to load objects here if they are not loaded in the first place)
 			for (var k in ulist) {
-				unload(ulist[k]);
+				var obj = ulist[k];
+				try {
+					// suspend timers/intervals (if object is actually loaded)
+					if (obj.tsid in cache && obj.suspendGsTimers) {
+						obj.suspendGsTimers();
+					}
+					unload(obj);
+				}
+				catch (e) {
+					log.error(e, 'failed to unload %s', obj);
+				}
 			}
 			if (callback) callback();
 		}

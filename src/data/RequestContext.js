@@ -100,7 +100,9 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 			// TODO: nothing is rolled back, so the modified objects might
 			// still be persisted eventually through other calls; i.e. we could
 			// just as well persist them here? Or should we rather roll back
-			// any changes on failure?
+			// any changes on failure? If so, when doing that by removing the
+			// affected objects from the persistence live object cache, remember
+			// to stop their timers&intervals.
 			if (typeof callback === 'function') {
 				callback(e);
 			}
@@ -168,7 +170,6 @@ RequestContext.prototype.setDirty = function setDirty(obj) {
  * @param {GameObject} obj
  */
 RequestContext.prototype.setUnload = function setUnload(obj) {
-	this.setDirty(obj);  // make sure last state is persisted
 	this.unload[obj.tsid] = obj;
 };
 
