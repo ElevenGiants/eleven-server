@@ -1,0 +1,21 @@
+[Unit]
+Description=Eleven Giants Game Server
+Requires=rethinkdb.service
+After=rethinkdb.service
+
+[Service]
+WorkingDirectory=/vagrant/eleven-server
+ExecStart=/usr/bin/node --harmony ./src/server.js
+Type=simple
+Restart=always
+RestartSec=1s
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=eleven-server
+User=vagrant
+Group=vagrant
+Environment=NODE_ENV=production
+Environment=NODE_PATH=src
+
+[Install]
+WantedBy=multi-user.target

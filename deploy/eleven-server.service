@@ -1,0 +1,21 @@
+[Unit]
+Description=Eleven Giants Game Server
+Requires=rethinkdb.service
+After=rethinkdb.service
+
+[Service]
+WorkingDirectory=/eleven/eleven-server
+ExecStart=/usr/bin/node --harmony ./src/server.js
+Type=simple
+Restart=always
+RestartSec=1s
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=eleven-server
+User=eleven
+Group=eleven
+Environment=NODE_ENV=production
+Environment=NODE_PATH=src
+
+[Install]
+WantedBy=multi-user.target
