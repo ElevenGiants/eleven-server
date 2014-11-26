@@ -40,4 +40,43 @@ suite('GameObject', function () {
 			assert.deepEqual(go.serialize(), data);
 		});
 	});
+
+
+	suite('timers', function () {
+
+		test('basic timer call', function (done) {
+			//TODO: test combining setGsTimer and scheduleTimer
+			var go = new GameObject();
+			var called = false;
+			go.timerTest = function timerTest(arg) {
+				called = true;
+				assert.strictEqual(arg, 'grunt');
+				done();
+			};
+			go.setGsTimer({
+				fname: 'timerTest',
+				delay: 10,
+				args: ['grunt'],
+			});
+			assert.isFalse(called);
+		});
+
+		test('basic interval call', function (done) {
+			var go = new GameObject();
+			var calls = 0;
+			go.intTest = function intTest() {
+				calls++;
+				if (calls === 3) {
+					clearInterval(go.gsTimers.interval.intTest.handle);  // clean up
+					done();
+				}
+			};
+			go.setGsTimer({
+				fname: 'intTest',
+				delay: 5,
+				interval: true,
+			});
+			assert.strictEqual(calls, 0);
+		});
+	});
 });

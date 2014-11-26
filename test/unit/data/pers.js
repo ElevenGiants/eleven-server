@@ -46,17 +46,22 @@ suite('pers', function () {
 			assert.isTrue(cache[o.tsid].__isPP);
 		});
 
-		test('calls onLoad event', function () {
+		test('calls onLoad and resumeGsTimers', function () {
 			var onLoadCalled = false;
+			var resumeGsTimersCalled = false;
 			var o = {
 				tsid: 'ITEM',
 				onLoad: function onLoad() {
 					onLoadCalled = true;
 				},
+				resumeGsTimers: function resumeGsTimers() {
+					resumeGsTimersCalled = true;
+				},
 			};
 			pbeMock.write(o);
 			load(o.tsid);
 			assert.isTrue(onLoadCalled);
+			assert.isTrue(resumeGsTimersCalled);
 		});
 
 		test('does not choke on objref cycles', function () {

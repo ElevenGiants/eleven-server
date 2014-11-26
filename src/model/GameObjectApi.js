@@ -13,7 +13,9 @@ var GameObjectApi = module.exports = function GameObjectApi() {};
 
 /**
  * Schedules a function of the game object to be called after a given
- * delay.
+ * delay. Only one timer can be defined per function; if there already
+ * is one, subsequent requests are ignored until that timer has been
+ * executed.
  *
  * @param {string} fname name of the function to call (must be a method
  *        of this `GameObject`)
@@ -24,8 +26,36 @@ var GameObjectApi = module.exports = function GameObjectApi() {};
 GameObjectApi.prototype.apiSetTimer = function apiSetTimer(fname, delay) {
 	log.debug('%s.apiSetTimer(%s)', this,
 		Array.prototype.slice.call(arguments).join(', '));
-	//TODO implement me
-	log.warn('TODO GameObject.apiSetTimer not implemented yet');
+	var args = Array.prototype.slice.call(arguments, 2);
+	this.setGsTimer({fname: fname, delay: delay, args: args});
+};
+
+
+/**
+ * @deprecated use {@link GameObjectApi#apiSetTimer|apiSetTimer} instead
+ */
+GameObjectApi.prototype.apiSetTimerX = function apiSetTimerX() {
+	this.apiSetTimer.apply(this, arguments);
+};
+
+
+/**
+ * Schedules a function of the game object to be called after a given
+ * delay. The same as {@link GameObjectApi#apiSetTimer|apiSetTimer},
+ * except that it allows the same function to be scheduled multiple
+ * times.
+ *
+ * @param {string} fname name of the function to call (must be a method
+ *        of this `GameObject`)
+ * @param {number} delay delay before function call in ms
+ */
+//TODO: append next line to jsdocs when this is fixed: <https://github.com/jscs-dev/jscs-jsdoc/issues/35>
+// * @param {...*} arg arbitrary arguments for the called function
+GameObjectApi.prototype.apiSetTimerMulti = function apiSetTimerMulti(fname, delay) {
+	log.debug('%s.apiSetTimerMulti(%s)', this,
+		Array.prototype.slice.call(arguments).join(', '));
+	var args = Array.prototype.slice.call(arguments, 2);
+	this.setGsTimer({fname: fname, delay: delay, args: args, multi: true});
 };
 
 
@@ -38,9 +68,7 @@ GameObjectApi.prototype.apiSetTimer = function apiSetTimer(fname, delay) {
  */
 GameObjectApi.prototype.apiCancelTimer = function apiCancelTimer(fname) {
 	log.debug('%s.apiCancelTimer(%s)', this, fname);
-	//TODO implement me
-	log.warn('TODO GameObject.apiCancelTimer not implemented yet');
-	return false;
+	return this.cancelGsTimer(fname);
 };
 
 
@@ -53,9 +81,7 @@ GameObjectApi.prototype.apiCancelTimer = function apiCancelTimer(fname) {
  */
 GameObjectApi.prototype.apiTimerExists = function apiTimerExists(fname) {
 	log.debug('%s.apiTimerExists(%s)', this, fname);
-	//TODO implement me
-	log.warn('TODO GameObject.apiTimerExists not implemented yet');
-	return false;
+	return this.gsTimerExists(fname);
 };
 
 
@@ -71,8 +97,7 @@ GameObjectApi.prototype.apiTimerExists = function apiTimerExists(fname) {
  */
 GameObjectApi.prototype.apiSetInterval = function apiSetInterval(fname, period) {
 	log.debug('%s.apiSetInterval(%s, %s)', this, fname, period);
-	//TODO implement me
-	log.warn('TODO GameObject. not implemented yet');
+	this.setGsTimer({fname: fname, delay: period * 60000});
 };
 
 
@@ -84,8 +109,7 @@ GameObjectApi.prototype.apiSetInterval = function apiSetInterval(fname, period) 
  */
 GameObjectApi.prototype.apiClearInterval = function apiClearInterval(fname) {
 	log.debug('%s.apiClearInterval(%s)', this, fname);
-	//TODO implement me
-	log.warn('TODO GameObjectapiClearInterval. not implemented yet');
+	this.cancelGsTimer(fname, true);
 };
 
 
@@ -98,7 +122,5 @@ GameObjectApi.prototype.apiClearInterval = function apiClearInterval(fname) {
  */
 GameObjectApi.prototype.apiIntervalExists = function apiIntervalExists(fname) {
 	log.debug('%s.apiIntervalExists(%s)', this, fname);
-	//TODO implement me
-	log.warn('TODO GameObject.apiIntervalExists not implemented yet');
-	return false;
+	return this.gsTimerExists(fname, true);
 };

@@ -126,7 +126,10 @@ function load(tsid) {
 	else {
 		// make sure any changes to the object are persisted
 		obj = persProxy.makeProxy(obj);
-		// send onLoad event if there is a handler
+		// resume timers/intervals and send onLoad event if there is a handler
+		if (obj.resumeGsTimers) {
+			obj.resumeGsTimers();
+		}
 		if (obj.onLoad) {
 			obj.onLoad();
 		}
@@ -205,17 +208,15 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
 	async.each(Object.keys(dlist),
 		function iterate(k, iterCallback) {
 			var obj = dlist[k];
-			//TODO: stop game object timers/intervals
-			/*
-			if (obj.deleted || k in ulist) {
+			try {
 				// stop timers/intervals for deleted objects and objects about
 				// to be unloaded from cache
-			}
-			*/
-			// perform write or del operation; we're not inside the fiber
-			// anymore (due to async), so handle errors carefully here
-			var op = obj.deleted ? del : write;
-			try {
+				if ((obj.deleted || k in ulist) && obj.suspendGsTimers) {
+					obj.suspendGsTimers();
+				}
+				// perform write or del operation; we're not inside the fiber
+				// anymore (due to async), so handle errors carefully here
+				var op = obj.deleted ? del : write;
 				op(obj, logmsg, function cb(err, res) {
 					// silently ignore errors (we're not interested in them here,
 					// but we want to call callback when *all* ops have finished)
@@ -223,7 +224,7 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
 				});
 			}
 			catch (e) {
-				log.error(e, 'failed to %s %s', op.name, obj);
+				log.error(e, 'failed to process %s', obj);
 				iterCallback(null);
 			}
 		},
@@ -288,7 +289,6 @@ function del(obj, logmsg, callback) {
 function unload(obj, logmsg) {
 	log.debug('pers.unload: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	if (obj.tsid in cache) {
-		//TODO: stop game object timers/intervals
 		delete cache[obj.tsid];
 	}
 }
