@@ -25,7 +25,7 @@
     "bunyan": "^1.0.1",
     "harmony-reflect": "^1.1.1",
     "lodash": "^2.4.1",
-    "multitransport-jsonrpc": "^0.6.1",
+    "multitransport-jsonrpc": "^0.7.2",
     "murmurhash-js": "^1.0.0",
     "nconf": "^0.6.9",
     "node_amf_cc": "^1.0.7",
