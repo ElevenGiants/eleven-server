@@ -1,0 +1,66 @@
+'use strict';
+
+/**
+ * Sample local configuration file for a "live" public environment.
+ * The values here need to be adjusted for the specific target server.
+ */
+
+module.exports = {
+	net: {
+		gameServers: {
+			gs01: {
+				host: 'THIS.GS.HOST.IP',
+				ports: [
+					// add as many worker processes as you like (probably best
+					// not to add more than the number of CPU cores, though)
+					1443,
+					1444,
+					1445,
+					1446
+				],
+			},
+		},
+		assetServer: {
+			host: 'YOUR.ASSET.SERVER.IP',
+			port: 8000,
+		},
+	},
+	pers: {
+		backEnd: {
+			module: 'rethink',
+			config: {
+				rethink: {
+					dbname: 'eleven_prod',
+					dbhost: 'localhost',
+					dbport: 28015,
+					dbauth: 'RETHINKDB_AUTH_KEY',
+					queryOpts: {
+						durability: 'hard',
+						noreply: false,
+					},
+				},
+			},
+		},
+	},
+	auth: {
+		backEnd: {
+			module: 'hmac',
+			config: {
+				hmac: {
+					// secret used for auth token HMAC calculation:
+					secret: 'CHANGE-ME-OR-ELSE',
+					// minimum token lifetime in seconds:
+					timeStep: 600,
+				},
+			},
+		},
+	},
+	log: {
+		dir: '/var/log/eleven',
+		level: {
+			file: 'info',
+			stdout: 'fatal',
+		},
+		includeLoc: false,
+	},
+};
