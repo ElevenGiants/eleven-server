@@ -7,7 +7,7 @@
 		"if", "else", "for", "while", "do", "switch", "case", "try", "catch",
 		"return", "typeof"
 	],
-	//"requireSpaceBeforeBlockStatements": true,
+	"requireSpaceBeforeBlockStatements": true,
 	"requireParenthesesAroundIIFE": true,
 	"requireSpacesInConditionalExpression": true,
 	"requireSpacesInFunction": {
@@ -24,6 +24,9 @@
 	"disallowSpacesInsideArrayBrackets": true,
 	"disallowSpacesInsideParentheses": true,
 	"disallowQuotedKeysInObjects": "allButReserved",
+	"disallowDanglingUnderscores": {
+		"allExcept": ["__get__", "__set__", "__isGO", "__isPP", "__isORP", "__isRP"]
+	},
 	"disallowSpaceAfterObjectKeys": true,
 	"requireSpaceBeforeObjectValues": true,
 	"requireCommaBeforeLineBreak": true,
@@ -45,6 +48,9 @@
 		"allowRegex": true
 	},
 	"requireDotNotation": true,
+	"requireSpaceAfterLineComment": {
+		"allExcept": ["TODO:", "TODO", "jscs:disable", "jscs:enable"]
+	},
 	"disallowNewlineBeforeBlockStatements": true,
 	"validateQuoteMarks": {
 		"mark": "'",
