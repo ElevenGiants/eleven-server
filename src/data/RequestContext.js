@@ -68,45 +68,46 @@ function RequestContext(logtag, owner, session) {
  *        operations to finish before invoking callback
  */
 RequestContext.prototype.run = function run(func, callback, waitPers) {
+	callback = callback || function defaultCallback(err, res) {
+		if (err) throw err;
+	};
 	//jscs:disable safeContextKeyword
 	var rc = this;
 	//jscs:enable safeContextKeyword
+	var tag = util.format('%s/%s/%s', func.name, rc.owner, rc.logtag);
 	wait.launchFiber(function rcFiber() {
+		var res = null;
 		try {
 			rc.fiber = Fiber.current;
 			rc.fiber.rc = rc;
 			// call function in fiber context
-			var res = func();
-			var tag = util.format('%s/%s/%s', func.name, rc.owner, rc.logtag);
+			res = func();
 			log.debug('finished %s (%s dirty)', tag, Object.keys(rc.dirty).length);
-			// persist modified objects
-			pers.postRequestProc(rc.dirty, rc.unload, tag, function done() {
-				// invoke special post-persistence callback if there is one
-				if (typeof rc.postPersCallback === 'function') {
-					rc.postPersCallback();
-				}
-				// continue with "regular" request context callback
-				if (waitPers && typeof callback === 'function') {
-					return callback(null, res);
-				}
-			});
-			// if we don't have to wait for the persistence operations, continue
-			// with request context callback right away
-			if (!waitPers && typeof callback === 'function') {
-				return callback(null, res);
-			}
 		}
-		catch (e) {
+		catch (err) {
 			// TODO: nothing is rolled back, so the modified objects might
 			// still be persisted eventually through other calls; i.e. we could
 			// just as well persist them here? Or should we rather roll back
-			// any changes on failure?
-			if (typeof callback === 'function') {
-				callback(e);
+			// any changes on failure? If so, when doing that by removing the
+			// affected objects from the persistence live object cache, remember
+			// to stop their timers&intervals.
+			return callback(err);
+		}
+		// persist modified objects
+		pers.postRequestProc(rc.dirty, rc.unload, tag, function done() {
+			// invoke special post-persistence callback if there is one
+			if (typeof rc.postPersCallback === 'function') {
+				rc.postPersCallback();
 			}
-			else {
-				throw e;
+			// continue with "regular" request context callback
+			if (waitPers) {
+				return callback(null, res);
 			}
+		});
+		// if we don't have to wait for the persistence operations, continue
+		// with request context callback right away
+		if (!waitPers) {
+			return callback(null, res);
 		}
 	});
 };
@@ -168,7 +169,6 @@ RequestContext.prototype.setDirty = function setDirty(obj) {
  * @param {GameObject} obj
  */
 RequestContext.prototype.setUnload = function setUnload(obj) {
-	this.setDirty(obj);  // make sure last state is persisted
 	this.unload[obj.tsid] = obj;
 };
 

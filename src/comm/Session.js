@@ -218,14 +218,16 @@ Session.prototype.handleMessage = function handleMessage(msg) {
 	log.trace({data: msg}, 'got %s request', msg.type);
 	var self = this;
 	var rc = new RC(msg.type, this.pc, this);
-	rc.run(
-		function clientReq() {
-			self.processRequest.call(self, msg);
-		},
-		function callback(err) {
-			if (err) self.handleAmfReqError.call(self, err, msg);
-		}
-	);
+	this.dom.run(function domWrapper() {
+		rc.run(
+			function clientReq() {
+				self.processRequest.call(self, msg);
+			},
+			function callback(err) {
+				if (err) self.handleAmfReqError.call(self, err, msg);
+			}
+		);
+	});
 };
 
 

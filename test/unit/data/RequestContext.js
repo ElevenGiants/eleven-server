@@ -114,8 +114,8 @@ suite('RequestContext', function () {
 				},
 				function callback() {
 					assert.deepEqual(persMock.getUnloadList(), {IA: {tsid: 'IA'}});
-					assert.deepEqual(persMock.getDirtyList(), {IA: {tsid: 'IA'}},
-						'objects to unload are implicitly flagged dirty');
+					assert.deepEqual(persMock.getDirtyList(), {},
+						'objects to unload are *not* implicitly flagged dirty');
 				}
 			);
 			done();
@@ -145,6 +145,21 @@ suite('RequestContext', function () {
 				assert.strictEqual(err.message, 'meh');
 				done();
 			});
+		});
+
+		test('does not invoke callback twice in case of errors in callback',
+			function () {
+			var calls = 0;
+			assert.throw(function () {
+				new RC().run(
+					function dummy() {},
+					function callback(err, res) {
+						calls++;
+						assert.strictEqual(calls, 1);
+						throw new Error('error in callback');
+					}
+				);
+			}, Error, 'error in callback');
 		});
 	});
 });

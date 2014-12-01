@@ -9,6 +9,7 @@ var Player = require('model/Player');
 var Item = require('model/Item');
 var pbeMock = require('../../mock/pbe');
 var RC = require('data/RequestContext');
+var orproxy = require('data/objrefProxy');
 
 
 suite('pers', function () {
@@ -84,22 +85,48 @@ suite('pers', function () {
 	suite('postRequestProc', function () {
 
 		test('suspends timers when deleting/unloading', function (done) {
-			var go1 = new GameObject({tsid: 'GO1'});
-			go1.deleted = true;
-			var go2 = new GameObject({tsid: 'GO2'});
-			var called = false;
-			go1.foo = go2.foo = function foo() {
-				called = true;
-			};
-			go1.setGsTimer({fname: 'foo', delay: 5});
-			go2.setGsTimer({fname: 'foo', delay: 10, interval: true});
-			pers.postRequestProc({GO1: go1, GO2: go2}, {GO2: go2});
-			assert.notProperty(go1.gsTimers.timer.foo, 'handle');
-			assert.notProperty(go2.gsTimers.interval.foo, 'handle');
+			pbeMock.getDB().GO1 = {tsid: 'GO1'};
+			pbeMock.getDB().GO2 = {tsid: 'GO2'};
+			var go1, go2;
+			var timerFired = false;
+			var rc = new RC();
+			rc.run(
+				function () {
+					go1 = pers.get('GO1');
+					go2 = pers.get('GO2');
+					go1.foo = go2.foo = function foo() {
+						timerFired = true;
+					};
+					go1.del();
+					rc.setUnload(go2);
+					go1.setGsTimer({fname: 'foo', delay: 5});
+					go2.setGsTimer({fname: 'foo', delay: 10, interval: true});
+				},
+				function cb(err, res) {
+					if (err) done(err);
+					assert.notProperty(go1.gsTimers.timer.foo, 'handle');
+					assert.notProperty(go2.gsTimers.interval.foo, 'handle');
+				}
+			);
 			setTimeout(function wait() {
-				assert.isFalse(called);
+				assert.isFalse(timerFired);
 				done();
 			}, 20);
+		});
+
+		test('does not load objects scheduled for unloading', function (done) {
+			var p = orproxy.makeProxy({tsid: 'GNOTAVAILABLE', objref: true});
+			var rc = new RC();
+			rc.run(
+				function () {
+					rc.setUnload(p);
+				},
+				function cb(err, res) {
+					if (err) done(err);
+					assert.strictEqual(pbeMock.getCounts().read, 0);
+					done();
+				}
+			);
 		});
 	});
 });
