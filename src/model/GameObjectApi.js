@@ -20,9 +20,8 @@ var GameObjectApi = module.exports = function GameObjectApi() {};
  * @param {string} fname name of the function to call (must be a method
  *        of this `GameObject`)
  * @param {number} delay delay before function call in ms
+ * @param {...*} [args] arbitrary arguments for the called function
  */
-//TODO: append next line to jsdocs when this is fixed: <https://github.com/jscs-dev/jscs-jsdoc/issues/35>
-// * @param {...*} arg arbitrary arguments for the called function
 GameObjectApi.prototype.apiSetTimer = function apiSetTimer(fname, delay) {
 	log.debug('%s.apiSetTimer(%s)', this,
 		Array.prototype.slice.call(arguments).join(', '));
@@ -48,9 +47,8 @@ GameObjectApi.prototype.apiSetTimerX = function apiSetTimerX() {
  * @param {string} fname name of the function to call (must be a method
  *        of this `GameObject`)
  * @param {number} delay delay before function call in ms
+ * @param {...*} [args] arbitrary arguments for the called function
  */
-//TODO: append next line to jsdocs when this is fixed: <https://github.com/jscs-dev/jscs-jsdoc/issues/35>
-// * @param {...*} arg arbitrary arguments for the called function
 GameObjectApi.prototype.apiSetTimerMulti = function apiSetTimerMulti(fname, delay) {
 	log.debug('%s.apiSetTimerMulti(%s)', this,
 		Array.prototype.slice.call(arguments).join(', '));
