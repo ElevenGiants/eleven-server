@@ -11,6 +11,7 @@
 module.exports = {
 	authenticate: authenticate,
 	getToken: getToken,
+	getTokenLifespan: getTokenLifespan,
 };
 
 
@@ -21,4 +22,9 @@ function authenticate(token) {
 
 function getToken(player) {
 	return player.tsid;
+}
+
+
+function getTokenLifespan() {
+	return 0;
 }
