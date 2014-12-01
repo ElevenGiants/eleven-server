@@ -8,6 +8,7 @@
 
 var gsjsBridge = require('model/gsjsBridge');
 var DataContainer = require('model/DataContainer');
+var Quest = require('model/Quest');
 var Item = require('model/Item');
 var Bag = require('model/Bag');
 var pers = require('data/pers');
@@ -41,6 +42,19 @@ exports.toString = function toString() {
 exports.apiNewOwnedDC = function apiNewOwnedDC(owner) {
 	log.debug('global.apiNewOwnedDC(%s)', owner);
 	return DataContainer.create(owner);
+};
+
+
+/**
+ * Creates a new quest object assigned to a specific owner.
+ *
+ * @param {string} classTsid specific class of the quest
+ * @param {Location|Player} owner of the quest object
+ * @returns {Quest} the new object
+ */
+exports.apiNewOwnedQuest = function apiNewOwnedQuest(classTsid, owner) {
+	log.debug('global.apiNewOwnedQuest(%s, %s)', classTsid, owner);
+	return Quest.create(classTsid, owner);
 };
 
 
