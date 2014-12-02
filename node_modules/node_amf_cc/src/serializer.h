@@ -3,8 +3,15 @@
 
 #include <node.h>
 #include <stdint.h>
-#include <ext/hash_map>
 #include "write_buffer.h"
+
+#ifdef _MSC_VER
+#include <hash_map>
+#define hashmap stdext
+#else
+#include <ext/hash_map>
+#define hashmap __gnu_cxx
+#endif
 
 class Serializer : public node::ObjectWrap {
  public:
@@ -34,7 +41,7 @@ class Serializer : public node::ObjectWrap {
   void writeU29(int64_t n, bool writeMarker = false);
 
   WriteBuffer buffer_;
-  __gnu_cxx::hash_map<int, int> objRefs_;
+  hashmap::hash_map<int, int> objRefs_;
 };
 
 #endif  // SERIALIZER_H
