@@ -249,7 +249,7 @@ Handle<Object> Deserializer::readObjectFromRegion(ReadBuffer::Region* region) {
 Handle<Object> Deserializer::readObjectFromRegionAndTraits(
     ReadBuffer::Region* region, const Traits& traits) {
   Handle<Object> o = Object::New();
-  for (uint i = 0; i < traits.props.size(); i++) {
+  for (uint32_t i = 0; i < traits.props.size(); i++) {
     o->Set(traits.props[i], readValue(region));
   }
   if (traits.dynamic) {
