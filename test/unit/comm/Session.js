@@ -201,7 +201,7 @@ suite('Session', function () {
 				});
 				done();
 			};
-			s.handleAmfReqError(new Error('foo'), {id: 12, type: 'moo'});
+			s.handleAmfReqError(new Error('foo'), {msg_id: 12, type: 'moo'});
 		});
 	});
 

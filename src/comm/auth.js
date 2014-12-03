@@ -7,6 +7,7 @@
  *     init(config, callback)
  *     authenticate(token) -> playerTsid
  *     getToken(player) -> token
+ *     getTokenLifespan() -> number
  * ```
  *
  * @module
@@ -18,6 +19,7 @@ module.exports = {
 	init: init,
 	authenticate: authenticate,
 	getToken: getToken,
+	getTokenLifespan: getTokenLifespan,
 };
 
 
@@ -92,4 +94,16 @@ function getToken(player) {
 	var ret = abe.getToken(player);
 	log.debug({token: ret}, 'auth token generated for %s', player);
 	return ret;
+}
+
+
+/**
+ * Returns the minimal guaranteed lifespan of an authentication token.
+ *
+ * @returns {number} guaranteed minimal token lifespan **in seconds**,
+ *          or `0` if the generated tokens are valid infinitely
+ */
+function getTokenLifespan() {
+	assert(abe !== undefined && abe !== null, 'no auth back-end configured');
+	return abe.getTokenLifespan();
 }

@@ -146,6 +146,10 @@ Player.prototype.onLoginStart = function onLoginStart(session, isRelogin) {
 	else {
 		this.onLogin();
 	}
+	if (auth.getTokenLifespan() > 0) {
+		this.setGsTimer({fname: 'refreshToken', interval: true, internal: true,
+			delay: Math.ceil(auth.getTokenLifespan() * 0.9 * 1000)});
+	}
 };
 
 
@@ -164,8 +168,9 @@ Player.prototype.onDisconnect = function onDisconnect() {
 	// error/connection loss (in case of an inter-GS moves, the location already
 	// points to another castle^Wserver)
 	if (rpc.isLocal(this.location)) {
-		// clear onTimePlaying interval
+		// clear intervals
 		this.cancelGsTimer('onTimePlaying', true);
+		this.cancelGsTimer('refreshToken', true);
 		// remove from location, onExit callbacks etc.
 		this.startMove();
 		// GSJS logout event
@@ -180,6 +185,20 @@ Player.prototype.onDisconnect = function onDisconnect() {
 	this.unload();
 	// unlink the session, so this function won't be accidentally called again
 	this.session = null;
+};
+
+
+/**
+ * Sends a server message with an updated authentication token to the
+ * player's client. Called automatically at regular intervals (set up
+ * in {@link Player#onLoginStart}).
+ *
+ * @private
+ */
+Player.prototype.refreshToken = function refreshToken() {
+	var token = auth.getToken(this);
+	log.debug({token: token}, 'refreshing auth token');
+	this.sendServerMsg('TOKEN', {msg: token});
 };
 
 
