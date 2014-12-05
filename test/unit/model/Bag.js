@@ -94,6 +94,29 @@ suite('Bag', function () {
 		});
 	});
 
+	suite('getItems', function () {
+
+		test('works as expected', function () {
+			var i1 = new Item({tsid: 'I1', class_tsid: 'apple', count: 10});
+			var i2 = new Item({tsid: 'I2', class_tsid: 'apple', count: 5});
+			var i3 = new Item({tsid: 'I3', class_tsid: 'apple', count: 3});
+			var b = new Bag({tsid: 'B1', class_tsid: 'bag_furniture_sdb',
+				items: [i1, i2, i3]});
+			assert.deepEqual(b.getItems('apple', 1), {I1: i1});
+			assert.deepEqual(b.getItems('apple', 9), {I1: i1});
+			assert.deepEqual(b.getItems('apple', 10), {I1: i1});
+			assert.deepEqual(b.getItems('apple', 11), {I1: i1, I2: i2});
+			assert.deepEqual(b.getItems('apple', 12), {I1: i1, I2: i2});
+			assert.deepEqual(b.getItems('apple', 14), {I1: i1, I2: i2});
+			assert.deepEqual(b.getItems('apple', 15), {I1: i1, I2: i2});
+			assert.deepEqual(b.getItems('apple', 16), {I1: i1, I2: i2, I3: i3});
+			assert.deepEqual(b.getItems('apple', 17), {I1: i1, I2: i2, I3: i3});
+			assert.deepEqual(b.getItems('apple', 19), {I1: i1, I2: i2, I3: i3});
+			assert.deepEqual(b.getItems('apple', -1), {I1: i1, I2: i2, I3: i3});
+			assert.deepEqual(b.getItems('apple', undefined), {I1: i1, I2: i2, I3: i3});
+		});
+	});
+
 
 	suite('del', function () {
 

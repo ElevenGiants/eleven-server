@@ -48,3 +48,23 @@ BagApi.prototype.apiGetSlots = function apiGetSlots(count) {
 	log.trace('%s.apiGetSlots(%s)', this, count);
 	return this.getSlots(count);
 };
+
+/**
+ * Retrieves an array of tsid -> reference
+ *
+ * @param {string} [classTsid] the class_id of the items to grab
+ * @param {number} [minCount] the minimum count to be retrieved
+ * @returns {array} map of tsid-> reference to stacks; if count of
+ *        items doesn't add up to minCount, or minCount is -1 or
+ *        undefined, all stacks will be returned, otherwise, all
+ *        stacks totaling up to >= minCount will be returned
+ *        ex:
+ * 	      {
+ *          "IRO1279HCD6319C" : <IRO1279HCD6319C Cherry>,
+ *          "IRO10296DD63I14" : <IRO10296DD63I14 Cherry>
+ *        }
+ */
+BagApi.prototype.apiBagGetItems = function apiBagGetItems(classTsid, minCount) {
+	log.debug('%s.apiBagGetItems(%s, %s)', this, classTsid, minCount);
+	return this.getItems(classTsid, minCount);
+};

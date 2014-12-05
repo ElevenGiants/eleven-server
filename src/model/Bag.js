@@ -238,3 +238,36 @@ Bag.prototype.addToSlot = function addToSlot(item, slot, amount) {
 	item.setContainer(this, slot);
 	return item.count;
 };
+
+/**
+ * Retrieves an array of tsid -> reference
+ *
+ * @param {string} [classTsid] the class_id of the items to grab
+ * @param {number} [minCount] the minimum count to be retrieved
+ * @returns {array} map of tsid-> reference to stacks; if count of
+ *        items doesn't add up to minCount, or minCount is -1 or
+ *        undefined, all stacks will be returned, otherwise, all
+ *        stacks totaling up to >= minCount will be returned
+ *        ex:
+ * 	      {
+ *          "IRO1279HCD6319C" : <IRO1279HCD6319C Cherry>,
+ *          "IRO10296DD63I14" : <IRO10296DD63I14 Cherry>
+ *        }
+ */
+Bag.prototype.getItems = function getItems(classTsid, minCount) {
+	// only used for SDBs at the moment, i.e. just iterating over the items
+	// list non-recursively is sufficient
+	var ret = {};
+	var c = 0;
+	for (var key in this.items) {
+		if (minCount !== undefined && minCount !== -1 && c >= minCount) {
+			break;
+		}
+		var item = this.items[key];
+		if (item.class_tsid === classTsid) {
+			ret[key] = item;
+			c += item.count;
+		}
+	}
+	return ret;
+};
