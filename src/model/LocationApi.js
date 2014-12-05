@@ -142,6 +142,11 @@ LocationApi.prototype.apiSendAnnouncementX = function
 LocationApi.prototype.apiMoveOutX = function apiMoveOutX(pc, newLoc, x, y) {
 	log.debug('%s.apiMoveOutX(%s, %s, %s, %s)', this, pc, newLoc, x, y);
 	pc.startMove(newLoc, x, y);
+	// notify other clients (for unknown reasons, GSJS doesn't do that in this case)
+	this.send({
+		type: 'pc_signpost_move',
+		pc: pc.make_hash_with_location(),
+	}, false, pc);
 };
 
 
