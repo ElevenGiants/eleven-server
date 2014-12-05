@@ -354,7 +354,10 @@ Session.prototype.send = function send(msg) {
 	// work for ES6 proxies - see e.g. https://github.com/joyent/node/issues/7526
 	//TODO: remove this when it's no longer necessary
 	msg = JSON.parse(JSON.stringify(msg));
-	log.trace({data: msg}, 'sending %s message', msg.type);
+	if (log.trace()) {
+		log.trace({data: msg, to: this.pc ? this.pc.tsid : undefined},
+			'sending %s message', msg.type);
+	}
 	var data = amf.serialize(msg);
 	var size = Buffer.byteLength(data, 'binary');
 	var buf = new Buffer(4 + size);
