@@ -14,6 +14,7 @@ var rpc = require('data/rpc');
 var util = require('util');
 var RC = require('data/RequestContext');
 var gsjsBridge = require('model/gsjsBridge');
+var metrics = require('metrics');
 
 
 util.inherits(Session, events.EventEmitter);
@@ -201,7 +202,8 @@ Session.prototype.checkForMessages = function checkForMessages() {
 			break;
 		}
 		// still here? then schedule message handling
-		setImmediate(this.handleMessage.bind(this), msg);
+		var timer = metrics.createTimer('req.wait', 0.1);
+		setImmediate(this.handleMessage.bind(this), msg, timer);
 	}
 	if (bufstr.length === 0) {
 		delete this.buffer;  // buffer fully processed
@@ -214,14 +216,18 @@ Session.prototype.checkForMessages = function checkForMessages() {
 };
 
 
-Session.prototype.handleMessage = function handleMessage(msg) {
+Session.prototype.handleMessage = function handleMessage(msg, waitTimer) {
+	if (waitTimer) waitTimer.stop();
 	log.trace({data: msg}, 'got %s request', msg.type);
 	var self = this;
 	var rc = new RC(msg.type, this.pc, this);
 	this.dom.run(function domWrapper() {
 		rc.run(
 			function clientReq() {
+				var procTimer = metrics.createTimer('req.proc.' + msg.type,
+					(msg.type === 'move_xy') ? 0.1 : undefined);
 				self.processRequest.call(self, msg);
+				if (procTimer) procTimer.stop();
 			},
 			function callback(err) {
 				if (err) self.handleAmfReqError.call(self, err, msg);

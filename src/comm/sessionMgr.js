@@ -15,12 +15,14 @@ module.exports = {
 
 
 var Session = require('comm/Session');
+var metrics = require('metrics');
 
 var sessions = {};
 
 
 function init() {
 	sessions = {};
+	metrics.setupGaugeInterval('session.count', getSessionCount);
 }
 
 
@@ -51,5 +53,6 @@ function onSessionClose(session) {
  * @returns {number} the active session count
  */
 function getSessionCount() {
+	if (!sessions) return 0;
 	return Object.keys(sessions).length;
 }
