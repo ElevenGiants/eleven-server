@@ -20,6 +20,10 @@ module.exports = {
 			host: '192.168.23.23',
 			port: 8000,
 		},
+		rpc: {
+			// moved to 6000 because Graphite's carbon daemon is sitting on 7002
+			basePort: 6000,
+		},
 	},
 	pers: {
 		backEnd: {
@@ -43,7 +47,8 @@ module.exports = {
 			module: 'hmac',
 			config: {
 				hmac: {
-					// secret used for auth token HMAC calculation:
+					// secret used for auth token HMAC calculation (set this
+					// to a random string):
 					secret: 'CHANGE-ME-OR-ELSE',
 					// minimum token lifetime in seconds:
 					timeStep: 600,
@@ -57,5 +62,10 @@ module.exports = {
 			stdout: 'error',
 		},
 		includeLoc: true,
+	},
+	mon: {
+		statsd: {
+			prefix: 'vagrant',
+		},
 	},
 };
