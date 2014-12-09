@@ -48,6 +48,7 @@ var orProxy = require('data/objrefProxy');
 var persProxy = require('data/persProxy');
 var rpc = require('data/rpc');
 var RC = require('data/RequestContext');
+var metrics = require('metrics');
 
 
 // live game object cache
@@ -70,6 +71,10 @@ var pbe = null;
 function init(backEnd, config, callback) {
 	cache = {};
 	pbe = backEnd;
+	metrics.setupGaugeInterval('pers.loc.size', function getLocSize() {
+		if (!cache) return 0;
+		return Object.keys(cache).length;
+	});
 	if (pbe && typeof pbe.init === 'function') {
 		return pbe.init(config, callback);
 	}
@@ -122,6 +127,7 @@ function load(tsid) {
 		// wrap object in RPC proxy and add it to request cache
 		obj = rpc.makeProxy(obj);
 		RC.getContext().cache[tsid] = obj;
+		metrics.increment('pers.load.remote');
 	}
 	else {
 		// make sure any changes to the object are persisted
@@ -134,7 +140,9 @@ function load(tsid) {
 			obj.onLoad();
 		}
 		cache[tsid] = obj;
+		metrics.increment('pers.load.local');
 	}
+	metrics.increment('pers.load');
 	return obj;
 }
 
@@ -188,6 +196,7 @@ function create(modelType, data) {
 	if (typeof obj.onCreate === 'function') {
 		obj.onCreate();
 	}
+	metrics.increment('pers.create');
 	return obj;
 }
 
@@ -260,8 +269,12 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
  */
 function write(obj, logmsg, callback) {
 	log.debug('pers.write: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
+	metrics.increment('pers.write');
 	pbe.write(orProxy.refify(obj.serialize()), function cb(err, res) {
-		if (err) log.error(err, 'could not write: %s', obj.tsid);
+		if (err) {
+			log.error(err, 'could not write: %s', obj.tsid);
+			metrics.increment('pers.write.fail');
+		}
 		if (callback) return callback(err, res);
 	});
 }
@@ -279,9 +292,13 @@ function write(obj, logmsg, callback) {
  */
 function del(obj, logmsg, callback) {
 	log.debug('pers.del: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
+	metrics.increment('pers.del');
 	delete cache[obj.tsid];
 	pbe.del(obj, function db(err, res) {
-		if (err) log.error(err, 'could not delete: %s', obj.tsid);
+		if (err) {
+			log.error(err, 'could not delete: %s', obj.tsid);
+			metrics.increment('pers.del.fail');
+		}
 		if (callback) return callback(err, res);
 	});
 }

@@ -47,7 +47,8 @@ module.exports = {
 			module: 'hmac',
 			config: {
 				hmac: {
-					// secret used for auth token HMAC calculation:
+					// secret used for auth token HMAC calculation (set this
+					// to a random string):
 					secret: 'CHANGE-ME-OR-ELSE',
 					// minimum token lifetime in seconds:
 					timeStep: 600,
@@ -62,5 +63,10 @@ module.exports = {
 			stdout: 'fatal',
 		},
 		includeLoc: false,
+	},
+	mon: {
+		statsd: {
+			prefix: 'prod',
+		},
 	},
 };

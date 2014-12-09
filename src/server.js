@@ -22,6 +22,7 @@ var rpc = require('data/rpc');
 var amfServer = require('comm/amfServer');
 var policyServer = require('comm/policyServer');
 var logging = require('logging');
+var metrics = require('metrics');
 var util = require('util');
 
 
@@ -37,6 +38,7 @@ function main() {
 	// init low-level things first (synchronously)
 	config.init(cluster.isMaster);
 	logging.init();
+	metrics.init();
 	// then actually fork workers, resp. start up server components there
 	if (cluster.isMaster) runMaster();
 	else runWorker();

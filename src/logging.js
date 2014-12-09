@@ -21,6 +21,7 @@ var fs = require('fs');
 var path = require('path');
 var RC = require('data/RequestContext');
 var Session = require('comm/Session');
+var metrics = require('metrics');
 
 var logger;
 
@@ -68,9 +69,9 @@ function init() {
 		trace: wrapLogEmitter(logger.trace),
 		debug: wrapLogEmitter(logger.debug),
 		info: wrapLogEmitter(logger.info),
-		warn: wrapLogEmitter(logger.warn),
-		error: wrapLogEmitter(logger.error),
-		fatal: wrapLogEmitter(logger.fatal),
+		warn: wrapLogEmitter(logger.warn, 'log.warn'),
+		error: wrapLogEmitter(logger.error, 'log.error'),
+		fatal: wrapLogEmitter(logger.fatal, 'log.fatal'),
 		// pass through other bunyan API functions directly:
 		child: logger.child.bind(logger),
 		level: logger.level.bind(logger),
@@ -107,12 +108,19 @@ function addField(args, name, val) {
  * This is a partial workaround for
  * {@link https://github.com/trentm/node-bunyan/issues/166}.
  *
+ * @param {function} emitter Bunyan log emitter function to wrap
+ * @param {string} [metric] statsd counter that is incremented for
+ *        each log message written through the emitter
+ *
  * @private
  */
-function wrapLogEmitter(emitter) {
+function wrapLogEmitter(emitter, metric) {
 	return function log() {
 		// abort immediately if this log level is not enabled
 		if (!emitter.call(logger)) return;
+		if (metrics && metric) {
+			metrics.increment(metric);
+		}
 		// add 'rc' and 'session' fields if available
 		var rc = RC.getContext(true);
 		if (rc) {

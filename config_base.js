@@ -54,6 +54,15 @@ module.exports = {
 		// (slow - do not use in production!)
 		includeLoc: false,
 	},
+	mon: {
+		statsd: {
+			enabled: true,
+			host: '127.0.0.1',
+			port: 8125,
+			// optional prefix for the metrics names:
+			prefix: '',
+		},
+	},
 	gsjs: {
 		// the GSJS configuration variant to load
 		config: 'config_prod',
