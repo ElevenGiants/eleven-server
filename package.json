@@ -1,6 +1,6 @@
 {
   "name": "eleven-server",
-  "version": "0.0.1-snapshot",
+  "version": "0.1.0",
   "description": "Eleven game server",
   "homepage": "http://elevengiants.com/",
   "license": "MIT",
