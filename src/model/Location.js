@@ -13,6 +13,7 @@ var pers = require('data/pers');
 var rpc = require('data/rpc');
 var util = require('util');
 var utils = require('utils');
+var lodash = require('lodash');
 
 
 util.inherits(Location, GameObject);
@@ -216,7 +217,7 @@ Location.prototype.send = function send(msg, skipChanges, exclude) {
 	var excl = utils.playersArgToList(exclude);
 	for (var tsid in this.players) {
 		if (excl.indexOf(tsid) === -1) {
-			this.players[tsid].send(msg, skipChanges);
+			this.players[tsid].send(lodash.clone(msg, true), skipChanges);
 		}
 	}
 };

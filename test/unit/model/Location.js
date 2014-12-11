@@ -142,6 +142,25 @@ suite('Location', function () {
 			l.send({}, false, ['P1', 'P4']);
 			assert.deepEqual(res, ['P2', 'P3']);
 		});
+
+		test('does not send changes to wrong player(s)', function () {
+			var res = {};
+			var p1 = new Player({tsid: 'P1'});
+			var p2 = new Player({tsid: 'P2'});
+			var mockSend = function (tsid, msg) {
+				res[tsid] = msg;
+			};
+			p1.session = {send: mockSend.bind(null, p1.tsid)};
+			p2.session = {send: mockSend.bind(null, p2.tsid)};
+			var l = new Location({players: [p1, p2]}, new Geo());
+			// simulate queued changes for P1:
+			p1.getPropChanges = function () {
+				return 'FAKE_PROP_CHANGES';
+			};
+			l.send({});
+			assert.deepEqual(res.P1, {changes: {stat_values: 'FAKE_PROP_CHANGES'}});
+			assert.deepEqual(res.P2, {}, 'changes for P1 not sent to P2');
+		});
 	});
 
 
