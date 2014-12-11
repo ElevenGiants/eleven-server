@@ -74,6 +74,11 @@ function getMockLynx() {
 			return function dummy() {
 				if (global.log) {
 					log.trace({fname: name, args: arguments}, 'statsd call');
+					if (name === 'createTimer') {
+						return {
+							stop: function stop() {}
+						};
+					}
 				}
 			};
 		},
