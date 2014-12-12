@@ -190,8 +190,19 @@ suite('config', function () {
 			assert.strictEqual(config.getServicePort(100, 'gs1-02'), 102);
 			assert.strictEqual(config.getServicePort(100, 'gs2-01'), 103);
 			assert.strictEqual(config.getServicePort(100, 'gs3-01'), 104);
-			// unknown GSID is assumed to be the cluster master:
+			// unknown GSID is assumed to be this host (ie. the cluster master in this case):
 			assert.strictEqual(config.getServicePort(100, 'meh'), 100);
+		});
+
+		test('accepts a config path as basePort argument', function () {
+			config.init(false, {
+				net: {gameServers: {
+					gs1: {host: '127.0.0.1', ports: [1, 2]},
+				}},
+				some: {base: {port: 777}},
+			}, {gsid: 'gs1-02'});
+			assert.strictEqual(config.getServicePort('some:base:port', 'gs1-01'), 778);
+			assert.strictEqual(config.getServicePort('some:base:port'), 779);
 		});
 	});
 

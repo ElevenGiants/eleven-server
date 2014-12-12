@@ -23,6 +23,7 @@ var amfServer = require('comm/amfServer');
 var policyServer = require('comm/policyServer');
 var logging = require('logging');
 var metrics = require('metrics');
+var replServer = require('comm/replServer');
 var util = require('util');
 
 
@@ -124,6 +125,10 @@ function runWorker() {
 		if (err) log.error(err, 'GSJS bridge initialization failed');
 		else log.info('GSJS prototypes loaded');
 	});
+	// start REPL server if enabled
+	if (config.get('debug').repl && config.get('debug:repl:enable')) {
+		replServer.init();
+	}
 }
 
 

@@ -62,11 +62,19 @@ module.exports = {
 			file: 'info',
 			stdout: 'fatal',
 		},
+		// enabling this has a significant performance impact:
 		includeLoc: false,
 	},
 	mon: {
 		statsd: {
 			prefix: 'prod',
+		},
+	},
+	debug: {
+		// consider security and stability implications before enabling the
+		// REPL server in a PROD environment
+		repl: {
+			enable: false,
 		},
 	},
 };

@@ -63,6 +63,14 @@ module.exports = {
 			prefix: '',
 		},
 	},
+	debug: {
+		// REPL server for live debugging/inspection
+		repl: {
+			enable: true,
+			host: '127.0.0.1',  // only local connections allowed by default
+			basePort: 7200,
+		},
+	},
 	gsjs: {
 		// the GSJS configuration variant to load
 		config: 'config_prod',
