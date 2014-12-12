@@ -189,3 +189,11 @@ LocationApi.prototype.apiNotifyItemStateChanged =
 	//TODO implement&document me
 	log.warn('TODO Location.apiNotifyItemStateChanged not implemented yet');
 };
+
+
+LocationApi.prototype.apiGetItemsInTheRadius = function apiGetItemsInTheRadius(
+	x, y, radius) {
+	log.debug('%s.apiGetItemsInTheRadius(%s, %s, %s)', this, x, y, radius);
+	//TODO: implement&document me
+	log.warn('TODO Location.apiGetItemsInTheRadius not implemented yet');
+};

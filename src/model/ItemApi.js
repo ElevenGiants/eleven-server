@@ -150,3 +150,10 @@ ItemApi.prototype.apiIsDeleted = function apiIsDeleted() {
 	log.debug('%s.apiIsDeleted()', this);
 	return this.deleted;
 };
+
+
+ItemApi.prototype.apiFindPath = function apiFindPath(x, y, flags, callback) {
+	log.debug('%s.apiFindPath(%s, %s, %s, %s)', this, x, y, flags, callback);
+	//TODO: implement&document me
+	log.warn('TODO Item.apiFindPath not implemented yet');
+};
