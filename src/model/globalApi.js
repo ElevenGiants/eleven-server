@@ -7,10 +7,12 @@
  */
 
 var gsjsBridge = require('model/gsjsBridge');
+var Property = require('model/Property');
 var DataContainer = require('model/DataContainer');
 var Quest = require('model/Quest');
 var Item = require('model/Item');
 var Bag = require('model/Bag');
+var Group = require('model/Group');
 var pers = require('data/pers');
 var orProxy = require('data/objrefProxy');
 var utils = require('utils');
@@ -34,9 +36,22 @@ exports.toString = function toString() {
 
 
 /**
+ * Creates a new property object.
+ *
+ * @param {string} name property name
+ * @param {number} value initial value
+ * @returns {Property} the new property
+ */
+exports.apiNewProperty = function apiNewProperty(name, value) {
+	log.debug('global.apiNewProperty(%s, %s)', name, value);
+	return new Property(name, value);
+};
+
+
+/**
  * Creates a new data container object assigned to a specific owner.
  *
- * @param {Location|Player|Group} owner of the DC object
+ * @param {Location|Player|Group} owner owner of the DC object
  * @returns {DataContainer} the new object
  */
 exports.apiNewOwnedDC = function apiNewOwnedDC(owner) {
@@ -49,12 +64,37 @@ exports.apiNewOwnedDC = function apiNewOwnedDC(owner) {
  * Creates a new quest object assigned to a specific owner.
  *
  * @param {string} classTsid specific class of the quest
- * @param {Location|Player} owner of the quest object
+ * @param {Location|Player} owner owner of the quest object
  * @returns {Quest} the new object
  */
 exports.apiNewOwnedQuest = function apiNewOwnedQuest(classTsid, owner) {
 	log.debug('global.apiNewOwnedQuest(%s, %s)', classTsid, owner);
 	return Quest.create(classTsid, owner);
+};
+
+
+/**
+ * Creates a new group object.
+ *
+ * @param {string} classTsid specific class of the group
+ * @returns {Group} the new group
+ */
+exports.apiNewGroup = function apiNewGroup(classTsid) {
+	log.debug('global.apiNewGroup(%s)', classTsid);
+	return Group.create(classTsid);
+};
+
+
+/**
+ * Creates a new group object attached to a hub.
+ *
+ * @param {string} classTsid specific class of the group
+ * @param {string} hubId hub to attach the group to
+ * @returns {Group} the new group
+ */
+exports.apiNewGroupForHub = function apiNewGroupForHub(classTsid, hubId) {
+	log.debug('global.apiNewGroupForHub(%s, %s)', classTsid, hubId);
+	return Group.create(classTsid, hubId);
 };
 
 
@@ -65,7 +105,7 @@ exports.apiNewOwnedQuest = function apiNewOwnedQuest(classTsid, owner) {
  * @returns {Item|Bag} the new object
  */
 exports.apiNewItem = function apiNewItem(classTsid) {
-	log.trace('global.apiNewItem(%s, %s)', classTsid);
+	log.trace('global.apiNewItem(%s)', classTsid);
 	return getItemType(classTsid).create(classTsid);
 };
 
@@ -269,6 +309,23 @@ exports.apiSendToGroup = function apiSendToGroup(msg, recipients) {
 			pers.get(tsid).send(msg);
 		}
 	});
+};
+
+
+exports.apiFindGlobalPathX = function apiFindGlobalPathX(from, to) {
+	log.debug('global.apiFindGlobalPathX(%s, %s)', from, to);
+	//TODO: implement&document me
+	log.warn('TODO globa.apiFindGlobalPathX not implemented yet');
+	return [];
+};
+
+
+exports.apiFindShortestGlobalPath = function apiFindShortestGlobalPath(from, tos) {
+	log.debug('global.apiFindShortestGlobalPath(%s, %s)', from,
+		Array.prototype.slice.call(tos).join());
+	//TODO: implement&document me
+	log.warn('TODO global.apiFindShortestGlobalPath not implemented yet');
+	return [];
 };
 
 
