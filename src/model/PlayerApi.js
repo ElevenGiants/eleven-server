@@ -203,6 +203,21 @@ PlayerApi.prototype.apiEndLocationMove = function apiEndLocationMove(newLoc) {
 };
 
 
+/**
+ * Moves a player that is not currently logged in to another location.
+ *
+ * @param {Location} newLoc the target location
+ * @param {number} x x coordinate of the player in the new location
+ * @param {number} y y coordinate of the player in the new location
+ */
+PlayerApi.prototype.apiMoveOfflinePlayerToAnotherLocation =
+	function apiMoveOfflinePlayerToAnotherLocation(newLoc, x, y) {
+	log.debug('%s.apiMoveOfflinePlayerToAnotherLocation(%s, %s, %s)', this,
+		newLoc, x, y);
+	this.startMove(newLoc, x, y);
+};
+
+
 PlayerApi.prototype.apiStartFollowing = function apiStartFollowing(leaderTsid) {
 	log.debug('%s.apiStartFollowing(%s)', this, leaderTsid);
 	//TODO: implement&document me
