@@ -68,4 +68,7 @@ module.exports = {
 			prefix: 'vagrant',
 		},
 	},
+	debug: {
+		stackTraceLimit: 100,
+	},
 };

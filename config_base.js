@@ -70,6 +70,7 @@ module.exports = {
 			host: '127.0.0.1',  // only local connections allowed by default
 			basePort: 7200,
 		},
+		stackTraceLimit: 20,
 	},
 	gsjs: {
 		// the GSJS configuration variant to load

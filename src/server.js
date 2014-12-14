@@ -38,6 +38,9 @@ var util = require('util');
 function main() {
 	// init low-level things first (synchronously)
 	config.init(cluster.isMaster);
+	if (config.get('debug').stackTraceLimit) {
+		Error.stackTraceLimit = config.get('debug:stackTraceLimit');
+	}
 	logging.init();
 	metrics.init();
 	// then actually fork workers, resp. start up server components there
