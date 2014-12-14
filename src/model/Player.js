@@ -13,6 +13,7 @@ var rpc = require('data/rpc');
 var RC = require('data/RequestContext');
 var util = require('util');
 var utils = require('utils');
+var lodash = require('lodash');
 
 
 util.inherits(Player, Bag);
@@ -503,11 +504,15 @@ Player.prototype.send = function send(msg, skipChanges) {
 			changes.stat_values = propChanges;
 		}
 		if (changes) {
+			msg = lodash.clone(msg);  // avoid modifying original message object
 			msg.changes = changes;
 		}
 	}
 	// append "announcements" segment
 	if (this.anncs.length > 0) {
+		if (skipChanges || !msg.changes) {  // only clone if it hasn't already been cloned
+			msg = lodash.clone(msg);
+		}
 		msg.announcements = this.anncs;
 		this.anncs = [];
 	}
