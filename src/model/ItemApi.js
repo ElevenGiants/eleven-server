@@ -133,15 +133,6 @@ ItemApi.prototype.apiConsume = function apiConsume(n) {
 
 
 /**
- * Schedules this item for deletion after the current request.
- */
-ItemApi.prototype.apiDelete = function apiDelete() {
-	log.debug('%s.apiDelete()', this);
-	this.del();
-};
-
-
-/**
  * Tests whether the item is flagged for deletion.
  *
  * @returns {boolean} `true` if the item is flagged for deletion

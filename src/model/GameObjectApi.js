@@ -12,6 +12,15 @@ var GameObjectApi = module.exports = function GameObjectApi() {};
 
 
 /**
+ * Schedules this object for deletion after the current request.
+ */
+GameObjectApi.prototype.apiDelete = function apiDelete() {
+	log.debug('%s.apiDelete()', this);
+	this.del();
+};
+
+
+/**
  * Schedules a function of the game object to be called after a given
  * delay. Only one timer can be defined per function; if there already
  * is one, subsequent requests are ignored until that timer has been
