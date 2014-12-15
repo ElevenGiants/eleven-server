@@ -8,6 +8,8 @@ var pbeMock = require('../../mock/pbe');
 var Location = require('model/Location');
 var Geo = require('model/Geo');
 var Item = require('model/Item');
+var Bag = require('model/Bag');
+var Player = require('model/Player');
 var gsjsBridge = require('model/gsjsBridge');
 var utils = require('utils');
 
@@ -151,6 +153,29 @@ suite('Location', function () {
 				assert.isUndefined(i.slot);
 				assert.strictEqual(i.x, 123);
 				assert.strictEqual(i.y, -456);
+			}, done);
+		});
+
+		test('creates correct changes when player drops bag', function (done) {
+			var rc = new RC();
+			rc.run(function () {
+				// setup (create/initialize loc, player, bag)
+				var l = Location.create(Geo.create());
+				var p = new Player({tsid: 'PX', location: {tsid: l.tsid}});
+				l.players = {PX: p};  // put player in loc (so loc changes are queued for p)
+				rc.cache[p.tsid] = p;  // required so b.tcont can be "loaded" from persistence
+				var b = new Bag({tsid: 'BX', class_tsid: 'bag_bigger_green'});
+				b.container = p;
+				b.tcont = p.tsid;
+				// test starts here
+				l.addItem(b, 100, 200);
+				assert.strictEqual(p.changes.length, 2);
+				var pcChg = p.changes[0].itemstack_values.pc.BX;
+				var locChg = p.changes[1].itemstack_values.location.BX;
+				assert.strictEqual(pcChg.count, 0);
+				assert.strictEqual(locChg.count, 1);
+				assert.strictEqual(locChg.x, 100);
+				assert.strictEqual(locChg.y, 200);
 			}, done);
 		});
 	});
