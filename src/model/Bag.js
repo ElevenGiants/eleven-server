@@ -82,8 +82,8 @@ Bag.prototype.serialize = function serialize() {
 };
 
 
-Bag.prototype.getChangeData = function getChangeData(pc) {
-	var ret = Bag.super_.prototype.getChangeData.call(this, pc);
+Bag.prototype.getChangeData = function getChangeData(pc, removed) {
+	var ret = Bag.super_.prototype.getChangeData.call(this, pc, removed);
 	if (this.hasTag && !this.hasTag('not_openable')) ret.slots = this.capacity;
 	return ret;
 };
