@@ -23,6 +23,7 @@ var amfServer = require('comm/amfServer');
 var policyServer = require('comm/policyServer');
 var logging = require('logging');
 var metrics = require('metrics');
+var replServer = require('comm/replServer');
 var util = require('util');
 
 
@@ -37,6 +38,9 @@ var util = require('util');
 function main() {
 	// init low-level things first (synchronously)
 	config.init(cluster.isMaster);
+	if (config.get('debug').stackTraceLimit) {
+		Error.stackTraceLimit = config.get('debug:stackTraceLimit');
+	}
 	logging.init();
 	metrics.init();
 	// then actually fork workers, resp. start up server components there
@@ -124,6 +128,10 @@ function runWorker() {
 		if (err) log.error(err, 'GSJS bridge initialization failed');
 		else log.info('GSJS prototypes loaded');
 	});
+	// start REPL server if enabled
+	if (config.get('debug').repl && config.get('debug:repl:enable')) {
+		replServer.init();
+	}
 }
 
 

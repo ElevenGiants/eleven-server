@@ -348,14 +348,18 @@ function mapToGS(objOrTsid) {
  * on the same host, each server process is using a specific, unique
  * port, derived from a configurable base port.
  *
- * @param {number} basePort base port of the network service
+ * @param {number|string} basePort base port of the network service,
+ *        or path of the configuration option that contains it
  * @param {string} [gsid] ID of the game server instance to determine
- *        the port for; if `undefined` (or an unknown ID), the base
- *        port itself is returned (to be used for the cluster master)
+ *        the port for; if `undefined` (or an unknown ID), the service
+ *        port for this instance is returned
  * @returns {number} TCP port number for the service in question on
  *          the specified server instance
  */
 function getServicePort(basePort, gsid) {
+	if (typeof basePort === 'string') {
+		basePort = get(basePort);
+	}
 	if (!gsid) gsid = getGsid();
 	var add = gsids.indexOf(gsid) + 1;  // master is not in gsids list -> 0
 	return basePort + add;
@@ -368,8 +372,8 @@ function getServicePort(basePort, gsid) {
  * module:config~getServicePort|getServicePort}).
  *
  * @param {string} [gsid] ID of the game server instance to determine
- *        the port for; if `undefined` (or an unknown ID), the base
- *        port itself is returned (to be used for the cluster master)
+ *        the port for; if `undefined` (or an unknown ID), the service
+ *        port for this instance is returned
  * @returns {number} TCP port number for the RPC service on the
  *          specified server instance
  */
