@@ -8,6 +8,7 @@
 
 var gsjsBridge = require('model/gsjsBridge');
 var Property = require('model/Property');
+var OrderedHash = require('model/OrderedHash');
 var DataContainer = require('model/DataContainer');
 var Quest = require('model/Quest');
 var Item = require('model/Item');
@@ -45,6 +46,17 @@ exports.toString = function toString() {
 exports.apiNewProperty = function apiNewProperty(name, value) {
 	log.debug('global.apiNewProperty(%s, %s)', name, value);
 	return new Property(name, value);
+};
+
+
+/**
+ * Create a new ordered hash object.
+ *
+ * @returns {OrderedHash} the new ordered hash
+ */
+exports.apiNewOrderedHash = function apiNewOrderedHash() {
+	log.debug('global.apiNewOrderedHash()');
+	return new OrderedHash();
 };
 
 

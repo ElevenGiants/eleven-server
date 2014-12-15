@@ -7,15 +7,16 @@
  * @module
  */
 
+var NEW_PLAYER_LOC = 'LLI32G3NUTD100I';
+
 // public interface
 module.exports = {
 	toString: toString,
 	getConnectData: getConnectData,
-	createPlayer: createPlayer,
+	createPlayer: redirWrap(createPlayer, NEW_PLAYER_LOC),
+	resetPlayer: redirWrap(resetPlayer),
 	getGsjsConfig: getGsjsConfig,
 };
-
-var NEW_PLAYER_LOC = 'LLI32G3NUTD100I';
 
 
 var assert = require('assert');
@@ -24,12 +25,43 @@ var config = require('config');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
 var util = require('util');
+var utils = require('utils');
 var gsjsBridge = require('model/gsjsBridge');
 var Player = require('model/Player');
 
 
 function toString() {
 	return 'rpcApi';
+}
+
+
+/**
+ * Wrapper for RPC functions that must be executed on the "right" GS
+ * instance for a game object; forwards calls to the appropriate
+ * instance when necessary, otherwise just calls the function directly.
+ *
+ * @param {function} func the RPC call handler to wrap
+ * @param {string} [fixedTsid] if provided, requests will *always* be
+ *        forwarded to the GS instance responsible for this specific
+ *        TSID; otherwise, the **first** argument to the RPC handler
+ *        function is assumed to contain the relevant game object or
+ *        its TSID
+ * @returns {function} the wrapped RPC handler function
+ */
+// forward calls to appropriate GS instance if necessary
+function redirWrap(func, fixedTsid) {
+	return function redirWrapper() {
+		var objOrTsid = fixedTsid || arguments[0];
+		if (rpc.isLocal(objOrTsid)) {
+			return func.apply(null, arguments);
+		}
+		else {
+			var gsid = rpc.getGsid(objOrTsid);
+			log.debug('forwarding %s request to %s', func.name, gsid);
+			return rpc.sendRequest(gsid, 'gs',
+				[func.name, Array.prototype.slice.call(arguments)]);
+		}
+	};
 }
 
 
@@ -66,12 +98,6 @@ function getConnectData(playerTsid) {
  * @returns {string} the new player's TSID
  */
 function createPlayer(userId, name) {
-	if (!rpc.isLocal(NEW_PLAYER_LOC)) {
-		// forward call to appropriate GS instance if necessary
-		var gsid = rpc.getGsid(NEW_PLAYER_LOC);
-		return rpc.sendRequest(gsid, 'gs',
-			['createPlayer', Array.prototype.slice.call(arguments)]);
-	}
 	log.info('rpcApi.createPlayer(%s, %s)', userId, name);
 	assert(typeof userId === 'string' && userId.trim().length > 0,
 		util.format('invalid user ID: "%s"', userId));
@@ -99,8 +125,44 @@ function createPlayer(userId, name) {
 		x: 2750,
 		y: -55,
 	});
+	makeAlphaAdjustments(pc);
 	pc.unload();
 	return pc.tsid;
+}
+
+
+/**
+ * Resets an existing blank player (for testing).
+ *
+ * @param {string} tsid TSID of the player that should be reset
+ */
+function resetPlayer(tsid) {
+	var pc = pers.get(tsid);
+	assert(!!pc, 'player not found: ' + tsid);
+	// check for invalid item references that would break the reset function
+	// (TODO: this is a bug workaround and should eventually go away)
+	(function check(items) {
+		for (var k in items) {
+			var it = pers.get(k);
+			if (null === it) {
+				log.warn({pc: tsid, item: k}, 'deleting broken item reference');
+				delete items[k];
+			}
+			else if (utils.isBag(it)) {  // recurse
+				check(it.items);
+			}
+		}
+	})(pc.items);
+	// do the reset
+	pc.resetForTesting(true);
+	makeAlphaAdjustments(pc);
+}
+
+
+// temporary adjustments for alpha players that should be removed at some point (TODO...)
+function makeAlphaAdjustments(pc) {
+	pc.teleportToLocation(NEW_PLAYER_LOC, 2750, -55);
+	pc.stats.currants.setVal(100000);
 }
 
 

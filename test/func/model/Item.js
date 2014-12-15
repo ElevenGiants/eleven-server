@@ -3,6 +3,7 @@
 var gsjsBridge = require('model/gsjsBridge');
 var RC = require('data/RequestContext');
 var Item = require('model/Item');
+var Bag = require('model/Bag');
 var Player = require('model/Player');
 var Location = require('model/Location');
 var Geo = require('model/Geo');
@@ -258,6 +259,18 @@ suite('Item', function () {
 					y: 0,
 					s: 'look_screen',
 				});
+			}, done);
+		});
+
+		test('does not fail on furniture bag deletion', function (done) {
+			var rc = new RC();
+			rc.run(function () {
+				var p = new Player({tsid: 'PX', location: {tsid: 'LDUMMY'}});
+				rc.cache[p.tsid] = p;
+				var b = Bag.create('bag_furniture_smallcabinet');
+				b.setContainer(p, 0, -1, true);
+				b.del();
+				b.getChangeData();
 			}, done);
 		});
 	});

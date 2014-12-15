@@ -255,7 +255,7 @@ Item.prototype.getChangeData = function getChangeData(pc, removed, compact) {
 	if (!removed && this.slot !== undefined) ret.slot = this.slot;
 	if (this.z) ret.z = this.z;
 	if (this.rs) ret.rs = this.rs;
-	if (this.isSelectable && !this.isSelectable(pc)) {
+	if (!this.deleted && this.isSelectable && !this.isSelectable(pc)) {
 		ret.not_selectable = true;
 	}
 	if (this.isSoulbound && this.isSoulbound() && this.soulbound_to) {
