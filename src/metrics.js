@@ -23,6 +23,7 @@ module.exports = {
 require('harmony-reflect');
 var config = require('config');
 var Lynx = require('lynx');
+var memwatch = require('memwatch');
 
 var STATSD_FLUSH_INT = 10000;  // statsd flush interval in ms
 
@@ -203,9 +204,25 @@ function startSystemMetrics() {
 	}
 	/*jshint +W083 */
 	// naive event loop latency
-	setupTimerInterval('process.eventLoopLatency', function resolver(timer) {
+	setupTimerInterval('process.ev_loop_latency', function resolver(timer) {
 		setImmediate(function stop() {
 			timer.stop();
 		});
 	}, undefined, 1000);
+	// memwatch events (postpone until after startup with data preloading etc)
+	setTimeout(function registerMemwatchEvents() {
+		var gcTimer;
+		memwatch.on('leak', function onMemwatchLeaks(info) {
+			lynx.gauge('memwatch.growth', info.growth);
+			log.warn(info, 'memwatch leak event emitted');
+		});
+		memwatch.on('stats', function onMemwatchStats(stats) {
+			log.info(stats, 'memwatch stats');
+			lynx.gauge('memwatch.current_base', stats.current_base);
+			lynx.gauge('memwatch.estimated_base', stats.estimated_base);
+			lynx.gauge('memwatch.usage_trend', stats.usage_trend);
+			if (gcTimer) gcTimer.stop();
+			gcTimer = createTimer('memwatch.full_gc');
+		});
+	}, 60000);
 }
