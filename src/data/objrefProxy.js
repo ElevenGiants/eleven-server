@@ -37,6 +37,7 @@ module.exports = {
 	makeProxy: makeProxy,
 	proxify: proxify,
 	refify: refify,
+	wrap: wrap,
 };
 
 
@@ -212,4 +213,21 @@ function makeRef(obj) {
 	};
 	if (obj.label !== undefined) ret.label = obj.label;
 	return ret;
+}
+
+
+/**
+ * Wraps a "regular" game object (i.e. not an objref) in an objref
+ * proxy. This can be used to make sure there are no stale copies of an
+ * object (i.e. any operations on objects are always performed on the
+ * instances in the persistence layer cache; see {@link
+ * module:data/pers}).
+ *
+ * @param {GameObject} obj the game object to wrap
+ * @returns {Proxy} A proxy wrapper for the given objref (as described
+ *          in the module docs above).
+ */
+function wrap(obj) {
+	if (obj.__isORP) return obj;
+	return makeProxy(makeRef(obj));
 }

@@ -124,6 +124,7 @@ function load(tsid) {
 	}
 	orProxy.proxify(data);
 	var obj = gsjsBridge.create(data);
+	orProxy.wrap(obj);
 	if (!rpc.isLocal(obj)) {
 		// wrap object in RPC proxy and add it to request cache
 		obj = rpc.makeProxy(obj);
