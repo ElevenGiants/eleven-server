@@ -26,8 +26,15 @@ var PROPS = {
 	metabolics: ['energy', 'mood'],
 	stats: [
 		'xp', 'currants', 'donation_xp_today', 'imagination', 'credits',
-		'quoins_today', 'meditation_today', 'rube_trades', 'rube_lure_disabled'],
+		'quoins_today', 'meditation_today', 'rube_trades', 'rube_lure_disabled',
+		'recipe_xp_today'],
 	daily_favor: [
+		'alph', 'cosma', 'friendly', 'grendaline', 'humbaba', 'lem', 'mab',
+		'pot', 'spriggan', 'ti', 'zille'],
+	favor_points: [
+		'alph', 'cosma', 'friendly', 'grendaline', 'humbaba', 'lem', 'mab',
+		'pot', 'spriggan', 'ti', 'zille'],
+	giant_emblems: [
 		'alph', 'cosma', 'friendly', 'grendaline', 'humbaba', 'lem', 'mab',
 		'pot', 'spriggan', 'ti', 'zille'],
 };
