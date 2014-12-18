@@ -24,6 +24,7 @@ module.exports = {
 var net = require('net');
 var repl = require('repl');
 var vm = require('vm');
+var memwatch = require('memwatch');
 var config = require('config');
 var pers = require('data/pers');
 var RC = require('data/RequestContext');
@@ -62,6 +63,7 @@ function handleConnect(socket) {
 	r.context.admin = gsjsBridge.getAdmin();
 	r.context.api = globalApi;
 	r.context.gsrpc = rpcApi;
+	r.context.memwatch = memwatch;
 }
 
 
