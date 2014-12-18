@@ -103,20 +103,26 @@ Bag.prototype.getChangeData = function getChangeData(pc, removed) {
  * }
  * ```
  *
+ * @param {boolean} [includeHidden] if `true`, includes hidden items
  * @param {object} [aggregate] for internal use (recursion)
  * @param {object} [pathPrefix] for internal use (recursion)
  * @returns {object} a hash with all contained items, as decribed above
  *          (NB: does not contain the root bag itself!)
  */
-Bag.prototype.getAllItems = function getAllItems(aggregate, pathPrefix) {
+Bag.prototype.getAllItems = function 
+	getAllItems(includeHidden, aggregate, pathPrefix) {
 	var ret = aggregate || {};
+	var lookIn = [this.items];
+	if (includeHidden) {
+		lookIn.push(this.hiddenItems);
+	}
 	pathPrefix = pathPrefix || '';
-	[this.items, this.hiddenItems].forEach(function collect(itemHash) {
+	lookIn.forEach(function collect(itemHash) {
 		for (var k in itemHash) {
 			var it = itemHash[k];
 			ret[pathPrefix + it.tsid] = it;
 			if (utils.isBag(it)) {
-				it.getAllItems(ret, pathPrefix + it.tsid + '/');
+				it.getAllItems(includeHidden, ret, pathPrefix + it.tsid + '/');
 			}
 		}
 	});
@@ -178,7 +184,7 @@ Bag.prototype.getSlotOrPath = function getSlotOrPath(slotOrPath) {
 			ret = this.getSlot(slotOrPath) || null;
 		}
 		else {
-			ret = this.getAllItems()[slotOrPath] || null;
+			ret = this.getAllItems(true)[slotOrPath] || null;
 		}
 	}
 	return ret;
