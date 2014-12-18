@@ -256,5 +256,5 @@ Location.prototype.getAllItems = Bag.prototype.getAllItems;
  * @returns {Item|null} the requested item, or `null` if not found
  */
 Location.prototype.getPath = function getPath(path) {
-	return this.getAllItems()[path] || null;
+	return this.getAllItems(true)[path] || null;
 };
