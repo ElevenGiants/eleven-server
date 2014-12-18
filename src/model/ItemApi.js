@@ -147,4 +147,5 @@ ItemApi.prototype.apiFindPath = function apiFindPath(x, y, flags, callback) {
 	log.debug('%s.apiFindPath(%s, %s, %s, %s)', this, x, y, flags, callback);
 	//TODO: implement&document me
 	log.warn('TODO Item.apiFindPath not implemented yet');
+	return true;
 };
