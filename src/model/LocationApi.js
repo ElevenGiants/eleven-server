@@ -197,3 +197,12 @@ LocationApi.prototype.apiGetItemsInTheRadius = function apiGetItemsInTheRadius(
 	//TODO: implement&document me
 	log.warn('TODO Location.apiGetItemsInTheRadius not implemented yet');
 };
+
+
+LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId,
+	hubId, isInstance, altClassTsid) {
+	log.debug('%s.apiCopyLocation(%s, %s, %s, %s, %s)', this, label, moteId,
+		hubId, isInstance, altClassTsid);
+	//TODO: implement&document me
+	log.warn('TODO Location.apiCopyLocation not implemented yet');
+};

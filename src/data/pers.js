@@ -38,6 +38,7 @@ module.exports = {
 	get: get,
 	create: create,
 	postRequestProc: postRequestProc,
+	postRequestRollback: postRequestRollback,
 };
 
 
@@ -123,6 +124,7 @@ function load(tsid) {
 	}
 	orProxy.proxify(data);
 	var obj = gsjsBridge.create(data);
+	orProxy.wrap(obj);
 	if (!rpc.isLocal(obj)) {
 		// wrap object in RPC proxy and add it to request cache
 		obj = rpc.makeProxy(obj);
@@ -209,7 +211,7 @@ function create(modelType, data) {
  *        (TSIDs as keys, objects as values)
  * @param {object} ulist hash containing game objects to release from
  *        the live object cache
- * @param {string} logmsg optional information for log messages
+ * @param {string} [logmsg] optional information for log messages
  * @param {function} [callback] function to be called after persistence
  *        operations have finished
  */
@@ -242,10 +244,6 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
 			for (var k in ulist) {
 				var obj = ulist[k];
 				try {
-					// suspend timers/intervals (if object is actually loaded)
-					if (obj.tsid in cache && obj.suspendGsTimers) {
-						obj.suspendGsTimers();
-					}
 					unload(obj);
 				}
 				catch (e) {
@@ -255,6 +253,27 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
 			if (callback) callback();
 		}
 	);
+}
+
+
+/**
+ * Called by {@link RequestContext#run} when an error occured while
+ * processing the request. Discards all modifications caused by the
+ * request by dropping all tainted objects from the live object cache.
+ *
+ * @param {object} dlist hash containing the modified game objects
+ *        (TSIDs as keys, objects as values)
+ * @param {string} [logmsg] optional information for log messages
+ * @param {function} [callback] function to be called after rollback
+ *        has finished
+ */
+function postRequestRollback(dlist, logmsg, callback) {
+	var tag = 'rollback ' + logmsg;
+	log.info(tag);
+	for (var k in dlist) {
+		unload(dlist[k], tag);
+	}
+	if (callback) callback();
 }
 
 
@@ -317,6 +336,8 @@ function del(obj, logmsg, callback) {
 function unload(obj, logmsg) {
 	log.debug('pers.unload: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	if (obj.tsid in cache) {
+		// suspend timers/intervals
+		if (obj.suspendGsTimers) obj.suspendGsTimers();
 		delete cache[obj.tsid];
 	}
 }

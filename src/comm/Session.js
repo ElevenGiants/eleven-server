@@ -323,28 +323,13 @@ Session.prototype.handleAmfReqError = function handleAmfReqError(err, req) {
 		err = new Error(err);
 	}
 	log.error(err, 'error processing %s request for %s', req.type, this.pc);
-	if (this.pc && req.msg_id) {
-		// send error response back to client
-		var rsp = {
-			msg_id: req.msg_id,
-			type: req.type,
-			success: false,
-			msg: err.message,
-		};
-		log.info({data: rsp}, 'sending error response');
-		try {
-			this.send(rsp);
+	if (this.socket) {
+		if (this.pc) {
+			this.pc.sendServerMsg('CLOSE', {msg: 'REQ_PROC_ERROR'});
 		}
-		catch (e) {
-			log.error(e, 'could not send error response to client');
-		}
-	}
-	if (err instanceof auth.AuthError) {
-		log.info({session: this}, 'closing session after authentication error');
+		log.info({session: this}, 'closing session after error');
 		this.socket.destroy();
 	}
-	// TODO: better error handling (disconnect on other errors too? roll back
-	// modified objects (invalidate/reload dirty objects in persistence layer)?)
 };
 
 

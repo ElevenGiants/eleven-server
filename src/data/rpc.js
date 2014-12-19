@@ -434,7 +434,8 @@ function getGsid(objOrTsid) {
 	}
 	// for all other classes, we need the actual game object
 	var obj = typeof objOrTsid === 'string' ? pers.get(objOrTsid) : objOrTsid;
-	assert(obj !== undefined, 'cannot map nonexistent game object: ' + objOrTsid);
+	assert(typeof obj === 'object' && obj !== null,
+		'cannot map nonexistent game object: ' + objOrTsid);
 	// player mapped by current location
 	if (utils.isPlayer(obj)) {
 		assert(utils.isLoc(obj.location),

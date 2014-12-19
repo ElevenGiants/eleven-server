@@ -189,16 +189,16 @@ suite('Session', function () {
 
 	suite('handleAmfReqError', function () {
 
-		test('sends error response', function (done) {
+		test('sends CLOSE message', function (done) {
 			var s = getTestSession('test', getDummySocket());
-			s.pc = 'xyz';
-			s.send = function (msg) {
-				assert.deepEqual(msg, {
-					msg_id: 12,
-					type: 'moo',
-					success: false,
-					msg: 'foo',
-				});
+			var actionSent;
+			s.pc = {
+				sendServerMsg: function (action) {
+					actionSent = action;
+				}
+			};
+			s.socket.destroy = function (msg) {
+				assert.strictEqual(actionSent, 'CLOSE');
 				done();
 			};
 			s.handleAmfReqError(new Error('foo'), {msg_id: 12, type: 'moo'});
