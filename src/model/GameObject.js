@@ -224,10 +224,9 @@ GameObject.prototype.setGsTimer = function setGsTimer(options) {
  */
 GameObject.prototype.scheduleTimer = function scheduleTimer(options, type, key) {
 	var self = this;
-	var session = RC.getContext(true) ? RC.getContext().session : null;
 	var handle = (options.interval ? setInterval : setTimeout)(
 		function execTimer() {
-			var rc = new RC(options.fname, self, session);
+			var rc = new RC(options.fname, self);
 			rc.run(
 				function timerCall() {
 					log.trace({options: options}, '%s call', type);
