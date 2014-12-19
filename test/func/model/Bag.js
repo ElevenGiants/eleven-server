@@ -208,4 +208,33 @@ suite('Bag', function () {
 			}, done);
 		});
 	});
+
+
+	suite('getAllItems', function () {
+
+		test('make sure GSJS does not fill hidden bags when purchasing from vendors',
+			function (done) {
+			new RC().run(function () {
+				var p = pers.create(Player, {location: Location.create(Geo.create())});
+				var remaining = p.createItemFromSource('watering_can', 99, p, true);
+				assert.strictEqual(remaining, 83, '99 cans created, 16 player' +
+					' inventory slots filled, 83 remaining');
+				// check that inventory was filled
+				assert.strictEqual(Object.keys(p.items).length, p.capacity);
+				Object.keys(p.items).forEach(function isCan(tsid) {
+					assert.strictEqual(p.items[tsid].class_tsid, 'watering_can');
+					assert.strictEqual(p.items[tsid].count, 1);
+				});
+				// make sure nothing was added to SDB in furniture bag
+				var fbag = p.hiddenItems[p.furniture.storage_tsid];
+				Object.keys(fbag.items).forEach(function check(tsid) {
+					var it = fbag.items[tsid];
+					if (it.class_tsid === 'bag_furniture_sdb') {
+						assert.strictEqual(Object.keys(it.items).length, 0,
+							'nothing added to SDB in furniture bag');
+					}
+				});
+			}, done);
+		});
+	});
 });

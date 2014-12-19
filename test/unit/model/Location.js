@@ -174,10 +174,17 @@ suite('Location', function () {
 			var b2 = new Bag({tsid: 'B2', items: [b3], hiddenItems: [i3]});
 			var l = new Location({tsid: 'L1', items: [i1, b2]}, new Geo());
 			//jscs:disable disallowQuotedKeysInObjects
-			assert.deepEqual(l.getAllItems(), {
+			assert.deepEqual(l.getAllItems(true), {
 				'I1': i1,
 				'B2': b2,
 				'B2/I3': i3,
+				'B2/B3': b3,
+				'B2/B3/I5': i5,
+			});
+			assert.deepEqual(l.getAllItems(), {
+				'I1': i1,
+				'B2': b2,
+				// hidden item B2/I3 not included
 				'B2/B3': b3,
 				'B2/B3/I5': i5,
 			});
