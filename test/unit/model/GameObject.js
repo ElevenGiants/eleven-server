@@ -35,6 +35,24 @@ suite('GameObject', function () {
 			assert.strictEqual(go.tsid, 'GXYZ');
 			assert.strictEqual(go.class_tsid, 'something');
 		});
+
+		test('restores serialized timers/intervals', function () {
+			var go = new GameObject({
+				gsTimers: {
+					timer: {
+						foo: 1,
+						bar: 12,
+					},
+					interval: {
+						someInt: {
+							meh: true,
+						},
+					},
+				},
+			});
+			assert.deepEqual(go.gsTimers.timer, {foo: 1, bar: 12});
+			assert.deepEqual(go.gsTimers.interval, {someInt: {meh: true}});
+		});
 	});
 
 
