@@ -237,3 +237,11 @@ PlayerApi.prototype.apiRemoveAllFollowers = function apiRemoveAllFollowers() {
 	//TODO: implement&document me
 	log.warn('TODO Player.apiRemoveAllFollowers not implemented yet');
 };
+
+
+PlayerApi.prototype.apiPlayerCanReach = function apiPlayerCanReach(x, y) {
+	log.debug('%s.apiPlayerCanReach', this);
+	//TODO: implement&document me
+	log.warn('TODO Player.apiPlayerCanReach not implemented yet');
+	return true;
+};
