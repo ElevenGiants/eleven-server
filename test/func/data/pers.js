@@ -14,8 +14,6 @@ var orproxy = require('data/objrefProxy');
 
 suite('pers', function () {
 
-	var FIXTURES_PATH = path.resolve(path.join(__dirname, '../fixtures'));
-
 	this.timeout(5000);
 	this.slow(1000);
 
@@ -30,7 +28,12 @@ suite('pers', function () {
 	});
 
 	setup(function (done) {
-		pers.init(pbeMock, FIXTURES_PATH, done);
+		pers.init(pbeMock, {backEnd: {
+			module: 'pbeMock',
+			config: {pbeMock: {
+				fixturesPath: path.resolve(path.join(__dirname, '../fixtures')),
+			}}
+		}}, done);
 	});
 
 	teardown(function () {
@@ -127,6 +130,67 @@ suite('pers', function () {
 					done();
 				}
 			);
+		});
+	});
+
+
+	suite('live object cache compaction', function () {
+
+		setup(function (done) {
+			pers.init(pbeMock, {pack: {interval: 5, ttl: 20}}, done);
+		});
+
+		test('releases unused objects from cache', function (done) {
+			pbeMock.getDB().GO1 = {tsid: 'GO1'};
+			new RC().run(function () {
+				pers.get('GO1');
+				assert.strictEqual(pbeMock.getCounts().read, 1);
+			});
+			setTimeout(function () {
+				new RC().run(function () {
+					pers.get('GO1');
+					assert.strictEqual(pbeMock.getCounts().read, 2,
+						'GO1 read from back-end again');
+				}, done);
+			}, 30);
+		});
+
+		test('does not release objects with active timers/intervals', function (done) {
+			pbeMock.getDB().GO1 = {tsid: 'GO1'};
+			pbeMock.getDB().GO2 = {tsid: 'GO2'};
+			new RC().run(function () {
+				var o1 = pers.get('GO1');
+				var o2 = pers.get('GO2');
+				assert.strictEqual(pbeMock.getCounts().read, 2);
+				o1.setGsTimer({fname: 'toString', delay: 50});
+				o2.setGsTimer({fname: 'toString', delay: 10, interval: true});
+			});
+			setTimeout(function () {
+				new RC().run(function () {
+					pers.get('GO1');
+					pers.get('GO2');
+					assert.strictEqual(pbeMock.getCounts().read, 2,
+						'both objects still cached');
+				});
+			}, 25);
+			setTimeout(function () {
+				new RC().run(function () {
+					pers.get('GO1');
+					var o2 = pers.get('GO2');
+					assert.strictEqual(pbeMock.getCounts().read, 3,
+						'GO1 read again (released after its timer fired)');
+					o2.cancelGsTimer('toString', true);
+				});
+			}, 80);
+			setTimeout(function () {
+				new RC().run(function () {
+					pers.get('GO1');
+					pers.get('GO2');
+					assert.strictEqual(pbeMock.getCounts().read, 5,
+						'both objects read from back-end again (GO2 released ' +
+						'after interval was canceled)');
+				}, done);
+			}, 150);
 		});
 	});
 });

@@ -65,7 +65,7 @@ var pbe = null;
  *
  * @param {object} backEnd persistence back-end module; must implement
  *        the API shown in the above module docs.
- * @param {object} [config] configuration options for back-end module
+ * @param {object} [config] configuration options
  * @param {function} [callback] called when persistence layer is ready,
  *        or an error occurred during initialization
  */
@@ -76,11 +76,45 @@ function init(backEnd, config, callback) {
 		if (!cache) return 0;
 		return Object.keys(cache).length;
 	});
+	if (config && config.pack) {
+		setInterval(pack.bind(null, config.pack.ttl), config.pack.interval);
+	}
 	if (pbe && typeof pbe.init === 'function') {
-		return pbe.init(config, callback);
+		var pbeConfig;
+		if (config && config.backEnd) {
+			pbeConfig = config.backEnd.config[config.backEnd.module];
+		}
+		return pbe.init(pbeConfig, callback);
 	}
 	else if (callback) {
 		return callback(null);
+	}
+}
+
+
+/**
+ * Removes all objects that have not been modified for a certain amount
+ * of time from the live game object cache (except for objects with
+ * active timers/intervals).
+ *
+ * @param {number} ttl objects that have not been modified this long
+ *        (in ms) will be released from cache
+ * @private
+ */
+function pack(ttl) {
+	var cutoff = new Date().getTime() - ttl;
+	var c = 0;
+	for (var tsid in cache) {
+		var obj = cache[tsid];
+		if (obj.ts < cutoff && !obj.hasActiveGsTimers()) {
+			log.trace('releasing %s from cache', tsid);
+			delete cache[obj.tsid];
+			c++;
+		}
+	}
+	metrics.count('pers.loc.pack_release', c);
+	if (c > 0) {
+		log.info('live object cache compaction: released %s object(s)', c);
 	}
 }
 

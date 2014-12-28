@@ -360,4 +360,32 @@ suite('GameObject', function () {
 			}, 20);
 		});
 	});
+
+
+	suite('hasActiveGsTimers', function () {
+
+		test('works with timers', function (done) {
+			var go = new GameObject();
+			assert.isFalse(go.hasActiveGsTimers());
+			go.foo = function foo() {
+				assert.isFalse(go.hasActiveGsTimers());
+				done();
+			};
+			go.setGsTimer({fname: 'foo', delay: 10});
+			assert.isTrue(go.hasActiveGsTimers());
+		});
+
+		test('works with intervals', function (done) {
+			var go = new GameObject();
+			assert.isFalse(go.hasActiveGsTimers());
+			go.foo = function foo() {
+				assert.isTrue(go.hasActiveGsTimers());
+				go.cancelGsTimer('foo', true);
+				assert.isFalse(go.hasActiveGsTimers());
+				done();
+			};
+			go.setGsTimer({fname: 'foo', delay: 5, interval: true});
+			assert.isTrue(go.hasActiveGsTimers());
+		});
+	});
 });
