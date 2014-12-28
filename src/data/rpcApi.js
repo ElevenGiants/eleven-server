@@ -95,9 +95,10 @@ function getConnectData(playerTsid) {
  *
  * @param {string} userId player's user ID in the webapp
  * @param {string} name desired name of the player
+ * @param {string} [tsid] predefined custom TSID
  * @returns {string} the new player's TSID
  */
-function createPlayer(userId, name) {
+function createPlayer(userId, name, tsid) {
 	log.info('rpcApi.createPlayer(%s, %s)', userId, name);
 	assert(typeof userId === 'string' && userId.trim().length > 0,
 		util.format('invalid user ID: "%s"', userId));
@@ -105,7 +106,7 @@ function createPlayer(userId, name) {
 		util.format('invalid player name: "%s"', name));
 	//TODO: more checks on name (e.g. only "safe" (printable&visible) characters,
 	// etc.); generally, a lot more data validation should probably happen here
-	var pc = Player.create({
+	var data = {
 		userid: userId.trim(),
 		label: name.trim(),
 		class_tsid: 'human',
@@ -124,7 +125,9 @@ function createPlayer(userId, name) {
 		location: pers.get(NEW_PLAYER_LOC),
 		x: 2750,
 		y: -55,
-	});
+	};
+	if (tsid) data.tsid = tsid;
+	var pc = Player.create(data);
 	makeAlphaAdjustments(pc);
 	pc.unload();
 	return pc.tsid;
