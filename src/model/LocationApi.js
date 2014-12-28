@@ -199,6 +199,14 @@ LocationApi.prototype.apiGetItemsInTheRadius = function apiGetItemsInTheRadius(
 };
 
 
+LocationApi.prototype.apiGetActivePlayersInTheRadiusX =
+	function apiGetActivePlayersInTheRadiusX(x, y, radius) {
+	log.debug('%s.apiGetActivePlayersInTheRadiusX(%s, %s, %s)', this, x, y, radius);
+	//TODO: implement&document me
+	log.warn('TODO Location.apiGetActivePlayersInTheRadiusX not implemented yet');
+};
+
+
 LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId,
 	hubId, isInstance, altClassTsid) {
 	log.debug('%s.apiCopyLocation(%s, %s, %s, %s, %s)', this, label, moteId,
