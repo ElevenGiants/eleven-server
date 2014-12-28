@@ -146,12 +146,14 @@ function revertConnect(conn) {
  * Creates a shallow data-only copy of the geometry to be made
  * available for the GSJS code as `location.clientGeometry`.
  *
+ * @param {Location} loc location corresponding to this geometry object
  * @returns {object} shallow copy of the geometry data
  */
-Geo.prototype.getClientGeo = function getClientGeo() {
+Geo.prototype.getClientGeo = function getClientGeo(loc) {
 	var ret = utils.shallowCopy(this);
-	// client expects location TSID here:
-	ret.tsid = Location.prototype.TSID_INITIAL + this.tsid.slice(1);
+	// client expects location TSID and label here:
+	ret.tsid = loc.tsid;
+	ret.label = loc.label;
 	return ret;
 };
 
