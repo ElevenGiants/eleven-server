@@ -35,7 +35,6 @@ function GameObject(data) {
 	// add non-enumerable internal properties
 	utils.addNonEnumerable(this, '__isGO', true);
 	utils.addNonEnumerable(this, 'deleted', false);
-	utils.addNonEnumerable(this, 'gsTimers', {timer: {}, interval: {}});
 	// copy supplied data
 	// TODO: remove 'dynamic' partition in fixture data, and get rid of special handling here
 	var key;
@@ -52,6 +51,10 @@ function GameObject(data) {
 	if (!this.ts) {
 		this.ts = new Date().getTime();
 	}
+	if (!this.gsTimers) this.gsTimers = {};
+	if (!this.gsTimers.timer) this.gsTimers.timer = {};
+	if (!this.gsTimers.interval) this.gsTimers.interval = {};
+	utils.makeNonEnumerable(this, 'gsTimers');
 }
 
 utils.copyProps(require('model/GameObjectApi').prototype, GameObject.prototype);
