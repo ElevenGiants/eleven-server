@@ -160,7 +160,7 @@ Location.prototype.updateGeo = function updateGeo(data) {
 	// process connects for GSJS
 	this.geometry.prepConnects();
 	// initialize/update clientGeometry and geo properties
-	this.clientGeometry = this.geometry.getClientGeo();
+	this.clientGeometry = this.geometry.getClientGeo(this);
 	this.geo = this.geometry.getGeo();
 };
 

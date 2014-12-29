@@ -158,11 +158,13 @@ suite('Geo', function () {
 
 		test('does its job', function () {
 			var g = new Geo(getSampleData());
-			var cg = g.getClientGeo();
+			var mockLoc = {tsid: 'LLI32G3NUTD100I', label: 'Back Alley'};
+			var cg = g.getClientGeo(mockLoc);
 			assert.property(cg.layers.middleground, 'doors');
 			assert.property(cg.layers.middleground, 'signposts');
 			assert.notProperty(cg, 'serialize', 'does not contain functions');
 			assert.strictEqual(cg.tsid, 'LLI32G3NUTD100I', 'has location TSID');
+			assert.strictEqual(cg.label, 'Back Alley', 'has location label');
 			cg.foo = 'doodle';
 			assert.notProperty(g, 'foo', 'is a copy');
 		});
