@@ -48,9 +48,7 @@ function GameObject(data) {
 			this[key] = data[key];
 		}
 	}
-	if (!this.ts) {
-		this.ts = new Date().getTime();
-	}
+	this.ts = new Date().getTime();
 	if (!this.gsTimers) this.gsTimers = {};
 	if (!this.gsTimers.timer) this.gsTimers.timer = {};
 	if (!this.gsTimers.interval) this.gsTimers.interval = {};
@@ -189,7 +187,7 @@ GameObject.prototype.setGsTimer = function setGsTimer(options) {
 	var type = options.interval ? 'interval' : 'timer';
 	assert(!(options.multi && options.interval), 'multi intervals not supported');
 	assert(!(options.multi && options.internal), 'internal multi timers not supported');
-	assert(typeof this[options.fname] === 'function', 'no such function: %s', logtag);
+	assert(typeof this[options.fname] === 'function', 'no such function: ' + logtag);
 	if (!options.multi && this.gsTimerExists(options.fname, options.interval)) {
 		log.trace('timer/interval already set: %s', logtag);
 		return;
@@ -331,4 +329,20 @@ GameObject.prototype.cancelGsTimer = function cancelGsTimer(fname, interval) {
 		delete this.gsTimers[type][fname];
 	}
 	return ret;
+};
+
+
+/**
+ * Checks if there are any pending timers calls/active interval calls
+ * on this object.
+ *
+ * @returns {boolean} `true` if there are active timers/intervals
+ */
+GameObject.prototype.hasActiveGsTimers = function hasActiveGsTimers() {
+	for (var type in this.gsTimers) {
+		for (var key in this.gsTimers[type]) {
+			if (this.gsTimers[type][key].handle) return true;
+		}
+	}
+	return false;
 };

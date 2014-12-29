@@ -64,8 +64,7 @@ function loadPluggable(modPath, logtag) {
 function persInit(callback) {
 	var modName = config.get('pers:backEnd:module');
 	var pbe = loadPluggable('data/pbe/' + modName, 'persistence back-end');
-	var pbeConfig = config.get('pers:backEnd:config:' + modName);
-	pers.init(pbe, pbeConfig, function cb(err, res) {
+	pers.init(pbe, config.get('pers'), function cb(err, res) {
 		if (err) log.error(err, 'persistence layer initialization failed');
 		else log.info('persistence layer initialized (%s back-end)', modName);
 		callback(err);

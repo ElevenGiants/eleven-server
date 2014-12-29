@@ -35,7 +35,12 @@ suite('Location', function () {
 		this.slow(4000);
 
 		setup(function (done) {
-			pers.init(pbeMock, path.resolve(path.join(__dirname, '../fixtures')), done);
+			pers.init(pbeMock, {backEnd: {
+				module: 'pbeMock',
+				config: {pbeMock: {
+					fixturesPath: path.resolve(path.join(__dirname, '../fixtures')),
+				}}
+			}}, done);
 		});
 
 		teardown(function () {

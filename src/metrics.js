@@ -14,6 +14,7 @@ module.exports = {
 	init: init,
 	increment: increment,
 	decrement: decrement,
+	count: count,
 	createTimer: createTimer,
 	setupGaugeInterval: setupGaugeInterval,
 	setupTimerInterval: setupTimerInterval,
@@ -104,6 +105,16 @@ function increment(stats, sampleRate) {
  */
 function decrement(stats, sampleRate) {
 	return lynx.decrement(stats, sampleRate);
+}
+
+
+/**
+ * Change a counter metric by an arbitrary delta.
+ * see {@link https://github.com/dscape/lynx/ lynx} and {@link
+ * https://github.com/etsy/statsd statsd} docs for details.
+ */
+function count(stats, delta, sampleRate) {
+	return lynx.count(stats, delta, sampleRate);
 }
 
 

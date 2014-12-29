@@ -24,10 +24,11 @@ suite('GameObject', function () {
 			assert.property(go, 'layers');
 		});
 
-		test('keeps timestamp from data if there is one', function () {
+		test('creates or updates timestamp', function () {
+			assert.isTrue(new GameObject().ts >= new Date().getTime());
 			var data = getFixtureJson('GIFPV9EMLT72DP4.json');
 			var go = new GameObject(data);
-			assert.strictEqual(go.ts, data.ts);
+			assert.isTrue(go.ts > data.ts);
 		});
 	});
 
@@ -37,7 +38,9 @@ suite('GameObject', function () {
 		test('serialized data is equivalent to source data', function () {
 			var data = getFixtureJson('IHFK8C8NB6J2FJ5.json');
 			var go = new GameObject(data);
-			assert.deepEqual(go.serialize(), data);
+			var ser = go.serialize();
+			ser.ts = data.ts;
+			assert.deepEqual(ser, data);
 		});
 	});
 
@@ -45,7 +48,6 @@ suite('GameObject', function () {
 	suite('timers', function () {
 
 		test('basic timer call', function (done) {
-			//TODO: test combining setGsTimer and scheduleTimer
 			var go = new GameObject();
 			var called = false;
 			go.timerTest = function timerTest(arg) {
