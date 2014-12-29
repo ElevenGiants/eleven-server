@@ -56,6 +56,7 @@ util.inherits(Session, events.EventEmitter);
 function Session(id, socket) {
 	Session.super_.call(this);
 	this.id = id;
+	this.loggedIn = false;
 	this.socket = socket;
 	this.ts = new Date().getTime();
 	this.maxMsgSize = config.get('net:maxMsgSize');
@@ -341,6 +342,16 @@ Session.prototype.handleAmfReqError = function handleAmfReqError(err, req) {
  *        that cannot be encoded in AMF3 (e.g. circular references)
  */
 Session.prototype.send = function send(msg) {
+	if (!this.loggedIn) {
+		if (msg.type !== 'login_start' && msg.type !== 'login_end' &&
+			msg.type !== 'relogin_start' && msg.type !== 'relogin_end') {
+			log.debug('login incomplete, dropping %s message', this, msg.type);
+			return;
+		}
+		if (msg.type === 'login_end' || msg.type === 'relogin_end') {
+			this.loggedIn = true;
+		}
+	}
 	// JSON roundtrip workaround because AMF serialization currently does not
 	// work for ES6 proxies - see e.g. https://github.com/joyent/node/issues/7526
 	//TODO: remove this when it's no longer necessary

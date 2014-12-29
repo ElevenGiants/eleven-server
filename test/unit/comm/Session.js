@@ -211,6 +211,7 @@ suite('Session', function () {
 		test('does its job', function (done) {
 			var socket = getDummySocket();
 			var s = getTestSession('test', socket);
+			s.loggedIn = true;
 			socket.write = function (data) {
 				assert.strictEqual(data.toString('hex'), '0000001d0a0b0d4f626' +
 					'a65637407666f6f06076261720d6d73675f696406033101');
@@ -227,6 +228,7 @@ suite('Session', function () {
 			var p = persProxy.makeProxy(o);
 			var socket = getDummySocket();
 			var s = getTestSession('test', socket);
+			s.loggedIn = true;
 			socket.write = function (data) {
 				data = data.slice(4);  // snip length header
 				var res = amf.deserialize(data.toString('binary')).value;
@@ -234,6 +236,23 @@ suite('Session', function () {
 				done();
 			};
 			s.send(p);
+		});
+
+		test('does not send non-login messages until login is complete',
+			function (done) {
+			var socket = getDummySocket();
+			var s = getTestSession('test', socket);
+			socket.write = function (data) {
+				data = data.slice(4);  // snip length header
+				var res = amf.deserialize(data.toString('binary')).value;
+				assert.notStrictEqual(res.type, 'foo1');
+				if (res.type === 'foo2') {
+					done();
+				}
+			};
+			s.send({type: 'foo1'});  // not sent
+			s.send({type: 'relogin_end'});
+			s.send({type: 'foo2'});  // sent
 		});
 	});
 });
