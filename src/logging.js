@@ -11,6 +11,7 @@
 // public interface
 module.exports = {
 	init: init,
+	logAction: logAction,
 };
 
 
@@ -24,6 +25,7 @@ var Session = require('comm/Session');
 var metrics = require('metrics');
 
 var logger;
+var actionLogger;
 
 
 /**
@@ -32,6 +34,7 @@ var logger;
  */
 function init() {
 	var gsid = config.getGsid();
+	var masterGsid = config.getMasterGsid();
 	var cfg = config.get('log');
 	assert(typeof gsid === 'string' && gsid.length > 0, 'invalid GSID: ' + gsid);
 	var dir = path.resolve(path.join(cfg.dir));
@@ -51,11 +54,11 @@ function init() {
 			},
 			{
 				level: cfg.level.file,
-				path: path.join(dir, gsid + '-default.log'),
+				path: path.join(dir, masterGsid + '-default.log'),
 			},
 			{
 				level: 'error',
-				path: path.join(dir, gsid + '-errors.log'),
+				path: path.join(dir, masterGsid + '-errors.log'),
 			},
 		],
 		serializers: {
@@ -63,6 +66,15 @@ function init() {
 			rc: RC.logSerialize,
 			session: Session.logSerialize,
 		},
+	});
+	actionLogger = bunyan.createLogger({
+		name: gsid + '-actions',
+		streams: [
+			{
+				level: 'debug',
+				path: path.join(dir, masterGsid + '-actions.log'),
+			},
+		]
 	});
 	// set up global log handler that transparently wraps bunyan log calls
 	global.log = {
@@ -161,4 +173,40 @@ function getCallerInfo() {
 	Error.stackTraceLimit = saveLimit;
 	Error.prepareStackTrace = savePrepare;
 	return obj;
+}
+
+
+/**
+ * Adds game events (like player actions) to a separate log.
+ *
+ * @param {string} action the type of event to log (should be a short,
+ *        all-caps, underscore-separated string)
+ * @param {string[]} fields an arbitrary number of data fields adding
+ *        more detailed information about the event (should be
+ *        formatted as `"name=value"`)
+ */
+function logAction(action, fields) {
+	assert(typeof action === 'string', 'invalid action type: "' + action + '"');
+	metrics.increment('log.action.' + action);
+	var data = {action: action};
+	for (var i = 0; i < fields.length; i++) {
+		var field = '' + fields[i];
+		var key = field.substr(0, field.indexOf('='));
+		var val = field.substr(field.indexOf('=') + 1);
+		if (key === '') {
+			key = 'UNKNOWN#' + i;
+			// val already has the full field content
+		}
+		data[key] = val;
+	}
+	if (actionLogger) {
+		actionLogger.info(data, action);
+	}
+	else {
+		// fallback if actionLogger not initialized (e.g. during tests)
+		log.info(data, 'ACTION LOG: %s', action);
+	}
+	// TODO: this should probably write to a database instead, since the type of
+	// data recorded with this function would more useful in a form that one can
+	// run queries on, rather than a sequential list of events
 }

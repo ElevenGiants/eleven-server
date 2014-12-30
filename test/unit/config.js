@@ -209,14 +209,14 @@ suite('config', function () {
 
 	suite('getGSConf', function () {
 
-		test('does its job (master server)', function () {
+		test('does its job (master)', function () {
 			config.init(true, {net: {gameServers: {gs1: {host: '127.0.0.1',
 				ports: [1]}}}}, {});
 			assert.strictEqual(config.getGSConf(), undefined,
 				'no GS config entry for master server');
 		});
 
-		test('does its job (worker server)', function () {
+		test('does its job (worker)', function () {
 			config.init(false, {
 				net: {gameServers: {
 					gs1: {host: '127.0.0.1', ports: [1]},
@@ -235,6 +235,28 @@ suite('config', function () {
 			assert.throw(function () {
 				config.getGSConf('blurb');
 			}, assert.AssertionError);
+		});
+	});
+
+
+	suite('getMasterGsid', function () {
+
+		test('works as expected (master)', function () {
+			config.init(true, {
+				net: {gameServers: {
+					gs1: {host: '127.0.0.1', ports: [1, 2]},
+				}},
+			}, {});
+			assert.strictEqual(config.getMasterGsid(), 'gs1');
+		});
+
+		test('works as expected (worker)', function () {
+			config.init(false, {
+				net: {gameServers: {
+					gs1: {host: '127.0.0.1', ports: [1, 2]},
+				}},
+			}, {gsid: 'gs1-01'});
+			assert.strictEqual(config.getMasterGsid(), 'gs1');
 		});
 	});
 });
