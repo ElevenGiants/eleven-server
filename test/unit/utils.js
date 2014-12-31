@@ -404,4 +404,37 @@ suite('utils', function () {
 			assert.deepEqual(utils.playersArgToList(new Bag()), []);
 		});
 	});
+
+	suite('pointOnPlat', function () {
+		var platform = {
+			start : {
+				x : 10,
+				y: 10
+			},
+			end : {
+				x : 20,
+				y : 20
+			},
+			platform_pc_perm : 1,
+			platform_item_perm : 1,
+		};
+		test('basic platform bounds', function () {
+			assert.equal(utils.pointOnPlat(platform, 9), undefined);
+			assert.deepEqual(utils.pointOnPlat(platform, 10), {x:10, y:10});
+			assert.deepEqual(utils.pointOnPlat(platform, 20), {x:20, y:20});
+			assert.equal(utils.pointOnPlat(platform, 21), undefined);
+			assert.deepEqual(utils.pointOnPlat(platform, 15), {x:15, y:15});
+		});
+		test('unaffected by permability', function () {
+			platform.platform_pc_perm = 0;
+			assert.deepEqual(utils.pointOnPlat(platform, 10), {x:10, y:10});
+			platform.platform_pc_perm = -1;
+			assert.deepEqual(utils.pointOnPlat(platform, 10), {x:10, y:10});
+			platform.platform_item_perm = -1;
+			assert.deepEqual(utils.pointOnPlat(platform, 10), {x:10, y:10});
+			platform.platform_item_perm = 0;
+			assert.deepEqual(utils.pointOnPlat(platform, 10), {x:10, y:10});
+		});
+	});
+
 });

@@ -258,3 +258,34 @@ Location.prototype.getAllItems = Bag.prototype.getAllItems;
 Location.prototype.getPath = function getPath(path) {
 	return this.getAllItems(true)[path] || null;
 };
+
+/**
+ * Gets the closest platform point directly above or below the given
+ * coordinates where a PC can stand (i.e. platform_pc_perm === -1).
+ *
+ * @param {Number} x the x location from which to search for a platform
+ * @param {Number} y the y location from which to search for a platform
+ * @param {Number} dir direction (-1 means search below y, 1 means above)
+ * @return {object} data structure containing the closest platform
+ *         itself, and the point on it with the given x coordinate
+ */
+Location.prototype.getClosestPlatPoint = function(x, y, dir) {
+    var closestPlat;
+    var point;
+    var dist = Number.MAX_VALUE;
+    for (var k in this.geometry.layers.middleground.platform_lines) {
+        var plat = this.geometry.layers.middleground.platform_lines[k];
+        if (plat.platform_pc_perm !== -1)
+            continue;
+        var p = utils.pointOnPlat(plat, x);
+        if (p) {
+            var d = Math.abs(p.y - y);
+            if (d < dist && (dir < 0 ? p.y >= y : p.y <= y)) {
+                closestPlat = plat;
+                point = p;
+                dist = d;
+            }
+        }
+    }
+    return {plat: closestPlat, point: point};
+};
