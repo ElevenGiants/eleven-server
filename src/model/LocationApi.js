@@ -29,23 +29,79 @@ LocationApi.prototype.apiPutItemIntoPosition =
 };
 
 
+/**
+ * Find the point on the closest platform below the given point
+ *
+ * @param {number} x x coordinate of the requested point
+ * @param {number} y y coordinate of the requested point
+ * @returns {object|undefied} the requested point, or undefined if no platform
+ *          could be found.
+ */
 LocationApi.prototype.apiGetPointOnTheClosestPlatformLineBelow =
 	function apiGetPointOnTheClosestPlatformLineBelow(x, y) {
 	log.debug('%s.apiGetPointOnTheClosestPlatformLineBelow(%s, %s)', this, x, y);
-	//TODO implement&document me
-	log.warn('TODO Location.apiGetPointOnTheClosestPlatformLineBelow not ' +
-		'implemented yet');
-	return {x: 1, y: 1};
+	var ret = this.geometry.getClosestPlatPoint(x, y, -1);
+	if (ret) {
+		return ret.point;
+	}
+	return undefined;
 };
 
 
+/**
+ * Find the point on the closest platform above the given point
+ *
+ * @param {number} x x coordinate of the requested point
+ * @param {number} y y coordinate of the requested point
+ * @returns {object|undefied} the requested point, or undefined if no platform
+ *          could be found.
+ */
 LocationApi.prototype.apiGetPointOnTheClosestPlatformLineAbove =
 	function apiGetPointOnTheClosestPlatformLineAbove(x, y) {
 	log.debug('%s.apiGetPointOnTheClosestPlatformLineAbove(%s, %s)', this, x, y);
-	//TODO implement&document me
-	log.warn('TODO Location.apiGetPointOnTheClosestPlatformLineAbove not ' +
-		'implemented yet');
-	return {x: 1, y: 1};
+	var ret = this.geometry.getClosestPlatPoint(x, y, 1);
+	if (ret) {
+		return ret.point;
+	}
+	return undefined;
+};
+
+
+/**
+ * Find the closest platform below the given point
+ *
+ * @param {number} x x coordinate of the requested point
+ * @param {number} y y coordinate of the requested point
+ * @returns {object|undefied} the requested point, or undefined if no platform
+ *          could be found.
+ */
+LocationApi.prototype.apiGetClosestPlatformLineBelow=
+	function apiGetClosestPlatformLineBelow(x, y) {
+	log.debug('%s.apiGetClosestPlatformLineBelow(%s, %s)', this, x, y);
+	var ret = this.geometry.getClosestPlatPoint(x, y, -1);
+	if (ret) {
+		return ret.plat;
+	}
+	return undefined;
+};
+
+
+/**
+ * Find the closest platform above the given point
+ *
+ * @param {number} x x coordinate of the requested point
+ * @param {number} y y coordinate of the requested point
+ * @returns {object|undefied} the requested point, or undefined if no platform
+ *          could be found.
+ */
+LocationApi.prototype.apiGetClosestPlatformLineAbove=
+	function apiGetClosestPlatformLineAbove(x, y) {
+	log.debug('%s.apiGetClosestPlatformLineAbove(%s, %s)', this, x, y);
+	var ret = this.geometry.getClosestPlatPoint(x, y, -1);
+	if (ret) {
+		return ret.plat;
+	}
+	return undefined;
 };
 
 
