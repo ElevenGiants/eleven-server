@@ -209,4 +209,75 @@ suite('Location', function () {
 			assert.isNull(l.getPath(), 'returns null for invalid argument');
 		});
 	});
+
+	suite('ClosestPlatPoint', function () {
+		var plat_1 = {
+			'start': {
+				'x': 10,
+				'y': 10,
+			},
+			'platform_item_perm': -1,
+			'platform_pc_perm': -1,
+			'end': {
+				'x': 20,
+				'y':10
+			}
+		};
+		var plat_2 = {
+			'start': {
+				'x': 5,
+				'y': 30,
+			},
+			'platform_item_perm': -1,
+			'platform_pc_perm': -1,
+			'end': {
+				'x': 30,
+				'y':30
+			}
+		};
+		var plat_3 = {
+			'start': {
+				'x': 15,
+				'y': 25,
+			},
+			'platform_item_perm': -1,
+			'platform_pc_perm': -1,
+			'end': {
+				'x': 35,
+				'y': 25
+			},
+		};
+		var plat_4 =  {
+			'start': {
+				'x': 0,
+				'y': 5,
+			},
+			'platform_item_perm': 0,
+			'platform_pc_perm': 0,
+			'end': {
+				'x': 50,
+				'y': 5
+			}
+		};
+		var g = new Geo({layers: {middleground: {platform_lines: {
+		'plat_1' : plat_1,
+		'plat_2': plat_2,
+		'plat_3': plat_3,
+		'plat_4': plat_4}}}});
+		var l = new Location({}, g);
+		test('getClosestPlatPoint', function () {
+			assert.deepEqual(l.getClosestPlatPoint(11, 11, 1), {
+				point: {x:11, y:10}, plat: plat_1 });
+			assert.deepEqual(l.getClosestPlatPoint(11, 11, -1), {
+				point: {x:11, y:30}, plat: plat_2 });
+			assert.deepEqual(l.getClosestPlatPoint(4, 11, -1), {
+				point: undefined, plat: undefined });
+			assert.deepEqual(l.getClosestPlatPoint(4, 11, 1), {
+				point: undefined, plat: undefined });
+			assert.deepEqual(l.getClosestPlatPoint(20, 20, 1), {
+				point: {x:20, y:10}, plat: plat_1});
+			assert.deepEqual(l.getClosestPlatPoint(20, 20, -1), {
+				point: {x:20, y:25}, plat: plat_3});
+		});
+	});
 });
