@@ -27,6 +27,7 @@ module.exports = {
 	shallowCopy: shallowCopy,
 	padLeft: padLeft,
 	playersArgToList: playersArgToList,
+	pointOnPlat: pointOnPlat,
 };
 
 
@@ -377,6 +378,26 @@ function playersArgToList(players) {
 				ret.push(typeof p === 'string' ? p : p.tsid);
 			}
 		}
+	}
+	return ret;
+}
+
+
+/**
+ * Finds the point on a platform given a known x value.
+ * Does **not** consider platform permeability.
+ *
+ * @param {object} plat platform data
+ * @param {number} x x location on the platform
+ * @returns {object} the x/y coordinates of the point on the platform,
+ *          or `undefined` if the x value is not on the platform
+ */
+function pointOnPlat(plat, x) {
+	var ret;
+	if (plat.start.x <= x && plat.end.x >= x) {
+		var fraction = (x - plat.start.x) / (plat.end.x - plat.start.x);
+		var y = plat.start.y + fraction * (plat.end.y - plat.start.y);
+		ret = {x: x, y: Math.floor(y)};
 	}
 	return ret;
 }
