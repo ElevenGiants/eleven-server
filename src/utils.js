@@ -382,14 +382,15 @@ function playersArgToList(players) {
 	return ret;
 }
 
+
 /**
  * Finds the point on a platform given a known x value.
- * Note: this function does NOT take into account permibility of the platform
+ * Does **not** consider platform permeability.
  *
  * @param {object} plat platform data
  * @param {number} x x location on the platform
- * @returns {object} the x,y location of the point on the platform
- *                   or undefined if the x value is not on the platform
+ * @returns {object} the x/y coordinates of the point on the platform,
+ *          or `undefined` if the x value is not on the platform
  */
 function pointOnPlat(plat, x) {
 	var ret;
