@@ -455,6 +455,10 @@ Player.prototype.addToAnySlot = function addToAnySlot(item, fromSlot, toSlot,
  */
 Player.prototype.queueChanges = function queueChanges(item, removed, compact) {
 	log.trace('generating changes for %s%s', item, removed ? ' (removed)' : '');
+	if (item.only_visible_to && item.only_visible_to !== this.tsid) {
+		log.trace('%s not visible for %s, skipping', item, this);
+		return;
+	}
 	var pcChanges = {};
 	var locChanges = {};
 	if (item.tcont === this.tsid) {
