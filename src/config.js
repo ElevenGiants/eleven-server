@@ -15,6 +15,7 @@ module.exports = {
 	init: init,
 	get: get,
 	getGsid: getGsid,
+	getMasterGsid: getMasterGsid,
 	getGSConf: getGSConf,
 	forEachGS: forEachGS,
 	forEachLocalGS: forEachLocalGS,
@@ -178,6 +179,17 @@ function setGsid(id) {
  */
 function getGsid() {
 	return gsid;
+}
+
+
+/**
+ * Returns the ID of the master GS this process "belongs to".
+ *
+ * @returns {string} ID of the master GS for this process
+ */
+function getMasterGsid() {
+	if (gsid.indexOf('-') === -1) return gsid;  // master process itself
+	return gsid.substr(0, gsid.lastIndexOf('-'));
 }
 
 

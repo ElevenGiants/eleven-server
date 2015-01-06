@@ -17,6 +17,7 @@ var Group = require('model/Group');
 var pers = require('data/pers');
 var orProxy = require('data/objrefProxy');
 var utils = require('utils');
+var logging = require('logging');
 var lodash = require('lodash');
 
 
@@ -198,14 +199,12 @@ exports.apiIsPlayerOnline = function apiIsPlayerOnline(tsid) {
  * Stores a record with an arbitrary number of fields in a dedicated
  * game activity log.
  *
+ * @param {string} type activity/action type to log (arbitrary string)
+ * @param {...string} field log record field like `"key=somevalue"`
  */
-//TODO: append next line to jsdocs when this is fixed: <https://github.com/jscs-dev/jscs-jsdoc/issues/35>
-// * @param {...string} field log record field like `"key=somevalue"`
-exports.apiLogAction = function apiLogAction() {
-	log.debug('global.apiLogAction(%s)',
-		Array.prototype.slice.call(arguments).join(', '));
-	//TODO: implement me
-	log.warn('TODO global.apiLogAction not implemented yet');
+exports.apiLogAction = function apiLogAction(type) {
+	log.trace('global.apiLogAction()');
+	logging.logAction(type, Array.prototype.slice.call(arguments, 1));
 };
 
 
