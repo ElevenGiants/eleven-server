@@ -1,17 +1,20 @@
 'use strict';
 
-var globalApi = require('model/globalApi');
+var rewire = require('rewire');
+var globalApi = rewire('model/globalApi');
 var orProxy = require('data/objrefProxy');
 
 
 suite('globalApi', function () {
 
-	suite('apiCopyHash', function () {
+	suite('safeClone', function () {
+
+		var safeClone = globalApi.__get__('safeClone');
 
 		test('works as expected (basic case)', function () {
 			var x = {a: 12};
 			var y = {b: 13, x: x};
-			var clone = globalApi.apiCopyHash(y);
+			var clone = safeClone(y);
 			assert.strictEqual(clone.b, 13);
 			assert.strictEqual(clone.x.a, 12);
 			assert.notStrictEqual(clone, y);
@@ -24,7 +27,7 @@ suite('globalApi', function () {
 			var o = new O();
 			o.y = 13;
 			assert.strictEqual(o.x, 12);
-			var oc = globalApi.apiCopyHash(o);
+			var oc = safeClone(o);
 			assert.notProperty(oc, 'x');
 		});
 
@@ -35,7 +38,7 @@ suite('globalApi', function () {
 				label: 'lemmiwinks',
 			});
 			var o = {p: proxy};
-			var oc = globalApi.apiCopyHash(o);  // if this would resolve the objref, it would fail (no request context)
+			var oc = safeClone(o);  // if this would resolve the objref, it would fail (no request context)
 			assert.strictEqual(oc.p.label, 'lemmiwinks');
 			assert.isTrue(oc.p.__isORP, 'p is still an objref proxy');
 		});
@@ -45,7 +48,7 @@ suite('globalApi', function () {
 			var u = {o: o};
 			o.o = o;
 			o.u = u;
-			var oc = globalApi.apiCopyHash(o);
+			var oc = safeClone(o);
 			assert.strictEqual(oc.o, oc);
 			assert.strictEqual(oc.u.o, oc);
 		});

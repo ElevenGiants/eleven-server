@@ -32,6 +32,24 @@ function isPlayerOnline(tsid) {
 }
 
 
+/**
+ * Creates a deep copy of an object, copying only direct properties
+ * and not following objref proxies in the process.
+ *
+ * @param {object} obj object to copy
+ * @returns {object} copy of the given object
+ */
+function safeClone(obj) {
+	var ret = lodash.clone(obj, true, function handleObjRefs(val) {
+		if (typeof val === 'object' && val !== null && val.__isORP) {
+			return orProxy.refify(val);
+		}
+	});
+	orProxy.proxify(ret);
+	return ret;
+}
+
+
 exports.toString = function toString() {
 	return 'globalApi';
 };
@@ -287,13 +305,21 @@ exports.apiCallMethodForOnlinePlayers =
  */
 exports.apiCopyHash = function apiCopyHash(obj) {
 	log.trace('global.apiCopyHash');
-	var ret = lodash.clone(obj, true, function handleObjRefs(val) {
-		if (typeof val === 'object' && val !== null && val.__isORP) {
-			return orProxy.refify(val);
-		}
-	});
-	orProxy.proxify(ret);
-	return ret;
+	return safeClone(obj);
+};
+
+
+/**
+ * Returns a copy of the data of a game object, specified by TSID.
+ * The returned data may (by nature of being a copy) quickly get out of
+ * sync with the original object.
+ *
+ * @param {string} tsid TSID of the object to retrieve
+ * @returns {object} a copy of the desired object's data
+ */
+exports.apiGetObjectContent = function apiGetObjectContent(tsid) {
+	log.debug('global.apiGetObjectContent(%s)', tsid);
+	return safeClone(pers.get(tsid));
 };
 
 
