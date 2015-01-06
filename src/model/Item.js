@@ -9,6 +9,7 @@ var OrderedHash = require('model/OrderedHash');
 var pers = require('data/pers');
 var util = require('util');
 var utils = require('utils');
+var ItemMovement = require('model/ItemMovement');
 
 
 util.inherits(Item, GameObject);
@@ -52,6 +53,8 @@ function Item(data) {
 	Item.super_.call(this, data);
 	if (this.x === undefined) this.x = 0;
 	if (this.y === undefined) this.y = 0;
+	// for NPC Movement
+	utils.addNonEnumerable(this, 'movement', null);
 	if (!utils.isInt(this.count)) this.count = 1;
 	// add some non-enumerable properties (used internally or by GSJS)
 	utils.addNonEnumerable(this, 'collDet', false);
@@ -359,4 +362,34 @@ Item.prototype.consume = function consume(n) {
 	if (this.count <= 0) this.del();
 	else this.queueChanges();
 	return n;
+};
+
+
+/**
+ * Callback for the movement timer
+ */
+Item.prototype.movementTimer = function movementTimer() {
+	if (this.movement) this.movement.moveStep();
+};
+
+
+/**
+ * Start an item moving
+ *
+ * @param {string} transport the transportation for this movement
+ * @param {object} dest destination for the movement
+ * @param {object} options for this movement
+ * @returns {boolean} true if movement is possible and started
+ */
+Item.prototype.startMoving = function startMoving(transport, dest, options) {
+	if (!this.movement) this.movement = new ItemMovement(this);
+	return this.movement.startMove(transport, dest, options);
+};
+
+
+/**
+ * Stop movement
+ */
+Item.prototype.stopMoving = function stopMoving() {
+	if (this.movement) this.movement.stopMovement();
 };
