@@ -194,26 +194,26 @@ suite('Geo', function () {
 
 		var plat1 = {
 			start: {x: 10, y: 10},
-			platform_item_perm: -1,
+			platform_item_perm: -1,  // -1 => solid from the top only
 			platform_pc_perm: -1,
 			end: {x: 20, y: 10}
 		};
 		var plat2 = {
 			start: {x: 5, y: 30},
-			platform_item_perm: -1,
-			platform_pc_perm: -1,
+			platform_item_perm: null,  // null => solid from both sides
+			platform_pc_perm: null,
 			end: {x: 30, y: 30}
 		};
 		var plat3 = {
 			start: {x: 15, y: 25},
-			platform_item_perm: -1,
+			platform_item_perm: 1,
 			platform_pc_perm: -1,
 			end: {x: 35, y: 25},
 		};
 		var plat4 =  {
 			start: {x: 0, y: 5},
-			platform_item_perm: 0,
-			platform_pc_perm: 0,
+			platform_item_perm: 1,  // 1 => solid from the bottom only
+			platform_pc_perm: 1,
 			end: {x: 50, y: 5}
 		};
 		var g = new Geo({layers: {middleground: {platform_lines: {
@@ -237,6 +237,15 @@ suite('Geo', function () {
 				{point: {x: 20, y: 10}, plat: plat1});
 			assert.deepEqual(g.getClosestPlatPoint(20, 20, -1),
 				{point: {x: 20, y: 25}, plat: plat3});
+		});
+
+		test('works for items, too', function () {
+			assert.deepEqual(g.getClosestPlatPoint(25, 15, -1, true),
+				{point: {x: 25, y: 30}, plat: plat2},
+				'item falls through plat3 (item_perm 1), lands on plat2');
+			assert.deepEqual(g.getClosestPlatPoint(25, 15, -1),
+				{point: {x: 25, y: 25}, plat: plat3},
+				'PC lands on plat3 (pc_perm -1)');
 		});
 	});
 });

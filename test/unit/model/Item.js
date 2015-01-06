@@ -297,4 +297,25 @@ suite('Item', function () {
 			}, assert.AssertionError);
 		});
 	});
+
+
+	suite('setXY', function () {
+
+		test('rounds coordinates to integer numbers', function () {
+			var it = new Item();
+			it.setXY(1.1, -3.8);
+			assert.strictEqual(it.x, 1);
+			assert.strictEqual(it.y, -4);
+		});
+
+		test('returns whether the position actually changed', function () {
+			var it = new Item({x: 1, y: 2});
+			var res = it.setXY(1.1, -3.8);
+			assert.isTrue(res);
+			res = it.setXY(1.2, -3.9);
+			assert.isFalse(res, 'still the same position after rounding');
+			res = it.setXY(it.x, 5);
+			assert.isTrue(res, 'only one coordinate changing is still a change');
+		});
+	});
 });

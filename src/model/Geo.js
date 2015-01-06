@@ -29,6 +29,7 @@ Geo.prototype.TSID_INITIAL = 'G';
 function Geo(data) {
 	data = data || {};
 	if (!data.tsid) data.tsid = rpc.makeLocalTsid(Geo.prototype.TSID_INITIAL);
+	if (!data.layers) data.layers = {middleground: {}};
 	Geo.super_.call(this, data);
 	this.prepConnects();
 }
@@ -195,22 +196,26 @@ Geo.prototype.getLocTsid = function getLocTsid() {
 
 /**
  * Gets the closest platform point directly above or below the given
- * coordinates where a PC can stand (i.e. `platform_pc_perm === -1`).
+ * coordinates where a player can stand, resp. an item can be placed.
  *
  * @param {number} x x coordinate from which to search for a platform
  * @param {number} y y coordinate from which to search for a platform
  * @param {number} dir search direction (-1 means search below y, 1
  *        means above)
+ * @param {boolean} [useItemPerm] if `true`, check item permeability of
+ *        platforms (instead of player permeability)
  * @return {object} data structure containing the closest platform
  *         itself, and the point on it with the given x coordinate
  */
-Geo.prototype.getClosestPlatPoint = function getClosestPlatPoint(x, y, dir) {
+Geo.prototype.getClosestPlatPoint = function getClosestPlatPoint(x, y, dir,
+	useItemPerm) {
 	var closestPlat;
 	var point;
 	var dist = Number.MAX_VALUE;
 	for (var k in this.layers.middleground.platform_lines) {
 		var plat = this.layers.middleground.platform_lines[k];
-		if (plat.platform_pc_perm !== -1) continue;
+		if (!useItemPerm && plat.platform_pc_perm === 1) continue;
+		if (useItemPerm && plat.platform_item_perm === 1) continue;
 		var p = utils.pointOnPlat(plat, x);
 		if (p) {
 			var d = Math.abs(p.y - y);

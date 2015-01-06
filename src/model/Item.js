@@ -120,14 +120,30 @@ Item.prototype.updatePath = function updatePath() {
 
 
 /**
- * Sets the coordinates within the `Item`'s current location.
+ * Sets the item's coordinates within the current container. Will place
+ * the item on the next platform below the given coordinates if it is
+ * configured to obey physics and the container is a location.
  *
- * @param {number} x
- * @param {number} y
+ * @param {number} x new horizontal coordinate
+ * @param {number} y new vertical coordinate
+ * @returns {boolean} `true` if the item's coordinates actually changed
  */
 Item.prototype.setXY = function setXY(x, y) {
-	this.x = x;
-	this.y = y;
+	if (this.itemDef && this.itemDef.obey_physics && utils.isLoc(this.container)) {
+		var pp = this.container.geometry.getClosestPlatPoint(x, y, -1, true);
+		if (pp && pp.point) {
+			x = pp.point.x;
+			y = pp.point.y;
+		}
+	}
+	x = Math.round(x);
+	y = Math.round(y);
+	if (x !== this.x || y !== this.y) {
+		this.x = x;
+		this.y = y;
+		return true;
+	}
+	return false;
 };
 
 

@@ -326,4 +326,45 @@ suite('Item', function () {
 			}, done);
 		});
 	});
+
+
+	suite('setXY', function () {
+
+		var geoData = {layers: {middleground: {platform_lines: {
+			plat1: {
+				start: {x: 100, y: -10},
+				platform_item_perm: -1,
+				end: {x: 200, y: -20},
+			},
+			plat2: {
+				start: {x: 100, y: -30},
+				platform_item_perm: 1,  // items fall through
+				end: {x: 200, y: -50},
+			},
+		}}}};
+
+		test('honors Newton', function (done) {
+			new RC().run(function () {
+				var l = Location.create(Geo.create(geoData));
+				var it = Item.create('pi');
+				it.setContainer(l, 150, -25);  // calls setXY internally
+				assert.strictEqual(it.x, 150);
+				assert.strictEqual(it.y, -15, 'placed in the middle of plat1');
+				it.setXY(150, -100);
+				assert.strictEqual(it.y, -15, 'fell through permeable plat2');
+				it.setXY(300, -234);
+				assert.strictEqual(it.x, 300);
+				assert.strictEqual(it.y, -234, 'no plat found, y unchanged');
+			}, done);
+		});
+
+		test('ignores Newton for items that do not obey physics', function (done) {
+			new RC().run(function () {
+				var l = Location.create(Geo.create(geoData));
+				var it = Item.create('bunch_of_grapes_hell');
+				it.setContainer(l, 150, -25);  // calls setXY internally
+				assert.strictEqual(it.y, -25, 'item does not obey physics, y unchanged');
+			}, done);
+		});
+	});
 });
