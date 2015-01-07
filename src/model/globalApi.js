@@ -14,6 +14,9 @@ var Quest = require('model/Quest');
 var Item = require('model/Item');
 var Bag = require('model/Bag');
 var Group = require('model/Group');
+var config = require('config');
+var rpc = require('data/rpc');
+var sessionMgr = require('comm/sessionMgr');
 var pers = require('data/pers');
 var orProxy = require('data/objrefProxy');
 var utils = require('utils');
@@ -323,10 +326,23 @@ exports.apiGetObjectContent = function apiGetObjectContent(tsid) {
 };
 
 
+/**
+ * Sends a message to **all** connected clients (on all GS instances).
+ * Does not provide any feedback about message delivery status/success.
+ *
+ * @param {object} msg the message to send
+ */
 exports.apiSendToAll = function apiSendToAll(msg) {
-	log.debug('global.apiSendToAll(%s)', msg);
-	log.warn('TODO global.apiSendToAll not implemented yet');
-	//TODO: implement&document me
+	log.info({msg: msg}, 'global.apiSendToAll');
+	config.forEachGS(function sendToGS(gsconf, cb) {
+		if (gsconf.gsid === config.getGsid()) {
+			sessionMgr.sendToAll(msg);
+		}
+		else {
+			log.debug('forwarding apiSendToAll request to %s', gsconf.gsid);
+			rpc.sendRequest(gsconf.gsid, 'gs', ['sendToAll', [msg]]);
+		}
+	});
 };
 
 

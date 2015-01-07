@@ -25,7 +25,8 @@ suite('GameObject', function () {
 		});
 
 		test('creates or updates timestamp', function () {
-			assert.isTrue(new GameObject().ts >= new Date().getTime());
+			var now = new Date().getTime();
+			assert.isTrue(new GameObject().ts >= now);
 			var data = getFixtureJson('GIFPV9EMLT72DP4.json');
 			var go = new GameObject(data);
 			assert.isTrue(go.ts > data.ts);
