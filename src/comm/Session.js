@@ -344,7 +344,8 @@ Session.prototype.handleAmfReqError = function handleAmfReqError(err, req) {
 Session.prototype.send = function send(msg) {
 	if (!this.loggedIn) {
 		if (msg.type !== 'login_start' && msg.type !== 'login_end' &&
-			msg.type !== 'relogin_start' && msg.type !== 'relogin_end') {
+			msg.type !== 'relogin_start' && msg.type !== 'relogin_end' &&
+			msg.type !== 'ping') {
 			log.debug('login incomplete, dropping %s message', this, msg.type);
 			return;
 		}
