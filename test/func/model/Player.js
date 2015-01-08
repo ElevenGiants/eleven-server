@@ -195,6 +195,16 @@ suite('Player', function () {
 					p.changes[1].itemstack_values.location[it.tsid].count, 0);
 			}, done);
 		});
+
+		test('skips items not visible for the player', function (done) {
+			new RC().run(function () {
+				var p = new Player({tsid: 'PX', location: {tsid: 'LX'}});
+				var it = new Item({tsid: 'IX', class_tsid: 'quoin', tcont: 'LX',
+					only_visible_to: 'POTHER'});
+				p.queueChanges(it);
+				assert.lengthOf(p.changes, 0);
+			}, done);
+		});
 	});
 
 
