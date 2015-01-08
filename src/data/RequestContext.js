@@ -78,8 +78,7 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 	wait.launchFiber(function rcFiber() {
 		var res = null;
 		try {
-			rc.fiber = Fiber.current;
-			rc.fiber.rc = rc;
+			Fiber.current.rc = rc;
 			// call function in fiber context
 			res = func();
 			log.debug('finished %s (%s dirty)', tag, Object.keys(rc.dirty).length);

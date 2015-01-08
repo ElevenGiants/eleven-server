@@ -55,7 +55,7 @@
   },
   "scripts": {
     "preproc": "python tools/gsjs-preproc.py",
-    "start": "NODE_PATH=src node --harmony ./src/server.js | node_modules/bunyan/bin/bunyan -o short",
+    "start": "NODE_PATH=src node --harmony --expose-gc ./src/server.js | node_modules/bunyan/bin/bunyan -o short",
     "test": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/unit",
     "functest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/func",
     "inttest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/int",

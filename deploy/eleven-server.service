@@ -5,7 +5,7 @@ After=rethinkdb.service
 
 [Service]
 WorkingDirectory=/eleven/eleven-server
-ExecStart=/usr/bin/node --harmony ./src/server.js
+ExecStart=/usr/bin/node --harmony --expose-gc ./src/server.js
 Type=simple
 Restart=always
 RestartSec=1s
