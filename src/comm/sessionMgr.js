@@ -30,16 +30,15 @@ function init() {
 
 
 function newSession(socket) {
-	var id = genSessionId();
+	var id;
+	do {
+		id = (+new Date()).toString(36);
+	}
+	while (id in sessions);
 	var session = new Session(id, socket);
 	sessions[id] = session;
 	session.on('close', onSessionClose);
 	return session;
-}
-
-
-function genSessionId() {
-	return (+new Date()).toString(36);
 }
 
 
@@ -86,18 +85,24 @@ function forEachSession(func, callback) {
 
 
 /**
- * Asynchronously sends a message to all logged in clients. Returns
- * immediately (i.e. does not provide any feedback regarding message
- * delivery success).
+ * Asynchronously sends a message to all logged in clients. Errors
+ * sending to single clients do not stop the distribution process.
  *
  * @param {object} msg the message to send
+ * @param {function} [done] called when all messages have been sent
+ *        (no feedback regarding delivery success!)
  */
-function sendToAll(msg) {
+function sendToAll(msg, done) {
 	forEachSession(
 		function send(session, cb) {
 			if (session.loggedIn) {
 				log.debug('sending god message to %s', session);
-				session.send(msg);
+				try {
+					session.send(msg);
+				}
+				catch (e) {
+					log.error(e, 'error sending god message to %s', session);
+				}
 			}
 			cb();
 		},
@@ -105,6 +110,7 @@ function sendToAll(msg) {
 			if (err) {
 				log.error(err, 'error sending message to connected clients');
 			}
+			if (done) done();
 		}
 	);
 }
