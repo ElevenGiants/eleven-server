@@ -12,6 +12,7 @@ module.exports = {
 	checkUniqueHashes: checkUniqueHashes,
 	copyProps: copyProps,
 	isInt: isInt,
+	isGameObject: isGameObject,
 	isBag: isBag,
 	isPlayer: isPlayer,
 	isLoc: isLoc,
@@ -26,6 +27,7 @@ module.exports = {
 	hashToArray: hashToArray,
 	shallowCopy: shallowCopy,
 	padLeft: padLeft,
+	gameObjArgToList: gameObjArgToList,
 	playersArgToList: playersArgToList,
 	pointOnPlat: pointOnPlat,
 };
@@ -120,6 +122,20 @@ function copyProps(from, to) {
  */
 function isInt(i) {
 	return i !== null && i !== '' && typeof i !== 'boolean' && i % 1 === 0;
+}
+
+
+/**
+ * Checks whether a given object or TSID is (resp. refers to, in case
+ * of proxies) a {@link GameObject}.
+ *
+ * @param {GameObject|string} gameObjOrTsid game object/TSID to check
+ * @returns {boolean}
+ */
+function isGameObject(gameObjOrTsid) {
+	var i = getInitial(gameObjOrTsid);
+	return i === 'I' || i === 'B' || i === 'G' || i === 'L' || i === 'P' ||
+		i === 'R' || i === 'D' || i === 'Q';
 }
 
 
@@ -353,6 +369,41 @@ function padLeft(str, pad, len) {
 
 
 /**
+ * Helper function for converting a list or hash of game objects to an
+ * array of TSIDs.
+ *
+ * @param {object|array|string|GameObject} objects a hash (object with
+ *        TSIDs as keys and `GameObject` instances as values), an array
+ *        containing TSIDs or `GameObject` instances, a TSID string, or
+ *        a single `GameObject` instance
+ * @param {function} [filter] filter function to further specify the
+ *        type of desired objects; if not specified, any `GameObject`
+ *        is allowed
+ * @returns {array} the resulting array of TSID strings
+ */
+function gameObjArgToList(objects, filter) {
+	filter = filter || isGameObject;
+	var ret = [];
+	// handle single GameObject instance or single TSID string as 1-element array
+	if (filter(objects)) objects = [objects];
+	// if it's an object, assume it's a hash with TSIDs as keys
+	if (objects && typeof objects === 'object' && !(objects instanceof Array)) {
+		objects = Object.keys(objects);
+	}
+	if (objects instanceof Array) {
+		// could be an array of TSIDs or an array of GameObject instances
+		for (var i = 0; i < objects.length; i++) {
+			var o = objects[i];
+			if (filter(o)) {
+				ret.push(typeof o === 'string' ? o : o.tsid);
+			}
+		}
+	}
+	return ret;
+}
+
+
+/**
  * Helper function for converting a loosely typed player list argument
  * (as used by several model API functions) to an array of TSIDs.
  *
@@ -360,26 +411,10 @@ function padLeft(str, pad, len) {
  *        (object with TSIDs as keys and `Player` instances as values),
  *        an array containing TSIDs or `Player`s, a player TSID string,
  *        or a single `Player` instance
- * @returns {array} an array or player TSID strings
+ * @returns {array} an array of player TSID strings
  */
 function playersArgToList(players) {
-	var ret = [];
-	// handle single Player instance or single TSID string as 1-element array
-	if (isPlayer(players)) players = [players];
-	// if it's an object, assume it's a hash with TSIDs as keys
-	if (players && typeof players === 'object' && !(players instanceof Array)) {
-		players = Object.keys(players);
-	}
-	if (players instanceof Array) {
-		// could be an array of TSIDs or an array of Player instances
-		for (var i = 0; i < players.length; i++) {
-			var p = players[i];
-			if (isPlayer(p)) {
-				ret.push(typeof p === 'string' ? p : p.tsid);
-			}
-		}
-	}
-	return ret;
+	return gameObjArgToList(players, isPlayer);
 }
 
 
