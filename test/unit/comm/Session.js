@@ -195,13 +195,30 @@ suite('Session', function () {
 			s.pc = {
 				sendServerMsg: function (action) {
 					actionSent = action;
-				}
+				},
+				isConnected: function () {
+					return true;
+				},
 			};
 			s.socket.destroy = function (msg) {
 				assert.strictEqual(actionSent, 'CLOSE');
 				done();
 			};
 			s.handleAmfReqError(new Error('foo'), {msg_id: 12, type: 'moo'});
+		});
+
+		test('does not send CLOSE message to offline player', function (done) {
+			var s = getTestSession('test', getDummySocket());
+			s.pc = {
+				sendServerMsg: function () {
+					throw new Error('should not be called');
+				},
+				isConnected: function () {
+					return false;
+				},
+			};
+			s.socket.destroy = done;
+			s.handleAmfReqError(new Error('foo'));
 		});
 	});
 

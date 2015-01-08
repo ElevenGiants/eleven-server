@@ -325,8 +325,9 @@ Session.prototype.handleAmfReqError = function handleAmfReqError(err, req) {
 	}
 	log.error(err, 'error processing %s request for %s', req.type, this.pc);
 	if (this.socket) {
-		if (this.pc) {
-			this.pc.sendServerMsg('CLOSE', {msg: 'REQ_PROC_ERROR'});
+		if (this.pc && this.pc.isConnected()) {
+			this.pc.sendServerMsg('CLOSE',
+				{msg: util.format('error processing %s request', req.type)});
 		}
 		log.info({session: this}, 'closing session after error');
 		this.socket.destroy();
