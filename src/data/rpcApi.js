@@ -17,6 +17,8 @@ module.exports = {
 	resetPlayer: redirWrap(resetPlayer),
 	getGsjsConfig: getGsjsConfig,
 	sendToAll: sendToAll,
+	getPlayerInfo: getPlayerInfo,
+	getGSStatus: getGSStatus,
 };
 
 
@@ -30,6 +32,8 @@ var utils = require('utils');
 var gsjsBridge = require('model/gsjsBridge');
 var Player = require('model/Player');
 var sessionMgr = require('comm/sessionMgr');
+var lodash = require('lodash');
+var wait = require('wait.for');
 
 
 function toString() {
@@ -184,4 +188,102 @@ function getGsjsConfig() {
  */
 function sendToAll(msg) {
 	sessionMgr.sendToAll(msg);
+}
+
+
+/**
+ * Retrieves runtime information about all currently connected players.
+ * Note that the collected data is a momentary snapshot and typically
+ * already outdated the moment it is returned.
+ *
+ * @param {boolean} [locally] only return information about players on
+ *        this GS instance if `true` (otherwise, includes data from all
+ *        GS workers)
+ * @returns {object} a hash with player TSIDs as keys and data records
+ *          containing player information as values
+ */
+function getPlayerInfo(locally) {
+	if (locally) {
+		return sessionMgr.getPlayerInfo();
+	}
+	var ret = {};
+	config.forEachGS(function collect(gsconf, cb) {
+		var gsid = gsconf.gsid;
+		var res = {};
+		if (gsid === config.getGsid()) {
+			res = sessionMgr.getPlayerInfo();
+		}
+		else {
+			res = rpc.sendRequest(gsid, 'gs', ['getPlayerInfo', [true]]);
+		}
+		// add 'gs' property to each entry:
+		lodash.assign(ret, res, function addGS(destVal, srcVal) {
+			srcVal.gs = gsid;
+			return srcVal;
+		});
+		cb();
+	});
+	return ret;
+}
+
+
+/**
+ * Checks the current status/reachability of all configured GS workers.
+ *
+ * @param {boolean} [locally] internal (for RPC dispatching)
+ * @returns {object} status of the GS cluster, something like this:
+ * ```
+ * { 'gs01-01': { ok: true },
+ *   'gs01-02': { ok: false, error: 'RPC timeout' },
+ *   'gs01-03': { ok: false, error: 'PANIQUE' },
+ *   ok: false }
+ * ```
+ * For a simple binary "server available?" decision, it is sufficient
+ * to just examine the root `ok` property.
+ */
+function getGSStatus(locally) {
+	if (locally) {
+		return {ok: true};
+	}
+	// somewhat complicated setup to be able to put a timeout around the RPC
+	// calls in this special case (we want to return quickly even in case
+	// remote GS instances are not reachable)
+	var ret = wait.for(config.forEachGS, function getStatus(gsconf, statusCB) {
+		var gsid = gsconf.gsid;
+		// this GS instance - since we're running this, we're probably ok
+		if (gsid === config.getGsid()) {
+			return statusCB(null, {ok: true});
+		}
+		// foward call to other workers; set up a timer that will invoke the
+		// callback if the RPC does not return within a certain period
+		var timedOut = false;
+		var timeout = setTimeout(function rpcTimeout() {
+			timedOut = true;
+			return statusCB(null, {ok: false, error: 'RPC timeout'});
+		}, 2000);
+		rpc.sendRequest(gsid, 'gs', ['getGSStatus', [true]], function cb(err, res) {
+			// abort if it's too late (timeout already hit, so don't invoke callback again)
+			if (timedOut) return;
+			// otherwise, cancel the timeout mechanism and proceed as planned
+			clearTimeout(timeout);
+			if (!err) {
+				return statusCB(null, res);
+			}
+			else {
+				return statusCB(null, {
+					ok: false,
+					error: err instanceof Error ? err.message : '' + err,
+				});
+			}
+		});
+	});
+	// add aggregate 'ok' property
+	ret.ok = true;
+	for (var k in ret) {
+		if (typeof ret[k] === 'object' && !ret[k].ok) {
+			ret.ok = false;
+			break;
+		}
+	}
+	return ret;
 }

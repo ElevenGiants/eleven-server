@@ -270,6 +270,7 @@ function sendRequest(gsid, rpcFunc, args, callback) {
 	var rpcArgs = [config.getGsid()].concat(args);
 	if (callback) {
 		client.request(rpcFunc, rpcArgs, function cb(err, res) {
+			orProxy.proxify(ret);
 			callback(err, res);
 		});
 	}

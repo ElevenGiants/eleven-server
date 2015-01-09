@@ -11,6 +11,7 @@ module.exports = {
 	init: init,
 	newSession: newSession,
 	getSessionCount: getSessionCount,
+	getPlayerInfo: getPlayerInfo,
 	forEachSession: forEachSession,
 	sendToAll: sendToAll,
 };
@@ -57,6 +58,36 @@ function onSessionClose(session) {
 function getSessionCount() {
 	if (!sessions) return 0;
 	return Object.keys(sessions).length;
+}
+
+
+/**
+ * Retrieves some data about the currently connected clients/players
+ * from the active sessions.
+ *
+ * Note: The returned information is highly volatile (e.g. it does not
+ * include players currently moving between GS workers), and should
+ * therefore only be used for non-critical purposes.
+ *
+ * @returns {object} a hash with player TSIDs as keys and data records
+ *          containing player information as values
+ */
+function getPlayerInfo() {
+	var ret = {};
+	for (var id in sessions) {
+		var session = sessions[id];
+		if (session.pc) {
+			var pc = session.pc;
+			ret[pc.tsid] = {
+				label: pc.label,
+				loc: {
+					tsid: pc.location.tsid,
+					label: pc.location.label,
+				},
+			};
+		}
+	}
+	return ret;
 }
 
 

@@ -127,13 +127,15 @@ suite('config', function () {
 
 	suite('forEachGS/forEachLocalGS/forEachRemoteGS', function () {
 
+		var cfg = {
+			net: {gameServers: {
+				gs07: {host: '123.4.5.6', ports: [2345]},
+				gs01: {host: '127.0.0.1', ports: [1234, 1235]},
+			}},
+		};
+
 		test('do their job', function () {
-			config.init(true, {
-				net: {gameServers: {
-					gs07: {host: '123.4.5.6', ports: [2345]},
-					gs01: {host: '127.0.0.1', ports: [1234, 1235]},
-				}},
-			}, {});
+			config.init(true, cfg, {});
 			var visited = [];
 			config.forEachGS(function (gsconf) {
 				visited.push(gsconf.gsid);
@@ -148,6 +150,40 @@ suite('config', function () {
 			config.forEachRemoteGS(function (gsconf) {
 				assert.strictEqual(gsconf.hostPort, '123.4.5.6:2345');
 			});
+		});
+
+		test('returns collected return values', function (done) {
+			config.init(true, cfg, {});
+			config.forEachGS(
+				function (gsconf, cb) {
+					cb(null, gsconf.gsid.toUpperCase());
+				},
+				function callback(err, res) {
+					assert.isNull(err);
+					assert.deepEqual(res, {
+						'gs01-01': 'GS01-01',
+						'gs01-02': 'GS01-02',
+						'gs07-01': 'GS07-01',
+					});
+					done();
+				}
+			);
+		});
+
+		test('aborts when an error occurs', function (done) {
+			config.init(true, cfg, {});
+			config.forEachGS(
+				function (gsconf, cb) {
+					if (gsconf.gsid === 'gs01-02') return cb(new Error('gargle'));
+					cb();
+				},
+				function callback(err, res) {
+					assert.instanceOf(err, Error);
+					assert.strictEqual(err.message, 'gargle');
+					assert.isUndefined(res);
+					done();
+				}
+			);
 		});
 	});
 
