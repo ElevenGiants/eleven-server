@@ -17,6 +17,7 @@ module.exports = {
 	resetPlayer: redirWrap(resetPlayer),
 	getGsjsConfig: getGsjsConfig,
 	sendToAll: sendToAll,
+	getPlayerInfo: getPlayerInfo,
 };
 
 
@@ -30,6 +31,7 @@ var utils = require('utils');
 var gsjsBridge = require('model/gsjsBridge');
 var Player = require('model/Player');
 var sessionMgr = require('comm/sessionMgr');
+var lodash = require('lodash');
 
 
 function toString() {
@@ -184,4 +186,40 @@ function getGsjsConfig() {
  */
 function sendToAll(msg) {
 	sessionMgr.sendToAll(msg);
+}
+
+
+/**
+ * Retrieves runtime information about all currently connected players.
+ * Note that the collected data is a momentary snapshot and typically
+ * already outdated the moment it is returned.
+ *
+ * @param {boolean} [locally] only return information about players on
+ *        this GS instance if `true` (otherwise, includes data from all
+ *        GS workers)
+ * @returns {object} a hash with player TSIDs as keys and data records
+ *          containing player information as values
+ */
+function getPlayerInfo(locally) {
+	if (locally) {
+		return sessionMgr.getPlayerInfo();
+	}
+	var ret = {};
+	config.forEachGS(function collect(gsconf, cb) {
+		var gsid = gsconf.gsid;
+		var res = {};
+		if (gsid === config.getGsid()) {
+			res = sessionMgr.getPlayerInfo();
+		}
+		else {
+			res = rpc.sendRequest(gsid, 'gs', ['getPlayerInfo', [true]]);
+		}
+		// add 'gs' property to each entry:
+		lodash.assign(ret, res, function addGS(destVal, srcVal) {
+			srcVal.gs = gsid;
+			return srcVal;
+		});
+		cb();
+	});
+	return ret;
 }
