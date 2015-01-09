@@ -18,6 +18,7 @@ module.exports = {
 	getGsjsConfig: getGsjsConfig,
 	sendToAll: sendToAll,
 	getPlayerInfo: getPlayerInfo,
+	getGSStatus: getGSStatus,
 };
 
 
@@ -32,6 +33,7 @@ var gsjsBridge = require('model/gsjsBridge');
 var Player = require('model/Player');
 var sessionMgr = require('comm/sessionMgr');
 var lodash = require('lodash');
+var wait = require('wait.for');
 
 
 function toString() {
@@ -221,5 +223,67 @@ function getPlayerInfo(locally) {
 		});
 		cb();
 	});
+	return ret;
+}
+
+
+/**
+ * Checks the current status/reachability of all configured GS workers.
+ *
+ * @param {boolean} [locally] internal (for RPC dispatching)
+ * @returns {object} status of the GS cluster, something like this:
+ * ```
+ * { 'gs01-01': { ok: true },
+ *   'gs01-02': { ok: false, error: 'RPC timeout' },
+ *   'gs01-03': { ok: false, error: 'PANIQUE' },
+ *   ok: false }
+ * ```
+ * For a simple binary "server available?" decision, it is sufficient
+ * to just examine the root `ok` property.
+ */
+function getGSStatus(locally) {
+	if (locally) {
+		return {ok: true};
+	}
+	// somewhat complicated setup to be able to put a timeout around the RPC
+	// calls in this special case (we want to return quickly even in case
+	// remote GS instances are not reachable)
+	var ret = wait.for(config.forEachGS, function getStatus(gsconf, statusCB) {
+		var gsid = gsconf.gsid;
+		// this GS instance - since we're running this, we're probably ok
+		if (gsid === config.getGsid()) {
+			return statusCB(null, {ok: true});
+		}
+		// foward call to other workers; set up a timer that will invoke the
+		// callback if the RPC does not return within a certain period
+		var timedOut = false;
+		var timeout = setTimeout(function rpcTimeout() {
+			timedOut = true;
+			return statusCB(null, {ok: false, error: 'RPC timeout'});
+		}, 2000);
+		rpc.sendRequest(gsid, 'gs', ['getGSStatus', [true]], function cb(err, res) {
+			// abort if it's too late (timeout already hit, so don't invoke callback again)
+			if (timedOut) return;
+			// otherwise, cancel the timeout mechanism and proceed as planned
+			clearTimeout(timeout);
+			if (!err) {
+				return statusCB(null, res);
+			}
+			else {
+				return statusCB(null, {
+					ok: false,
+					error: err instanceof Error ? err.message : '' + err,
+				});
+			}
+		});
+	});
+	// add aggregate 'ok' property
+	ret.ok = true;
+	for (var k in ret) {
+		if (typeof ret[k] === 'object' && !ret[k].ok) {
+			ret.ok = false;
+			break;
+		}
+	}
 	return ret;
 }

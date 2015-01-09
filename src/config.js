@@ -272,28 +272,41 @@ function getGSConf(gsid) {
  * ```
  * function to call for each GS, where `gsconf` is a server network
  * configuration object (as returned by {@link module:config~getGSConf|
- * getGSConf}), and `callback(err)` must be called once the function
- * has completed or an error has occurred
+ * getGSConf}), and `callback(err, res)` must be called once the
+ * function has completed or an error has occurred
  * @param {function} [callback]
  * ```
- * callback(err)
+ * callback(err, res)
  * ```
  * called when all function calls have finished, or when an error
- * occurs in any of them; `err` is an `Error` object or `null`
+ * occurs in any of them; `err` is an `Error` object or `null`, `res`
+ * is an object containing the collected return values (with GSIDs as
+ * keys)
  * @param {boolean} [noLocal] if `true`, do not call function for
  *        instances on the local host
  * @param {boolean} [noRemote] if `true`, do not call function for
  *        instances on remote hosts
  */
 function forEachGS(func, callback, noLocal, noRemote) {
-	// see <https://github.com/caolan/async#eacharr-iterator-callback>
-	async.each(gsids, function iterator(gsid, cb) {
-		var gsconf = gameServers[gsid];
-		if ((gsconf.local && !noLocal) || (!gsconf.local && !noRemote)) {
-			func(gsconf, cb);
+	async.map(gsids,
+		function iterator(gsid, cb) {
+			var gsconf = gameServers[gsid];
+			if ((gsconf.local && !noLocal) || (!gsconf.local && !noRemote)) {
+				func(gsconf, cb);
+			}
+			else cb(null);
+		},
+		function transformResults(err, res) {
+			if (callback) {
+				if (err) return callback(err);
+				var ret = {};
+				for (var i = 0; i < res.length; i++) {
+					ret[gsids[i]] = res[i];
+				}
+				return callback(null, ret);
+			}
 		}
-		else cb(null);
-	}, callback);
+	);
 }
 
 
