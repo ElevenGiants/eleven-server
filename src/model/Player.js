@@ -384,7 +384,9 @@ Player.prototype.gsMoveCheck = function gsMoveCheck(newLocId) {
 	// once the current request is finished
 	var self = this;
 	RC.getContext().setPostPersCallback(function triggerReconnect() {
-		self.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
+		if (self.isConnected()) {
+			self.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
+		}
 	});
 	var ret = utils.shallowCopy(gsConf);
 	ret.token = token;
@@ -403,8 +405,7 @@ Player.prototype.gsMoveCheck = function gsMoveCheck(newLocId) {
  * @param {object} [data] optional additional payload data
  */
 Player.prototype.sendServerMsg = function sendServerMsg(action, data) {
-	assert(this.session !== undefined && this.session !== null,
-		'tried to send to offline player');
+	assert(this.isConnected(), 'trying to send message to offline player ' + this);
 	var msg = data || {};
 	msg.type = 'server_message';
 	msg.action = action;
