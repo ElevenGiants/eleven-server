@@ -91,6 +91,7 @@ suite('Item', function () {
 			var data = {
 				tsid: 'IFOO',
 				label: 'Teapot',
+				ts: 12345,
 				count: 1,
 				x: 123,
 				y: 456,
@@ -98,9 +99,7 @@ suite('Item', function () {
 			};
 			var i = new Item(data);
 			delete data.onPlayerCollision;  // functions are not included in serialization
-			var ser = i.serialize();
-			delete ser.ts;
-			assert.deepEqual(ser, data);
+			assert.deepEqual(i.serialize(), data);
 		});
 	});
 

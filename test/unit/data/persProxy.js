@@ -136,7 +136,7 @@ suite('persProxy', function () {
 			var p = pp.makeProxy(o);
 			p.arr[0].x = 3;
 			assert.strictEqual(JSON.stringify(p),
-				'{"tsid":"x","arr":[{"x":3},[1,2,3]],"ts":' + p.ts + '}');
+				'{"tsid":"x","arr":[{"x":3},[1,2,3]]}');
 		});
 
 		test('pproxy does not break Array.sort', function () {
@@ -146,23 +146,6 @@ suite('persProxy', function () {
 				return a < b;
 			});
 			assert.deepEqual(sorted, ['spriggan', 'humbaba', 'cosma', 'alph']);
-		});
-
-		test('set and del operations update timestamp', function (done) {
-			var ts = new Date().getTime();
-			var o1 = {tsid: 'x', a: 7, ts: ts};
-			var o2 = {tsid: 'x', a: 7, ts: ts};
-			var p1 = pp.makeProxy(o1);
-			var p2 = pp.makeProxy(o2);
-			setTimeout(function () {
-				p1.a = 8;
-				assert.notStrictEqual(o1.ts, ts);
-				assert.isTrue(o1.ts > ts);
-				delete p2.a;
-				assert.notStrictEqual(o2.ts, ts);
-				assert.isTrue(o2.ts > ts);
-				done();
-			}, 3);
 		});
 	});
 

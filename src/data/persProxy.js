@@ -74,23 +74,20 @@ function makeProxy(obj, prop) {
 			// only set dirty flag for actual value changes
 			if (val !== target[name]) {
 				target[name] = val;
-				if (name[0] !== '!' && name !== 'ts' &&
-					target.propertyIsEnumerable(name)) {
+				if (name[0] !== '!' && target.propertyIsEnumerable(name)) {
 					// performance hack: don't persist x/y changes for players
 					if (target !== obj || obj.tsid[0] !== 'P' ||
 						(name !== 'x' && name !== 'y')) {
 						RC.getContext().setDirty(obj);
-						obj.ts = new Date().getTime();
 					}
 				}
 			}
 		},
 		deleteProperty: function deleteProperty(target, name) {
 			if (name in target) {
-				if (name[0] !== '!' && name !== 'ts' && target.hasOwnProperty(name) &&
+				if (name[0] !== '!' && target.hasOwnProperty(name) &&
 					target.propertyIsEnumerable(name)) {
 					RC.getContext().setDirty(obj);
-					obj.ts = new Date().getTime();
 				}
 				return delete target[name];
 			}

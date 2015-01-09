@@ -132,7 +132,6 @@ suite('Geo', function () {
 
 		test('returns data equivalent to original input data', function () {
 			var ser = new Geo(getSampleData()).serialize();
-			ser.ts = getSampleData().ts;
 			assert.deepEqual(ser, getSampleData());
 		});
 
