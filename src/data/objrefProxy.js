@@ -90,6 +90,8 @@ function makeProxy(objref) {
 			}
 			// special property required to detect proxies during serialization
 			if (name === '__isORP') return true;
+			// helper for direct access to the resolved target (just for tests)
+			if (name === '__proxyTarget') return resolve(target);
 			// property not available in objref -> resolve reference
 			return resolve(target)[name];
 		},
@@ -127,7 +129,7 @@ function makeProxy(objref) {
 
 
 function resolve(objref) {
-	var ret = pers.get(objref.tsid);
+	var ret = pers.get(objref.tsid, true);
 	if (ret === undefined || ret === null) {
 		throw new ObjRefProxyError('referenced object not found: ' + objref.tsid);
 	}
@@ -228,6 +230,6 @@ function makeRef(obj) {
  *          in the module docs above).
  */
 function wrap(obj) {
-	if (obj.__isORP) return obj;
+	if (typeof obj !== 'object' || obj === null || obj.__isORP) return obj;
 	return makeProxy(makeRef(obj));
 }
