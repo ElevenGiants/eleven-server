@@ -4,6 +4,7 @@ var rewire = require('rewire');
 var RC = require('data/RequestContext');
 var utils = require('utils');
 var GameObject = require('model/GameObject');
+var Item = require('model/Item');
 var Bag = require('model/Bag');
 var Player = require('model/Player');
 var orproxy = rewire('data/objrefProxy');
@@ -346,6 +347,31 @@ suite('utils', function () {
 			assert.strictEqual(utils.padLeft('A', 'x', 0), 'A');
 			assert.strictEqual(utils.padLeft(24, 0, 4), '0024');
 			assert.strictEqual(utils.padLeft(1234, 0, 2), '1234');
+		});
+	});
+
+
+	suite('gameObjArgToList', function () {
+
+		test('works as expected', function () {
+			var arg = {
+				I1: new Item({tsid: 'I1'}),
+				G1: new GameObject({tsid: 'G1'}),
+				B1: new Bag({tsid: 'B1'}),
+				F1: {tsid: 'F1', not: 'a real GameObject'},
+			};
+			assert.sameMembers(utils.gameObjArgToList(arg), ['I1', 'G1', 'B1']);
+		});
+
+		test('applies the given filter function', function () {
+			var arg = [
+				new Item({tsid: 'I1'}),
+				new Player({tsid: 'P1'}),
+				new Bag({tsid: 'B1'}),
+			];
+			assert.sameMembers(utils.gameObjArgToList(arg, utils.isBag), ['P1', 'B1']);
+			assert.sameMembers(utils.gameObjArgToList(arg, utils.isPlayer), ['P1']);
+			assert.sameMembers(utils.gameObjArgToList(arg, utils.isGeo), []);
 		});
 	});
 

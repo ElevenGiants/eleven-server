@@ -6,6 +6,7 @@
  * @module
  */
 
+var assert = require('assert');
 var gsjsBridge = require('model/gsjsBridge');
 var Property = require('model/Property');
 var OrderedHash = require('model/OrderedHash');
@@ -14,6 +15,9 @@ var Quest = require('model/Quest');
 var Item = require('model/Item');
 var Bag = require('model/Bag');
 var Group = require('model/Group');
+var config = require('config');
+var rpc = require('data/rpc');
+var sessionMgr = require('comm/sessionMgr');
 var pers = require('data/pers');
 var orProxy = require('data/objrefProxy');
 var utils = require('utils');
@@ -46,6 +50,57 @@ function safeClone(obj) {
 		}
 	});
 	orProxy.proxify(ret);
+	return ret;
+}
+
+
+/**
+ * Calls a method for each game object in a given list.
+ *
+ * @param {string} fname name of the function to call for each object
+ * @param {string[]|object} targets a list of TSIDs or an object with
+ *        TSIDs as keys
+ * @param {array} args list of arguments for the called function
+ * @param {boolean} [onlineOnly] only apply the function to players who
+ *        are currently online (the given TSIDs must only refer to
+ *        player objects in this case)
+ * @returns {object} a hash with TSIDs as keys and values representing
+ *          the function call results as follows:
+ *          <ul>
+ *            <li>`{ok: 0, error: <error object>}` if an error occurred
+ *              while calling the function</li>
+ *            <li>`{ok: 0, offline: true}` if the respective player is
+ *              not currently online (only possible when `onlineOnly`
+ *              is `true`)</li>
+ *            <li>`{ok: 1, res: <return value>}` if the call was
+ *              successful and returned a primitive value</li>
+ *            <li>`{ok: 1, <properties of return value...>}` if the
+ *              call was successful and returned an object</li>
+ *          </ul>
+ */
+function callFor(fname, targets, args, onlineOnly) {
+	//TODO: this is currently not making the function calls in parallel (as
+	// described in the GSJS docs), and not applying a timeout on the calls either
+	assert(args === undefined || args instanceof Array, 'when specified, ' +
+		'args needs to be an array');
+	var tsids = utils.gameObjArgToList(targets, onlineOnly ? utils.isPlayer : null);
+	var ret = {};
+	for (var i = 0; i < tsids.length; i++) {
+		var tsid = tsids[i];
+		if (onlineOnly && !isPlayerOnline(tsid)) {
+			ret[tsid] = {ok: 0, offline: true};
+			continue;
+		}
+		try {
+			var obj = pers.get(tsid);
+			var res = obj[fname].apply(obj, args);
+			ret[tsid] = (typeof res !== 'object' || res === null) ? {res: res} : res;
+			ret[tsid].ok = 1;
+		}
+		catch (e) {
+			ret[tsid] = {ok: 0, error: e};
+		}
+	}
 	return ret;
 }
 
@@ -266,31 +321,44 @@ exports.apiGetJSFileObject = function apiGetJSFileObject(path) {
 };
 
 
+/**
+ * Calls a method on each object in a list of game objects.
+ *
+ * @param {string} fname name of the function to call for each object
+ * @param {string[]|object} targets a list of TSIDs or an object with
+ *        TSIDs as keys
+ * @param {...*} [args] arbitrary arguments for the called function
+ * @returns {object} a hash with TSIDs as keys and values representing
+ *          the function call results; see {@link
+ *          module:model/globalApi~callFor|callFor} for details
+ */
 exports.apiCallMethod = function apiCallMethod(fname, targets) {
-	log.debug('%s.apiCallMethod(%s)', this,
+	log.debug('global.apiCallMethod(%s)',
 		Array.prototype.slice.call(arguments).join(', '));
-	//TODO: implement&document me
-	log.warn('TODO global.apiCallMethod not implemented yet');
-	var ret = {};
-	for (var tsid in targets) {
-		ret[tsid] = {ok: 0, offline: true};
-	}
-	return ret;
+	var args = Array.prototype.slice.call(arguments, apiCallMethod.length);
+	return callFor(fname, targets, args);
 };
 
 
+/**
+ * Calls a method for each player in a given list. Players that are not
+ * currently online are skipped.
+ *
+ * @param {string} fname name of the function to call for each player
+ * @param {string[]|object} targets a list of player TSIDs or an object
+ *        with player TSIDs as keys
+ * @param {...*} [args] arbitrary arguments for the called function
+ * @returns {object} a hash with TSIDs as keys and values representing
+ *          the function call results; see {@link
+ *          module:model/globalApi~callFor|callFor} for details
+ */
 exports.apiCallMethodForOnlinePlayers =
 	function apiCallMethodForOnlinePlayers(fname, targets) {
-	log.debug('%s.apiCallMethodForOnlinePlayers(%s)', this,
+	log.debug('global.apiCallMethodForOnlinePlayers(%s)',
 		Array.prototype.slice.call(arguments).join(', '));
-	//TODO: implement&document me
-	log.warn('TODO global.apiCallMethodForOnlinePlayers not implemented yet');
-	var ret = {};
-	for (var tsid in targets) {
-		ret[tsid] = {ok: 0, offline: true};
-	}
-	return ret;
-
+	var args = Array.prototype.slice.call(arguments,
+		apiCallMethodForOnlinePlayers.length);
+	return callFor(fname, targets, args, true);
 };
 
 
@@ -323,10 +391,23 @@ exports.apiGetObjectContent = function apiGetObjectContent(tsid) {
 };
 
 
+/**
+ * Sends a message to **all** connected clients (on all GS instances).
+ * Does not provide any feedback about message delivery status/success.
+ *
+ * @param {object} msg the message to send
+ */
 exports.apiSendToAll = function apiSendToAll(msg) {
-	log.debug('global.apiSendToAll(%s)', msg);
-	log.warn('TODO global.apiSendToAll not implemented yet');
-	//TODO: implement&document me
+	log.info({msg: msg}, 'global.apiSendToAll');
+	config.forEachGS(function sendToGS(gsconf, cb) {
+		if (gsconf.gsid === config.getGsid()) {
+			sessionMgr.sendToAll(msg);
+		}
+		else {
+			log.debug('forwarding apiSendToAll request to %s', gsconf.gsid);
+			rpc.sendRequest(gsconf.gsid, 'gs', ['sendToAll', [msg]]);
+		}
+	});
 };
 
 

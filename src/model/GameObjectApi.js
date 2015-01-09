@@ -34,7 +34,7 @@ GameObjectApi.prototype.apiDelete = function apiDelete() {
 GameObjectApi.prototype.apiSetTimer = function apiSetTimer(fname, delay) {
 	log.debug('%s.apiSetTimer(%s)', this,
 		Array.prototype.slice.call(arguments).join(', '));
-	var args = Array.prototype.slice.call(arguments, 2);
+	var args = Array.prototype.slice.call(arguments, apiSetTimer.length);
 	this.setGsTimer({fname: fname, delay: delay, args: args});
 };
 
@@ -61,7 +61,7 @@ GameObjectApi.prototype.apiSetTimerX = function apiSetTimerX() {
 GameObjectApi.prototype.apiSetTimerMulti = function apiSetTimerMulti(fname, delay) {
 	log.debug('%s.apiSetTimerMulti(%s)', this,
 		Array.prototype.slice.call(arguments).join(', '));
-	var args = Array.prototype.slice.call(arguments, 2);
+	var args = Array.prototype.slice.call(arguments, apiSetTimerMulti.length);
 	this.setGsTimer({fname: fname, delay: delay, args: args, multi: true});
 };
 

@@ -271,9 +271,9 @@ function getGSConf(gsid) {
  * func(gsconf, callback)
  * ```
  * function to call for each GS, where `gsconf` is a server network
- * configuration object (as returned by {@link module:config~mapToGS|
- * config.mapToGS}), and `callback(err)` must be called once the
- * function has completed or an error has occurred
+ * configuration object (as returned by {@link module:config~getGSConf|
+ * getGSConf}), and `callback(err)` must be called once the function
+ * has completed or an error has occurred
  * @param {function} [callback]
  * ```
  * callback(err)

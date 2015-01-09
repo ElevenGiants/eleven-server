@@ -16,6 +16,7 @@ module.exports = {
 	createPlayer: redirWrap(createPlayer, NEW_PLAYER_LOC),
 	resetPlayer: redirWrap(resetPlayer),
 	getGsjsConfig: getGsjsConfig,
+	sendToAll: sendToAll,
 };
 
 
@@ -28,6 +29,7 @@ var util = require('util');
 var utils = require('utils');
 var gsjsBridge = require('model/gsjsBridge');
 var Player = require('model/Player');
+var sessionMgr = require('comm/sessionMgr');
 
 
 function toString() {
@@ -171,4 +173,15 @@ function makeAlphaAdjustments(pc) {
 
 function getGsjsConfig() {
 	return gsjsBridge.getConfig();
+}
+
+
+/**
+ * Asynchronously sends a message to all logged in clients connected to
+ * this GS instance.
+ *
+ * @param {object} msg the message to send
+ */
+function sendToAll(msg) {
+	sessionMgr.sendToAll(msg);
 }
