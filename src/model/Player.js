@@ -384,7 +384,9 @@ Player.prototype.gsMoveCheck = function gsMoveCheck(newLocId) {
 	// once the current request is finished
 	var self = this;
 	RC.getContext().setPostPersCallback(function triggerReconnect() {
-		self.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
+		if (self.isConnected()) {
+			self.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
+		}
 	});
 	var ret = utils.shallowCopy(gsConf);
 	ret.token = token;
