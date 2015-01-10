@@ -61,7 +61,7 @@ function Item(data) {
 	utils.addNonEnumerable(this, 'path', this.tsid);
 	// enable collision detection if we have a handler function
 	if (typeof this.onPlayerCollision === 'function') {
-		this['!colliders'] = {};
+		utils.addNonEnumerable(this, '!colliders', {});
 		this.collDet = true;
 	}
 	if (this.message_queue) {
