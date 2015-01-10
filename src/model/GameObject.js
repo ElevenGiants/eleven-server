@@ -48,7 +48,9 @@ function GameObject(data) {
 			this[key] = data[key];
 		}
 	}
-	this.ts = new Date().getTime();
+	if (!this.ts) {
+		this.ts = new Date().getTime();
+	}
 	if (!this.gsTimers) this.gsTimers = {};
 	if (!this.gsTimers.timer) this.gsTimers.timer = {};
 	if (!this.gsTimers.interval) this.gsTimers.interval = {};

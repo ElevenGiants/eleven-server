@@ -43,14 +43,6 @@ module.exports = {
 		// incoming AMF messages bigger than this are considered invalid
 		maxMsgSize: 131072,
 	},
-	pers: {
-		pack: {
-			// how often to release "old" objects from live object cache
-			interval: 30000,  // ms
-			// objects that have not been modified this long are considered old
-			ttl: 300000,  // ms
-		},
-	},
 	log: {
 		// dir can be an absolute path, or relative to eleven-server directory
 		dir: './log',

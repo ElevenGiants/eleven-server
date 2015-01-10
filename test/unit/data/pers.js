@@ -234,30 +234,4 @@ suite('pers', function () {
 			});
 		});
 	});
-
-
-	suite('pack', function () {
-
-		test('works as expected', function (done) {
-			var pack = pers.__get__('pack');
-			var o1 = new GameObject({tsid: 'I1'});
-			var o2 = new GameObject({tsid: 'I2'});
-			pers.__set__('cache', {I1: o1, I2: o2});
-			pack(100);
-			assert.deepEqual(Object.keys(pers.__get__('cache')), ['I1', 'I2'],
-				'nothing released from cache (both objects younger than TTL)');
-			setTimeout(function () {
-				o2.ts = new Date().getTime();  // fake modification of I2
-				pack(7);
-				assert.deepEqual(Object.keys(pers.__get__('cache')), ['I2'],
-					'I1 released from cache');
-				setTimeout(function () {
-					pack(8);
-					assert.strictEqual(Object.keys(pers.__get__('cache')).length, 0,
-						'everything released from cache');
-					done();
-				}, 10);
-			}, 10);
-		});
-	});
 });
