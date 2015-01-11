@@ -12,6 +12,17 @@ var rcMock = require('../../mock/RequestContext');
 
 suite('pers', function () {
 
+	suiteSetup(function () {
+		var orProxy = rewire('data/objrefProxy');
+		pers.__set__('orProxy', orProxy);
+		orProxy.__set__('pers', pers);
+	});
+
+	suiteTeardown(function () {
+		pers.__get__('orProxy').__set__('pers', require('data/pers'));
+		pers.__set__('orProxy', require('data/objrefProxy'));
+	});
+
 	setup(function (done) {
 		pers.__set__('gsjsBridge', gsjsBridgeMock);
 		pers.__set__('rpc', rpcMock);

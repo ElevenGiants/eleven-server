@@ -60,7 +60,7 @@ function Location(data, geo) {
 	utils.addNonEnumerable(this, 'geometry');
 	utils.addNonEnumerable(this, 'clientGeometry');
 	utils.addNonEnumerable(this, 'geo');
-	var geoData = geo || pers.get(this.getGeoTsid());
+	var geoData = geo || pers.get(this.getGeoTsid(), true);
 	assert(typeof geoData === 'object', 'no geometry data for ' + this);
 	this.updateGeo(geoData);
 }

@@ -119,8 +119,7 @@ function exists(tsid) {
 function load(tsid) {
 	assert(pbe, 'persistence back-end not set');
 	log.debug('pers.load: %s', tsid);
-	var data;
-	data = pbe.read(tsid);
+	var data = pbe.read(tsid);
 	if (typeof data !== 'object' || data === null) {
 		log.info(new Error('dummy error for stack trace'),
 			'no or invalid data for %s', tsid);
@@ -128,7 +127,6 @@ function load(tsid) {
 	}
 	orProxy.proxify(data);
 	var obj = gsjsBridge.create(data);
-	orProxy.wrap(obj);
 	if (!rpc.isLocal(obj)) {
 		// wrap object in RPC proxy and add it to request cache
 		obj = rpc.makeProxy(obj);
@@ -155,26 +153,41 @@ function load(tsid) {
 
 /**
  * Retrieves the game object with the given TSID, either from the live
- * object cache or request cache if available there, or from the
- * persistence back-end.
+ * object cache or request context cache if available there, or from
+ * the persistence back-end.
  *
  * @param {string} tsid TSID of the object to retrieve
+ * @param {boolean} [dontWrap] by default, returned objects are wrapped
+ *        in a proxy to ensure any access to them is routed through the
+ *        persistence layer (to prevent stale objects after rollbacks);
+ *        in specific cases where this is not desirable, set this
+ *        parameter to `true` to prevent applying the wrapper proxy
  * @returns {GameObject} the requested object
  * @throws {AssertionError} if no object with the given TSID was found
  */
-function get(tsid) {
+function get(tsid, dontWrap) {
 	assert(gsjsBridge.isTsid(tsid), 'not a valid TSID: "' + tsid + '"');
+	var ret;
 	// get "live" objects from server memory
 	if (tsid in cache) {
-		return cache[tsid];
+		ret = cache[tsid];
 	}
-	// otherwise, see if we already have it in the request cache
-	var rc = RC.getContext();
-	if (tsid in rc.cache) {
-		return rc.cache[tsid];
+	else {
+		// otherwise, see if we already have it in the request context cache
+		var rc = RC.getContext();
+		if (tsid in rc.cache) {
+			ret = rc.cache[tsid];
+		}
+		else {
+			// if not, actually load the object
+			ret = load(tsid);
+		}
 	}
-	// if not, actually load the object
-	return load(tsid);
+	// wrap in objref proxy unless specifically asked not to
+	if (!dontWrap) {
+		ret = orProxy.wrap(ret);
+	}
+	return ret;
 }
 
 
@@ -198,6 +211,7 @@ function create(modelType, data) {
 	assert(!(obj.tsid in cache), 'object already exists: ' + obj.tsid);
 	obj = persProxy.makeProxy(obj);
 	cache[obj.tsid] = obj;
+	obj = orProxy.wrap(obj);
 	RC.getContext().setDirty(obj);
 	if (typeof obj.onCreate === 'function') {
 		obj.onCreate();

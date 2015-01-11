@@ -82,14 +82,14 @@ suite('Location', function () {
 				l.geometry = {something: 'foomp', tsid: 'GFOO'};
 				l.updateGeo();
 				// check that object was converted to Geo
-				assert.instanceOf(l.geometry, Geo);
+				assert.instanceOf(l.geometry.__proxyTarget, Geo);
 				assert.strictEqual(l.geometry.something, 'foomp');
 				assert.strictEqual(l.geometry.tsid, 'GX',
 					'TSID changed back according to Location TSID');
 				// check that it will be persisted
 				assert.deepEqual(Object.keys(rc.dirty), ['GX']);
 				var newG = rc.dirty.GX;
-				assert.instanceOf(newG, Geo);
+				assert.instanceOf(newG.__proxyTarget, Geo);
 				assert.strictEqual(newG.tsid, 'GX');
 				assert.strictEqual(newG.something, 'foomp');
 			}, done);
