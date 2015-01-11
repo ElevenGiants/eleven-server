@@ -172,6 +172,7 @@ function resetPlayer(tsid) {
 function makeAlphaAdjustments(pc) {
 	pc.teleportToLocation(NEW_PLAYER_LOC, 2750, -55);
 	pc.stats.currants.setVal(100000);
+	pc.createItem('tester_widget', 1);
 }
 
 
