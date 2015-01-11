@@ -586,4 +586,33 @@ suite('Player', function () {
 			assert.isUndefined(new Player().getPropChanges());
 		});
 	});
+
+
+	suite('isHit', function () {
+		var playerData = {x: 0, y: 0, h: 100, w: 50};
+		playerData.stacked_physics_cache = {pc_scale: 1};
+
+		test('works as expected', function () {
+			var p = new Player(playerData);
+			var it = new Item({x: 23, y: 23, hitBox: {w: 100, h: 100}});
+			var hit = p.isHit(it, it.hitBox);
+			assert.isTrue(hit, 'it is hit');
+
+			it = new Item({x: 2323, y: 2323, hitBox: {w: 100, h: 100}});
+			hit = p.isHit(it, it.hitBox);
+			assert.isFalse(hit, 'it is not hit, too far away');
+		});
+
+		test('respects scaled player size', function () {
+			var p = new Player(playerData);
+			var it = new Item({x: 200, y: 0, hitBox: {w: 100, h: 100}});
+			var hit = p.isHit(it, it.hitBox);
+			assert.isFalse(hit, 'it is not hit, player too small');
+
+			p.stacked_physics_cache.pc_scale = 10;
+			hit = p.isHit(it, it.hitBox);
+			assert.isTrue(hit, 'it is hit, respected pc_scale');
+		});
+
+	});
 });
