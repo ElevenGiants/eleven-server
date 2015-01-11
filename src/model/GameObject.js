@@ -36,17 +36,9 @@ function GameObject(data) {
 	utils.addNonEnumerable(this, '__isGO', true);
 	utils.addNonEnumerable(this, 'deleted', false);
 	// copy supplied data
-	// TODO: remove 'dynamic' partition in fixture data, and get rid of special handling here
 	var key;
-	for (key in data.dynamic) {
-		if (!(key in this)) {
-			this[key] = data.dynamic[key];
-		}
-	}
 	for (key in data) {
-		if (key !== 'dynamic' && !(key in this)) {
-			this[key] = data[key];
-		}
+		this[key] = data[key];
 	}
 	if (!this.ts) {
 		this.ts = new Date().getTime();
