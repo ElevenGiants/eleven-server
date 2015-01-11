@@ -600,7 +600,7 @@ Player.prototype.getPropChanges = function getPropChanges() {
 
 
 /**
- * Override setXY of Item to handle collision detection
+ * Override setXY of `Item` to handle collision detection
  *
  * @param {number} x new horizontal coordinate
  * @param {number} y new vertical coordinate
@@ -646,9 +646,8 @@ Player.prototype.setXY = function setXY(x, y) {
  *        item's default (unnamed) hitbox
  */
 Player.prototype.handleCollision = function handleCollision(it, hitBox, hitBoxName) {
-	// log.error('handling collision for %s with hitbox %s', it, hitBox);
-	if (!hitBox) hitBox = {w: 260, h: 260};  // default radius 60px
-	// log.error('handling collision for %s with hitbox %s,%s', it, hitBox.w, hitBox.h);
+	if (!hitBox) hitBox = {w: 60, h: 60};  // default radius 60px
+
 	var hit = this.isHit(it, hitBox);
 
 	if (hit) {
