@@ -57,6 +57,14 @@ suite('Bag', function () {
 				pers.get('B1');
 			}, done);
 		});
+
+		test('preserves non-default capacity', function () {
+			/*jshint -W055 */  // deliberate lowercase constructor name here
+			var ctor = gsjsBridge.getProto('items', 'bag_generic_gray').constructor;
+			var b = new ctor({capacity: 10, class_tsid: 'bag_generic_gray'});
+			assert.strictEqual(b.capacity, 10);
+			/*jshint +W055 */
+		});
 	});
 
 

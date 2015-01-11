@@ -17,13 +17,6 @@ suite('GameObject', function () {
 
 	suite('game object loading/initialization', function () {
 
-		test('converts "dynamic" portion of input data', function () {
-			var go = new GameObject(getFixtureJson('GIFPV9EMLT72DP4.json'));
-			assert.strictEqual(go.tsid, 'GIFPV9EMLT72DP4');
-			assert.notProperty(go, 'dynamic');
-			assert.property(go, 'layers');
-		});
-
 		test('keeps timestamp from data if there is one', function () {
 			var data = getFixtureJson('GIFPV9EMLT72DP4.json');
 			var go = new GameObject(data);
