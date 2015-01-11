@@ -360,3 +360,42 @@ Item.prototype.consume = function consume(n) {
 	else this.queueChanges();
 	return n;
 };
+
+
+/**
+ * Adds a hitbox of given size and name.
+ *
+ * @param {number} w the width of the hitbox
+ * @param {number} h the height of the hitbox
+ * @param {string} [name] the name of the hitbox to add
+ */
+Item.prototype.addHitBox = function addHitBox(w, h, name) {
+	if (name) {
+		if (this.hitBoxes === undefined) {
+			this.hitBoxes = {};
+		}
+		this.hitBoxes[name] = {w: w, h: h};
+	}
+	else {
+		this.hitBox = {w: w, h: h};
+	}
+};
+
+
+/**
+ * Removes a specific hitbox by given name.
+ *
+ * @param {string} name the name of the hitbox to remove
+ * @return {boolean} `true` if the hitbox existed and was successfully removed
+ */
+Item.prototype.removeHitBox = function removeHitBox(name) {
+	if (this.hitBoxes && this.hitBoxes.hasOwnProperty(name)) {
+		delete this.hitBoxes[name];
+		// remove entire hitBoxes property if empty
+		if (!Object.keys(this.hitBoxes).length) {
+			delete this.hitBoxes;
+		}
+		return true;
+	}
+	return false;
+};

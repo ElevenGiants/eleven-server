@@ -36,24 +36,40 @@ ItemApi.prototype.apiPutBack = function apiPutBack() {
 };
 
 
+/**
+ * Sets instance specific hitbox size.
+ *
+ * @param {number} w the width of the hitbox
+ * @param {number} h the height of the hitbox
+ */
 ItemApi.prototype.apiSetHitBox = function apiSetHitBox(w, h) {
 	log.debug('%s.apiSetHitBox(%s, %s)', this, w, h);
-	//TODO: implement&document me
-	log.warn('TODO Item.apiSetHitBox not implemented yet');
+	this.addHitBox(w, h);
 };
 
 
+/**
+ * Adds instance specific hitbox of given size and name.
+ *
+ * @param {string} name the name of the hitbotx to add
+ * @param {number} w the width of the hitbox
+ * @param {number} h the height of the hitbox
+ */
 ItemApi.prototype.apiAddHitBox = function apiAddHitBox(name, w, h) {
 	log.debug('%s.apiAddHitBox(%s, %s, %s)', this, name, w, h);
-	//TODO: implement&document me
-	log.warn('TODO Item.apiAddHitBox not implemented yet');
+	this.addHitBox(w, h, name);
 };
 
 
+/**
+ * Removes instance specific hitbox by given name.
+ *
+ * @param {string} name the name of the hitbotx to remove
+ * @return {boolean} `true` if the hitbox existed and was successfully removed
+ */
 ItemApi.prototype.apiRemoveHitBox = function apiRemoveHitBox(name) {
 	log.debug('%s.apiRemoveHitBox(%s)', this, name);
-	//TODO: implement&document me
-	log.warn('TODO Item.apiRemoveHitBox not implemented yet');
+	return this.removeHitBox(name);
 };
 
 
