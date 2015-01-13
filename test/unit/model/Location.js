@@ -136,11 +136,16 @@ suite('Location', function () {
 				dummyPlayer('P2', res),
 				dummyPlayer('P3', res),
 			]}, new Geo());
+			l.players.P1.location = l;
+			l.players.P2.location = l;
+			l.players.P3.location = new Location({}, new Geo());  // some other loc
 			l.send({});
-			assert.deepEqual(res, ['P1', 'P2', 'P3']);
+			assert.deepEqual(res, ['P1', 'P2']);
+			assert.sameMembers(Object.keys(l.players), ['P1', 'P2'],
+				'P3 silently removed (because it is not actually in l)');
 			res.length = 0;  // reset res
 			l.send({}, false, ['P1', 'P4']);
-			assert.deepEqual(res, ['P2', 'P3']);
+			assert.deepEqual(res, ['P2']);
 		});
 
 		test('does not send changes to wrong player(s)', function () {
@@ -153,6 +158,8 @@ suite('Location', function () {
 			p1.session = {send: mockSend.bind(null, p1.tsid)};
 			p2.session = {send: mockSend.bind(null, p2.tsid)};
 			var l = new Location({players: [p1, p2]}, new Geo());
+			p1.location = l;
+			p2.location = l;
 			// simulate queued changes for P1:
 			p1.getPropChanges = function () {
 				return 'FAKE_PROP_CHANGES';

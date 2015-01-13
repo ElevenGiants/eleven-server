@@ -147,7 +147,10 @@ Player.prototype.serialize = function serialize() {
  */
 Player.prototype.onLoginStart = function onLoginStart(session, isRelogin) {
 	this.session = session;
-	this.setGsTimer({fname: 'onTimePlaying', delay: 60000, interval: true});
+	this.resumeGsTimers();
+	if (!this.gsTimerExists('onTimePlaying', true)) {
+		this.setGsTimer({fname: 'onTimePlaying', delay: 60000, interval: true});
+	}
 	if (isRelogin) {
 		this.onRelogin();
 	}
@@ -274,6 +277,19 @@ Player.prototype.getConnectedObjects = function getConnectedObjects() {
 	return ret;
 	// Yes, this function contains way too much game specific knowledge about
 	// the GSJS player data. A more generic solution would be preferable.
+};
+
+
+/**
+ * Resumes timers/intervals (only if the player is actually connected).
+ */
+Player.prototype.resumeGsTimers = function resumeGsTimers() {
+	if (!this.isConnected()) {
+		log.debug('not resuming timers/intervals for offline player %s', this);
+	}
+	else {
+		Player.super_.prototype.resumeGsTimers.call(this);
+	}
 };
 
 
@@ -505,6 +521,13 @@ Player.prototype.send = function send(msg, skipChanges) {
 	if (!this.session) {
 		log.info(new Error('dummy error for stack trace'),
 			'trying to send message to offline player %s', this);
+		if (this.location && this.tsid in this.location.players) {
+			// clean up players "stuck" in a location after a previous error
+			// (asynchronously, in order not to interfere with the current request)
+			log.warn('scheduling offline player removal for %s in %s', this,
+				this.location);
+			this.setGsTimer({fname: 'onDisconnect', delay: 100, internal: true});
+		}
 		return;
 	}
 	// generage "changes" segment
