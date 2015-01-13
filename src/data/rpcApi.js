@@ -170,9 +170,11 @@ function resetPlayer(tsid) {
 
 // temporary adjustments for alpha players that should be removed at some point (TODO...)
 function makeAlphaAdjustments(pc) {
-	pc.teleportToLocation(NEW_PLAYER_LOC, 2750, -55);
 	pc.stats.currants.setVal(100000);
 	pc.createItem('tester_widget', 1);
+	var locs = gsjsBridge.getConfig().newxp_exits;
+	var loc = locs[Math.floor(Math.random() * locs.length)];
+	pc.teleportToLocation(loc.tsid, loc.x, loc.y);
 }
 
 
