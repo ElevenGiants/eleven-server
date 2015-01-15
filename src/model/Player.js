@@ -622,9 +622,9 @@ Player.prototype.setXY = function setXY(x, y) {
 			}
 		}
 		// test all hitboxes defined in the geometry of the current location
-		var hitboxes = this.location.geometry.getHitBoxes();
-		for (var j in hitboxes) {
-			var box = hitboxes[j];
+		var hitBoxes = this.location.geometry.getHitBoxes();
+		for (var j in hitBoxes) {
+			var box = hitBoxes[j];
 			this.handleCollision(box, box, box.id);
 		}
 	}
