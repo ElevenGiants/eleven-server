@@ -10,6 +10,7 @@ var Bag = require('model/Bag');
 var IdObjRefMap = require('model/IdObjRefMap');
 var OrderedHash = require('model/OrderedHash');
 var pers = require('data/pers');
+var RC = require('data/RequestContext');
 var rpc = require('data/rpc');
 var util = require('util');
 var utils = require('utils');
@@ -63,6 +64,9 @@ function Location(data, geo) {
 	var geoData = geo || pers.get(this.getGeoTsid(), true);
 	assert(typeof geoData === 'object', 'no geometry data for ' + this);
 	this.updateGeo(geoData);
+	// periodically check whether location can be released from memory
+	this.setGsTimer({fname: 'checkUnload', delay: 120000, interval: true,
+		internal: true});
 }
 
 utils.copyProps(require('model/LocationApi').prototype, Location.prototype);
@@ -112,6 +116,90 @@ Location.prototype.del = function del() {
 	}
 	this.geometry.del();
 	Location.super_.prototype.del.call(this);
+};
+
+
+/**
+ * Adds a player to the list of players in this location and calls
+ * various GSJS "onEnter" event handlers.
+ *
+ * @param {Player} player the player to add
+ */
+Location.prototype.addPlayer = function addPlayer(player) {
+	this.players[player.tsid] = player;
+	if (this.onPlayerEnter) {
+		this.onPlayerEnter(player);
+	}
+	for (var k in this.items) {
+		var it = this.items[k];
+		if (it.onPlayerEnter) {
+			try {
+				it.onPlayerEnter(player);
+			}
+			catch (e) {
+				log.error(e, 'error in %s.onPlayerEnter handler', it);
+			}
+		}
+	}
+};
+
+
+/**
+ * Removes a player from the list of players in this location and
+ * calls various GSJS "onExit" event handlers. If after that the
+ * location is empty (no other players remaining), it is unloaded
+ * from memory (including everything in it).
+ *
+ * @param {Player} player the player to remove
+ * @param {Location} [newLoc] the location the player is moving to
+ *        (`undefined` during logout)
+ */
+Location.prototype.removePlayer = function removePlayer(player, newLoc) {
+	delete this.players[player.tsid];
+	if (this.onPlayerExit) {
+		this.onPlayerExit(player, newLoc);
+	}
+	for (var k in this.items) {
+		var it = this.items[k];
+		if (it.onPlayerExit) {
+			try {
+				it.onPlayerExit(player);
+			}
+			catch (e) {
+				log.error(e, 'error in %s.onPlayerExit handler', it);
+			}
+		}
+	}
+};
+
+
+/**
+ * Checks whether it is possible to unload the location, and does so
+ * if it is (called by an interval set up in the constructor).
+ * @private
+ */
+Location.prototype.checkUnload = function checkUnload() {
+	// trivial heuristic for now - may become more complex in the future
+	// (e.g. minimum empty period before unloading)
+	if (this.players.length === 0) {
+		this.unload();
+	}
+};
+
+
+/**
+ * Schedules the location (including geometry) and all contained items
+ * for removal from memory at the end of the current request.
+ */
+Location.prototype.unload = function unload() {
+	log.info('%s.unload', this);
+	var rc = RC.getContext();
+	var items = this.getAllItems();
+	for (var k in items) {
+		rc.setUnload(items[k]);
+	}
+	rc.setUnload(this.geometry);
+	rc.setUnload(this);
 };
 
 
