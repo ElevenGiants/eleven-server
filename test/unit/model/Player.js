@@ -594,25 +594,74 @@ suite('Player', function () {
 
 		test('works as expected', function () {
 			var p = new Player(playerData);
-			var it = new Item({x: 23, y: 23, hitBox: {w: 100, h: 100}});
-			var hit = p.isHit(it, it.hitBox);
+			var i = new Item({x: 23, y: 23, hitBox: {w: 100, h: 100}});
+			var hit = p.isHit(i, i.hitBox);
 			assert.isTrue(hit, 'it is hit');
 
-			it = new Item({x: 2323, y: 2323, hitBox: {w: 100, h: 100}});
-			hit = p.isHit(it, it.hitBox);
+			i = new Item({x: 2323, y: 2323, hitBox: {w: 100, h: 100}});
+			hit = p.isHit(i, i.hitBox);
 			assert.isFalse(hit, 'it is not hit, too far away');
 		});
 
 		test('respects scaled player size', function () {
 			var p = new Player(playerData);
-			var it = new Item({x: 200, y: 0, hitBox: {w: 100, h: 100}});
-			var hit = p.isHit(it, it.hitBox);
+			var i = new Item({x: 200, y: 0, hitBox: {w: 100, h: 100}});
+			var hit = p.isHit(i, i.hitBox);
 			assert.isFalse(hit, 'it is not hit, player too small');
 
 			p.stacked_physics_cache.pc_scale = 10;
-			hit = p.isHit(it, it.hitBox);
+			hit = p.isHit(i, i.hitBox);
 			assert.isTrue(hit, 'it is hit, respected pc_scale');
 		});
+	});
+	
 
+	suite('setXY', function () {
+		var playerData = {tsid: 'P', x: 0, y: 0, h: 100, w: 50};
+		playerData.stacked_physics_cache = {pc_scale: 1};
+		var g = new Geo({layers: {middleground: {}}});
+		playerData.location = new Location({tsid: 'L'}, g);
+
+		test('moves the player', function () {
+			var p = new Player(playerData);
+			var result = p.setXY(23, 23);
+			assert.strictEqual(p.x, 23, 'correct x position');
+			assert.strictEqual(p.y, 23, 'correct y position');
+			assert.isTrue(result, 'returned true as player was moved');
+
+			result = p.setXY(23, 23);
+			assert.isFalse(result, 'returned fale as player was not moved');
+		});
+
+		test('calls collision detection handling', function () {
+			var collDetDefaultHitBox = false;
+			var collDetNamedHitBox = false;
+			var p = new Player(playerData);
+			p.handleCollision = function (item, hitBox, hitBoxName) {
+				collDetDefaultHitBox = true;
+				if (hitBoxName) {
+					collDetNamedHitBox = true;
+				}
+			};
+			var i = new Item({tsid: 'I', x: 1000, y: 0, hitBox: {w: 100, h: 100}});
+			p.location.items = [i];
+
+			p.setXY(5, 5);
+			assert.isFalse(collDetDefaultHitBox, 'still false, no collDet');
+
+			i.collDet = true;
+			p.setXY(10, 10);
+			assert.isTrue(collDetDefaultHitBox, 'handleCollision with default hitBox');
+
+			i.hitBoxes = {foo: {w: 100, h: 100}};
+			p.setXY(15, 15);
+			assert.isTrue(collDetNamedHitBox, 'handleCollision with named hitBox');
+
+			p.location.geometry.layers.middleground.boxes = [{w: 100, h: 100}];
+			p.location.items = [];
+			collDetDefaultHitBox = false;
+			p.setXY(20, 20);
+			assert.isTrue(collDetDefaultHitBox, 'handleCollision with geo hitBox');
+		});
 	});
 });
