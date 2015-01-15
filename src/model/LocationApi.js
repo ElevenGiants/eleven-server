@@ -251,15 +251,45 @@ LocationApi.prototype.apiGetItemsInTheRadius = function apiGetItemsInTheRadius(
 };
 
 
+/**
+ * Find active players within a given radius.
+ *
+ * @param {number} x x coordinate of the requested point
+ * @param {number} y y coordinate of the requested point
+ * @param {number} radius around the requested point to consider
+ * @returns {object|array} an array containing information about all
+ * 			active players within given radius (in pixels), result
+ * 			is ordered by distance, closest players first
+ * ```{
+ *     "0" : {
+ *         "pc" : <PA9S7UKB6ND2IKB dgl>,
+ *         "dist" : 126.06,
+ *         "x" : 780,
+ *         "y" : -97
+ *     }
+ * }```
+ */
 LocationApi.prototype.apiGetActivePlayersInTheRadiusX =
 	function apiGetActivePlayersInTheRadiusX(x, y, radius) {
-	log.debug('%s.apiGetActivePlayersInTheRadiusX(%s, %s, %s)', this, x, y, radius);
-	//TODO: implement&document me
-	log.warn('TODO Location.apiGetActivePlayersInTheRadiusX not implemented yet');
-};
-
-
-LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId,
+	log.debug('%s.apiGetActivePlayersTheRadiusX(%s, %s, %s)', this, x, y, radius);
+	// create an array of active players within the given radius
+	var l = [];
+	for (var k in this.activePlayers) {
+		var pc = this.activePlayers[k];
+		//  calculate the distance between this player and the current player
+		var dist = Math.sqrt((x - pc.x) * (x - pc.x) + (y - pc.y) * (y - pc.y));
+		// if the player is within the given radius
+		if (dist <= radius) {
+			// add this player with x/y coordinate and distance from the current player to the result
+			l.push({pc: pc, dist: dist, x: pc.x, y: pc.y});
+		}
+	}
+	// sort the resulting array based on distance from the player, closest first
+	l.sort(function compare(a, b) {
+		return a.dist - b.dist;
+	});
+	return l;
+};LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId,
 	hubId, isInstance, altClassTsid) {
 	log.debug('%s.apiCopyLocation(%s, %s, %s, %s, %s)', this, label, moteId,
 		hubId, isInstance, altClassTsid);

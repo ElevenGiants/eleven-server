@@ -597,3 +597,129 @@ Player.prototype.getPropChanges = function getPropChanges() {
 	}
 	return ret;
 };
+
+
+/**
+ * Override setXY of `Item` to handle collision detection
+ *
+ * @param {number} x new horizontal coordinate
+ * @param {number} y new vertical coordinate
+ * @returns {boolean} `true` if the players's coordinates actually changed
+ */
+Player.prototype.setXY = function setXY(x, y) {
+	// call setXY of Item to actually move the player (respecting physics/platforms)
+	var actuallyMoved = Player.super_.prototype.setXY.call(this, x, y);
+	// if the player actually moved we may have to handle a collision
+	if (actuallyMoved) {
+		for (var k in this.location.items) {
+			var it = this.location.items[k];
+			if (!it.collDet) continue;
+			// test default hitbox of this item
+			this.handleCollision(it, it.hitBox);
+			// test all named hitboxes of this item
+			for (var b in it.hitBoxes) {
+				this.handleCollision(it, it.hitBoxes[b], b);
+			}
+		}
+		// test all hitboxes defined in the geometry of the current location
+		var hitBoxes = this.location.geometry.getHitBoxes();
+		for (var j in hitBoxes) {
+			var box = hitBoxes[j];
+			this.handleCollision(box, box, box.id);
+		}
+	}
+	return actuallyMoved;
+};
+
+
+/**
+ * Collision detection handler for collision-enabled items and location
+ * hitboxes.
+ *
+ * @param {Item|object} it item to check for collisions, or a location
+ *        hitbox (must have at least `x` and `y` properties)
+ * @param {object} [hitBox] hitbox to test (must have `w` and `h`
+ *        properties); if `undefined`, the default 60*60px hitbox
+ *        configuration is assumed
+ * @param {string} [hitBoxName] ID of the hitbox to test; mandatory for
+ *        location hitboxes, in case of items `undefined` indicates the
+ *        item's default (unnamed) hitbox
+ */
+Player.prototype.handleCollision = function handleCollision(it, hitBox, hitBoxName) {
+	if (!hitBox) hitBox = {w: 60, h: 60};  // default radius 60px
+
+	var hit = this.isHit(it, hitBox);
+
+	if (hit) {
+		var t = Math.round(new Date().getTime() / 1000);
+		if (!it.onPlayerCollision) {
+			// if we just entered a location hitbox
+			if (!this['!colliders'][hitBoxName]) {
+				log.trace('%s entered location hitbox "%s"', this, hitBoxName);
+				// call the handler for this hitbox
+				this.location.hitBox(this, hitBoxName, hit);
+				// "abuse" player's colliders list to keep track of location hitboxes we're in
+				this['!colliders'][hitBoxName] = t;
+			}
+		}
+		else {
+			// if we just entered a named hitbox or an item's default hitbox
+			if (hitBoxName || !it['!colliders'][this.tsid]) {
+				log.trace('%s entered/inside hitbox "%s" of %s', this, hitBoxName, it);
+				// call item's collision handler
+				it.onPlayerCollision(this, hitBoxName);
+				// keep track of player in the item's hitbox
+				if (!hitBoxName) {
+					it['!colliders'][this.tsid] = t;
+				}
+			}
+		}
+	}
+	else {
+		if (!it.onPlayerCollision) {
+			// if we're leaving a location hitbox
+			if (this['!colliders'][hitBoxName]) {
+				log.trace('%s left location hitbox "%s"', this, hitBoxName);
+				// remove this hitbox from the player's list of hitboxes
+				delete this['!colliders'][hitBoxName];
+				// call the handler for leaving the hitbox (if any)
+				if (this.location.onLeavingHitBox) {
+					this.location.onLeavingHitBox(this, hitBoxName);
+				}
+			}
+		}
+		// if we're leaving a default hitbox
+		else if (it['!colliders'][this.tsid] && !hitBoxName) {
+			log.trace('%s left hitbox of %s', this, it);
+			// remove the player from the list of hitboxes
+			delete it['!colliders'][this.tsid];
+			// call the handler for leaving the item's hitbox (if any)
+			if (it.onPlayerLeavingCollisionArea) {
+				it.onPlayerLeavingCollisionArea(this);
+			}
+		}
+	}
+};
+
+
+/**
+ * Private function used by handleCollision to determine wheter a hit
+ * occured. That is when a player's "hitbox" (its width/height rectangle)
+ * and an item's "hitbox" overlap
+ * @param {Item|object} it item to check for collisions, or a location
+ *        hitbox (must have at least `x` and `y` properties)
+ * @param {object} [hitBox] hitbox to test (must have `w` and `h`
+ *        properties);
+ */
+Player.prototype.isHit = function isHit(it, hitBox) {
+	// respect the player's current scale factor
+	var pcHeight = this.h * this.stacked_physics_cache.pc_scale;
+	var pcWidth = this.w * this.stacked_physics_cache.pc_scale;
+	// the x/y properties of items (and players) always indicate the center of their bottom edge
+	var xDist = Math.abs(this.x - it.x);
+	// calculate y distance based on vertical center of player/item hitbox
+	// the y axis is reversed in the in-game coordinate system (i.e. negative values go upward)
+	var yDist = Math.abs((this.y - pcHeight / 2) - (it.y - hitBox.h / 2));
+	// return true if the two hitboxes overlap
+	return xDist < (hitBox.w + pcWidth) / 2 && yDist < (hitBox.h + pcHeight) / 2;
+};

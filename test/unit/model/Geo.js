@@ -247,4 +247,33 @@ suite('Geo', function () {
 				'PC lands on plat3 (pc_perm -1)');
 		});
 	});
+
+
+	suite('getHitBoxes', function () {
+		test('does its job', function () {
+			var g = new Geo({
+				layers: {
+					middleground: {
+						boxes: {
+							foo: {
+								w: 23,
+								h: 23
+							},
+							bar: {
+								w: 42,
+								h: 42
+							}
+						}
+					}
+				}
+			});
+			var hitBoxes = g.getHitBoxes();
+			assert.strictEqual(typeof hitBoxes, typeof [], 'returned an array');
+			assert.strictEqual(hitBoxes.length, 2, 'found 2 hitboxes');
+			assert.strictEqual(hitBoxes[0].w, 23, 'first box has correct width');
+			assert.strictEqual(hitBoxes[0].w, 23, 'first box has correct height');
+			assert.strictEqual(hitBoxes[1].w, 42, 'second box has correct width');
+			assert.strictEqual(hitBoxes[1].w, 42, 'second box has correct height');
+		});
+	});
 });
