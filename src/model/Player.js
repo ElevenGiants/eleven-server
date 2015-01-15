@@ -688,7 +688,7 @@ Player.prototype.handleCollision = function handleCollision(it, hitBox, hitBoxNa
 				}
 			}
 		}
-		// if we're leaving a named- or default hitbox
+		// if we're leaving a default hitbox
 		else if (it['!colliders'][this.tsid] && !hitBoxName) {
 			log.trace('%s left hitbox of %s', this, it);
 			// remove the player from the list of hitboxes
@@ -711,7 +711,7 @@ Player.prototype.handleCollision = function handleCollision(it, hitBox, hitBoxNa
  * @param {object} [hitBox] hitbox to test (must have `w` and `h`
  *        properties);
  */
-Player.prototype.isHit = function isHit(it, hitBox, hitBoxName) {
+Player.prototype.isHit = function isHit(it, hitBox) {
 	// respect the player's current scale factor
 	var pcHeight = this.h * this.stacked_physics_cache.pc_scale;
 	var pcWidth = this.w * this.stacked_physics_cache.pc_scale;
