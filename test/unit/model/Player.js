@@ -614,7 +614,7 @@ suite('Player', function () {
 			assert.isTrue(hit, 'it is hit, respected pc_scale');
 		});
 	});
-	
+
 
 	suite('setXY', function () {
 		var playerData = {tsid: 'P', x: 0, y: 0, h: 100, w: 50};
@@ -662,6 +662,66 @@ suite('Player', function () {
 			collDetDefaultHitBox = false;
 			p.setXY(20, 20);
 			assert.isTrue(collDetDefaultHitBox, 'handleCollision with geo hitBox');
+		});
+	});
+
+
+	suite('handleCollision', function () {
+		var playerData = {tsid: 'P', x: 0, y: 0, h: 100, w: 50};
+		playerData.stacked_physics_cache = {pc_scale: 1};
+		playerData.location = new Location({tsid: 'L'}, new Geo());
+
+		test('works as expected when entering a hitbox', function () {
+			var hitBoxCalled = false;
+			var onPlayerCollisionCalled = false;
+			var p = new Player(playerData);
+			p['!colliders'] = {};
+			p.location.hitBox = function (hitBoxName, hit) {
+				hitBoxCalled = true;
+			};
+
+			var i = new Item({tsid: 'I', x: 0, y: 0, hitBox: {w: 100, h: 100}});
+			i['!colliders'] = {};
+			p.handleCollision(i, i.hitBox);
+			assert.isTrue(hitBoxCalled, 'called hitBox');
+			assert.property(p['!colliders'], 'undefined', 'kept track of hitBox');
+
+			i.onPlayerCollision = function (hitBoxName) {
+				onPlayerCollisionCalled = true;
+			};
+			p.handleCollision(i, i.hitBox, 'foo');
+			assert.isTrue(onPlayerCollisionCalled, 'called onPlayerCollision');
+
+			onPlayerCollisionCalled = false;
+			p.handleCollision(i, i.hitBox);
+			assert.isTrue(onPlayerCollisionCalled, 'called onPlayerCollision');
+			assert.property(i['!colliders'], p.tsid, 'kept track of player in hitBox');
+		});
+
+		test('works as expected when leaving a hitbox', function () {
+			var onLeavingHitBoxCalled = false;
+			var onPlayerLeavingCollisionAreaCalled = false;
+			var p = new Player(playerData);
+			p['!colliders'] = {foo: 1};
+			p.location.onLeavingHitBox = function (player, hitBoxName) {
+				onLeavingHitBoxCalled = true;
+			};
+
+			var i = new Item({tsid: 'I', x: 1000, y: 0, hitBox: {w: 100, h: 100}});
+
+			p.handleCollision(i, i.hitBox, 'foo');
+			assert.isTrue(onLeavingHitBoxCalled, 'called onLeavingHitBox');
+			assert.notProperty(p['!colliders'], 'foo', 'removed hitBox from !colliders');
+
+			i.onPlayerCollision = function () {};
+			i.onPlayerLeavingCollisionArea = function (i) {
+				onPlayerLeavingCollisionAreaCalled = true;
+			};
+
+			i['!colliders'] = {P: 1};
+			p.handleCollision(i, i.hitBox);
+			assert.isTrue(onPlayerLeavingCollisionAreaCalled, 'called collision handler');
+			assert.notProperty(i['!colliders'], p.tsid, 'removed hitBox from !colliders');
 		});
 	});
 });
