@@ -148,7 +148,7 @@ function createPlayer(userId, name, tsid) {
 function resetPlayer(tsid) {
 	var pc = pers.get(tsid);
 	assert(!!pc, 'player not found: ' + tsid);
-	// check for invalid item references that would break the reset function
+	// check for invalid object references that would break the reset function
 	// (TODO: this is a bug workaround and should eventually go away)
 	(function check(items) {
 		for (var k in items) {
@@ -162,6 +162,18 @@ function resetPlayer(tsid) {
 			}
 		}
 	})(pc.items);
+	Object.keys(pc.quests).forEach(function check(key) {
+		var dc = pc.quests[key];
+		if (!dc || !dc.quests) return;
+		for (var k in dc.quests) {
+			var q = pers.get(dc.quests[k].tsid);
+			if (null === q) {
+				log.warn({pc: tsid, dc: dc.tsid, quest: dc.quests[k].tsid},
+					'deleting broken quest reference');
+				delete dc.quests[k];
+			}
+		}
+	});
 	// do the reset
 	pc.resetForTesting(true);
 	makeAlphaAdjustments(pc);
