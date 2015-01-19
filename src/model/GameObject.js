@@ -228,7 +228,11 @@ GameObject.prototype.scheduleTimer = function scheduleTimer(options, type, key) 
 					if (!options.interval) {
 						delete self.gsTimers[type][key];
 					}
-					self[options.fname].apply(self, options.args);
+					else {
+						// for intervals, set 'start' to time of last call (needed for resuming)
+						self.gsTimers[type][key].start = new Date().getTime();
+					}
+					self.gsTimerExec.call(self, options);
 				},
 				function callback(e) {
 					if (e) {
@@ -240,6 +244,19 @@ GameObject.prototype.scheduleTimer = function scheduleTimer(options, type, key) 
 		}, options.delay
 	);
 	return handle;
+};
+
+
+/**
+ * Actually performs a scheduled function call according to a
+ * timer/interval options record.
+ *
+ * @param {object} options timer call options (see {@link
+ *        GameObject#setGsTimer|setGsTimer} for details)
+ * @private
+ */
+GameObject.prototype.gsTimerExec = function gsTimerExec(options) {
+	this[options.fname].apply(this, options.args);
 };
 
 
@@ -276,26 +293,54 @@ GameObject.prototype.suspendGsTimers = function suspendGsTimers() {
 
 
 /**
- * Resumes timers/intervals (should be called after loading the object
- * from persistence). Intervals are resumed in any case, whereas timers
- * are only resumed if their "firing time" is in the future (otherwise
- * the timer configuration is silently removed).
+ * Resumes timers/intervals, catching up on missed calls (should be
+ * called after loading the object from persistence).
  */
 GameObject.prototype.resumeGsTimers = function resumeGsTimers() {
+	var now = new Date().getTime();
 	Object.keys(this.gsTimers).forEach(function iter(type) {
 		for (var key in this.gsTimers[type]) {
 			var entry = this.gsTimers[type][key];
-			if (type === 'timer') {
-				// remove timers that already are in the past
-				entry.options.delay -= (new Date().getTime() - entry.start);
-				if (entry.options.delay < 0) {
-					log.debug('%s.%s past due, cleaning up', this, key);
-					delete this.gsTimers[type][key];
-					continue;
-				}
+			if (entry.handle) {
+				// skip internal stuff that's already running (e.g. started in constructor)
+				log.debug('%s %s.%s already running', type, this, key);
+				continue;
 			}
 			log.debug('resuming %s %s.%s', type, this, key);
-			this.setGsTimer(entry.options);
+			var age = now - entry.start;
+			if (type === 'timer') {
+				// reschedule with adjusted delay
+				entry.options.delay = Math.min(entry.options.delay - age, 1);
+				this.setGsTimer(entry.options);
+			}
+			if (type === 'interval') {
+				// perform catch-up calls
+				var num = Math.floor(age / entry.options.delay);
+				if (num > 0) {
+					log.debug('interval catching up (%s call(s))', num);
+					for (var i = 0; i < num && !this.deleted; i++) {
+						this.gsTimerExec(entry.options, num);
+					}
+				}
+				// if not deleted while catching up (e.g. trant death), actually resume interval
+				if (!this.deleted) {
+					// schedule next call with shortened interval
+					var nextDelay = Math.ceil(age % entry.options.delay);
+					var nextOpts = utils.shallowCopy(entry.options);
+					nextOpts.delay = nextDelay;
+					nextOpts.interval = false;
+					nextOpts.internal = true;
+					this.setGsTimer(nextOpts);
+					// schedule postponed start of the regular interval, inception-style
+					var intStartOpts = {
+						fname: 'setGsTimer',
+						delay: nextDelay,
+						args: [entry.options],
+						internal: true,
+					};
+					this.setGsTimer(intStartOpts);
+				}
+			}
 		}
 	}, this);
 };
