@@ -216,4 +216,23 @@ suite('Location', function () {
 			assert.isNull(l.getPath(), 'returns null for invalid argument');
 		});
 	});
+
+
+	suite('sendItemStateChange', function () {
+
+		test('works as expected', function (done) {
+			var isend = new Item({tsid: 'ISEND'});
+			isend.onContainerItemStateChanged = function () {
+				throw new Error('should not be called');
+			};
+			var i1 = new Item({tsid: 'I1'});  // does not have an onContainerItemStateChanged function
+			var i2 = new Item({tsid: 'I2'});
+			i2.onContainerItemStateChanged = function (sender) {
+				assert.strictEqual(sender.tsid, 'ISEND');
+				done();
+			};
+			var l = new Location({tsid: 'L1', items: [i1, i2, isend]}, new Geo());
+			l.sendItemStateChange(isend);
+		});
+	});
 });

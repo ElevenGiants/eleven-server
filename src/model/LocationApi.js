@@ -235,11 +235,15 @@ LocationApi.prototype.apiLockStack = function apiLockStack(path) {
 };
 
 
+/**
+ * Notifies other items in the location about an item state change.
+ *
+ * @param {Item} item the item whose state has changed
+ */
 LocationApi.prototype.apiNotifyItemStateChanged =
 	function apiNotifyItemStateChanged(item) {
 	log.debug('%s.apiNotifyItemStateChanged(%s)', this, item);
-	//TODO implement&document me
-	log.warn('TODO Location.apiNotifyItemStateChanged not implemented yet');
+	this.sendItemStateChange(item);
 };
 
 

@@ -206,6 +206,64 @@ suite('Item', function () {
 				it.setContainer(b, 10);
 			}, assert.AssertionError);
 		});
+
+		test('sends appropriate onContainerChanged events', function (done) {
+			var it = new Item({tsid: 'IT'});
+			it.queueChanges = function noop() {};
+			it.onContainerChanged = function onContainerChanged(prev, curr) {
+				assert.strictEqual(prev.tsid, 'LX');
+				assert.strictEqual(curr.tsid, 'BX');
+				done();
+			};
+			it.setContainer(new Location({tsid: 'LX'}, new Geo()));  // does not trigger onContainerChanged (no previous container)
+			it.setContainer(new Bag({tsid: 'BX', tcont: 'LDUMMY'}), 3, 7);
+		});
+
+		test('sends appropriate onContainerItemAdded events', function (done) {
+			var l = new Location({tsid: 'LX'}, new Geo());
+			var l2 = new Location({tsid: 'LY'}, new Geo());
+			var it1 = new Item({tsid: 'IT1'});
+			it1.queueChanges = function noop() {};
+			it1.setContainer(l);
+			var it2 = new Item({tsid: 'IT2'});
+			it2.queueChanges = function noop() {};
+			it2.setContainer(l2);
+			it1.onContainerItemAdded = function (it, prevCont) {
+				assert.strictEqual(it.tsid, 'IT2');
+				assert.strictEqual(prevCont.tsid, 'LY');
+				done();
+			};
+			it2.setContainer(l);
+		});
+
+		test('sends appropriate onContainerItemRemoved events', function (done) {
+			var b = new Bag({tsid: 'BX', tcont: 'LDUMMY'});
+			var it1 = new Item({tsid: 'IT1'});
+			it1.queueChanges = function noop() {};
+			it1.setContainer(b, 1, 0);
+			var it2 = new Item({tsid: 'IT2'});
+			it2.queueChanges = function noop() {};
+			it2.setContainer(b, 2, 0);
+			it2.onContainerItemRemoved = function (it, newCont) {
+				assert.strictEqual(it.tsid, 'IT1');
+				assert.strictEqual(newCont.tsid, 'BY');
+				done();
+			};
+			it1.setContainer(new Bag({tsid: 'BY', tcont: 'LDUMMY'}), 1, 0);
+		});
+
+		test('does not send change events for moves within a container',
+			function () {
+			var it = new Item({tsid: 'IT'});
+			it.queueChanges = function noop() {};
+			var b = new Bag({tsid: 'BX', tcont: 'LDUMMY'});
+			it.setContainer(b, 3, 7);
+			it.onContainerChanged = it.onContainerItemRemoved =
+				it.onContainerItemAdded = function () {
+				throw new Error('should not be called');
+			};
+			it.setContainer(b, 6, 7);  // move to different slot
+		});
 	});
 
 
