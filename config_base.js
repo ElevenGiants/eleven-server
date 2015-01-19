@@ -39,6 +39,7 @@ module.exports = {
 			// process number is added to the base port for each GS instance
 			// (master = 0 (i.e. running on basePort), workers = 1, 2, 3, ...)
 			basePort: 7000,
+			timeout: 10000,  // ms
 		},
 		// incoming AMF messages bigger than this are considered invalid
 		maxMsgSize: 131072,
