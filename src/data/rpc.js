@@ -144,6 +144,7 @@ function initClient(gsconf, callback) {
 	var client = new jrpc.client(
 		new jrpc.transports.client.tcp(gsconf.host, port, {
 			logger: getJrpcLogger('client-' + gsid),
+			timeout: config.get('net:rpc:timeout'),
 		}), {},
 		function onConnected(connectedClient) {
 			log.info('RPC client for %s connected', gsid);
