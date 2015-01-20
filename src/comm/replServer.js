@@ -23,6 +23,7 @@ module.exports = {
 
 var net = require('net');
 var repl = require('repl');
+var util = require('util');
 var vm = require('vm');
 var memwatch = require('memwatch');
 var config = require('config');
@@ -52,6 +53,9 @@ function handleConnect(socket) {
 		output: socket,
 		terminal: true,
 		eval: getReplEval(addr, socket),
+		writer: function passthrough(data) {
+			return data;
+		},
 	});
 	r.on('exit', function onReplExit() {
 		socket.end();
@@ -88,12 +92,14 @@ function getReplEval(addr, socket) {
 		var rc = new RC('repl', addr);
 		rc.run(
 			function replEval() {
-				return script.runInContext(context, {displayErrors: false});
+				var res = script.runInContext(context, {displayErrors: false});
+				return util.inspect(res, false, 2, true);
 			},
 			function cb(err, res) {
-				// the REPL callback handler may run into unexpected problems,
-				// e.g. when trying to stringify a return value that contains
-				// broken objrefs
+				if (err) {
+					log.error(err, 'error in REPL call: %s', err.message);
+				}
+				// the REPL callback handler may run into unexpected problems
 				try {
 					return replCallback(err, res);
 				}
