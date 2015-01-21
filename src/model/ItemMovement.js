@@ -4,7 +4,8 @@ var utils = require('utils');
 
 module.exports = ItemMovement;
 
-// Defined statuses from the NPC Movement spec
+
+// callback status codes from the NPC movement spec
 var MOVE_CB_STATUS = {
 	DIR_CHANGE: 1,
 	NO_PATH_TO_DEST: 2,
@@ -16,9 +17,32 @@ var MOVE_CB_STATUS = {
 
 
 /**
- * The generic object to handle movement of an item.
+ * Helper class handling movement for moving items (NPCs) according to
+ * the {@link http://www.iamcal.com/files/npcms.htm|NPC movement spec}.
  *
- * @param {object} item the item for which movment is being handled
+ * An instance of this class is created for an item on demand/when
+ * necessary (see {@link Item#gsStartMoving}).
+ *
+ * At the highest level, movement is processed like this:
+ * * a movement API function calls {@link
+ *   ItemMovement#startMove|startMove}
+ * * `startMove` calls {@link ItemMovement#buildPath|buildPath} to
+ *   create a movement path (which may consist of multiple segments)
+ * * `startMove` sets up the internal movement interval
+ * * the interval periodically calls {@link
+ *   ItemMovement#moveStep|moveStep}, which
+ *   * calls the movement handler function for the selected
+ *     movement type ({@link ItemMovement#moveWalking|moveWalking},
+ *     {@link ItemMovement#moveFlying|moveFlying}, {@link
+ *     ItemMovement#moveDirect|moveDirect})
+ *   * updates the item position according to the results
+ *   * switches to the next path segment when necessary
+ *   * eventually ends the move
+ * * any relevant events occurring during the move are sent to the
+ *   defined movement callback handler
+ *
+ * @param {Item} item the item for which movment is being handled
+ * @constructor
  */
 function ItemMovement(item) {
 	this.item = item;
@@ -26,15 +50,20 @@ function ItemMovement(item) {
 
 
 /**
- * A helper function to get an offset y value from the item.
+ * Converts vertical item coordinates between actual item position and
+ * corresponding platform position; this is relevant for items with a
+ * non-zero `y_offset` property like hovering street spirits.
  *
- * @param {number} y the y value being offset
- * @param {boolean} positive if the offset is positive or negative
- * @returns {number} the new offset y value
+ * @param {number} y the source y value
+ * @param {boolean} add whether offset should be added (`true`, for
+ *        converting from item to platform y) or subtracted (`false`,
+ *        converting platform to item y)
+ * @returns {number} the converted y value
+ * @private
  */
-ItemMovement.prototype.offsetY = function offsetY(y, positive) {
+ItemMovement.prototype.offsetY = function offsetY(y, add) {
 	var yoff = (this.item.y_offset ? this.item.y_offset : 0);
-	if (positive) {
+	if (add) {
 		return y + yoff;
 	}
 	else {
@@ -43,24 +72,28 @@ ItemMovement.prototype.offsetY = function offsetY(y, positive) {
 };
 
 
-/*
- * A helper function to get the direction an x value is from the item.
+/**
+ * Determines the direction of a horizontal coordinate in relation to
+ * the item.
  *
- * @param {number} targetX the x target value being inspected
- * @returns {number} 1/-1 depending on the relation between the item.x and
- *                   targetX
+ * @param {number} targetX the x value being inspected
+ * @returns {number} 1 (`targetX` is to the right of the item) or -1
+ *          (`targetX` is to the left)
+ * @private
  */
 ItemMovement.prototype.dirX = function dirX(targetX) {
 	return (this.item.x < targetX ? 1 : -1);
 };
 
 
-/*
- * A helper function to get the direction an y value is from the item.
+/**
+ * Determines the direction of a vertical coordinate in relation to
+ * the item. Takes the vertical offset of the item into account.
  *
- * @param {number} targetY the y target value being inspected
- * @returns {number} 1/-1 depending on the relation between the offset item.y
- *                   and targetY
+ * @param {number} targetY the y value being inspected
+ * @returns {number} 1 (`targetY` is below the item) or -1 (`targetY`
+ *          is above)
+ * @private
  */
 ItemMovement.prototype.dirY = function dirY(targetY) {
 	return (this.offsetY(this.item.y, false) < targetY ? 1 : -1);
@@ -68,52 +101,48 @@ ItemMovement.prototype.dirY = function dirY(targetY) {
 
 
 /**
- * Internal Movement handling functions
- */
-
-/*
- * Stop existing item movement.
+ * Stops any item movement.
  *
- * @param {object} status the status object sent to the movement callback
+ * @param {object} status the status object sent to the movement
+ *        callback
  */
 ItemMovement.prototype.stopMove = function stopMove(status) {
-	var fs = false;
-	// First, Halt the timer
+	var fullStatus = false;
 	this.item.cancelGsTimer('movementTimer', true);
 	// clear the path
 	this.path = null;
-	// Notify the callback
+	// notify the callback
 	if (this.callback) {
-		if (this.flags && 'callBackParam' in this.flags) {
-			fs = this.callback.call(this.item, this.flags.callBackParam);
+		if (this.options && 'callbackParam' in this.options) {
+			fullStatus = this.callback.call(this.item, this.options.callbackParam);
 		}
 		else {
-			fs = this.callback.call(this.item, {status: status});
+			fullStatus = this.callback.call(this.item, {status: status});
 		}
 	}
-	return fs;
+	return fullStatus;
 };
 
 
-/*
- * Check if a movement path crosses a wall.
+/**
+ * Checks if a movement path crosses a wall.
  *
- * @param {object} nextStep the nextStep object with the information about the
- *                 next step of movement
- * @returns {object|null} the coordinates of where a wall is crossed or null
- *                        if no walls are crossed
+ * @param {object} nextStep an object containing information about the
+ *        next movement step (see {@link ItemMovement#moveWalking})
+ * @returns {object|undefined} the coordinates of where a wall is
+ *          crossed, or `undefined` if no walls are crossed
+ * @private
  */
 ItemMovement.prototype.checkWalls = function checkWalls(nextStep) {
-	// Default width and height of 10 ? Is there a better value
+	// default width and height of 10px (TODO: is there a better value?)
 	var halfWidth = ('item_width' in this.item) ? this.item.item_width / 2 : 5;
 	var height = ('item_height' in this.item) ? this.item.item_height : 10;
 
 	for (var k in this.item.container.geometry.layers.middleground.walls) {
 		var wall = this.item.container.geometry.layers.middleground.walls[k];
-
 		if (wall.item_perm === 0) continue;
 
-		// Direction from which we are crossing the wall line
+		// direction from which we are crossing the wall line
 		var crossDir = null;
 		if (this.item.x < wall.x && (nextStep.dx + halfWidth) > wall.x) {
 			crossDir = -1;
@@ -132,33 +161,32 @@ ItemMovement.prototype.checkWalls = function checkWalls(nextStep) {
 			}
 		}
 	}
-	return null;
 };
 
-/*
- * helper for the walking algorithm which handles platform changes
+
+/**
+ * Helper for handling platform changes for {@link ItemMovement#moveWalking}.
+ * Sets the `platform` member to the appropriate geometry platform for
+ * the destination of the next movement step.
  *
- * @param {number} x x coordinate of the next step of movement
- * @param {number} y y coordinate of the next step of movement
+ * @param {number} x x coordinate of the next step
+ * @param {number} y y coordinate of the next step
+ * @private
  */
 ItemMovement.prototype.findPlatform = function findPlatform(x, y) {
 	if (!this.platform) {
-		// First look down from the point
+		// first look below the given point
 		this.platform = this.item.container.geometry.getClosestPlatPoint(x, y, -1).plat;
-		if (!this.platform) {
+		if (!this.platform) {  // then above
 			this.platform = this.item.container.geometry.getClosestPlatPoint(x,
-								y, 1).plat;
-		}
-		if (!this.platform) {
-			log.error('Movement Error: Failed to get platform!');
+				y, 1).plat;
 		}
 	}
 	else {
-		/* Find a new platform:
-			This logic is great for npcs that are not pathing.
-			Once we start building paths then we will need a way to
-			specify an up or down platform transision if 2 are allowed
-		 */
+		// Find a new platform:
+		// This logic is great for NPCs that are not pathing.
+		// Once we start building paths then we will need a way to
+		// specify an up or down platform transition if both are allowed
 		this.platform = null;
 		var yStep = ('npc_y_step' in this.item) ? this.item.npc_y_step : 32;
 		var canFall = ('npc_can_fall' in this.item) ? this.item.npc_can_fall : false;
@@ -179,56 +207,58 @@ ItemMovement.prototype.findPlatform = function findPlatform(x, y) {
 				this.platform = downPlatform.plat;
 			}
 		}
-		if (!this.platform) {
-			log.error('Movement: Failed to get next platform!');
-		}
+	}
+	if (!this.platform) {
+		log.error('movement: failed to find platform for %s', this.item);
 	}
 };
 
 
-/*
- * helper for the walking algorithm which handles direction changes
+/**
+ * Helper for {@link ItemMovement#moveWalking}: checks if a direction change is
+ * required to reach the current destination, and performs it if it is
+ * (including calling the movement callback accordingly).
  *
  * @param {number} x x coordinate of destination
  * @param {object} nextStep the nextStep object being built
+ * @private
  */
 ItemMovement.prototype.walkingDirection = function walkingDirection(x, nextStep) {
 	var dir = this.dirX(x);
 	if (dir !== this.facing) {
 		if (this.callback) {
 			nextStep.fullChanges = this.callback.call(this.item,
-							{status: MOVE_CB_STATUS.DIR_CHANGE,
-							dir: dir > 0 ? 'right' : 'left'});
+				{status: MOVE_CB_STATUS.DIR_CHANGE, dir: dir > 0 ? 'right' : 'left'});
 		}
 		this.facing = dir;
 	}
 };
 
 
-/*
- * Movement algorithm for movement upon platforms.
+/**
+ * Platform bound movement algorithm; advances the item towards the
+ * next path segment destination over reachable platforms, considering
+ * walls and the item's movement capabilities.
  *
- * @param {object} nextPath the next destination on the path
- * @returns {object} the next step of movment toward the destination
+ * @param {object} nextPath the current path segment
+ * @returns {object} the next step toward the destination
  */
 ItemMovement.prototype.moveWalking = function moveWalking(nextPath) {
-	var nextStep = {dx: 0, dy: 0, finished: false, forceStop: 0,
-		fullChanges: false};
+	var nextStep = {dx: 0, dy: 0, finished: false, fullChanges: false};
 
 	if (!('npc_walk_speed' in this.item)) {
-		log.error('Movement Error: Walking npc has no walk speed: %s',
-				this.item.tsid);
+		log.error('movement: walking npc has no walk speed: %s', this.item);
 		return {forceStop: MOVE_CB_STATUS.ARRIVED};
 	}
-
+	// adjust direction and calculate horizontal movement
 	this.walkingDirection(nextPath.x, nextStep);
-
-	var step = Math.min(Math.abs(this.item.x - nextPath.x), this.item.npc_walk_speed / 3);
-	// calculate X movement
+	var step = Math.min(Math.abs(this.item.x - nextPath.x),
+		this.item.npc_walk_speed / 3);
 	nextStep.dx = Math.floor(this.item.x + this.facing * step);
-	nextStep.dy = this.item.y;
+	nextStep.dy = this.item.y;  // adjusted later (depends on where the horizontal movement takes us)
+
+	// find initial or next platform
 	if (!this.platform) {
-		// Initial Platform
 		this.findPlatform(nextStep.dx, this.offsetY(this.item.y, true));
 	}
 	else if (nextStep.dx < this.platform.start.x ||
@@ -243,30 +273,34 @@ ItemMovement.prototype.moveWalking = function moveWalking(nextPath) {
 				fullChanges: nextStep.fullChanges};
 		}
 	}
+	// calculate next vertical position
 	if (this.platform) {
-		var pyoff = (this.item.y_offset ? this.item.y_offset : 0);
-		nextStep.dy = utils.pointOnPlat(this.platform, nextStep.dx).y - pyoff;
+		nextStep.dy = this.offsetY(
+			utils.pointOnPlat(this.platform, nextStep.dx).y, false);
 	}
-
+	// check if we walked into a wall (end movement if so)
 	var block = this.checkWalls(nextStep);
 	if (block) {
 		return {dx: block.x, dy: this.item.y, finished: true,
 			status: MOVE_CB_STATUS.ARRIVED_NEAR,
 			fullChanges: nextStep.fullChanges};
 	}
-
+	// are we already there?
 	if (Math.abs(nextPath.x - this.item.x) === 0) {
 		nextStep.finished = true;
 	}
-
 	return nextStep;
 };
 
 
-/*
- * Helper for butterfly flying. Builds the next run in the flight box
+/**
+ * Helper for {@link ItemMovement#moveFlying}; sets a new
+ * destination within the confined flight area.
  *
- * @param {object} nextPath nextPath object defining the flight box
+ * @param {object} nextPath object defining the flight area; needs to
+ *        contain `width`, `height`, `left`, `right` and `top`
+ *        properties; `x` and `y` will be added/changed
+ * @private
  */
 ItemMovement.prototype.nextFlightPath = function nextFlightPath(nextPath) {
 	var xVariation = Math.random() * (nextPath.width / 4);
@@ -292,180 +326,181 @@ ItemMovement.prototype.nextFlightPath = function nextFlightPath(nextPath) {
 };
 
 
-/*
- * Helper for butterfly flying. Sets the butterfly state
+/**
+ * Helper for {@link ItemMovement#moveFlying}; sets the animation state
+ * and direction according to current position and destination.
  *
- * @param {number} x x location of destination
- * @param {number} y y location of destination
- * @param {number} dir direction of destination
+ * @param {number} distX horizontal distance from the destination
+ * @param {number} distY vertical distance from the destination
+ * @param {number} dir direction of the destination
+ * @private
  */
-ItemMovement.prototype.changeState = function changeState(x, y, dir) {
-	if (this.flags && 'changeState' in this.flags &&
-		this.flags.changeState) {
+ItemMovement.prototype.changeState = function changeState(distX, distY, dir) {
+	if (this.options && this.options.changeState) {
 		this.item.state = 'fly';
-		if (x < 10 && y < 10) {
+		if (distX < 10 && distY < 10) {
 			this.item.state += '-top';
 		}
-		else if (x > (y * 2)) {
+		else if (distX > (distY * 2)) {
 			this.item.state += '-side';
 		}
-		else if (x > y) {
+		else if (distX > distY) {
 			this.item.state += '-angle1';
 		}
 		else {
 			this.item.state += '-angle2';
 		}
-
-		if (dir > 0) {
-			this.item.dir = 'right';
-		}
-		else {
-			this.item.dir = 'left';
-		}
+		this.item.dir = dir > 0 ? 'right' : 'left';
 	}
 };
 
 
 /**
- * Movement algorithm for butterfly style flying.
+ * Butterfly-style flying movement algorithm (both for flying
+ * pseudo-randomly in a confined area, and towards a specific target).
  *
- * @param {object} nextPath the next destination on the path
- * @returns {object} the next step of movment toward the destination
+ * @param {object} nextPath the current path segment
+ * @returns {object} the next step toward the destination
  */
 ItemMovement.prototype.moveFlying = function moveFlying(nextPath) {
-	var nextStep = {dx: 0, dy: 0, finished: false, forceStop: 0};
-
-	if (nextPath.stopAtEnd && (this.item.x === nextPath.x &&
-		(this.offsetY(this.item.y, false)) === nextPath.y)) {
+	var nextStep = {dx: 0, dy: 0, finished: false};
+	// stop if we reached the destination (and the move is supposed to end there)
+	if (nextPath.stopAtEnd && this.item.x === nextPath.x &&
+		this.offsetY(this.item.y, false) === nextPath.y) {
 		return {forceStop: MOVE_CB_STATUS.ARRIVED};
 	}
-
-	if (!('x' in nextPath) || (this.item.x === nextPath.x)) {
+	// otherwise, set new destination within the flight area if necessary
+	if (!('x' in nextPath) || this.item.x === nextPath.x) {
 		this.nextFlightPath(nextPath);
 	}
-
-	var dir = this.dirX(nextPath.x);
+	var dirX = this.dirX(nextPath.x);
 	var dirY = this.dirY(nextPath.y);
-	var dX = Math.abs(this.item.x - nextPath.x);
-	var dY = Math.abs(this.offsetY(this.item.y, false) - nextPath.y);
+	var distX = Math.abs(this.item.x - nextPath.x);
+	var distY = Math.abs(this.offsetY(this.item.y, false) - nextPath.y);
 
-	// A touch of randomization to the y movement
+	// add a touch of randomization to the y movement
 	if ('height' in nextPath) {
-		dY = dY + (Math.random() * (nextPath.height / 2)) - (nextPath.height / 4);
+		distY += (Math.random() * (nextPath.height / 2)) - (nextPath.height / 4);
 	}
+	// change animation state if necessary
+	this.changeState(distX, distY, dirX);
 
-	this.changeState(dX, dY, dir);
-
+	// set next step destination one step further towards the path segment target
 	var limit;
-	if (Math.abs(dX) < 1 && Math.abs(dY) < 1) {
+	if (distX < 1 && distY < 1) {  // make sure we don't overshoot
 		limit = 1;
 	}
 	else {
-		limit = (nextPath.speed / 3) / Math.sqrt((dX * dX) + (dY * dY));
+		// calculate the fraction of the way to the target we can cover in this step
+		limit = (nextPath.speed / 3) / Math.sqrt(distX * distX + distY * distY);
 	}
 	if (limit < 1) {
-		nextStep.dy = this.offsetY(this.item.y, false) + (dirY * dY * limit);
-		nextStep.dx = this.item.x + (dir * dX * limit);
+		nextStep.dy = this.offsetY(this.item.y, false) + (dirY * distY * limit);
+		nextStep.dx = this.item.x + (dirX * distX * limit);
 	}
 	else {
+		// we're within 1px of the target, so just go there exactly
 		nextStep.dy = this.offsetY(nextPath.y, false);
 		nextStep.dx = nextPath.x;
 	}
-
-	if (nextPath.stopAtEnd && (nextStep.dx === nextPath.x &&
-		(nextStep.dy === this.offsetY(nextPath.y, false)))) {
+	// if we reached the destination and the move is supposed to end there,
+	// set 'finished' property
+	if (nextPath.stopAtEnd && nextStep.dx === nextPath.x &&
+		nextStep.dy === this.offsetY(nextPath.y, false)) {
 		nextStep.finished = true;
 	}
-
 	return nextStep;
 };
 
 
 /**
- * Movement algorithm for direct movement.
+ * Direct movement (linear, without concern for platforms or walls).
+ * Just advances the item towards the next path segment destination,
+ * and sets the appropriate properties in the returned object when
+ * it has been reached.
  *
- * @param {object} nextPath the next destination on the path
- * @returns {object} the next step of movment toward the destination
+ * @param {object} nextPath the current path segment
+ * @returns {object} the next step toward the destination
  */
 ItemMovement.prototype.moveDirect = function moveDirect(nextPath) {
-	var nextStep = {dx: 0, dy: 0, finished: false, forceStop: 0};
-
+	var nextStep = {dx: 0, dy: 0, finished: false};
+	// check if we're already there
 	if (this.item.x === nextPath.x &&
 		this.offsetY(this.item.y, false) === nextPath.y) {
 		nextStep.forceStop = MOVE_CB_STATUS.ARRIVED;
 		return nextStep;
 	}
-
-	var dir = this.dirX(nextPath.x);
+	var dirX = this.dirX(nextPath.x);
 	var dirY = this.dirY(nextPath.y);
-	var dX = Math.abs(this.item.x - nextPath.x);
-	var dY = Math.abs(this.offsetY(this.item.y, false) - nextPath.y);
+	var distX = Math.abs(this.item.x - nextPath.x);
+	var distY = Math.abs(this.offsetY(this.item.y, false) - nextPath.y);
 
+	// set next step destination one step further towards the path segment target
 	var limit;
-	if (Math.abs(dX) < 1 && Math.abs(dY) < 1) {
+	if (distX < 1 && distY < 1) {  // make sure we don't overshoot
 		limit = 1;
 	}
 	else {
-		limit = (nextPath.speed / 3) / Math.sqrt((dX * dX) + (dY * dY));
+		// calculate the fraction of the way to the target we can cover in this step
+		limit = (nextPath.speed / 3) / Math.sqrt(distX * distX + distY * distY);
 	}
 	if (limit < 1) {
-		nextStep.dy = this.offsetY(this.item.y, false) + (dirY * dY * limit);
-		nextStep.dx = this.item.x + (dir * dX * limit);
+		nextStep.dy = this.offsetY(this.item.y, false) + (dirY * distY * limit);
+		nextStep.dx = this.item.x + (dirX * distX * limit);
 	}
 	else {
+		// we're within 1px of the target, so just go there exactly
 		nextStep.dy = this.offsetY(nextPath.y, false);
 		nextStep.dx = nextPath.x;
 	}
-
+	// if we reached the destination, set 'finished' property
 	if (nextStep.dx === nextPath.x &&
-		(nextStep.dy === this.offsetY(nextPath.y, false))) {
+		nextStep.dy === this.offsetY(nextPath.y, false)) {
 		nextStep.finished = true;
 	}
-
 	return nextStep;
 };
 
+
 /**
- * Moves the item via the transportation dictated in the next path point
+ * Dispatches the next path segment to the specific movement handler
+ * for the selected transportation mode.
  *
- * @param {object} nextPath the next pathing target
- * @returns {object} the next step in the path
+ * @param {object} nextPath the current path segment
+ * @returns {object} the next step toward the destination
+ * @private
  */
 ItemMovement.prototype.transport = function transport(nextPath) {
-	switch (nextPath.transport)
-	{
+	switch (nextPath.transport) {
 		case 'walking':
 			return this.moveWalking(nextPath);
 		case 'flying':
 			return this.moveFlying(nextPath);
 		case 'direct':
 			return this.moveDirect(nextPath);
-		default:
-			return undefined;
 	}
 };
 
+
 /**
- * Moves the item a step along its path.
- * This is the core function that exists in the timer loop.
- *
- * @returns {boolean} true
+ * Moves the item one step along its path.
+ * This is the core movement function that is called three times per
+ * second by an internal interval defined for the item.
  */
 ItemMovement.prototype.moveStep = function moveStep() {
-	// Sanity checking, this should not occur
+	// sanity checking, this should not occur
 	if (!this.path || this.path.length === 0) {
-		log.error('Pathing Error: Moving but no path information. %s', this.item);
-		this.stopMove(MOVE_CB_STATUS.ARRIVED);
-		return true;
+		log.error('movement: moving but no path information for %s', this.item);
+		return this.stopMove(MOVE_CB_STATUS.ARRIVED);
 	}
-
+	// determine next movement step along the current path segment
 	var nextStep = this.transport(this.path[0]);
-
 	if (nextStep && !nextStep.forceStop) {
+		// actually move and announce the resulting changes
 		this.item.setXY(nextStep.dx, nextStep.dy);
-		// Announce changes
 		this.item.queueChanges(false, nextStep.fullChanges);
 		this.item.container.send({type: 'location_event'});
+		// advance to next path segment
 		if (nextStep.finished) {
 			this.path.shift();
 		}
@@ -474,12 +509,13 @@ ItemMovement.prototype.moveStep = function moveStep() {
 		if (this.stopMove(nextStep.forceStop)) {
 			this.item.queueChanges(false, true);
 		}
-		return true;
+		return;
 	}
 	else {
+		// fallback (transport method failed to process path segment properly)
 		this.path.shift();
 	}
-
+	// no more path segments -> announce that we're done here
 	if (this.path.length === 0) {
 		if (nextStep && nextStep.status) {
 			if (this.stopMove(nextStep.status)) {
@@ -491,79 +527,89 @@ ItemMovement.prototype.moveStep = function moveStep() {
 				this.item.queueChanges(false, true);
 			}
 		}
-		return true;
 	}
-
-	return true;
 };
 
+
 /**
- * Builds the path for an item.
+ * Builds a movement path according to the transport mode and other
+ * options.
  *
  * @param {string} transport the transport type for the movement
- * @param {object} dest destination for the movement
- * @param {object} options options passed into movement
- * @returns {object} the pathing object for the movement
+ *        (must be `walking`, `direct`, `flying` or `kicked`)
+ * @param {object} dest destination coordinates (either `x` and `y`, or
+ *        an area defined by `left`, `right`, `top`, `width` and
+ *        `height`)
+ * @returns {array} the resulting path; a list of distinct path
+ *          segments like this (not a complete example!):
+ * ```
+ * [
+ *     {x: 12, y: 34, speed: 10, transport: 'direct'},
+ *     {x: 100, y: 0, speed: 30, transport: 'flying', stopAtEnd: true},
+ *     ...
+ * ]
+ * ```
  */
-ItemMovement.prototype.buildPath = function buildPath(transport, dest, options) {
+ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 	var path;
 	if (transport === 'walking') {
-		//TODO: Actual pathing
+		//TODO: actual pathing
 		path = [
 			{x: dest.x, y: dest.y, transport: 'walking'}
 		];
 	}
 	else if (transport === 'direct') {
-	// Build a streight line movement path
+		// straight line movement path
 		path = [
-			{x: dest.x,
-			 y: dest.y,
-			 speed: options.speed,
-			 transport: 'direct'}
+			{x: dest.x, y: dest.y, speed: this.options.speed, transport: 'direct'}
 		];
 	}
 	else if (transport === 'flying') {
-		if (!options.stopAtEnd) {
-			path = [
-			 {left: dest.left,
-			  right: dest.right,
-			  width: dest.width,
-			  top: dest.top,
-			  height: dest.height,
-			  speed: options.speed,
-			  stopAtEnd: false,
-			  transport: 'flying'}
-			];
+		if (!this.options.stopAtEnd) {
+			path = [{
+				left: dest.left,
+				right: dest.right,
+				width: dest.width,
+				top: dest.top,
+				height: dest.height,
+				speed: this.options.speed,
+				stopAtEnd: false,
+				transport: 'flying',
+			}];
 		}
 		else {
-			path = [
-			 {x: dest.x,
-			  y: dest.y,
-			  speed: options.speed,
-			  stopAtEnd: true,
-			  transport: 'flying'}
-			];
+			path = [{
+				x: dest.x,
+				y: dest.y,
+				speed: this.options.speed,
+				stopAtEnd: true,
+				transport: 'flying',
+			}];
 		}
 	}
 	else if (transport === 'kicked') {
-		path = [
-			 {x: this.item.x + options.vx,
-			  y: this.item.y + options.vy,
-			  speed: 90,
-			  stopAtEnd: true,
-			  transport: 'flying'},
-			 {x: this.item.x + (2 * options.vx),
-			  y: this.item.y + options.vy,
-			  speed: (this.kickVx >= 9) ? Math.abs(this.kickVx / 3) : 3,
-			  stopAtEnd: true,
-			  transport: 'flying'}
-		];
-		var tx = this.item.x + (3 * this.kickVx);
+		path = [{
+			x: this.item.x + this.options.vx,
+			y: this.item.y + this.options.vy,
+			speed: 90,
+			stopAtEnd: true,
+			transport: 'flying',
+		}, {
+			x: this.item.x + (2 * this.options.vx),
+			y: this.item.y + this.options.vy,
+			speed: (this.options.vx >= 9) ? Math.abs(this.options.vx / 3) : 3,
+			stopAtEnd: true,
+			transport: 'flying'
+		}];
+		var tx = this.item.x + (3 * this.options.vx);
 		var ty;
 		var platform = this.item.container.geometry.getClosestPlatPoint(tx,
-			(this.item.y + options.vy), -1).plat;
-		if (!platform) {
-			log.error('Failed to find landing platform');
+			(this.item.y + this.options.vy), -1).plat;
+		if (platform) {
+			ty = utils.pointOnPlat(platform, tx).y;
+		}
+		else {
+			log.error('movement: failed to find landing platform for %s', this.item);
 			if ('groundY' in this.item.container.geo) {
 				ty = this.item.container.geo.groundY;
 			}
@@ -571,35 +617,43 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest, options) 
 				ty = this.item.container.geo.b;
 			}
 		}
-		else {
-			ty = utils.pointOnPlat(platform, tx).y;
-		}
-		path.push({x: tx, y: ty, speed: 90, stopAtEnd: true,
-			  transport: 'flying'});
+		path.push({x: tx, y: ty, speed: 90, stopAtEnd: true, transport: 'flying'});
 	}
 	return path;
 };
 
 
-
 /**
- * These are functions that will be called by the base Item to envoke
- * movement.
- */
-
-/**
- * An item has gotten a movement request.
+ * Starts movement to a given destination with specific parameters.
+ * This is the main entry point that triggers building the path and
+ * sets up the movement interval.
  *
- * @param {string} transport the transportation for this movement
- * @param {object} dest destination for the movement
+ * @param {string} transport the transportation mode for this movement
+ *        (must be `walking`, `direct`, `flying` or `kicked`)
+ * @param {object} dest destination coordinates (either `x` and `y`, or
+ *        an area defined by `left`, `right`, `top`, `width` and
+ *        `height`)
  * @param {object} options for this movement
- * @returns {boolean} true if movement is possible and started
+ * @param {number} [options.flags] a bitmask affecting move behavior
+ *        (see NPC movement spec)
+ * @param {string} [options.callback] name of the function called on
+ *        movement events
+ * @param {*} [options.callbackParam] parameter for the event callback
+ * @param {boolean} [options.changeState] change animation state during
+ *        movement (only applicable for butterfly movement)
+ * @param {number} [options.speed] movement speed in px/sec
+ * @param {boolean} [options.stopAtEnd] stop at the destination (only
+ *        relevant for flying movement)
+ * @param {number} [options.vx] horizontal velocity (only for flying)
+ * @param {number} [options.vy] vertical velocity (only for flying)
+ * @returns {boolean} `true` if movement to the given destination is
+ *          possible and has started
 */
 ItemMovement.prototype.startMove = function startMove(transport, dest, options) {
 	if (this.path) {
 		this.stopMove(MOVE_CB_STATUS.STOP_NEW_MOVE);
 	}
-	this.flags = options;
+	this.options = options;
 	if ('callback' in options) {
 		this.callback = this.item[options.callback];
 	}
@@ -608,10 +662,10 @@ ItemMovement.prototype.startMove = function startMove(transport, dest, options) 
 		this.path = options.path;
 	}
 	else {
-		this.path = this.buildPath(transport, dest, options);
+		this.path = this.buildPath(transport, dest);
 	}
+	// explicit first step to check if we are stuck, i.e. completely unable to move
 	this.moveStep();
-	// Check if we are stuck, i.e. completely unable to move.
 	if (!this.path || this.path.length === 0) {
 		return false;
 	}
@@ -620,7 +674,8 @@ ItemMovement.prototype.startMove = function startMove(transport, dest, options) 
 	return true;
 };
 
-/*
+
+/**
  * Stop item movement.
  */
 ItemMovement.prototype.stopMovement = function stopMovement() {

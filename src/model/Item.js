@@ -366,7 +366,11 @@ Item.prototype.consume = function consume(n) {
 
 
 /**
- * Callback for the movement timer
+ * Internal movement interval handler (necessary because the GameObject
+ * timers/intervals system refers to methods by name, so we cannot set
+ * up an interval for the {@link ItemMovement#moveStep} function
+ * directly).
+ * @private
  */
 Item.prototype.movementTimer = function movementTimer() {
 	if (this.movement) this.movement.moveStep();
@@ -374,22 +378,24 @@ Item.prototype.movementTimer = function movementTimer() {
 
 
 /**
- * Start an item moving
+ * Starts item movement.
  *
  * @param {string} transport the transportation for this movement
- * @param {object} dest destination for the movement
- * @param {object} options for this movement
+ * @param {object} dest destination for the movement (see {@link
+ *        ItemMovement#startMove})
+ * @param {object} options for this movement (see {@link
+ *        ItemMovement#startMove})
  * @returns {boolean} true if movement is possible and started
  */
-Item.prototype.startMoving = function startMoving(transport, dest, options) {
+Item.prototype.gsStartMoving = function gsStartMoving(transport, dest, options) {
 	if (!this.movement) this.movement = new ItemMovement(this);
 	return this.movement.startMove(transport, dest, options);
 };
 
 
 /**
- * Stop movement
+ * Stops item movement.
  */
-Item.prototype.stopMoving = function stopMoving() {
+Item.prototype.gsStopMoving = function gsStopMoving() {
 	if (this.movement) this.movement.stopMovement();
 };
