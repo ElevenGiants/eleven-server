@@ -82,18 +82,6 @@ suite('ItemMovement', function () {
 			assert.isFalse(moveStarted);
 		});
 
-		test('handles items without npc_walk_speed prop gracefully', function (done) {
-			var i1 = newItem({tsid: 'I1'});
-			i1.doneMoving = function doneMoving(args) {
-				assert.strictEqual(args.status, STATUS.ARRIVED);
-				done();
-			};
-			addToTestLoc(i1, 10, 10, gPlat);
-			var moveStarted = i1.gsStartMoving('walking', {x: 20, y: 10},
-				{callback: 'doneMoving'});
-			assert.isFalse(moveStarted);
-		});
-
 		test('walk right', function (done) {
 			var i1 = newItem({tsid: 'I1', npc_walk_speed: 3, npc_y_step: 1});
 			i1.doneMoving = function doneMoving(args) {

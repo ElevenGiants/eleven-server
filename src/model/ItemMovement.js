@@ -50,6 +50,15 @@ function ItemMovement(item) {
 
 
 /**
+ * Helper function for container geometry access.
+ * @private
+ */
+ItemMovement.prototype.getGeo = function getGeo() {
+	return this.item.container.geometry;
+};
+
+
+/**
  * Converts vertical item coordinates between actual item position and
  * corresponding platform position; this is relevant for items with a
  * non-zero `y_offset` property like hovering street spirits.
@@ -105,8 +114,11 @@ ItemMovement.prototype.dirY = function dirY(targetY) {
  *
  * @param {object} status the status object sent to the movement
  *        callback
+ * @param {boolean} [queueChanges] if `true`, queue item changes to be
+ *        sent to players in the location
  */
-ItemMovement.prototype.stopMove = function stopMove(status) {
+ItemMovement.prototype.stopMove = function stopMove(status, queueChanges) {
+	if (!status) status = MOVE_CB_STATUS.STOP;
 	var fullStatus = false;
 	this.item.cancelGsTimer('movementTimer', true);
 	// clear the path
@@ -120,7 +132,9 @@ ItemMovement.prototype.stopMove = function stopMove(status) {
 			fullStatus = this.callback.call(this.item, {status: status});
 		}
 	}
-	return fullStatus;
+	if (queueChanges) {
+		this.item.queueChanges(false, !fullStatus);
+	}
 };
 
 
@@ -138,8 +152,8 @@ ItemMovement.prototype.checkWalls = function checkWalls(nextStep) {
 	var halfWidth = ('item_width' in this.item) ? this.item.item_width / 2 : 5;
 	var height = ('item_height' in this.item) ? this.item.item_height : 10;
 
-	for (var k in this.item.container.geometry.layers.middleground.walls) {
-		var wall = this.item.container.geometry.layers.middleground.walls[k];
+	for (var k in this.getGeo().layers.middleground.walls) {
+		var wall = this.getGeo().layers.middleground.walls[k];
 		if (wall.item_perm === 0) continue;
 
 		// direction from which we are crossing the wall line
@@ -176,10 +190,9 @@ ItemMovement.prototype.checkWalls = function checkWalls(nextStep) {
 ItemMovement.prototype.findPlatform = function findPlatform(x, y) {
 	if (!this.platform) {
 		// first look below the given point
-		this.platform = this.item.container.geometry.getClosestPlatPoint(x, y, -1).plat;
+		this.platform = this.getGeo().getClosestPlatPoint(x, y, -1).plat;
 		if (!this.platform) {  // then above
-			this.platform = this.item.container.geometry.getClosestPlatPoint(x,
-				y, 1).plat;
+			this.platform = this.getGeo().getClosestPlatPoint(x, y, 1).plat;
 		}
 	}
 	else {
@@ -190,21 +203,14 @@ ItemMovement.prototype.findPlatform = function findPlatform(x, y) {
 		this.platform = null;
 		var yStep = ('npc_y_step' in this.item) ? this.item.npc_y_step : 32;
 		var canFall = ('npc_can_fall' in this.item) ? this.item.npc_can_fall : false;
-		var upPoint = null;
-		var upPlatform = this.item.container.geometry.getClosestPlatPoint(
-			x, y, 1);
-		if (upPlatform.plat) upPoint = upPlatform.point.y;
-		if (upPoint !== null && Math.abs(upPoint - y) < yStep) {
-			this.platform = upPlatform.plat;
+		var above = this.getGeo().getClosestPlatPoint(x, y, 1);
+		if (above.plat && Math.abs(above.point.y - y) < yStep) {
+			this.platform = above.plat;
 		}
 		else {
-			var downPoint = null;
-			var downPlatform = this.item.container.geometry.getClosestPlatPoint(
-				x, y, -1);
-			if (downPlatform.plat) downPoint = downPlatform.point.y;
-			if (downPoint !== null &&
-				(canFall || Math.abs(y - downPoint) < yStep)) {
-				this.platform = downPlatform.plat;
+			var below = this.getGeo().getClosestPlatPoint(x, y, -1);
+			if (below.plat && (canFall || Math.abs(y - below.point.y) < yStep)) {
+				this.platform = below.plat;
 			}
 		}
 	}
@@ -246,10 +252,6 @@ ItemMovement.prototype.walkingDirection = function walkingDirection(x, nextStep)
 ItemMovement.prototype.moveWalking = function moveWalking(nextPath) {
 	var nextStep = {dx: 0, dy: 0, finished: false, fullChanges: false};
 
-	if (!('npc_walk_speed' in this.item)) {
-		log.error('movement: walking npc has no walk speed: %s', this.item);
-		return {forceStop: MOVE_CB_STATUS.ARRIVED};
-	}
 	// adjust direction and calculate horizontal movement
 	this.walkingDirection(nextPath.x, nextStep);
 	var step = Math.min(Math.abs(this.item.x - nextPath.x),
@@ -506,10 +508,7 @@ ItemMovement.prototype.moveStep = function moveStep() {
 		}
 	}
 	else if (nextStep && nextStep.forceStop) {
-		if (this.stopMove(nextStep.forceStop)) {
-			this.item.queueChanges(false, true);
-		}
-		return;
+		return this.stopMove(nextStep.forceStop, true);
 	}
 	else {
 		// fallback (transport method failed to process path segment properly)
@@ -517,16 +516,9 @@ ItemMovement.prototype.moveStep = function moveStep() {
 	}
 	// no more path segments -> announce that we're done here
 	if (this.path.length === 0) {
-		if (nextStep && nextStep.status) {
-			if (this.stopMove(nextStep.status)) {
-				this.item.queueChanges(false, true);
-			}
-		}
-		else {
-			if (this.stopMove(MOVE_CB_STATUS.ARRIVED)) {
-				this.item.queueChanges(false, true);
-			}
-		}
+		var status = MOVE_CB_STATUS.ARRIVED;
+		if (nextStep && nextStep.status) status = nextStep.status;
+		return this.stopMove(status, true);
 	}
 };
 
@@ -603,19 +595,14 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 		}];
 		var tx = this.item.x + (3 * this.options.vx);
 		var ty;
-		var platform = this.item.container.geometry.getClosestPlatPoint(tx,
+		var platform = this.getGeo().getClosestPlatPoint(tx,
 			(this.item.y + this.options.vy), -1).plat;
 		if (platform) {
 			ty = utils.pointOnPlat(platform, tx).y;
 		}
 		else {
 			log.error('movement: failed to find landing platform for %s', this.item);
-			if ('groundY' in this.item.container.geo) {
-				ty = this.item.container.geo.groundY;
-			}
-			else {
-				ty = this.item.container.geo.b;
-			}
+			ty = ('groundY' in this.getGeo()) ? this.getGeo().groundY : this.getGeo().b;
 		}
 		path.push({x: tx, y: ty, speed: 90, stopAtEnd: true, transport: 'flying'});
 	}
@@ -672,12 +659,4 @@ ItemMovement.prototype.startMove = function startMove(transport, dest, options) 
 	this.item.setGsTimer({fname: 'movementTimer', delay: 333, interval: true,
 		internal: true});
 	return true;
-};
-
-
-/**
- * Stop item movement.
- */
-ItemMovement.prototype.stopMovement = function stopMovement() {
-	this.stopMove(MOVE_CB_STATUS.STOP);
 };
