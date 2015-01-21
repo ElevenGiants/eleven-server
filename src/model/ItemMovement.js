@@ -97,7 +97,7 @@ ItemMovement.prototype.dirX = function dirX(targetX) {
 
 /**
  * Determines the direction of a vertical coordinate in relation to
- * the item. Takes the vertical offset of the item into account.
+ * the item.
  *
  * @param {number} targetY the y value being inspected
  * @returns {number} 1 (`targetY` is below the item) or -1 (`targetY`
@@ -105,7 +105,7 @@ ItemMovement.prototype.dirX = function dirX(targetX) {
  * @private
  */
 ItemMovement.prototype.dirY = function dirY(targetY) {
-	return (this.offsetY(this.item.y, false) < targetY ? 1 : -1);
+	return (this.item.y < targetY ? 1 : -1);
 };
 
 
@@ -260,31 +260,20 @@ ItemMovement.prototype.moveWalking = function moveWalking(nextPath) {
 	nextStep.dy = this.item.y;  // adjusted later (depends on where the horizontal movement takes us)
 
 	// find initial or next platform
-	if (!this.platform) {
+	if (!this.platform || nextStep.dx < this.platform.start.x ||
+		nextStep.dx > this.platform.end.x) {
 		this.findPlatform(nextStep.dx, this.offsetY(this.item.y, true));
-	}
-	else if (nextStep.dx < this.platform.start.x ||
-		     nextStep.dx > this.platform.end.x) {
-		var oldPlatform = this.platform;
-		var myY = this.offsetY(this.item.y, true);
-		this.findPlatform(nextStep.dx, myY);
-		if (this.platform === null) {
-			this.platform = oldPlatform;
-			return {dx: this.item.x, dy: this.item.y, finished: true,
-				status: MOVE_CB_STATUS.ARRIVED_NEAR,
-				fullChanges: nextStep.fullChanges};
-		}
 	}
 	// calculate next vertical position
 	if (this.platform) {
 		nextStep.dy = this.offsetY(
 			utils.pointOnPlat(this.platform, nextStep.dx).y, false);
 	}
-	// check if we walked into a wall (end movement if so)
+	// check if we walked into a wall, or could not find a suitable platform (end movement if so)
 	var block = this.checkWalls(nextStep);
-	if (block) {
-		return {dx: block.x, dy: this.item.y, finished: true,
-			status: MOVE_CB_STATUS.ARRIVED_NEAR,
+	if (block || !this.platform) {
+		return {dx: block ? block.x : this.item.x, dy: this.item.y,
+			finished: true, status: MOVE_CB_STATUS.ARRIVED_NEAR,
 			fullChanges: nextStep.fullChanges};
 	}
 	// are we already there?
@@ -305,16 +294,10 @@ ItemMovement.prototype.moveWalking = function moveWalking(nextPath) {
  * @private
  */
 ItemMovement.prototype.nextFlightPath = function nextFlightPath(nextPath) {
-	var xVariation = Math.random() * (nextPath.width / 4);
-	if (!('x' in nextPath)) {
-		if (Math.random() < 0.5) {
-			nextPath.x = Math.round(nextPath.left + xVariation);
-		}
-		else {
-			nextPath.x = Math.round(nextPath.right - xVariation);
-		}
-	}
-	else if (this.item.x === nextPath.x) {
+	// fly back and forth between left and right edge of the area (or close to
+	// it), at varying heights (updates current path when destionation reached)
+	if (!('x' in nextPath) || this.item.x === nextPath.x) {
+		var xVariation = Math.random() * (nextPath.width / 4);
 		var dLeft = Math.abs(this.item.x - nextPath.left);
 		var dRight = Math.abs(this.item.x - nextPath.right);
 		if (dRight < dLeft) {
@@ -367,8 +350,7 @@ ItemMovement.prototype.changeState = function changeState(distX, distY, dir) {
 ItemMovement.prototype.moveFlying = function moveFlying(nextPath) {
 	var nextStep = {dx: 0, dy: 0, finished: false};
 	// stop if we reached the destination (and the move is supposed to end there)
-	if (nextPath.stopAtEnd && this.item.x === nextPath.x &&
-		this.offsetY(this.item.y, false) === nextPath.y) {
+	if (nextPath.stopAtEnd && this.item.x === nextPath.x && this.item.y === nextPath.y) {
 		return {forceStop: MOVE_CB_STATUS.ARRIVED};
 	}
 	// otherwise, set new destination within the flight area if necessary
@@ -378,7 +360,7 @@ ItemMovement.prototype.moveFlying = function moveFlying(nextPath) {
 	var dirX = this.dirX(nextPath.x);
 	var dirY = this.dirY(nextPath.y);
 	var distX = Math.abs(this.item.x - nextPath.x);
-	var distY = Math.abs(this.offsetY(this.item.y, false) - nextPath.y);
+	var distY = Math.abs(this.item.y - nextPath.y);
 
 	// add a touch of randomization to the y movement
 	if ('height' in nextPath) {
@@ -387,28 +369,23 @@ ItemMovement.prototype.moveFlying = function moveFlying(nextPath) {
 	// change animation state if necessary
 	this.changeState(distX, distY, dirX);
 
+	// calculate the fraction of the way to the target we can cover in this step
+	var frac = (nextPath.speed / 3) / Math.sqrt(distX * distX + distY * distY);
+	frac = Math.min(frac, 1);  // make sure we don't overshoot
+
 	// set next step destination one step further towards the path segment target
-	var limit;
-	if (distX < 1 && distY < 1) {  // make sure we don't overshoot
-		limit = 1;
-	}
-	else {
-		// calculate the fraction of the way to the target we can cover in this step
-		limit = (nextPath.speed / 3) / Math.sqrt(distX * distX + distY * distY);
-	}
-	if (limit < 1) {
-		nextStep.dy = this.offsetY(this.item.y, false) + (dirY * distY * limit);
-		nextStep.dx = this.item.x + (dirX * distX * limit);
+	if (frac < 1) {
+		nextStep.dy = this.item.y + (dirY * distY * frac);
+		nextStep.dx = this.item.x + (dirX * distX * frac);
 	}
 	else {
 		// we're within 1px of the target, so just go there exactly
-		nextStep.dy = this.offsetY(nextPath.y, false);
+		nextStep.dy = nextPath.y;
 		nextStep.dx = nextPath.x;
 	}
 	// if we reached the destination and the move is supposed to end there,
 	// set 'finished' property
-	if (nextPath.stopAtEnd && nextStep.dx === nextPath.x &&
-		nextStep.dy === this.offsetY(nextPath.y, false)) {
+	if (nextPath.stopAtEnd && nextStep.dx === nextPath.x && nextStep.dy === nextPath.y) {
 		nextStep.finished = true;
 	}
 	return nextStep;
@@ -427,37 +404,29 @@ ItemMovement.prototype.moveFlying = function moveFlying(nextPath) {
 ItemMovement.prototype.moveDirect = function moveDirect(nextPath) {
 	var nextStep = {dx: 0, dy: 0, finished: false};
 	// check if we're already there
-	if (this.item.x === nextPath.x &&
-		this.offsetY(this.item.y, false) === nextPath.y) {
+	if (this.item.x === nextPath.x && this.item.y === nextPath.y) {
 		nextStep.forceStop = MOVE_CB_STATUS.ARRIVED;
 		return nextStep;
 	}
-	var dirX = this.dirX(nextPath.x);
-	var dirY = this.dirY(nextPath.y);
 	var distX = Math.abs(this.item.x - nextPath.x);
-	var distY = Math.abs(this.offsetY(this.item.y, false) - nextPath.y);
+	var distY = Math.abs(this.item.y - nextPath.y);
+
+	// calculate the fraction of the way to the target we can cover in this step
+	var frac = (nextPath.speed / 3) / Math.sqrt(distX * distX + distY * distY);
+	frac = Math.min(frac, 1);  // make sure we don't overshoot
 
 	// set next step destination one step further towards the path segment target
-	var limit;
-	if (distX < 1 && distY < 1) {  // make sure we don't overshoot
-		limit = 1;
-	}
-	else {
-		// calculate the fraction of the way to the target we can cover in this step
-		limit = (nextPath.speed / 3) / Math.sqrt(distX * distX + distY * distY);
-	}
-	if (limit < 1) {
-		nextStep.dy = this.offsetY(this.item.y, false) + (dirY * distY * limit);
-		nextStep.dx = this.item.x + (dirX * distX * limit);
+	if (frac < 1) {
+		nextStep.dy = this.item.y + (this.dirY(nextPath.y) * distY * frac);
+		nextStep.dx = this.item.x + (this.dirX(nextPath.x) * distX * frac);
 	}
 	else {
 		// we're within 1px of the target, so just go there exactly
-		nextStep.dy = this.offsetY(nextPath.y, false);
+		nextStep.dy = nextPath.y;
 		nextStep.dx = nextPath.x;
 	}
 	// if we reached the destination, set 'finished' property
-	if (nextStep.dx === nextPath.x &&
-		nextStep.dy === this.offsetY(nextPath.y, false)) {
+	if (nextStep.dx === nextPath.x && nextStep.dy === nextPath.y) {
 		nextStep.finished = true;
 	}
 	return nextStep;

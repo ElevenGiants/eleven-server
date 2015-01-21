@@ -20,6 +20,12 @@ var plat1 = {
 	platform_pc_perm: -1,
 	end: {x: 20, y: 10}
 };
+var slope1 = {
+	start: {x: 20, y: 10},
+	platform_item_perm: -1,
+	platform_pc_perm: -1,
+	end: {x: 30, y: 15}
+};
 var plat2 = {
 	start: {x: 5, y: 30},
 	platform_item_perm: -1,
@@ -35,6 +41,7 @@ var plat3 = {
 
 var gPlat = new Geo({layers: {middleground: {platform_lines: {
 	plat_1: plat1,
+	slope_1: slope1,
 	plat_2: plat2,
 	plat_3: plat3,
 }}}});
@@ -65,25 +72,29 @@ function addToTestLoc(it, x, y, geo) {
 
 suite('ItemMovement', function () {
 
+	this.timeout(10000);
+	this.slow(10000);
+
 	suite('platform walking movement', function () {
 
-		test('stuck', function (done) {
+		test('does not start if there is no suitable platform', function (done) {
 			var i1 = newItem({tsid: 'I1', npc_walk_speed: 10});
 			i1.doneMoving = function doneMoving(args) {
 				assert.isDefined(args.status);
 				if (args.status !== STATUS.DIR_CHANGE) {
-					assert.strictEqual(args.status, STATUS.ARRIVED);
+					assert.strictEqual(args.status, STATUS.ARRIVED_NEAR);
 					done();
 				}
 			};
-			addToTestLoc(i1, 10, 10, gPlat);
-			var moveStarted = i1.gsStartMoving('walking', {x: 10, y: 10},
+			addToTestLoc(i1, 35, 25, gPlat);  // on the edge of plat3, no way to go right
+			var moveStarted = i1.gsStartMoving('walking', {x: 50, y: 25},
 				{callback: 'doneMoving'});
 			assert.isFalse(moveStarted);
 		});
 
-		test('walk right', function (done) {
-			var i1 = newItem({tsid: 'I1', npc_walk_speed: 3, npc_y_step: 1});
+		test('walks towards target until no further platform is available',
+			function (done) {
+			var i1 = newItem({tsid: 'I1', npc_walk_speed: 10, npc_y_step: 3});
 			i1.doneMoving = function doneMoving(args) {
 				assert.isDefined(args.status);
 				if (args.status === STATUS.DIR_CHANGE) {
@@ -91,60 +102,40 @@ suite('ItemMovement', function () {
 				}
 				else {
 					assert.strictEqual(args.status, STATUS.ARRIVED_NEAR);
-					assert.deepEqual(this.movement.platform, plat1);
-					assert.strictEqual(this.x, plat1.end.x);
-					assert.strictEqual(this.y, plat1.end.y);
+					assert.strictEqual(this.x, slope1.end.x);
+					assert.strictEqual(this.y, slope1.end.y);
 					done();
 				}
 			};
 			addToTestLoc(i1, 18, 9, gPlat);
+			// starting on plat1, walking right, will step onto slope1
 			var moveStarted = i1.gsStartMoving('walking', {x: 200, y: 10},
 				{callback: 'doneMoving'});
 			assert.isTrue(moveStarted);
 		});
 
-		test('walk left', function (done) {
-			var i1 = newItem({tsid: 'I1', npc_walk_speed: 3, npc_y_step: 1});
-			i1.doneMoving = function doneMoving(args) {
-				assert.isDefined(args.status);
-				if (args.status === STATUS.DIR_CHANGE) {
-					assert.strictEqual(args.dir, 'left');
-				}
-				else {
-					assert.strictEqual(args.status, STATUS.ARRIVED_NEAR);
-					assert.deepEqual(this.movement.platform, plat1);
-					assert.strictEqual(this.x, plat1.start.x);
-					assert.strictEqual(this.y, plat1.start.y);
-					done();
-				}
-			};
-			addToTestLoc(i1, 12, 9, gPlat);
-			var moveStarted = i1.gsStartMoving('walking', {x: -200, y: 10},
-				{callback: 'doneMoving'});
-			assert.isTrue(moveStarted);
-		});
-
-		test('y_step', function (done) {
+		test('steps upwards onto higher platforms if y_step is big enough',
+			function (done) {
 			var i1 = newItem({tsid: 'I1', npc_walk_speed: 30, npc_y_step: 10});
 			i1.doneMoving = function doneMoving(args) {
 				assert.isDefined(args.status);
 				if (args.status !== STATUS.DIR_CHANGE) {
-					assert.strictEqual(args.status, STATUS.ARRIVED_NEAR);
-					assert.deepEqual(this.movement.platform, plat3);
+					assert.strictEqual(args.status, STATUS.ARRIVED);
 					assert.strictEqual(this.x, plat3.end.x);
 					assert.strictEqual(this.y, plat3.end.y);
 					done();
 				}
 			};
-			addToTestLoc(i1, 15, 9, gPlat);
-			var moveStarted = i1.gsStartMoving('walking', {x: 200, y: 10},
+			addToTestLoc(i1, 10, 30, gPlat);
+			// starts on plat2, moves right until the end, steps upwards onto plat3
+			var moveStarted = i1.gsStartMoving('walking', {x: 35, y: 25},
 				{callback: 'doneMoving'});
 			assert.isTrue(moveStarted);
 		});
 
-		test('can_fall', function (done) {
+		test('drops onto lower platforms if can_fall is true', function (done) {
 			var i1 = newItem({tsid: 'I1', npc_walk_speed: 30, npc_y_step: 1,
-					npc_can_fall: true});
+				npc_can_fall: true});
 			i1.doneMoving = function doneMoving(args) {
 				assert.isDefined(args.status);
 				if (args.status === STATUS.DIR_CHANGE) {
@@ -152,19 +143,19 @@ suite('ItemMovement', function () {
 				}
 				else if (args.status !== STATUS.DIR_CHANGE) {
 					assert.strictEqual(args.status, STATUS.ARRIVED_NEAR);
-					assert.deepEqual(this.movement.platform, plat2);
 					assert.strictEqual(this.x, plat2.start.x);
 					assert.strictEqual(this.y, plat2.start.y);
 					done();
 				}
 			};
 			addToTestLoc(i1, 15, 9, gPlat);
+			// starts on plat1, walks left, dropping to plat2
 			var moveStarted = i1.gsStartMoving('walking', {x: -200, y: 10},
 				{callback: 'doneMoving'});
 			assert.isTrue(moveStarted);
 		});
 
-		test('wall_left', function (done) {
+		test('walks through permeable walls, stops at blocking walls', function (done) {
 			var i1 = newItem({tsid: 'I1', npc_walk_speed: 5, item_width: 4});
 			i1.doneMoving = function doneMoving(args) {
 				assert.isDefined(args.status);
@@ -173,40 +164,20 @@ suite('ItemMovement', function () {
 				}
 				else if (args.status !== STATUS.DIR_CHANGE) {
 					assert.strictEqual(args.status, STATUS.ARRIVED_NEAR);
-					assert.deepEqual(this.movement.platform, plat2);
 					assert.strictEqual(this.x, wall1.x + this.item_width / 2);
 					assert.strictEqual(this.y, plat2.start.y);
 					done();
 				}
 			};
 			addToTestLoc(i1, 20, 9, gWall);
+			// walks through wall2 (only blocks to the left) but stops at wall1
 			var moveStarted = i1.gsStartMoving('walking', {x: -200, y: 10},
 				{callback: 'doneMoving'});
 			assert.isTrue(moveStarted);
 		});
 
-		test('wall_right', function (done) {
-			var i1 = newItem({tsid: 'I1', npc_walk_speed: 5, item_width: 4});
-			i1.doneMoving = function doneMoving(args) {
-				assert.isDefined(args.status);
-				if (args.status === STATUS.DIR_CHANGE) {
-					assert.strictEqual(args.dir, 'right');
-				}
-				else if (args.status !== STATUS.DIR_CHANGE) {
-					assert.strictEqual(args.status, STATUS.ARRIVED_NEAR);
-					assert.deepEqual(this.movement.platform, plat2);
-					assert.strictEqual(this.x, wall4.x - this.item_width / 2);
-					assert.strictEqual(this.y, plat2.start.y);
-					done();
-				}
-			};
-			addToTestLoc(i1, 15, 9, gWall);
-			var moveStarted = i1.gsStartMoving('walking', {x: 200, y: 10},
-				{callback: 'doneMoving'});
-			assert.isTrue(moveStarted);
-		});
-
-		test('multi_path', function (done) {
+		test('supports explicitly supplied path (with multiple segments)',
+			function (done) {
 			var i1 = newItem({tsid: 'I1', npc_walk_speed: 50});
 			var pt1 = {x: 20, y: 10, transport: 'walking'};
 			var pt2 = {x: 10, y: 10, transport: 'walking'};
@@ -245,7 +216,7 @@ suite('ItemMovement', function () {
 			assert.isTrue(moveStarted);
 		});
 
-		test('stop', function (done) {
+		test('can be stopped mid-move', function (done) {
 			var i1 = newItem({tsid: 'I1', npc_walk_speed: 10});
 			i1.doneMoving = function doneMoving(args) {
 				assert.isDefined(args.status);
@@ -254,7 +225,6 @@ suite('ItemMovement', function () {
 				}
 				else if (args.status !== STATUS.DIR_CHANGE) {
 					assert.strictEqual(args.status, STATUS.STOP);
-					assert.deepEqual(this.movement.platform, plat2);
 					assert.strictEqual(this.x, 24);
 					assert.strictEqual(this.y, plat2.start.y);
 					done();
@@ -269,7 +239,7 @@ suite('ItemMovement', function () {
 			}, 1000);
 		});
 
-		test('new_move', function (done) {
+		test('interrupts current move when a new one is requested', function (done) {
 			var i1 = newItem({tsid: 'I1', npc_walk_speed: 10});
 			i1.doneMoving = function doneMoving(args) {
 				assert.isDefined(args.status);
@@ -279,7 +249,6 @@ suite('ItemMovement', function () {
 					}
 					else if (args.status !== STATUS.DIR_CHANGE) {
 						assert.strictEqual(args.status, STATUS.STOP_NEW_MOVE);
-						assert.deepEqual(this.movement.platform, plat2);
 						assert.strictEqual(this.x, 24);
 						assert.strictEqual(this.y, plat2.start.y);
 						this.stage = 1;
@@ -291,7 +260,6 @@ suite('ItemMovement', function () {
 					}
 					else if (args.status !== STATUS.DIR_CHANGE) {
 						assert.strictEqual(args.status, STATUS.STOP);
-						assert.deepEqual(this.movement.platform, plat2);
 						assert.strictEqual(this.x, 12);
 						assert.strictEqual(this.y, plat2.start.y);
 						done();
@@ -317,34 +285,30 @@ suite('ItemMovement', function () {
 
 	suite('direct movement', function () {
 
-		test('works through platforms', function (done) {
+		test('ignores platforms', function (done) {
 			var i1 = newItem({tsid: 'I1'});
-			var pt1 = {x: 30, y: 30};
 			i1.doneMoving = function doneMoving(args) {
-				assert.isDefined(args.status);
 				assert.strictEqual(args.status, STATUS.ARRIVED);
-				assert.strictEqual(this.x, pt1.x);
-				assert.strictEqual(this.y, pt1.y);
+				assert.strictEqual(this.x, 30);
+				assert.strictEqual(this.y, 30);
 				done();
 			};
 			addToTestLoc(i1, 0, 0, gPlat);
-			var moveStarted = i1.gsStartMoving('direct', {x: pt1.x, y: pt1.y},
+			var moveStarted = i1.gsStartMoving('direct', {x: 30, y: 30},
 				{callback: 'doneMoving', speed: 60});
 			assert.isTrue(moveStarted);
 		});
 
-		test('works through walls', function (done) {
+		test('ignores walls', function (done) {
 			var i1 = newItem({tsid: 'I1'});
-			var pt1 = {x: 40, y: 30};
 			i1.doneMoving = function doneMoving(args) {
-				assert.isDefined(args.status);
 				assert.strictEqual(args.status, STATUS.ARRIVED);
-				assert.strictEqual(this.x, pt1.x);
-				assert.strictEqual(this.y, pt1.y);
+				assert.strictEqual(this.x, 40);
+				assert.strictEqual(this.y, 30);
 				done();
 			};
 			addToTestLoc(i1, 0, 30, gWall);
-			var moveStarted = i1.gsStartMoving('direct', {x: pt1.x, y: pt1.y},
+			var moveStarted = i1.gsStartMoving('direct', {x: 40, y: 30},
 				{callback: 'doneMoving', speed: 60});
 			assert.isTrue(moveStarted);
 		});

@@ -164,13 +164,10 @@ ItemApi.prototype.apiFindPath = function apiFindPath(x, y, flags, callback) {
 
 /**
  * Stops any existing movement of the item.
- *
- * @returns {boolean} `true`
  */
 ItemApi.prototype.apiStopMoving = function apiStopMoving() {
 	log.debug('%s.apiStopMoving()', this);
 	this.gsStopMoving();
-	return true;
 };
 
 
@@ -240,9 +237,8 @@ ItemApi.prototype.apiStartFlyingTo = function apiStartFlyingTo(x, y, speed, call
  */
 ItemApi.prototype.apiKickTheChicken = function apiKickTheChicken(vx, vy) {
 	log.debug('%s.apiKickTheChicken(%s, %s)', this, vx, vy);
-	this.gsStartMoving('kicked', {}, {vx: vx, vy: vy,
+	return this.gsStartMoving('kicked', {}, {vx: vx, vy: vy,
 		callback: 'movementCallback'});
-	return true;
 };
 
 
