@@ -229,6 +229,7 @@ Player.prototype.isConnected = function isConnected() {
  * schedules their removal at the end of the current request).
  */
 Player.prototype.unload = function unload() {
+	log.debug('%s.unload', this);
 	var objects = this.getConnectedObjects();
 	for (var k in objects) {
 		RC.getContext().setUnload(objects[k]);
@@ -295,9 +296,9 @@ Player.prototype.resumeGsTimers = function resumeGsTimers() {
 
 /**
  * Initiates a location move for this player. Removes the player from
- * the current location, calls various "onExit" handlers and updates
- * the `location` property with the new location. The player is *not*
- * added to the list of players in the new location yet.
+ * the current location, and updates the `location` property with the
+ * new location. The player is *not* added to the list of players in
+ * the new location yet.
  *
  * @param {Location} [newLoc] the target location (if undefined, the
  *        current location stays unchanged; this is used during logout)
@@ -312,23 +313,7 @@ Player.prototype.startMove = function startMove(newLoc, x, y) {
 		log.info('moving out');  // logout case
 	}
 	if (this.location) {
-		// remove from current location
-		delete this.location.players[this.tsid];
-		// handle exit callbacks
-		if (typeof this.location.onPlayerExit === 'function') {
-			this.location.onPlayerExit(this, newLoc);
-		}
-		for (var k in this.location.items) {
-			var it = this.location.items[k];
-			if (typeof it.onPlayerExit === 'function') {
-				try {
-					it.onPlayerExit(this);
-				}
-				catch (e) {
-					log.error(e, 'error in %s.onPlayerExit handler', it);
-				}
-			}
-		}
+		this.location.removePlayer(this, newLoc);
 	}
 	if (newLoc) {
 		// update location and position
@@ -339,33 +324,16 @@ Player.prototype.startMove = function startMove(newLoc, x, y) {
 
 
 /**
- * Finishes a location move for this player. Adds the player to the
- * list of players in the new location and calls various "onEnter"
- * handlers. The `location` property already needs to point to the
- * "new" location at this point (set in
+ * Finishes a location move for this player by adding the player to the
+ * list of active players in the new location. The `location` property
+ * already needs to point to the "new" location at this point (set in
  * {@link Player#startMove|startMove}).
  */
 Player.prototype.endMove = function endMove() {
 	log.info('end move to %s', this.location);
 	assert(utils.isLoc(this.location), util.format(
 		'invalid location property: %s', this.location));
-	// add to active player list of new location
-	this.location.players[this.tsid] = this;
-	// handle enter callbacks
-	if (typeof this.location.onPlayerEnter === 'function') {
-		this.location.onPlayerEnter(this);
-	}
-	for (var k in this.location.items) {
-		var it = this.location.items[k];
-		if (typeof it.onPlayerEnter === 'function') {
-			try {
-				it.onPlayerEnter(this);
-			}
-			catch (e) {
-				log.error(e, 'error in %s.onPlayerEnter handler', it);
-			}
-		}
-	}
+	this.location.addPlayer(this);
 };
 
 

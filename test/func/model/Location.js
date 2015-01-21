@@ -184,4 +184,30 @@ suite('Location', function () {
 			}, done);
 		});
 	});
+
+
+	suite('unload', function () {
+
+		test('does its job', function (done) {
+			var i1, i2, b, l;
+			var rc = new RC();
+			rc.run(
+				function () {
+					i1 = Item.create('apple');
+					i2 = Item.create('banana');
+					b = new Bag({class_tsid: 'bag_bigger_green', items: [i2]});
+					l = Location.create(Geo.create());
+					l.addItem(i1);
+					l.addItem(b);
+					l.unload();
+				},
+				function callback(err, res) {
+					if (err) return done(err);
+					assert.sameMembers(Object.keys(rc.unload),
+						[i1.tsid, i2.tsid, b.tsid, l.geometry.tsid, l.tsid]);
+					done();
+				}
+			);
+		});
+	});
 });
