@@ -216,7 +216,14 @@ Location.prototype.send = function send(msg, skipChanges, exclude) {
 	var excl = utils.playersArgToList(exclude);
 	for (var tsid in this.players) {
 		if (excl.indexOf(tsid) === -1) {
-			this.players[tsid].send(msg, skipChanges);
+			var p = this.players[tsid];
+			if (p.location && p.location.tsid !== this.tsid) {
+				log.warn('removing stale player %s from %s', p, this);
+				delete this.players[tsid];
+			}
+			else {
+				p.send(msg, skipChanges);
+			}
 		}
 	}
 };
