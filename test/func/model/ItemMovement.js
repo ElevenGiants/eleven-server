@@ -77,6 +77,19 @@ suite('ItemMovement', function () {
 
 	suite('platform walking movement', function () {
 
+		test('does not start if the item is already at the given destionation',
+			function (done) {
+			var i1 = newItem({tsid: 'I1', npc_walk_speed: 10});
+			i1.doneMoving = function doneMoving(args) {
+				assert.strictEqual(args.status, STATUS.ARRIVED);
+				done();
+			};
+			addToTestLoc(i1, 10, 10, gPlat);
+			var moveStarted = i1.gsStartMoving('walking', {x: 10, y: 10},
+				{callback: 'doneMoving'});
+			assert.isFalse(moveStarted);
+		});
+
 		test('does not start if there is no suitable platform', function (done) {
 			var i1 = newItem({tsid: 'I1', npc_walk_speed: 10});
 			i1.doneMoving = function doneMoving(args) {
@@ -200,8 +213,8 @@ suite('ItemMovement', function () {
 					}
 					this.check = this.check + 1;
 				}
-				else if (args.status !== STATUS.DIR_CHANGE) {
-					assert.strictEqual(this.check, 4);
+				else {
+					assert.strictEqual(this.check, 3);
 					assert.strictEqual(args.status, STATUS.ARRIVED);
 					assert.deepEqual(this.movement.platform, plat2);
 					assert.strictEqual(this.x, pt3.x);

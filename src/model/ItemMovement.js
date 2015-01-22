@@ -231,7 +231,7 @@ ItemMovement.prototype.findPlatform = function findPlatform(x, y) {
  */
 ItemMovement.prototype.walkingDirection = function walkingDirection(x, nextStep) {
 	var dir = this.dirX(x);
-	if (dir !== this.facing) {
+	if (x !== this.item.x && dir !== this.facing) {
 		if (this.callback) {
 			nextStep.fullChanges = this.callback.call(this.item,
 				{status: MOVE_CB_STATUS.DIR_CHANGE, dir: dir > 0 ? 'right' : 'left'});
@@ -571,7 +571,7 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 		}
 		else {
 			log.error('movement: failed to find landing platform for %s', this.item);
-			ty = ('groundY' in this.getGeo()) ? this.getGeo().groundY : this.getGeo().b;
+			ty = ('ground_y' in this.getGeo()) ? this.getGeo().ground_y : this.getGeo().b;
 		}
 		path.push({x: tx, y: ty, speed: 90, stopAtEnd: true, transport: 'flying'});
 	}
