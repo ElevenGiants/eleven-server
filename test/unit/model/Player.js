@@ -653,6 +653,10 @@ suite('Player', function () {
 			p.setXY(10, 10);
 			assert.isTrue(collDetDefaultHitBox, 'handleCollision with default hitBox');
 
+			collDetDefaultHitBox = false;
+			p.setXY(11, 11, true);
+			assert.isFalse(collDetDefaultHitBox, 'CD skipped explicitly');
+
 			i.hitBoxes = {foo: {w: 100, h: 100}};
 			p.setXY(15, 15);
 			assert.isTrue(collDetNamedHitBox, 'handleCollision with named hitBox');

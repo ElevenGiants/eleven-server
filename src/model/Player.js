@@ -318,7 +318,7 @@ Player.prototype.startMove = function startMove(newLoc, x, y) {
 	if (newLoc) {
 		// update location and position
 		this.location = newLoc;
-		this.setXY(x, y);
+		this.setXY(x, y, true);
 	}
 };
 
@@ -595,13 +595,15 @@ Player.prototype.getPropChanges = function getPropChanges() {
  *
  * @param {number} x new horizontal coordinate
  * @param {number} y new vertical coordinate
- * @returns {boolean} `true` if the players's coordinates actually changed
+ * @param {boolean} [noCD] `true` to skip collision detection
+ * @returns {boolean} `true` if the player's coordinates actually
+ *          changed
  */
-Player.prototype.setXY = function setXY(x, y) {
+Player.prototype.setXY = function setXY(x, y, noCD) {
 	// call setXY of Item to actually move the player (respecting physics/platforms)
 	var actuallyMoved = Player.super_.prototype.setXY.call(this, x, y);
 	// if the player actually moved we may have to handle a collision
-	if (actuallyMoved) {
+	if (actuallyMoved && !noCD) {
 		for (var k in this.location.items) {
 			var it = this.location.items[k];
 			if (!it.collDet) continue;
