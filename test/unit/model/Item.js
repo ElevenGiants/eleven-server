@@ -377,9 +377,9 @@ suite('Item', function () {
 	});
 
 
-	suite('hitBoxes', function () {
+	suite('addHitBox', function () {
 
-		test('add default hitbox', function () {
+		test('adds/updates default hitbox', function () {
 			var it = new Item();
 			it.addHitBox(23, 23);
 			assert.deepEqual(it.hitBox, {w: 23, h: 23}, 'added default hitbox');
@@ -388,29 +388,36 @@ suite('Item', function () {
 			assert.deepEqual(it.hitBox, {w: 42, h: 42}, 'changed default hitbox');
 		});
 
-		test('add named hitbox', function () {
+		test('adds/updates named hitbox', function () {
 			var it = new Item();
 			it.addHitBox(23, 23, 'foo');
 			assert.property(it, 'hitBoxes', 'created hitBoxes');
 			assert.deepEqual(it.hitBoxes, {foo: {w: 23, h: 23}}, 'added hitbox');
 
 			it.addHitBox(42, 42, 'bar');
-			assert.deepEqual(Object.keys(it.hitBoxes).length, 2, 'added second hitbox');
-		});
+			assert.lengthOf(Object.keys(it.hitBoxes), 2, 'added second hitbox');
 
-		test('removeHitBox', function () {
+			it.addHitBox(12, 13, 'bar');
+			assert.deepEqual(it.hitBoxes.bar, {w: 12, h: 13}, 'changed named hitbox');
+		});
+	});
+
+
+	suite('removeHitBox', function () {
+
+		test('does its job', function () {
 			var it = new Item();
 
 			it.addHitBox(23, 23, 'foo');
 			it.addHitBox(42, 42, 'bar');
-			assert.deepEqual(Object.keys(it.hitBoxes).length, 2, 'added two hitboxes');
+			assert.lengthOf(Object.keys(it.hitBoxes), 2, 'added two hitboxes');
 
 			var res = it.removeHitBox('foo');
-			assert.deepEqual(Object.keys(it.hitBoxes).length, 1, 'removed hitbox');
+			assert.lengthOf(Object.keys(it.hitBoxes), 1, 'removed one hitbox');
 			assert.deepEqual(res, true, 'result was true as a hitbox was removed');
 
 			res = it.removeHitBox('does_not_exist');
-			assert.deepEqual(Object.keys(it.hitBoxes).length, 1, 'one hitbox left');
+			assert.lengthOf(Object.keys(it.hitBoxes), 1, 'one hitbox left');
 			assert.deepEqual(res, false, 'result was false as no hitbox was removed');
 
 			res = it.removeHitBox('bar');

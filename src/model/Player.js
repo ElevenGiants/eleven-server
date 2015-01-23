@@ -700,13 +700,15 @@ Player.prototype.handleCollision = function handleCollision(it, hitBox, hitBoxNa
 
 
 /**
- * Private function used by handleCollision to determine wheter a hit
- * occured. That is when a player's "hitbox" (its width/height rectangle)
- * and an item's "hitbox" overlap
+ * Helper function used by handleCollision to determine whether a hit
+ * occurred, i.e. whether the player's "hitbox" (its width/height
+ * rectangle) and an item's "hitbox" overlap.
+ *
  * @param {Item|object} it item to check for collisions, or a location
  *        hitbox (must have at least `x` and `y` properties)
  * @param {object} [hitBox] hitbox to test (must have `w` and `h`
- *        properties);
+ *        properties)
+ * @private
  */
 Player.prototype.isHit = function isHit(it, hitBox) {
 	// respect the player's current scale factor

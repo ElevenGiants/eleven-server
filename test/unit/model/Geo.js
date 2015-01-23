@@ -250,30 +250,29 @@ suite('Geo', function () {
 
 
 	suite('getHitBoxes', function () {
+
 		test('does its job', function () {
 			var g = new Geo({
 				layers: {
 					middleground: {
 						boxes: {
-							foo: {
-								w: 23,
-								h: 23
-							},
-							bar: {
-								w: 42,
-								h: 42
-							}
+							foo: {w: 23, h: 13},
+							bar: {w: 42, h: 12},
 						}
 					}
 				}
 			});
 			var hitBoxes = g.getHitBoxes();
-			assert.strictEqual(typeof hitBoxes, typeof [], 'returned an array');
-			assert.strictEqual(hitBoxes.length, 2, 'found 2 hitboxes');
+			assert.typeOf(hitBoxes, 'array');
+			assert.lengthOf(hitBoxes, 2);
 			assert.strictEqual(hitBoxes[0].w, 23, 'first box has correct width');
-			assert.strictEqual(hitBoxes[0].w, 23, 'first box has correct height');
+			assert.strictEqual(hitBoxes[0].h, 13, 'first box has correct height');
 			assert.strictEqual(hitBoxes[1].w, 42, 'second box has correct width');
-			assert.strictEqual(hitBoxes[1].w, 42, 'second box has correct height');
+			assert.strictEqual(hitBoxes[1].h, 12, 'second box has correct height');
+		});
+
+		test('works if Geo does not contain any hitboxes', function () {
+			assert.deepEqual(new Geo().getHitBoxes(), []);
 		});
 	});
 });

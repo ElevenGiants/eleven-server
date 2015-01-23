@@ -29,6 +29,15 @@ suite('Player', function () {
 	});
 
 
+	function getCDTestPlayer() {
+		// creates a dummy player for collision detection tests
+		var p = new Player({tsid: 'P', x: 0, y: 0, h: 100, w: 50});
+		p.stacked_physics_cache = {pc_scale: 1};
+		p.location = new Location({tsid: 'L'}, new Geo());
+		return p;
+	}
+
+
 	suite('ctor', function () {
 
 		test('TSIDs of new Player objects start with P', function () {
@@ -589,11 +598,9 @@ suite('Player', function () {
 
 
 	suite('isHit', function () {
-		var playerData = {x: 0, y: 0, h: 100, w: 50};
-		playerData.stacked_physics_cache = {pc_scale: 1};
 
 		test('works as expected', function () {
-			var p = new Player(playerData);
+			var p = getCDTestPlayer();
 			var i = new Item({x: 23, y: 23, hitBox: {w: 100, h: 100}});
 			var hit = p.isHit(i, i.hitBox);
 			assert.isTrue(hit, 'it is hit');
@@ -604,7 +611,7 @@ suite('Player', function () {
 		});
 
 		test('respects scaled player size', function () {
-			var p = new Player(playerData);
+			var p = getCDTestPlayer();
 			var i = new Item({x: 200, y: 0, hitBox: {w: 100, h: 100}});
 			var hit = p.isHit(i, i.hitBox);
 			assert.isFalse(hit, 'it is not hit, player too small');
@@ -617,26 +624,22 @@ suite('Player', function () {
 
 
 	suite('setXY', function () {
-		var playerData = {tsid: 'P', x: 0, y: 0, h: 100, w: 50};
-		playerData.stacked_physics_cache = {pc_scale: 1};
-		var g = new Geo({layers: {middleground: {}}});
-		playerData.location = new Location({tsid: 'L'}, g);
 
 		test('moves the player', function () {
-			var p = new Player(playerData);
+			var p = getCDTestPlayer();
 			var result = p.setXY(23, 23);
 			assert.strictEqual(p.x, 23, 'correct x position');
 			assert.strictEqual(p.y, 23, 'correct y position');
 			assert.isTrue(result, 'returned true as player was moved');
 
 			result = p.setXY(23, 23);
-			assert.isFalse(result, 'returned fale as player was not moved');
+			assert.isFalse(result, 'returned false as player was not moved');
 		});
 
 		test('calls collision detection handling', function () {
+			var p = getCDTestPlayer();
 			var collDetDefaultHitBox = false;
 			var collDetNamedHitBox = false;
-			var p = new Player(playerData);
 			p.handleCollision = function (item, hitBox, hitBoxName) {
 				collDetDefaultHitBox = true;
 				if (hitBoxName) {
@@ -671,14 +674,11 @@ suite('Player', function () {
 
 
 	suite('handleCollision', function () {
-		var playerData = {tsid: 'P', x: 0, y: 0, h: 100, w: 50};
-		playerData.stacked_physics_cache = {pc_scale: 1};
-		playerData.location = new Location({tsid: 'L'}, new Geo());
 
 		test('works as expected when entering a hitbox', function () {
 			var hitBoxCalled = false;
 			var onPlayerCollisionCalled = false;
-			var p = new Player(playerData);
+			var p = getCDTestPlayer();
 			p['!colliders'] = {};
 			p.location.hitBox = function (hitBoxName, hit) {
 				hitBoxCalled = true;
@@ -705,7 +705,7 @@ suite('Player', function () {
 		test('works as expected when leaving a hitbox', function () {
 			var onLeavingHitBoxCalled = false;
 			var onPlayerLeavingCollisionAreaCalled = false;
-			var p = new Player(playerData);
+			var p = getCDTestPlayer();
 			p['!colliders'] = {foo: 1};
 			p.location.onLeavingHitBox = function (player, hitBoxName) {
 				onLeavingHitBoxCalled = true;
@@ -717,7 +717,7 @@ suite('Player', function () {
 			assert.isTrue(onLeavingHitBoxCalled, 'called onLeavingHitBox');
 			assert.notProperty(p['!colliders'], 'foo', 'removed hitBox from !colliders');
 
-			i.onPlayerCollision = function () {};
+			i.onPlayerCollision = function () {};  // required to enable CD in the first place
 			i.onPlayerLeavingCollisionArea = function (i) {
 				onPlayerLeavingCollisionAreaCalled = true;
 			};
