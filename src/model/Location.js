@@ -348,6 +348,15 @@ Location.prototype.getAllItems = Bag.prototype.getAllItems;
 
 
 /**
+ * Gets a list of items of a particular type in this location.
+ *
+ * @param {string} classTsid item class ID to filter for
+ * @returns {object} found matching items (with TSIDs as keys)
+ */
+Location.prototype.getClassItems = Bag.prototype.getClassItems;
+
+
+/**
  * Retrieves an item in the location by path.
  *
  * @param {string} path a path string pointing to an item in this
@@ -370,4 +379,52 @@ Location.prototype.sendItemStateChange = function sendItemStateChange(item) {
 			this.items[k].onContainerItemStateChanged(item);
 		}
 	}
+};
+
+
+/**
+ * Retrieves a list of items or players in a given radius around a
+ * point in the location. Optionally returns the results in an array
+ * sorted by distance.
+ *
+ * @param {number} x x coordinate to search around
+ * @param {number} y y coordinate to search around
+ * @param {number} r radius to consider (in px)
+ * @param {boolean} [players] if `true`, find players (items otherwise)
+ * @param {boolean} [sort] sort the returned objects by distance from
+ *        the given point if `true`
+ * @returns {object|array} either a hash of the found players or items
+ *          (if `sort` is falsy), or an array sorted by distance
+ *          including additional info, with the following structure:
+ * ```
+ * [
+ *     {pc: [human#PA9S7UKB6ND2IKB], dist: 126.06, x: 780, y: -97},
+ *     {pc: [human#P1KUXVLVASKLUJ8], dist: 234.7, x: 951, y: -12},
+ *     ...
+ * ]```
+ */
+Location.prototype.getInRadius = function getInRadius(x, y, r, players, sort) {
+	var targets = players ? this.players : this.items;
+	var ret = sort ? [] : {};
+	for (var k in targets) {
+		var t = targets[k];
+		// approximate first (to only calculate sqrt when necessary)
+		var dist = (x - t.x) * (x - t.x) + (y - t.y) * (y - t.y);
+		if (dist > r * r) continue;
+		dist = Math.sqrt(dist);
+		if (dist <= r) {
+			if (sort) {
+				ret.push({pc: t, dist: dist, x: t.x, y: t.y});
+			}
+			else {
+				ret[t.tsid] = t;
+			}
+		}
+	}
+	if (sort) {
+		ret.sort(function compare(a, b) {
+			return a.dist - b.dist;
+		});
+	}
+	return ret;
 };

@@ -235,4 +235,66 @@ suite('Location', function () {
 			l.sendItemStateChange(isend);
 		});
 	});
+
+
+	suite('getInRadius', function () {
+
+		test('works for items', function () {
+			var l = new Location({items: [
+				{tsid: 'I1', x: -10, y: -10},
+				{tsid: 'I2', x: 15, y: 1},
+				{tsid: 'I3', x: -10, y: 0},
+				{tsid: 'I4', x: -10, y: -1},
+				{tsid: 'I5', x: -7, y: -7},
+				{tsid: 'I6', x: 7, y: -8},
+				{tsid: 'I7', x: NaN, y: 0},
+			]}, new Geo());
+			var res = l.getInRadius(0, 0, 10);
+			assert.deepEqual(res, {
+				I3: {tsid: 'I3', x: -10, y: 0},
+				I5: {tsid: 'I5', x: -7, y: -7},
+			});
+		});
+
+		test('works for players', function () {
+			var l = new Location({players: [
+				{tsid: 'P1', x: 10, y: 10},
+				{tsid: 'P2', x: 15, y: 10},
+				{tsid: 'P3', x: 16, y: 10},
+				{tsid: 'P4', x: 12, y: 13},
+				{tsid: 'P5', x: 14, y: 13},  // just inside
+				{tsid: 'P6', x: 13, y: 6},  // just inside
+				{tsid: 'P7', x: 14, y: 6},  // just outside
+			]}, new Geo());
+			var res = l.getInRadius(10, 10, 5, true);
+			assert.deepEqual(res, {
+				P1: {tsid: 'P1', x: 10, y: 10},
+				P2: {tsid: 'P2', x: 15, y: 10},
+				P4: {tsid: 'P4', x: 12, y: 13},
+				P5: {tsid: 'P5', x: 14, y: 13},
+				P6: {tsid: 'P6', x: 13, y: 6},
+			});
+		});
+
+		test('works for players (sorted)', function () {
+			var l = new Location({players: [
+				{tsid: 'P1', x: 10, y: 10},
+				{tsid: 'P2', x: 15, y: 10},
+				{tsid: 'P3', x: 16, y: 10},
+				{tsid: 'P4', x: 12, y: 13},
+				{tsid: 'P5', x: 14, y: 13},  // just inside
+				{tsid: 'P6', x: 13, y: 6},  // just inside
+				{tsid: 'P7', x: 14, y: 6},  // just outside
+				{tsid: 'P8', x: 5, y: 5},
+			]}, new Geo());
+			var res = l.getInRadius(10, 10, 5, true, true);
+			assert.deepEqual(res, [
+				{pc: {tsid: 'P1', x: 10, y: 10}, dist: 0, x: 10, y: 10},
+				{pc: {tsid: 'P4', x: 12, y: 13}, dist: Math.sqrt(13), x: 12, y: 13},
+				{pc: {tsid: 'P2', x: 15, y: 10}, dist: 5, x: 15, y: 10},
+				{pc: {tsid: 'P5', x: 14, y: 13}, dist: 5, x: 14, y: 13},
+				{pc: {tsid: 'P6', x: 13, y: 6}, dist: 5, x: 13, y: 6},
+			]);
+		});
+	});
 });
