@@ -307,6 +307,10 @@ Session.prototype.postRequestProc = function postRequestProc(req) {
 			this.pc.location.onPlayerReconnect(this.pc);
 			break;
 	}
+	// make sure changes/announcements caused by this request are sent out
+	if (this.loggedIn) {
+		this.pc.location.flush();
+	}
 };
 
 

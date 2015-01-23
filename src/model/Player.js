@@ -484,8 +484,10 @@ Player.prototype.queueAnnc = function queueAnnc(annc) {
  *        that cannot be encoded in AMF3 (e.g. circular references)
  * @param {boolean} [skipChanges] if `true`, queued property and item
  *        changes are **not** included
+ * @param {boolean} [flushOnly] if `true`, the message is only sent if
+ *        there are changes and/or announcements to send along with it
  */
-Player.prototype.send = function send(msg, skipChanges) {
+Player.prototype.send = function send(msg, skipChanges, flushOnly) {
 	if (!this.session) {
 		log.info(new Error('dummy error for stack trace'),
 			'trying to send message to offline player %s', this);
@@ -519,7 +521,9 @@ Player.prototype.send = function send(msg, skipChanges) {
 		msg.announcements = this.anncs;
 		this.anncs = [];
 	}
-	this.session.send(msg);
+	if (!flushOnly || msg.changes || msg.announcements) {
+		this.session.send(msg);
+	}
 };
 
 

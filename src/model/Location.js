@@ -322,6 +322,17 @@ Location.prototype.send = function send(msg, skipChanges, exclude) {
 
 
 /**
+ * Sends a special message to all players in the location that includes
+ * all currently queued up announcements and changes.
+ */
+Location.prototype.flush = function flush() {
+	for (var tsid in this.players) {
+		this.players[tsid].send({type: 'location_event'}, false, true);
+	}
+};
+
+
+/**
  * Puts the item into the location at the given position, merging it
  * with existing nearby items of the same class.
  *
