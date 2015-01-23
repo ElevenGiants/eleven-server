@@ -131,6 +131,22 @@ function runWorker() {
 	if (config.get('debug').repl && config.get('debug:repl:enable')) {
 		replServer.init();
 	}
+	// start explicit GC interval if configured
+	var gcInt = config.get('debug:gcInt', null);
+	if (gcInt) {
+		if (!global.gc) {
+			log.error('GC interval configured, but global gc() not available ' +
+				'(requires node option --expose_gc)');
+		}
+		else {
+			log.info('starting explicit GC interval (%s ms)', gcInt);
+			setInterval(function explicitGC() {
+				var timer = metrics.createTimer('process.gc_time');
+				global.gc();
+				timer.stop();
+			}, gcInt);
+		}
+	}
 }
 
 
