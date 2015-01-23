@@ -313,6 +313,8 @@ suite('GameObject', function () {
 
 	suite('resumeGsTimers', function () {
 
+		this.slow(200);
+
 		test('resumes timers', function (done) {
 			var now = new Date().getTime();
 			var go = new GameObject();
@@ -349,15 +351,15 @@ suite('GameObject', function () {
 				timer: {},
 				interval: {
 					foo: {
-						options: {fname: 'foo', delay: 20, interval: true},
-						start: new Date().getTime() - 90,
+						options: {fname: 'foo', delay: 30, interval: true},
+						start: new Date().getTime() - 80,
 					},
 				},
 			};
 			var count = 0;
 			go.foo = function foo() {
 				count++;
-				if (count === 6) {
+				if (count === 4) {
 					assert.deepEqual(go.gsTimers.timer, {},
 						'partial intervall call and resume timer done');
 					assert.property(go.gsTimers.interval.foo, 'handle',
@@ -367,13 +369,15 @@ suite('GameObject', function () {
 				}
 			};
 			go.resumeGsTimers();
-			assert.strictEqual(count, 4, 'catch-up calls fired synchronously');
+			assert.strictEqual(count, 2, 'catch-up calls fired synchronously');
 			assert.property(go.gsTimers.timer, 'foo', 'partial interval call scheduled');
 			assert.property(go.gsTimers.timer, 'setGsTimer', 'resume timer scheduled');
-			assert.isTrue(go.gsTimers.timer.setGsTimer.options.delay <= 10);
-			assert.isTrue(go.gsTimers.timer.setGsTimer.options.internal);
+			assert.isTrue(go.gsTimers.timer.setGsTimer.options.delay <= 10,
+				'partial interval time calculated correctly');
+			assert.isTrue(go.gsTimers.timer.setGsTimer.options.internal,
+				'resume timer is an internal timer');
 			assert.deepEqual(go.gsTimers.timer.setGsTimer.options.args,
-				[{fname: 'foo', delay: 20, interval: true}]);
+				[{fname: 'foo', delay: 30, interval: true}]);
 			assert.notProperty(go.gsTimers.interval.foo, 'handle',
 				'interval itself not resumed yet');
 		});
