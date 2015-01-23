@@ -325,7 +325,7 @@ GameObject.prototype.resumeGsTimers = function resumeGsTimers() {
 				// if not deleted while catching up (e.g. trant death), actually resume interval
 				if (!this.deleted) {
 					// schedule next call with shortened interval
-					var nextDelay = Math.ceil(age % entry.options.delay);
+					var nextDelay = entry.options.delay - age % entry.options.delay;
 					var nextOpts = utils.shallowCopy(entry.options);
 					nextOpts.delay = nextDelay;
 					nextOpts.interval = false;
