@@ -136,14 +136,14 @@ function load(tsid) {
 	else {
 		// make sure any changes to the object are persisted
 		obj = persProxy.makeProxy(obj);
+		cache[tsid] = obj;
 		// resume timers/intervals and send onLoad event if there is a handler
-		if (obj.resumeGsTimers) {
-			obj.resumeGsTimers();
-		}
 		if (obj.onLoad) {
 			obj.onLoad();
 		}
-		cache[tsid] = obj;
+		if (obj.resumeGsTimers) {
+			obj.resumeGsTimers();
+		}
 		metrics.increment('pers.load.local');
 	}
 	metrics.increment('pers.load');
@@ -330,6 +330,7 @@ function write(obj, logmsg, callback) {
 function del(obj, logmsg, callback) {
 	log.debug('pers.del: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	metrics.increment('pers.del');
+	if (obj.suspendGsTimers) obj.suspendGsTimers();
 	delete cache[obj.tsid];
 	pbe.del(obj, function db(err, res) {
 		if (err) {

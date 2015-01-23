@@ -221,6 +221,22 @@ suite('GameObject', function () {
 				{fname: 'foo', interval: true, delay: 1000});
 		});
 
+		test('start property contains start of last call for intervals',
+			function (done) {
+			var go = new GameObject();
+			var calls = 0;
+			var prevStart;
+			go.foo = function foo() {
+				if (calls++ > 0) {
+					assert.isTrue(go.gsTimers.interval.foo.start > prevStart);
+					clearInterval(go.gsTimers.interval.foo.handle);  // clean up
+					done();
+				}
+				prevStart = go.gsTimers.interval.foo.start;
+			};
+			go.setGsTimer({fname: 'foo', delay: 10, interval: true});
+		});
+
 		test('fails with invalid options or option combinations', function () {
 			assert.throw(function () {
 				new GameObject().setGsTimer({fname: 'meh'});
@@ -297,40 +313,97 @@ suite('GameObject', function () {
 
 	suite('resumeGsTimers', function () {
 
-		test('works as expected', function (done) {
+		test('resumes timers', function (done) {
 			var now = new Date().getTime();
 			var go = new GameObject();
 			go.gsTimers = {
 				timer: {
-					obsolete: {
-						options: {fname: 'foo', delay: 50},
+					past: {
+						options: {fname: 'past', args: ['past'], delay: 50},
 						start: now - 100,
 					},
-					foo: {
-						options: {fname: 'foo', delay: 20},
+					future: {
+						options: {fname: 'future', args: ['future'], delay: 20},
 						start: now - 10,
 					},
 				},
+				interval: {},
+			};
+			var calls = [];
+			go.past = go.future = function handler(arg) {
+				calls.push(arg);
+				if (calls.length === 2) {
+					assert.deepEqual(calls, ['past', 'future']);
+					done();
+				}
+			};
+			go.resumeGsTimers();
+			assert.deepEqual(calls, [], 'past timer not fired synchronously');
+			assert.property(go.gsTimers.timer.past, 'handle', 'past timer rescheduled');
+			assert.property(go.gsTimers.timer.future, 'handle', 'future timer resumed');
+		});
+
+		test('resumes intervals, catching up if necessary', function (done) {
+			var go = new GameObject();
+			go.gsTimers = {
+				timer: {},
 				interval: {
 					foo: {
 						options: {fname: 'foo', delay: 20, interval: true},
-						start: now - 99999,
+						start: new Date().getTime() - 90,
 					},
 				},
 			};
 			var count = 0;
 			go.foo = function foo() {
 				count++;
-				if (count === 2) {
+				if (count === 6) {
+					assert.deepEqual(go.gsTimers.timer, {},
+						'partial intervall call and resume timer done');
+					assert.property(go.gsTimers.interval.foo, 'handle',
+						'interval running');
 					clearInterval(go.gsTimers.interval.foo.handle);  // clean up
 					done();
 				}
 			};
 			go.resumeGsTimers();
-			assert.notProperty(go.gsTimers.timer, 'obsolete',
-				'obsolete timer not resumed');
-			assert.property(go.gsTimers.timer.foo, 'handle', 'timer resumed');
-			assert.property(go.gsTimers.interval.foo, 'handle', 'interval resumed');
+			assert.strictEqual(count, 4, 'catch-up calls fired synchronously');
+			assert.property(go.gsTimers.timer, 'foo', 'partial interval call scheduled');
+			assert.property(go.gsTimers.timer, 'setGsTimer', 'resume timer scheduled');
+			assert.isTrue(go.gsTimers.timer.setGsTimer.options.delay <= 10);
+			assert.isTrue(go.gsTimers.timer.setGsTimer.options.internal);
+			assert.deepEqual(go.gsTimers.timer.setGsTimer.options.args,
+				[{fname: 'foo', delay: 20, interval: true}]);
+			assert.notProperty(go.gsTimers.interval.foo, 'handle',
+				'interval itself not resumed yet');
+		});
+
+		test('does not resume interval if the object is deleted while catching up',
+			function () {
+			var go = new GameObject();
+			go.gsTimers = {
+				timer: {},
+				interval: {
+					foo: {
+						options: {fname: 'foo', delay: 20, interval: true},
+						start: new Date().getTime() - 90,
+					},
+				},
+			};
+			var count = 0;
+			go.foo = function foo() {
+				count++;
+				if (count >= 3) {
+					go.del();
+				}
+			};
+			go.resumeGsTimers();
+			assert.strictEqual(count, 3,
+				'catch-up calls only fired until object was deleted');
+			assert.deepEqual(go.gsTimers.timer, {},
+				'no partial interval call/resume timer scheduled');
+			assert.notProperty(go.gsTimers.interval.foo, 'handle',
+				'interval itself not resumed');  // it is still configured but we don't care, the object is deleted anyway
 		});
 	});
 
