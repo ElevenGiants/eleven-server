@@ -227,12 +227,15 @@ function isLocal(address) {
  *
  * @param {string} [key] key of the desired setting (if `undefined`,
  *        the complete configuration object is returned)
+ * @param {*} [def] when specified, the value of this parameter will be
+ *        returned if the given key is not defined in the configuration
  * @returns {*} the requested configuration setting or (sub-)tree
  * @throws {ConfigError} if the specified key is not defined in the
- *         current configuration
+ *         current configuration (and no `def` argument was specified)
  */
-function get(key) {
+function get(key, def) {
 	var ret = nconf.get(key);
+	if (ret === undefined) ret = def;
 	if (ret === undefined) {
 		throw new ConfigError(util.format('not found: "%s"', key));
 	}

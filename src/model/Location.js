@@ -4,6 +4,7 @@ module.exports = Location;
 
 
 var assert = require('assert');
+var config = require('config');
 var GameObject = require('model/GameObject');
 var Geo = require('model/Geo');
 var Bag = require('model/Bag');
@@ -65,8 +66,11 @@ function Location(data, geo) {
 	assert(typeof geoData === 'object', 'no geometry data for ' + this);
 	this.updateGeo(geoData);
 	// periodically check whether location can be released from memory
-	this.setGsTimer({fname: 'checkUnload', delay: 120000, interval: true,
-		internal: true});
+	var unloadInt = config.get('pers:locUnloadInt', null);
+	if (unloadInt && rpc.isLocal(this)) {
+		this.setGsTimer({fname: 'checkUnload', delay: unloadInt, interval: true,
+			internal: true});
+	}
 }
 
 utils.copyProps(require('model/LocationApi').prototype, Location.prototype);
