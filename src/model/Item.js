@@ -200,6 +200,40 @@ Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 	this.setXY(x, y);
 	this.updatePath();
 	this.queueChanges();
+	this.sendContChangeEvents(prev);
+};
+
+
+/**
+ * Calls various GSJS event handler functions for this item and other
+ * items in the same (current or previous) container after a container
+ * change.
+ *
+ * @param {Location|Player|Bag} [prev] previous container
+ * @private
+ */
+Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
+	var cont = this.container;
+	var k, it;
+	if (prev && prev !== cont) {
+		if (this.onContainerChanged) {
+			this.onContainerChanged(prev, cont);
+		}
+		for (k in prev.items) {
+			it = prev.items[k];
+			if (it.onContainerItemRemoved) {
+				it.onContainerItemRemoved(this, cont);
+			}
+		}
+	}
+	if (!prev || prev !== cont) {
+		for (k in cont.items) {
+			it = cont.items[k];
+			if (it.onContainerItemAdded) {
+				it.onContainerItemAdded(this, prev);
+			}
+		}
+	}
 };
 
 

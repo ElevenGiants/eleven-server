@@ -353,3 +353,17 @@ Location.prototype.getAllItems = Bag.prototype.getAllItems;
 Location.prototype.getPath = function getPath(path) {
 	return this.getAllItems(true)[path] || null;
 };
+
+
+/**
+ * Announces an item state change to all other items in the location.
+ *
+ * @param {Item} item the item whose state has changed
+ */
+Location.prototype.sendItemStateChange = function sendItemStateChange(item) {
+	for (var k in this.items) {
+		if (this.items[k] !== item && this.items[k].onContainerItemStateChanged) {
+			this.items[k].onContainerItemStateChanged(item);
+		}
+	}
+};
