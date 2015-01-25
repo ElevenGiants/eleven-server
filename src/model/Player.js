@@ -63,6 +63,7 @@ var PROPS_CHANGES = {
 function Player(data) {
 	Player.super_.call(this, data);
 	utils.addNonEnumerable(this, 'session');
+	utils.addNonEnumerable(this, 'active', false);
 	utils.addNonEnumerable(this, 'changes', []);
 	utils.addNonEnumerable(this, 'anncs', []);
 	// convert selected properties to "Property" instances (works with simple
@@ -320,6 +321,7 @@ Player.prototype.startMove = function startMove(newLoc, x, y) {
 		this.location = newLoc;
 		this.setXY(x, y, true);
 	}
+	this.active = false;
 };
 
 
@@ -333,6 +335,7 @@ Player.prototype.endMove = function endMove() {
 	log.info('end move to %s', this.location);
 	assert(utils.isLoc(this.location), util.format(
 		'invalid location property: %s', this.location));
+	this.active = true;
 	this.location.addPlayer(this);
 };
 
@@ -604,13 +607,15 @@ Player.prototype.getPropChanges = function getPropChanges() {
  *          changed
  */
 Player.prototype.setXY = function setXY(x, y, noCD) {
+	// ignore if the player is currently moving between locations
+	if (!this.active) return;
 	// call setXY of Item to actually move the player (respecting physics/platforms)
 	var actuallyMoved = Player.super_.prototype.setXY.call(this, x, y);
 	// if the player actually moved we may have to handle a collision
 	if (actuallyMoved && !noCD) {
 		for (var k in this.location.items) {
 			var it = this.location.items[k];
-			if (!it.collDet) continue;
+			if (!it || !it.collDet) continue;
 			// test default hitbox of this item
 			this.handleCollision(it, it.hitBox);
 			// test all named hitboxes of this item
@@ -618,11 +623,13 @@ Player.prototype.setXY = function setXY(x, y, noCD) {
 				this.handleCollision(it, it.hitBoxes[b], b);
 			}
 		}
-		// test all hitboxes defined in the geometry of the current location
-		var hitBoxes = this.location.geometry.getHitBoxes();
-		for (var j in hitBoxes) {
-			var box = hitBoxes[j];
-			this.handleCollision(box, box, box.id);
+		if (this.active) {  // if we haven't been teleported away yet
+			// test all hitboxes defined in the geometry of the current location
+			var hitBoxes = this.location.geometry.getHitBoxes();
+			for (var j in hitBoxes) {
+				var box = hitBoxes[j];
+				this.handleCollision(box, box, box.id);
+			}
 		}
 	}
 	return actuallyMoved;

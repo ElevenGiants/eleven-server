@@ -34,6 +34,7 @@ suite('Player', function () {
 		var p = new Player({tsid: 'P', x: 0, y: 0, h: 100, w: 50});
 		p.stacked_physics_cache = {pc_scale: 1};
 		p.location = new Location({tsid: 'L'}, new Geo());
+		p.active = true;
 		return p;
 	}
 
@@ -110,6 +111,7 @@ suite('Player', function () {
 			var lold = new Location({tsid: 'Lold'}, new Geo());
 			var lnew = new Location({tsid: 'Lnew'}, new Geo());
 			var p = new Player({tsid: 'P1', location: lold, x: 1, y: 1});
+			p.active = true;
 			lold.players[p.tsid] = p;
 			p.startMove(lnew, 2, 3);
 			assert.strictEqual(p.location, lnew);
@@ -669,6 +671,43 @@ suite('Player', function () {
 			collDetDefaultHitBox = false;
 			p.setXY(20, 20);
 			assert.isTrue(collDetDefaultHitBox, 'handleCollision with geo hitBox');
+		});
+
+		test('does not set position while player is changing location', function () {
+			var p = getCDTestPlayer();
+			p.active = false;  // simulate location move in progress
+			p.setXY(2, 3);
+			assert.strictEqual(p.x, 0, 'setXY did not change player x');
+			assert.strictEqual(p.y, 0, 'setXY did not change player y');
+		});
+
+		test('does not set position/handle collisions while player is changing location',
+			function () {
+			// i2 triggers a (fake) location change, no further item should be
+			// collision-tested after that; due to the non-deterministic order
+			// in which items are tested, the test may not always actually
+			// verify this, but we can at least avoid false negatives
+			var p = getCDTestPlayer();
+			var i2collided = false;
+			var i1 = new Item({tsid: 'I1', x: 0, y: 0, hitBox: {w: 100, h: 100},
+				onPlayerCollision: function onPlayerCollision() {
+					if (i2collided) {  // guard against unexpected CD check order
+						throw new Error('should not be called');
+					}
+				},
+			});
+			var i2 = new Item({tsid: 'I2', x: 0, y: 0, hitBox: {w: 100, h: 100},
+				onPlayerCollision: function onPlayerCollision() {
+					i2collided = true;
+					// simulate start of location move
+					p.location = new Location({tsid: 'L'}, new Geo());
+					p.active = false;
+				},
+			});
+			var i3 = new Item({tsid: 'I3', x: 0, y: 0, hitBox: {w: 100, h: 100},
+				onPlayerCollision: i1.onPlayerCollision});
+			p.location.items = {I1: i1, I2: i2, I3: i3};
+			p.setXY(2, 3);
 		});
 	});
 
