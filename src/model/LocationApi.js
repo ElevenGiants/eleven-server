@@ -247,19 +247,57 @@ LocationApi.prototype.apiNotifyItemStateChanged =
 };
 
 
+/**
+ * Finds items within a given radius around a point.
+ *
+ * @param {number} x x coordinate to search around
+ * @param {number} y y coordinate to search around
+ * @param {number} radius radius to consider (in px)
+ * @returns {object} hash of the found items
+ */
 LocationApi.prototype.apiGetItemsInTheRadius = function apiGetItemsInTheRadius(
 	x, y, radius) {
 	log.debug('%s.apiGetItemsInTheRadius(%s, %s, %s)', this, x, y, radius);
-	//TODO: implement&document me
-	log.warn('TODO Location.apiGetItemsInTheRadius not implemented yet');
+	return this.getInRadius(x, y, radius);
 };
 
 
+/**
+ * Finds active players within a given radius around a point.
+ *
+ * @param {number} x x coordinate to search around
+ * @param {number} y y coordinate to search around
+ * @param {number} radius radius to consider (in px)
+ * @returns {object} hash of the found players
+ */
+LocationApi.prototype.apiGetActivePlayersInTheRadius =
+	function apiGetActivePlayersInTheRadius(x, y, radius) {
+	log.debug('%s.apiGetActivePlayersTheRadius(%s, %s, %s)', this, x, y, radius);
+	return this.getInRadius(x, y, radius, true);
+};
+
+
+/**
+ * Finds active players within a given radius around a point,
+ * and returns them as a sorted list including their distance.
+ *
+ * @param {number} x x coordinate to search around
+ * @param {number} y y coordinate to search around
+ * @param {number} radius radius to consider (in px)
+ * @returns {array} an array containing information about all active
+ *          players within the given radius, ordered by distance,
+ *          closest players first, e.g.
+ * ```
+ * [
+ *     {pc: [human#PA9S7UKB6ND2IKB], dist: 126.06, x: 780, y: -97},
+ *     {pc: [human#P1KUXVLVASKLUJ8], dist: 234.7, x: 951, y: -12},
+ *     ...
+ * ]```
+ */
 LocationApi.prototype.apiGetActivePlayersInTheRadiusX =
 	function apiGetActivePlayersInTheRadiusX(x, y, radius) {
-	log.debug('%s.apiGetActivePlayersInTheRadiusX(%s, %s, %s)', this, x, y, radius);
-	//TODO: implement&document me
-	log.warn('TODO Location.apiGetActivePlayersInTheRadiusX not implemented yet');
+	log.debug('%s.apiGetActivePlayersTheRadiusX(%s, %s, %s)', this, x, y, radius);
+	return this.getInRadius(x, y, radius, true, true);
 };
 
 

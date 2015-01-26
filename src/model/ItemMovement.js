@@ -470,7 +470,7 @@ ItemMovement.prototype.moveStep = function moveStep() {
 		// actually move and announce the resulting changes
 		this.item.setXY(nextStep.dx, nextStep.dy);
 		this.item.queueChanges(false, nextStep.fullChanges);
-		this.item.container.send({type: 'location_event'});
+		this.item.container.flush();
 		// advance to next path segment
 		if (nextStep.finished) {
 			this.path.shift();

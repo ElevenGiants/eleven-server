@@ -228,3 +228,17 @@ Geo.prototype.getClosestPlatPoint = function getClosestPlatPoint(x, y, dir,
 	}
 	return {plat: closestPlat, point: point};
 };
+
+
+/**
+ * Gets all hitboxes for this `Geo`'s middleground layer.
+ *
+ * @returns {array} a list of hitbox objects
+ */
+Geo.prototype.getHitBoxes = function getHitBoxes() {
+	var ret = [];
+	for (var j in this.layers.middleground.boxes) {
+		ret.push(this.layers.middleground.boxes[j]);
+	}
+	return ret;
+};

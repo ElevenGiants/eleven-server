@@ -29,6 +29,16 @@ suite('Player', function () {
 	});
 
 
+	function getCDTestPlayer() {
+		// creates a dummy player for collision detection tests
+		var p = new Player({tsid: 'P', x: 0, y: 0, h: 100, w: 50});
+		p.stacked_physics_cache = {pc_scale: 1};
+		p.location = new Location({tsid: 'L'}, new Geo());
+		p.active = true;
+		return p;
+	}
+
+
 	suite('ctor', function () {
 
 		test('TSIDs of new Player objects start with P', function () {
@@ -101,6 +111,7 @@ suite('Player', function () {
 			var lold = new Location({tsid: 'Lold'}, new Geo());
 			var lnew = new Location({tsid: 'Lnew'}, new Geo());
 			var p = new Player({tsid: 'P1', location: lold, x: 1, y: 1});
+			p.active = true;
 			lold.players[p.tsid] = p;
 			p.startMove(lnew, 2, 3);
 			assert.strictEqual(p.location, lnew);
@@ -584,6 +595,176 @@ suite('Player', function () {
 
 		test('returns undefined when nothing changed', function () {
 			assert.isUndefined(new Player().getPropChanges());
+		});
+	});
+
+
+	suite('isHit', function () {
+
+		test('works as expected', function () {
+			var p = getCDTestPlayer();
+			var i = new Item({x: 23, y: 23, hitBox: {w: 100, h: 100}});
+			var hit = p.isHit(i, i.hitBox);
+			assert.isTrue(hit, 'it is hit');
+
+			i = new Item({x: 2323, y: 2323, hitBox: {w: 100, h: 100}});
+			hit = p.isHit(i, i.hitBox);
+			assert.isFalse(hit, 'it is not hit, too far away');
+		});
+
+		test('respects scaled player size', function () {
+			var p = getCDTestPlayer();
+			var i = new Item({x: 200, y: 0, hitBox: {w: 100, h: 100}});
+			var hit = p.isHit(i, i.hitBox);
+			assert.isFalse(hit, 'it is not hit, player too small');
+
+			p.stacked_physics_cache.pc_scale = 10;
+			hit = p.isHit(i, i.hitBox);
+			assert.isTrue(hit, 'it is hit, respected pc_scale');
+		});
+	});
+
+
+	suite('setXY', function () {
+
+		test('moves the player', function () {
+			var p = getCDTestPlayer();
+			var result = p.setXY(23, 23);
+			assert.strictEqual(p.x, 23, 'correct x position');
+			assert.strictEqual(p.y, 23, 'correct y position');
+			assert.isTrue(result, 'returned true as player was moved');
+
+			result = p.setXY(23, 23);
+			assert.isFalse(result, 'returned false as player was not moved');
+		});
+
+		test('calls collision detection handling', function () {
+			var p = getCDTestPlayer();
+			var collDetDefaultHitBox = false;
+			var collDetNamedHitBox = false;
+			p.handleCollision = function (item, hitBox, hitBoxName) {
+				collDetDefaultHitBox = true;
+				if (hitBoxName) {
+					collDetNamedHitBox = true;
+				}
+			};
+			var i = new Item({tsid: 'I', x: 1000, y: 0, hitBox: {w: 100, h: 100}});
+			p.location.items = [i];
+
+			p.setXY(5, 5);
+			assert.isFalse(collDetDefaultHitBox, 'still false, no collDet');
+
+			i.collDet = true;
+			p.setXY(10, 10);
+			assert.isTrue(collDetDefaultHitBox, 'handleCollision with default hitBox');
+
+			collDetDefaultHitBox = false;
+			p.setXY(11, 11, true);
+			assert.isFalse(collDetDefaultHitBox, 'CD skipped explicitly');
+
+			i.hitBoxes = {foo: {w: 100, h: 100}};
+			p.setXY(15, 15);
+			assert.isTrue(collDetNamedHitBox, 'handleCollision with named hitBox');
+
+			p.location.geometry.layers.middleground.boxes = [{w: 100, h: 100}];
+			p.location.items = [];
+			collDetDefaultHitBox = false;
+			p.setXY(20, 20);
+			assert.isTrue(collDetDefaultHitBox, 'handleCollision with geo hitBox');
+		});
+
+		test('does not set position while player is changing location', function () {
+			var p = getCDTestPlayer();
+			p.active = false;  // simulate location move in progress
+			p.setXY(2, 3);
+			assert.strictEqual(p.x, 0, 'setXY did not change player x');
+			assert.strictEqual(p.y, 0, 'setXY did not change player y');
+		});
+
+		test('does not set position/handle collisions while player is changing location',
+			function () {
+			// i2 triggers a (fake) location change, no further item should be
+			// collision-tested after that; due to the non-deterministic order
+			// in which items are tested, the test may not always actually
+			// verify this, but we can at least avoid false negatives
+			var p = getCDTestPlayer();
+			var i2collided = false;
+			var i1 = new Item({tsid: 'I1', x: 0, y: 0, hitBox: {w: 100, h: 100},
+				onPlayerCollision: function onPlayerCollision() {
+					if (i2collided) {  // guard against unexpected CD check order
+						throw new Error('should not be called');
+					}
+				},
+			});
+			var i2 = new Item({tsid: 'I2', x: 0, y: 0, hitBox: {w: 100, h: 100},
+				onPlayerCollision: function onPlayerCollision() {
+					i2collided = true;
+					// simulate start of location move
+					p.location = new Location({tsid: 'L'}, new Geo());
+					p.active = false;
+				},
+			});
+			var i3 = new Item({tsid: 'I3', x: 0, y: 0, hitBox: {w: 100, h: 100},
+				onPlayerCollision: i1.onPlayerCollision});
+			p.location.items = {I1: i1, I2: i2, I3: i3};
+			p.setXY(2, 3);
+		});
+	});
+
+
+	suite('handleCollision', function () {
+
+		test('works as expected when entering a hitbox', function () {
+			var hitBoxCalled = false;
+			var onPlayerCollisionCalled = false;
+			var p = getCDTestPlayer();
+			p['!colliders'] = {};
+			p.location.hitBox = function (hitBoxName, hit) {
+				hitBoxCalled = true;
+			};
+
+			var i = new Item({tsid: 'I', x: 0, y: 0, hitBox: {w: 100, h: 100}});
+			i['!colliders'] = {};
+			p.handleCollision(i, i.hitBox);
+			assert.isTrue(hitBoxCalled, 'called hitBox');
+			assert.property(p['!colliders'], 'undefined', 'kept track of hitBox');
+
+			i.onPlayerCollision = function (hitBoxName) {
+				onPlayerCollisionCalled = true;
+			};
+			p.handleCollision(i, i.hitBox, 'foo');
+			assert.isTrue(onPlayerCollisionCalled, 'called onPlayerCollision');
+
+			onPlayerCollisionCalled = false;
+			p.handleCollision(i, i.hitBox);
+			assert.isTrue(onPlayerCollisionCalled, 'called onPlayerCollision');
+			assert.property(i['!colliders'], p.tsid, 'kept track of player in hitBox');
+		});
+
+		test('works as expected when leaving a hitbox', function () {
+			var onLeavingHitBoxCalled = false;
+			var onPlayerLeavingCollisionAreaCalled = false;
+			var p = getCDTestPlayer();
+			p['!colliders'] = {foo: 1};
+			p.location.onLeavingHitBox = function (player, hitBoxName) {
+				onLeavingHitBoxCalled = true;
+			};
+
+			var i = new Item({tsid: 'I', x: 1000, y: 0, hitBox: {w: 100, h: 100}});
+
+			p.handleCollision(i, i.hitBox, 'foo');
+			assert.isTrue(onLeavingHitBoxCalled, 'called onLeavingHitBox');
+			assert.notProperty(p['!colliders'], 'foo', 'removed hitBox from !colliders');
+
+			i.onPlayerCollision = function () {};  // required to enable CD in the first place
+			i.onPlayerLeavingCollisionArea = function (i) {
+				onPlayerLeavingCollisionAreaCalled = true;
+			};
+
+			i['!colliders'] = {P: 1};
+			p.handleCollision(i, i.hitBox);
+			assert.isTrue(onPlayerLeavingCollisionAreaCalled, 'called collision handler');
+			assert.notProperty(i['!colliders'], p.tsid, 'removed hitBox from !colliders');
 		});
 	});
 });
