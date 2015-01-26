@@ -308,9 +308,6 @@ Item.prototype.getChangeData = function getChangeData(pc, removed, compact) {
 	if (!removed && this.slot !== undefined) ret.slot = this.slot;
 	if (this.z) ret.z = this.z;
 	if (this.rs) ret.rs = this.rs;
-	if (!this.deleted && this.isSelectable && !this.isSelectable(pc)) {
-		ret.not_selectable = true;
-	}
 	if (this.isSoulbound && this.isSoulbound() && this.soulbound_to) {
 		ret.soulbound_to = this.soulbound_to;
 	}
@@ -318,7 +315,10 @@ Item.prototype.getChangeData = function getChangeData(pc, removed, compact) {
 	if (this.is_consumable) ret.consumable_state = this.get_consumable_state();
 	if (this.getTooltipLabel) ret.tooltip_label = this.getTooltipLabel();
 	if (this.make_config) ret.config = this.make_config();
-	if (this.onStatus) ret.status = this.onStatus(pc);
+	if (!this.deleted) {
+		if (this.isSelectable && !this.isSelectable(pc)) ret.not_selectable = true;
+		if (this.onStatus) ret.status = this.onStatus(pc);
+	}
 	return ret;
 };
 /*jshint +W071 */
