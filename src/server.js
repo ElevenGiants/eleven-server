@@ -24,6 +24,7 @@ var policyServer = require('comm/policyServer');
 var logging = require('logging');
 var metrics = require('metrics');
 var replServer = require('comm/replServer');
+var slack = require('comm/slack');
 var util = require('util');
 
 
@@ -130,6 +131,9 @@ function runWorker() {
 	// start REPL server if enabled
 	if (config.get('debug').repl && config.get('debug:repl:enable')) {
 		replServer.init();
+	}
+	if (config.get('slack:token', null)) {
+		slack.init();
 	}
 	// start explicit GC interval if configured
 	var gcInt = config.get('debug:gcInt', null);
