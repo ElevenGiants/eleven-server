@@ -330,3 +330,31 @@ GameObject.prototype.cancelGsTimer = function cancelGsTimer(fname, interval) {
 	}
 	return ret;
 };
+
+GameObject.prototype.copyProps = function copyProps(from, skipList) {
+	for (var key in from){
+		var value = from[k];
+		//Skip functions, as they're defined in Server/GSJS code and not to be persisted
+		if(typeof value === 'function') continue;
+		//Skip instance specific properties
+		if(!from.hasOwnProperty(key)) continue;
+		//Skip items specified to skip
+		if(skipList && skipList.indexOf(key) !== -1) continue;
+		//Directly copy primitive types
+		if(!(value instanceof Object)){
+			this[key] = value;
+		}
+		else{
+			//Directly copy objref proxies without digging down
+			if(value.isObjeRef) {
+				this[key] = value;
+			}
+			//Recurse down for complex objects/arrays
+			else{
+				this[key] = value instanceof Array ? [] : {};
+				//don't provide skiplist, only want to skip top level items
+				this.copyProps(value, null);
+			}
+		}
+	}
+}

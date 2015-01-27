@@ -261,5 +261,5 @@ Location.prototype.getPath = function getPath(path) {
 };
 
 Location.prototype.copyLocation = function copyLocation(label, moteId, hubId, is_instance, alt_class_tsid, custom_tsid){
-
+	var newGeo = Geo.createFromCopy(this.geometry);
 };
