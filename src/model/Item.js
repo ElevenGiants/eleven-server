@@ -229,7 +229,7 @@ Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
 		}
 		for (k in prev.items) {
 			it = prev.items[k];
-			if (it.onContainerItemRemoved) {
+			if (it && it.onContainerItemRemoved) {
 				it.onContainerItemRemoved(this, cont);
 			}
 		}
@@ -237,7 +237,7 @@ Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
 	if (!prev || prev !== cont) {
 		for (k in cont.items) {
 			it = cont.items[k];
-			if (it.onContainerItemAdded) {
+			if (it && it.onContainerItemAdded) {
 				it.onContainerItemAdded(this, prev);
 			}
 		}
