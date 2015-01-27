@@ -200,6 +200,14 @@ Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 	this.setXY(x, y);
 	this.updatePath();
 	this.queueChanges();
+	// send changes immediately when adding a new item to a location; in case
+	// it is replacing another item (e.g. reviving a trant with fertilidust, or
+	// assembling a machine), the client tries to handle the "delete" change
+	// twice otherwise (resulting in a "... not exists in location, but a delete
+	// changes was sent for it" error popup)
+	if (!prev && utils.isLoc(cont)) {
+		cont.flush();
+	}
 	this.sendContChangeEvents(prev);
 };
 
