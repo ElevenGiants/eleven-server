@@ -189,3 +189,9 @@ LocationApi.prototype.apiNotifyItemStateChanged =
 	//TODO implement&document me
 	log.warn('TODO Location.apiNotifyItemStateChanged not implemented yet');
 };
+
+LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId, hubId, is_instance, alt_class_tsid, custom_tsid){
+	log.debug('%s.apiCopyLocation(%s, %s, %s, %s, %s)', this, label, moteId,
+		hubId, is_instance, alt_class_tsid, custom_tsid);
+	return this.copyLocation(label, moteId, hubId, is_instance, alt_class_tsid, custom_tsid);
+};

@@ -259,3 +259,7 @@ Location.prototype.getAllItems = Bag.prototype.getAllItems;
 Location.prototype.getPath = function getPath(path) {
 	return this.getAllItems()[path] || null;
 };
+
+Location.prototype.copyLocation = function copyLocation(label, moteId, hubId, is_instance, alt_class_tsid, custom_tsid){
+
+};

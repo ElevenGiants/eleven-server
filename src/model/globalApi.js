@@ -11,6 +11,7 @@ var DataContainer = require('model/DataContainer');
 var Quest = require('model/Quest');
 var Item = require('model/Item');
 var Bag = require('model/Bag');
+var Group = require('model/Group');
 var pers = require('data/pers');
 var orProxy = require('data/objrefProxy');
 var utils = require('utils');
@@ -284,3 +285,13 @@ exports.apiAsyncHttpCall = function apiAsyncHttpCall(url, header, postParams, ts
 exports.apiResetThreadCPUClock = function apiResetThreadCPUClock(statName) {
 	log.trace('global.apiResetThreadCPUClock(%s)', statName);
 };
+
+/**
+ * Create a new Group object
+ * 
+ * @param {string} class of the group
+ */
+exports.apiNewGroup = function apiNewGroup(classTsid){
+	log.debug('global.apiNewGroup(%s)', classTsid);
+	return Group.create(classTsid);
+}

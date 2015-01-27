@@ -71,12 +71,15 @@ Geo.prototype.prepConnects = function prepConnects() {
 		}
 		for (k in mg.doors) {
 			var door = mg.doors[k];
-			door.connect = prepConnect(door.connect);
-			// remove links to unavailable locations:
-			if (!pers.exists(door.connect.street_tsid)) {
-				log.info('%s: removing unavailable door connect %s',
-					this, door.connect.street_tsid);
-				delete mg.doors[k];
+			if(door.connect.target != null)
+			{
+				door.connect = prepConnect(door.connect);
+				// remove links to unavailable locations:
+				if (!pers.exists(door.connect.street_tsid)) {
+					log.info('%s: removing unavailable door connect %s',
+						this, door.connect.street_tsid);
+					delete mg.doors[k];
+				}
 			}
 		}
 	}
