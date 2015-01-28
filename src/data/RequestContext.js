@@ -8,6 +8,7 @@ var util = require('util');
 var wait = require('wait.for');
 var Fiber = require('wait.for/node_modules/fibers');
 var pers = require('data/pers');
+var utils = require('utils');
 
 
 /**
@@ -165,6 +166,7 @@ RequestContext.prototype.setDirty = function setDirty(obj) {
  * @param {GameObject} obj
  */
 RequestContext.prototype.setUnload = function setUnload(obj) {
+	utils.addNonEnumerable(obj, 'stale', true);
 	this.unload[obj.tsid] = obj;
 };
 
