@@ -88,15 +88,14 @@ Object.defineProperty(Location.prototype, 'activePlayers', {
 /**
  * Creates a new `Location` instance and adds it to persistence.
  *
- * @param {Geo} geo geometry data (location TSID will be derived from
- *        `geo.tsid`)
  * @param {object} [data] additional properties
  * @returns {object} a `Location` instance wrapped in a {@link
  * module:data/persProxy|persistence proxy}
  */
-Location.create = function create(geo, data) {
+Location.create = function create(data) {
 	data = data || {};
-	data.tsid = geo.getLocTsid();
+	if(data.geo)
+		data.tsid = data.geo.getLocTsid();
 	data.class_tsid = data.class_tsid || 'town';
 	return pers.create(Location, data);
 };
@@ -261,5 +260,103 @@ Location.prototype.getPath = function getPath(path) {
 };
 
 Location.prototype.copyLocation = function copyLocation(label, moteId, hubId, is_instance, alt_class_tsid, custom_tsid){
-	var newGeo = Geo.createFromCopy(this.geometry);
+	var data = {};
+	if(custom_tsid) data.tsid = 'G' + custom_tsid.slice(1);
+	var newGeo = Geo.create(data);
+	newGeo.copyGeometryData(this.geometry);
+	//newGeo = pers.write(newGeo);
+	log.warn('Copied Geo tsid: %s', newGeo.tsid);
+
+	data = {};
+	data.geo = newGeo;
+	if(!alt_class_tsid) data.class_tsid = this.class_tsid;
+	var newLoc = Location.create(data);
+	log.warn('Copied Loc tsid: %s', newLoc.tsid);
+	log.warn('Before copyLocationData');
+	newLoc.copyLocationData(this);
+	log.warn('After copyLocationData');
+	newLoc.label = label;
+	newLoc.moteid = moteId;
+	newLoc.hubid = hubId;
+	newLoc.is_instance = is_instance;
+ 	//newLoc = pers.write(newLoc);
+	log.warn('Before updateGeo');
+	newLoc.updateGeo(newGeo);
+	log.warn('After updateGeo');
+
+	//copy items TODO
+
+	newLoc.onCreateAsCopyOf(this);
+	return newLoc;
+};
+
+Location.prototype.copyLocationData = function copyLocationData(location){
+	this.copyProps(location, ['tsid', 'id', 'class_tsid', 'class_id', 'instances',
+	 'playsers', 'activePlayers']);
+
+};
+
+Location.prototype.processGeometryUpdate = function processGeometryUpdate(){
+	if (!(this.geometry instanceof GameObject)) {
+		// replace the entire geometry object
+		var data = this.geometry;
+		data.tsid = 'G' + this.tsid.slice(1);  // make sure new data does not have a template TSID
+		var geo = pers.get(data.tsid);  // get the old geo object...
+		geo.fromJson(data);  // ...and update it with new data
+		this.geometry = geo;
+	}
+	this.updateGeometry(this.geometry);
+};
+
+Location.prototype.updateGeometry = function updateGeometry(data) {
+	log.debug('%s.updateGeometry', this);
+	this.geometry = data;
+	// create "clientGeometry"
+	this.clientGeometry = utils.shallowCopy(this.geometry);
+	this.clientGeometry.tsid = this.tsid;  // client expects location TSID here
+	this.clientGeometry.label = this.label;  // some geos have different labels
+	var cgeo = this.clientGeometry;
+	// adjust connect (doors, signposts) proxies for client, without modifying original geometry object
+	cgeo.layers = utils.shallowCopy(data.layers);
+	cgeo.layers.middleground = utils.shallowCopy(data.layers.middleground);
+	cgeo.layers.middleground.signposts = utils.shallowCopy(data.layers.middleground.signposts);
+	//TODO: should probably use location.prototype.prep_geometry instead of this:
+	for (var i in cgeo.layers.middleground.signposts) {
+		cgeo.layers.middleground.signposts[i] = utils.shallowCopy(data.layers.middleground.signposts[i]);
+		var signpost = cgeo.layers.middleground.signposts[i];
+		var connects = signpost.connects;
+		signpost.connects = {};
+		for (var j in connects) {
+			signpost.connects[j] = prepConnect(connects[j]);
+		}
+	}
+	cgeo.layers.middleground.doors = utils.shallowCopy(data.layers.middleground.doors);
+	for (var i in cgeo.layers.middleground.doors) {
+		cgeo.layers.middleground.doors[i] = utils.shallowCopy(data.layers.middleground.doors[i]);
+		var door = cgeo.layers.middleground.doors[i];
+		door.connect = prepConnect(door.connect);
+	}
+	// create "geo" (only specific fields)
+	this.geo = {};
+	this.geo.l = this.geometry.l;
+	this.geo.r = this.geometry.r;
+	this.geo.t = this.geometry.t;
+	this.geo.b = this.geometry.b;
+	this.geo.ground_y = this.geometry.ground_y;
+	this.geo.swf_file = this.geometry.swf_file;
+	this.geo.signposts = this.clientGeometry.layers.middleground.signposts;
+	this.geo.doors = this.clientGeometry.layers.middleground.doors;
+	this.geo.sources = this.geometry.sources;
+};
+
+function prepConnect(conn) {
+	var ret = utils.shallowCopy(conn);
+	if (conn.target) {
+		ret.target = conn.target;  // may be non-enumerable (when prepConnect used more than once)
+		ret.label = conn.target.label;
+		ret.street_tsid = conn.target.tsid;
+	}
+	// client does not need/want target, only GSJS:
+	utils.makeNonEnumerable(ret, 'target');
+	return ret;
 };

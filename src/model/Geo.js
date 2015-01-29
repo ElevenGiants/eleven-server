@@ -193,6 +193,6 @@ Geo.prototype.getLocTsid = function getLocTsid() {
 	return Location.prototype.TSID_INITIAL + this.tsid.slice(1);
 };
 
-Geo.prototype.createFromCopy = function createFromCopy(geometry){
+Geo.prototype.copyGeometryData = function copyGeometryData(geometry){
 	this.copyProps(geometry, ['tsid', 'id', 'label']);
 }

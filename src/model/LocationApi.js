@@ -195,3 +195,8 @@ LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId, 
 		hubId, is_instance, alt_class_tsid, custom_tsid);
 	return this.copyLocation(label, moteId, hubId, is_instance, alt_class_tsid, custom_tsid);
 };
+
+LocationApi.prototype.apiGeometryUpdated = function apiGeometryUpdated() {
+	log.debug('%s.apiGeometryUpdated()', this);
+	return this.processGeometryUpdate();
+};

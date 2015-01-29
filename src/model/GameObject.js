@@ -333,7 +333,7 @@ GameObject.prototype.cancelGsTimer = function cancelGsTimer(fname, interval) {
 
 GameObject.prototype.copyProps = function copyProps(from, skipList) {
 	for (var key in from){
-		var value = from[k];
+		var value = from[key];
 		//Skip functions, as they're defined in Server/GSJS code and not to be persisted
 		if(typeof value === 'function') continue;
 		//Skip instance specific properties
@@ -346,7 +346,7 @@ GameObject.prototype.copyProps = function copyProps(from, skipList) {
 		}
 		else{
 			//Directly copy objref proxies without digging down
-			if(value.isObjeRef) {
+			if(value.__isORP || value.__isPP || value.__isRP) {
 				this[key] = value;
 			}
 			//Recurse down for complex objects/arrays
