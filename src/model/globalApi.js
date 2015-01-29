@@ -23,6 +23,7 @@ var orProxy = require('data/objrefProxy');
 var utils = require('utils');
 var logging = require('logging');
 var lodash = require('lodash');
+var slack = require('comm/slack');
 
 
 function getItemType(classTsid) {
@@ -421,6 +422,7 @@ exports.apiSendToAll = function apiSendToAll(msg) {
  */
 exports.apiSendToGroup = function apiSendToGroup(msg, recipients) {
 	log.debug('global.apiSendToGroup(%s, %s)', msg, recipients);
+	slack.handleGroupMsg(msg);
 	var tsids = utils.playersArgToList(recipients);
 	tsids.forEach(function iter(tsid) {
 		if (isPlayerOnline(tsid)) {

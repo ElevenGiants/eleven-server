@@ -32,6 +32,7 @@ var RC = require('data/RequestContext');
 var gsjsBridge = require('model/gsjsBridge');
 var globalApi = require('model/globalApi');
 var rpcApi = require('data/rpcApi');
+var slack = require('comm/slack');
 
 
 function init() {
@@ -68,6 +69,7 @@ function handleConnect(socket) {
 	r.context.api = globalApi;
 	r.context.gsrpc = rpcApi;
 	r.context.memwatch = memwatch;
+	r.context.slack = slack.getClient();
 }
 
 
