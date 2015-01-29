@@ -177,22 +177,19 @@ Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 				util.format('invalid slot number for %s: %s', this, x));
 		}
 	}
-	// change entries in old and new container
+	// change entries in old and new container (unless they are one and the same)
 	var prev = this.container;
 	this.container = cont;
-	if (prev) {
-		delete prev.items[this.tsid];
-		delete prev.hiddenItems[this.tsid];
-	}
-	if (hidden) {
-		cont.hiddenItems[this.tsid] = this;
-	}
-	else {
-		cont.items[this.tsid] = this;
+	if (!prev || prev.tsid !== cont.tsid) {
+		if (prev) {
+			delete prev.items[this.tsid];
+			delete prev.hiddenItems[this.tsid];
+		}
+		cont[hidden ? 'hiddenItems' : 'items'][this.tsid] = this;
 	}
 	this.is_hidden = !!hidden;
-	// queue removal change
-	if (prev && prev !== cont) {
+	// queue removal change if top container changed
+	if (tcont !== this.tcont) {
 		this.queueChanges(true);
 	}
 	// assign to new container and queue addition/update changes
