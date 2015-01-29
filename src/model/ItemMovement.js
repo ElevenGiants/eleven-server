@@ -28,16 +28,15 @@ var MOVE_CB_STATUS = {
  *   ItemMovement#startMove|startMove}
  * * `startMove` calls {@link ItemMovement#buildPath|buildPath} to
  *   create a movement path (which may consist of multiple segments)
- * * `startMove` sets up the internal movement interval
- * * the interval periodically calls {@link
- *   ItemMovement#moveStep|moveStep}, which
+ * * `startMove` makes the first `moveStep` call, initiating movement
+ * * {@link ItemMovement#moveStep|moveStep}
  *   * calls the movement handler function for the selected
  *     movement type ({@link ItemMovement#moveWalking|moveWalking},
  *     {@link ItemMovement#moveFlying|moveFlying}, {@link
  *     ItemMovement#moveDirect|moveDirect})
  *   * updates the item position according to the results
  *   * switches to the next path segment when necessary
- *   * eventually ends the move
+ *   * sets up a timer to call itself again, or ends the move
  * * any relevant events occurring during the move are sent to the
  *   defined movement callback handler
  *
@@ -120,7 +119,7 @@ ItemMovement.prototype.dirY = function dirY(targetY) {
 ItemMovement.prototype.stopMove = function stopMove(status, queueChanges) {
 	if (!status) status = MOVE_CB_STATUS.STOP;
 	var fullStatus = false;
-	this.item.cancelGsTimer('movementTimer', true);
+	this.item.cancelGsTimer('movementTimer');
 	// clear the path
 	this.path = null;
 	// notify the callback
@@ -489,6 +488,8 @@ ItemMovement.prototype.moveStep = function moveStep() {
 		if (nextStep && nextStep.status) status = nextStep.status;
 		return this.stopMove(status, true);
 	}
+	// Set the timer for the next movement step
+	this.item.setGsTimer({fname: 'movementTimer', delay: 333, internal: true});
 };
 
 
@@ -581,8 +582,7 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 
 /**
  * Starts movement to a given destination with specific parameters.
- * This is the main entry point that triggers building the path and
- * sets up the movement interval.
+ * This is the main entry point that triggers building the path.
  *
  * @param {string} transport the transportation mode for this movement
  *        (must be `walking`, `direct`, `flying` or `kicked`)
@@ -625,7 +625,5 @@ ItemMovement.prototype.startMove = function startMove(transport, dest, options) 
 	if (!this.path || this.path.length === 0) {
 		return false;
 	}
-	this.item.setGsTimer({fname: 'movementTimer', delay: 333, interval: true,
-		internal: true});
 	return true;
 };
