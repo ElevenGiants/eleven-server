@@ -1,6 +1,7 @@
 'use strict';
 
 var gsjsBridge = require('model/gsjsBridge');
+var orProxy = require('data/objrefProxy');
 var RC = require('data/RequestContext');
 var Item = require('model/Item');
 var Bag = require('model/Bag');
@@ -323,6 +324,53 @@ suite('Item', function () {
 				cd = p2.changes[0].itemstack_values.location[it.tsid];
 				assert.strictEqual(cd.path_tsid, it.tsid);
 				assert.strictEqual(cd.count, 0, 'removed from location');
+			}, done);
+		});
+
+		test('does not queue removal change when moving within same container',
+			function (done) {
+			var rc = new RC();
+			rc.run(function () {
+				// setup (item in a bag in player inventory)
+				var p = new Player({tsid: 'PX'});
+				p.queueChanges = function noop() {};
+				var it = new Item({tsid: 'IT'});
+				var b = new Bag({tcont: 'PX'});
+				rc.cache[p.tsid] = p;
+				rc.cache[b.tsid] = b;
+				it.setContainer(orProxy.wrap(b), 1);  // not interested in the changes for this
+				// aggregator for queued changes
+				var changes = [];
+				it.queueChanges = function queueChanges(removed) {
+					changes.push(removed);
+				};
+				// actual test starts here
+				it.setContainer(orProxy.wrap(b), 2);  // b wrapped in a new proxy
+				assert.deepEqual(changes, [undefined]);
+			}, done);
+		});
+
+		test('sends removal changes to previous top container', function (done) {
+			var l = new Location({tsid: 'LX'}, new Geo());
+			var p = new Player({tsid: 'PX', location: l});
+			l.players = {PX: p};
+			var b = new Bag({tsid: 'BX', container: l, tcont: l.tsid});
+			var it = new Item({tsid: 'IT', container: b, tcont: l.tsid});
+			b.items = {IT: it};
+			var rc = new RC();
+			rc.run(function () {
+				rc.cache[p.tsid] = p;
+				rc.cache[l.tsid] = l;
+				b.setContainer(p, 0);  // changing container from loc to player in loc
+				var changes = p.mergeChanges().itemstack_values;
+				assert.lengthOf(Object.keys(changes.pc), 2,
+					'pc addition changes for both bag and item');
+				assert.strictEqual(changes.pc.BX.count, 1);
+				assert.strictEqual(changes.pc.IT.count, 1);
+				assert.lengthOf(Object.keys(changes.location), 2,
+					'loc removal changes for both bag and item');
+				assert.strictEqual(changes.location.BX.count, 0);
+				assert.strictEqual(changes.location.IT.count, 0);
 			}, done);
 		});
 	});

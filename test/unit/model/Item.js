@@ -106,9 +106,14 @@ suite('Item', function () {
 
 	suite('setContainer', function () {
 
-		test('does its job', function () {
-			var it = new Item({tsid: 'IT'});
+		function getTestItem(tsid) {
+			var it = new Item({tsid: tsid});
 			it.queueChanges = function noop() {};  // this part is not tested here
+			return it;
+		}
+
+		test('does its job', function () {
+			var it = getTestItem('IT');
 			var b = new Bag({tsid: 'BX', tcont: 'LDUMMY'});
 			it.setContainer(b, 3, 7);
 			assert.strictEqual(it.container, b);
@@ -121,8 +126,7 @@ suite('Item', function () {
 		});
 
 		test('adds to hidden items list if specified', function () {
-			var it = new Item({tsid: 'IT'});
-			it.queueChanges = function noop() {};
+			var it = getTestItem('IT');
 			var b = new Bag({tcont: 'LFOO'});
 			it.setContainer(b, 3, undefined, true);
 			assert.notProperty(b.items, 'IT');
@@ -132,8 +136,7 @@ suite('Item', function () {
 		});
 
 		test('removes item from previous container', function () {
-			var it = new Item({tsid: 'IT'});
-			it.queueChanges = function noop() {};
+			var it = getTestItem('IT');
 			var b1 = new Bag({tcont: 'PCHEECH'});
 			var b2 = new Bag({tcont: 'PCHONG'});
 			it.setContainer(b1, 0);
@@ -144,8 +147,7 @@ suite('Item', function () {
 		});
 
 		test('can be used to move item to another slot', function () {
-			var it = new Item({tsid: 'IT'});
-			it.queueChanges = function noop() {};
+			var it = getTestItem('IT');
 			var b = new Bag({tcont: 'PXYZ'});
 			it.setContainer(b, 1);
 			assert.deepEqual(b.items, {IT: it});
@@ -163,8 +165,7 @@ suite('Item', function () {
 		});
 
 		test('ignores slot property when adding to a location', function () {
-			var it = new Item({tsid: 'IT'});
-			it.queueChanges = function noop() {};
+			var it = getTestItem('IT');
 			var l = new Location({}, new Geo());
 			it.setContainer(l);
 			assert.isUndefined(it.slot);
@@ -176,8 +177,7 @@ suite('Item', function () {
 		});
 
 		test('fails if item is already in that container', function () {
-			var it = new Item();
-			it.queueChanges = function noop() {};
+			var it = getTestItem('IT');
 			var b = new Bag({tcont: 'LFOO'});
 			it.setContainer(b, 7);
 			assert.throw(function () {
@@ -208,8 +208,7 @@ suite('Item', function () {
 		});
 
 		test('sends appropriate onContainerChanged events', function (done) {
-			var it = new Item({tsid: 'IT'});
-			it.queueChanges = function noop() {};
+			var it = getTestItem('IT');
 			it.onContainerChanged = function onContainerChanged(prev, curr) {
 				assert.strictEqual(prev.tsid, 'LX');
 				assert.strictEqual(curr.tsid, 'BX');
@@ -222,11 +221,9 @@ suite('Item', function () {
 		test('sends appropriate onContainerItemAdded events', function (done) {
 			var l = new Location({tsid: 'LX'}, new Geo());
 			var l2 = new Location({tsid: 'LY'}, new Geo());
-			var it1 = new Item({tsid: 'IT1'});
-			it1.queueChanges = function noop() {};
+			var it1 = getTestItem('IT1');
 			it1.setContainer(l);
-			var it2 = new Item({tsid: 'IT2'});
-			it2.queueChanges = function noop() {};
+			var it2 = getTestItem('IT2');
 			it2.setContainer(l2);
 			it1.onContainerItemAdded = function (it, prevCont) {
 				assert.strictEqual(it.tsid, 'IT2');
@@ -238,11 +235,9 @@ suite('Item', function () {
 
 		test('sends appropriate onContainerItemRemoved events', function (done) {
 			var b = new Bag({tsid: 'BX', tcont: 'LDUMMY'});
-			var it1 = new Item({tsid: 'IT1'});
-			it1.queueChanges = function noop() {};
+			var it1 = getTestItem('IT1');
 			it1.setContainer(b, 1, 0);
-			var it2 = new Item({tsid: 'IT2'});
-			it2.queueChanges = function noop() {};
+			var it2 = getTestItem('IT2');
 			it2.setContainer(b, 2, 0);
 			it2.onContainerItemRemoved = function (it, newCont) {
 				assert.strictEqual(it.tsid, 'IT1');
@@ -254,8 +249,7 @@ suite('Item', function () {
 
 		test('does not send change events for moves within a container',
 			function () {
-			var it = new Item({tsid: 'IT'});
-			it.queueChanges = function noop() {};
+			var it = getTestItem('IT');
 			var b = new Bag({tsid: 'BX', tcont: 'LDUMMY'});
 			it.setContainer(b, 3, 7);
 			it.onContainerChanged = it.onContainerItemRemoved =

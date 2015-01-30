@@ -177,22 +177,19 @@ Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 				util.format('invalid slot number for %s: %s', this, x));
 		}
 	}
-	// change entries in old and new container
+	// change entries in old and new container (unless they are one and the same)
 	var prev = this.container;
 	this.container = cont;
-	if (prev) {
-		delete prev.items[this.tsid];
-		delete prev.hiddenItems[this.tsid];
-	}
-	if (hidden) {
-		cont.hiddenItems[this.tsid] = this;
-	}
-	else {
-		cont.items[this.tsid] = this;
+	if (!prev || prev.tsid !== cont.tsid) {
+		if (prev) {
+			delete prev.items[this.tsid];
+			delete prev.hiddenItems[this.tsid];
+		}
+		cont[hidden ? 'hiddenItems' : 'items'][this.tsid] = this;
 	}
 	this.is_hidden = !!hidden;
-	// queue removal change
-	if (prev && prev !== cont) {
+	// queue removal change if top container changed
+	if (tcont !== this.tcont) {
 		this.queueChanges(true);
 	}
 	// assign to new container and queue addition/update changes
@@ -200,6 +197,14 @@ Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 	this.setXY(x, y);
 	this.updatePath();
 	this.queueChanges();
+	// send changes immediately when adding a new item to a location; in case
+	// it is replacing another item (e.g. reviving a trant with fertilidust, or
+	// assembling a machine), the client tries to handle the "delete" change
+	// twice otherwise (resulting in a "... not exists in location, but a delete
+	// changes was sent for it" error popup)
+	if (!prev && utils.isLoc(cont)) {
+		cont.flush();
+	}
 	this.sendContChangeEvents(prev);
 };
 
@@ -221,7 +226,7 @@ Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
 		}
 		for (k in prev.items) {
 			it = prev.items[k];
-			if (it.onContainerItemRemoved) {
+			if (it && it.onContainerItemRemoved) {
 				it.onContainerItemRemoved(this, cont);
 			}
 		}
@@ -229,7 +234,7 @@ Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
 	if (!prev || prev !== cont) {
 		for (k in cont.items) {
 			it = cont.items[k];
-			if (it.onContainerItemAdded) {
+			if (it && it.onContainerItemAdded) {
 				it.onContainerItemAdded(this, prev);
 			}
 		}

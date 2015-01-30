@@ -136,7 +136,7 @@ Location.prototype.addPlayer = function addPlayer(player) {
 	}
 	for (var k in this.items) {
 		var it = this.items[k];
-		if (it.onPlayerEnter) {
+		if (it && it.onPlayerEnter) {
 			try {
 				it.onPlayerEnter(player);
 			}
@@ -165,7 +165,7 @@ Location.prototype.removePlayer = function removePlayer(player, newLoc) {
 	}
 	for (var k in this.items) {
 		var it = this.items[k];
-		if (it.onPlayerExit) {
+		if (it && it.onPlayerExit) {
 			try {
 				it.onPlayerExit(player);
 			}
