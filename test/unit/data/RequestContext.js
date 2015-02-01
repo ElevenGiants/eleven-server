@@ -114,6 +114,7 @@ suite('RequestContext', function () {
 				},
 				function callback() {
 					assert.deepEqual(persMock.getUnloadList(), {IA: {tsid: 'IA'}});
+					assert.isTrue(persMock.getUnloadList().IA.stale);
 					assert.deepEqual(persMock.getDirtyList(), {},
 						'objects to unload are *not* implicitly flagged dirty');
 				}

@@ -35,6 +35,7 @@ function GameObject(data) {
 	// add non-enumerable internal properties
 	utils.addNonEnumerable(this, '__isGO', true);
 	utils.addNonEnumerable(this, 'deleted', false);
+	utils.addNonEnumerable(this, 'stale', false);
 	// copy supplied data
 	var key;
 	for (key in data) {
@@ -225,6 +226,13 @@ GameObject.prototype.scheduleTimer = function scheduleTimer(options, type, key) 
 			rc.run(
 				function timerCall() {
 					log.trace({options: options}, '%s call', type);
+					if (self.stale) {
+						if (options.interval) {
+							clearInterval(self.gsTimers[type][key].handle);
+						}
+						delete self.gsTimers[type][key];
+						throw new Error('stale object');
+					}
 					if (!options.interval) {
 						delete self.gsTimers[type][key];
 					}
