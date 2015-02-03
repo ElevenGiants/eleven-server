@@ -494,13 +494,6 @@ Player.prototype.send = function send(msg, skipChanges, flushOnly) {
 	if (!this.session) {
 		log.info(new Error('dummy error for stack trace'),
 			'trying to send message to offline player %s', this);
-		if (this.location && this.tsid in this.location.players) {
-			// clean up players "stuck" in a location after a previous error
-			// (asynchronously, in order not to interfere with the current request)
-			log.warn('scheduling offline player removal for %s in %s', this,
-				this.location);
-			this.setGsTimer({fname: 'onDisconnect', delay: 100, internal: true});
-		}
 		return;
 	}
 	// generage "changes" segment
