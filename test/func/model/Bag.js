@@ -182,7 +182,7 @@ suite('Bag', function () {
 				var p = new Player({tsid: 'PX', location: l});
 				l.players[p.tsid] = rc.cache[p.tsid] = p;
 				var fbag = Bag.create('bag_bigger_green');
-				fbag.setContainer(l);
+				fbag.setContainer(l, 1, 2);
 				var i = Item.create('pi');
 				var bag = Bag.create('bag_bigger_gray');
 				bag.setContainer(p, 1);

@@ -197,8 +197,8 @@ suite('Location', function () {
 					i2 = Item.create('banana');
 					b = new Bag({class_tsid: 'bag_bigger_green', items: [i2]});
 					l = Location.create(Geo.create());
-					l.addItem(i1);
-					l.addItem(b);
+					l.addItem(i1, 12, 13);
+					l.addItem(b, 12, 13);
 					l.unload();
 				},
 				function callback(err, res) {

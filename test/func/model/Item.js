@@ -246,7 +246,7 @@ suite('Item', function () {
 				assert.strictEqual(it.getChangeData().slot, 3);
 				it.x = 0;
 				assert.strictEqual(it.getChangeData().slot, 0);
-				it.setContainer(l);
+				it.setContainer(l, 1, 2);
 				assert.notProperty(it.getChangeData(), 'slot');
 			}, done);
 		});
