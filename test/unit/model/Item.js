@@ -167,7 +167,7 @@ suite('Item', function () {
 		test('ignores slot property when adding to a location', function () {
 			var it = getTestItem('IT');
 			var l = new Location({}, new Geo());
-			it.setContainer(l);
+			it.setContainer(l, 123, 456);
 			assert.isUndefined(it.slot);
 			it.container = undefined;  // just so we can try again
 			it.setContainer(l, 13, 29);
@@ -214,7 +214,7 @@ suite('Item', function () {
 				assert.strictEqual(curr.tsid, 'BX');
 				done();
 			};
-			it.setContainer(new Location({tsid: 'LX'}, new Geo()));  // does not trigger onContainerChanged (no previous container)
+			it.setContainer(new Location({tsid: 'LX'}, new Geo()), 0, 0);  // does not trigger onContainerChanged (no previous container)
 			it.setContainer(new Bag({tsid: 'BX', tcont: 'LDUMMY'}), 3, 7);
 		});
 
@@ -222,15 +222,15 @@ suite('Item', function () {
 			var l = new Location({tsid: 'LX'}, new Geo());
 			var l2 = new Location({tsid: 'LY'}, new Geo());
 			var it1 = getTestItem('IT1');
-			it1.setContainer(l);
+			it1.setContainer(l, 123, 456);
 			var it2 = getTestItem('IT2');
-			it2.setContainer(l2);
+			it2.setContainer(l2, 123, 456);
 			it1.onContainerItemAdded = function (it, prevCont) {
 				assert.strictEqual(it.tsid, 'IT2');
 				assert.strictEqual(prevCont.tsid, 'LY');
 				done();
 			};
-			it2.setContainer(l);
+			it2.setContainer(l, 123, 456);
 		});
 
 		test('sends appropriate onContainerItemRemoved events', function (done) {
