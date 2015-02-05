@@ -49,14 +49,17 @@ function init() {
 		src: cfg.includeLoc,
 		streams: [
 			{
+				name: 'stdout',
 				level: cfg.level.stdout,
 				stream: process.stdout,
 			},
 			{
+				name: 'file',
 				level: cfg.level.file,
 				path: path.join(dir, masterGsid + '-default.log'),
 			},
 			{
+				name: 'errfile',
 				level: 'error',
 				path: path.join(dir, masterGsid + '-errors.log'),
 			},
