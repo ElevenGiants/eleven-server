@@ -188,8 +188,6 @@ GameObject.prototype.setProps = function setProps(props) {
  * @param {boolean} [options.internal] schedules an "internal" timer if
  *        `true` (for internal use in the GS, not persistent; `false`
  *        by default)
- * @return {object} timeout handle as returned by {@link
- *         http://nodejs.org/api/timers.html#timers_settimeout_callback_delay_arg|setTimeout}
  */
 GameObject.prototype.setGsTimer = function setGsTimer(options) {
 	log.trace('%s.setGsTimer(%s)', this, util.inspect(options, {depth: 1}));
@@ -218,7 +216,6 @@ GameObject.prototype.setGsTimer = function setGsTimer(options) {
 		start: new Date().getTime(),
 		options: options,
 	};
-	return handle;
 };
 
 
@@ -235,27 +232,34 @@ GameObject.prototype.setGsTimer = function setGsTimer(options) {
  */
 GameObject.prototype.scheduleTimer = function scheduleTimer(options, type, key) {
 	var self = this;
-	var handle = (options.interval ? setInterval : setTimeout)(
+	var handle = setTimeout(
 		function execTimer() {
 			var rc = new RC(options.fname, self);
 			rc.run(
 				function timerCall() {
 					log.trace({options: options}, '%s call', type);
 					if (self.stale) {
-						if (options.interval) {
-							clearInterval(self.gsTimers[type][key].handle);
-						}
-						delete self.gsTimers[type][key];
 						throw new Error('stale object');
 					}
 					if (!options.interval) {
 						delete self.gsTimers[type][key];
 					}
-					else {
-						// for intervals, set 'start' to time of last call (needed for resuming)
-						self.gsTimers[type][key].start = new Date().getTime();
+					try {
+						self.gsTimerExec(options);
 					}
-					self.gsTimerExec.call(self, options);
+					catch (e) {
+						delete self.gsTimers[type][key];  // clean up
+						log.error(e, 'error calling %s.%s via %s', self,
+							options.fname, type);
+						// don't rethrow - we want to make sure the offending
+						// timer/interval is not called again upon unload/reload
+						return;
+					}
+					// schedule next interval iteration (unless it was canceled)
+					if (self.gsTimers[type][key] && options.interval) {
+						delete self.gsTimers[type][key];
+						self.setGsTimer(options);
+					}
 				},
 				function callback(e) {
 					if (e) {
@@ -307,7 +311,7 @@ GameObject.prototype.suspendGsTimers = function suspendGsTimers() {
 			var entry = this.gsTimers[type][key];
 			if (entry.handle) {
 				log.debug('suspending %s %s.%s', type, this, key);
-				(type === 'timer' ? clearTimeout : clearInterval)(entry.handle);
+				clearTimeout(entry.handle);
 				delete entry.handle;
 			}
 		}
@@ -385,7 +389,7 @@ GameObject.prototype.cancelGsTimer = function cancelGsTimer(fname, interval) {
 	var entry = this.gsTimers[type][fname];
 	if (entry) {
 		if (entry.handle) {
-			(interval ? clearInterval : clearTimeout)(entry.handle);
+			clearTimeout(entry.handle);
 			ret = true;
 		}
 		delete this.gsTimers[type][fname];

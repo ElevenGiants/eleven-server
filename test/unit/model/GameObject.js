@@ -110,7 +110,7 @@ suite('GameObject', function () {
 			assert.notProperty(res.timer, 'foo2', 'inernal timer not included');
 			assert.strictEqual(res.interval.foo.options.delay, 10);
 			assert.isTrue(res.interval.foo.start <= new Date().getTime());
-			clearInterval(go.gsTimers.interval.foo.handle);  // clean up
+			go.cancelGsTimer('foo', true);  // clean up
 		});
 	});
 
@@ -229,7 +229,7 @@ suite('GameObject', function () {
 			go.foo = function foo() {
 				if (calls++ > 0) {
 					assert.isTrue(go.gsTimers.interval.foo.start > prevStart);
-					clearInterval(go.gsTimers.interval.foo.handle);  // clean up
+					go.cancelGsTimer('foo', true);  // clean up
 					done();
 				}
 				prevStart = go.gsTimers.interval.foo.start;
@@ -267,7 +267,7 @@ suite('GameObject', function () {
 				else {
 					assert.isTrue(go.gsTimerExists('foo', true),
 						'interval fired, but still enabled');
-					clearInterval(go.gsTimers.interval.foo.handle);  // clean up
+					go.cancelGsTimer('foo', true);  // clean up
 					done();
 				}
 			};
@@ -294,7 +294,7 @@ suite('GameObject', function () {
 				calls++;
 				if (arg === 'fin') {
 					assert.strictEqual(calls, 1);
-					clearInterval(go.gsTimers.interval.foo.handle);  // clean up
+					go.cancelGsTimer('foo', true);  // clean up
 					done();
 				}
 			};
@@ -364,7 +364,7 @@ suite('GameObject', function () {
 						'partial intervall call and resume timer done');
 					assert.property(go.gsTimers.interval.foo, 'handle',
 						'interval running');
-					clearInterval(go.gsTimers.interval.foo.handle);  // clean up
+					go.cancelGsTimer('foo', true);  // clean up
 					done();
 				}
 			};
