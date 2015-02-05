@@ -254,7 +254,7 @@ ItemApi.prototype.apiStartFlyingTo = function apiStartFlyingTo(x, y, speed, call
 ItemApi.prototype.apiKickTheChicken = function apiKickTheChicken(vx, vy) {
 	log.debug('%s.apiKickTheChicken(%s, %s)', this, vx, vy);
 	return this.gsStartMoving('kicked', {}, {vx: vx, vy: vy,
-		callback: 'movementCallback'});
+		callback: 'kickCallback'});
 };
 
 

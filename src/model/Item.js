@@ -418,6 +418,16 @@ Item.prototype.movementTimer = function movementTimer() {
 
 
 /**
+ * Kicking the chicken requires a callback when the path finishes
+ * @private
+ */
+Item.prototype.kickCallback = function kickCallback() {
+	// TODO: Handle more than just platform landings
+	this.onPlatformLanding();
+};
+
+
+/**
  * Starts item movement.
  *
  * @param {string} transport the transportation for this movement

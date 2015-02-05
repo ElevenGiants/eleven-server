@@ -554,16 +554,21 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 			x: this.item.x + this.options.vx,
 			y: this.item.y + this.options.vy,
 			speed: 90,
-			stopAtEnd: true,
-			transport: 'flying',
-		}, {
-			x: this.item.x + (2 * this.options.vx),
-			y: this.item.y + this.options.vy,
-			speed: (this.options.vx >= 9) ? Math.abs(this.options.vx / 3) : 3,
-			stopAtEnd: true,
-			transport: 'flying'
+			transport: 'direct',
 		}];
-		var tx = this.item.x + (3 * this.options.vx);
+		var tx = 2 * this.options.vx;
+		if (tx >= 6) {
+			var speed = Math.min(Math.abs(tx) / 2, 45);
+			speed = Math.max(3, speed);
+			path.push({
+				x: this.item.x + tx,
+				y: this.item.y + this.options.vy,
+				speed: speed,
+				transport: 'direct'
+			});
+		}
+		// TODO: Handle more than just platform landings
+		tx = this.item.x + (3 * this.options.vx);
 		var ty;
 		var platform = this.getGeo().getClosestPlatPoint(tx,
 			(this.item.y + this.options.vy), -1).plat;
@@ -574,7 +579,7 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 			log.error('movement: failed to find landing platform for %s', this.item);
 			ty = ('ground_y' in this.getGeo()) ? this.getGeo().ground_y : this.getGeo().b;
 		}
-		path.push({x: tx, y: ty, speed: 90, stopAtEnd: true, transport: 'flying'});
+		path.push({x: tx, y: ty, speed: 90, transport: 'direct'});
 	}
 	return path;
 };
