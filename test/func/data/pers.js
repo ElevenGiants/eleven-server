@@ -113,8 +113,8 @@ suite('pers', function () {
 				},
 				function cb(err, res) {
 					if (err) done(err);
-					assert.notProperty(gsTimers.go1.timer.foo, 'handle');
-					assert.notProperty(gsTimers.go2.interval.foo, 'handle');
+					assert.notProperty(gsTimers.go1.foo, 'handle');
+					assert.notProperty(gsTimers.go2.foo, 'handle');
 				}
 			);
 			setTimeout(function wait() {

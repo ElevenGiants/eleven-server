@@ -59,7 +59,7 @@ suite('GameObject', function () {
 			go.intTest = function intTest() {
 				calls++;
 				if (calls === 3) {
-					delete go.gsTimers.interval.intTest;  // clean up
+					delete go.gsTimers.intTest;  // clean up
 					done();
 				}
 			};
@@ -116,11 +116,11 @@ suite('GameObject', function () {
 			};
 			go.setGsTimer({fname: 'foo', delay: 5});
 			go.setGsTimer({fname: 'bar', delay: 5, interval: true});
-			assert.property(go.gsTimers.timer, 'foo');
+			assert.property(go.gsTimers, 'foo');
 			setTimeout(function () {
-				assert.notProperty(go.gsTimers.timer, 'foo',
+				assert.notProperty(go.gsTimers, 'foo',
 					'timer removed in spite of an execution error');
-				assert.notProperty(go.gsTimers.interval, 'bar',
+				assert.notProperty(go.gsTimers, 'bar',
 					'interval removed in spite of an execution error');
 				assert.strictEqual(c, 1, 'interval only executed once');
 				done();
