@@ -1,6 +1,7 @@
 #ifndef DESERIALIZER_H
 #define DESERIALIZER_H
 
+#include <nan.h>
 #include <node.h>
 #include <stdint.h>
 #include <memory>
@@ -26,7 +27,7 @@ class Deserializer : public node::ObjectWrap {
 
   Deserializer();
 
-  static v8::Handle<v8::Value> Run(const v8::Arguments& args);
+  static NAN_METHOD(Run);
 
   void init(v8::Handle<v8::String> payload);
 

@@ -46,7 +46,7 @@
     "multitransport-jsonrpc": "^0.7.2",
     "murmurhash-js": "^1.0.0",
     "nconf": "^0.6.9",
-    "node_amf_cc": "^1.1.1",
+    "node_amf_cc": "^1.2.1",
     "rethinkdb": "^1.15.0-0",
     "segfault-handler": "^0.2.4",
     "slack-client": "^1.2.2",
