@@ -31,7 +31,7 @@
 NAME=eleven-server
 NODE=/usr/local/bin/node
 NODE_USER=eleven
-NODE_ARGS="--harmony"
+NODE_ARGS="--harmony_proxies"
 NODE_ENV="production"
 APP_DIR="/eleven/eleven-server"
 LOG_DIR="/var/log/eleven"

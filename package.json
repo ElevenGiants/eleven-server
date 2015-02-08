@@ -70,12 +70,12 @@
   },
   "scripts": {
     "preproc": "python tools/gsjs-preproc.py",
-    "start": "NODE_PATH=src node --harmony --expose-gc ./src/server.js | node_modules/bunyan/bin/bunyan -o short",
-    "test": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/unit",
-    "functest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/func",
-    "inttest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/int",
+    "start": "NODE_PATH=src node --harmony_proxies --expose-gc ./src/server.js | node_modules/bunyan/bin/bunyan -o short",
+    "test": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony_proxies test/unit",
+    "functest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony_proxies test/func",
+    "inttest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony_proxies test/int",
     "alltests": "NODE_PATH=src sh -c 'npm run lint && npm run test -- -R progress && npm run functest -- -R progress && npm run inttest -- -R progress'",
-    "bench": "NODE_PATH=src node --harmony bench/runner.js",
+    "bench": "NODE_PATH=src node --harmony_proxies bench/runner.js",
     "lint": "node_modules/jshint/bin/jshint --verbose --exclude src/gsjs src test tools && node_modules/jscs/bin/jscs --verbose --reporter inline src test tools",
     "docs": "node node_modules/jsdoc/jsdoc.js --destination docs --configure jsdoc-conf.json src",
     "repl": "node tools/repl-client.js 7201"
