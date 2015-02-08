@@ -184,6 +184,8 @@ function resetPlayer(tsid) {
 function makeAlphaAdjustments(pc) {
 	pc.stats.currants.setVal(100000);
 	pc.createItem('tester_widget', 1);
+	delete pc.use_img;
+	pc.adminBackfillNewxpPhysics();
 	var locs = gsjsBridge.getConfig().newxp_exits;
 	var loc = locs[Math.floor(Math.random() * locs.length)];
 	pc.teleportToLocation(loc.tsid, loc.x, loc.y);
