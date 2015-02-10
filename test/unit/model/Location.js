@@ -297,4 +297,46 @@ suite('Location', function () {
 			]);
 		});
 	});
+
+	suite('closestItem', function () {
+
+		var l = new Location({items: [
+			{tsid: 'I1', class_tsid: 'C1', x: -10, y: -10},
+			{tsid: 'I2', class_tsid: 'C2', x: 15, y: 1},
+			{tsid: 'I3', class_tsid: 'C2', x: -10, y: 0},
+			{tsid: 'I4', class_tsid: 'C3', x: -10, y: -1},
+			{tsid: 'I5', class_tsid: 'C3', x: -7, y: -7},
+			{tsid: 'I6', class_tsid: 'C3', x: 7, y: -8},
+		]}, new Geo());
+
+		test('no filter', function () {
+			var res = l.closestItem(0, 0);
+			assert.deepEqual(res, {tsid: 'I5', class_tsid: 'C3', x: -7, y: -7});
+			res = l.closestItem(7, -5);
+			assert.deepEqual(res, {tsid: 'I6', class_tsid: 'C3', x: 7, y: -8});
+		});
+
+		test('string filter', function () {
+			var res = l.closestItem(0, 0, 'C2');
+			assert.deepEqual(res, {tsid: 'I3', class_tsid: 'C2', x: -10, y: 0});
+			res = l.closestItem(0, 0, 'C3');
+			assert.deepEqual(res, {tsid: 'I5', class_tsid: 'C3', x: -7, y: -7});
+		});
+
+		test('function filter', function () {
+			var res = l.closestItem(0, 0, function (i) {
+				if (i.tsid === 'I1') {
+					return true;
+				}
+			});
+			assert.deepEqual(res, {tsid: 'I1', class_tsid: 'C1', x: -10, y: -10});
+			var f = function (i, opt) {
+				if (i.tsid === opt) {
+					return true;
+				}
+			};
+			res = l.closestItem(0, 0, f, 'I2');
+			assert.deepEqual(res, {tsid: 'I2', class_tsid: 'C2', x: 15, y: 1});
+		});
+	});
 });

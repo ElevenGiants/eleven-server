@@ -282,3 +282,27 @@ ItemApi.prototype.apiStartFlyingAndFollow = function apiStartFlyingAndFollow(pc,
 	//TODO: implement&document me
 	log.warn('TODO Item.apiStartFlyingAndFollow not implemented yet');
 };
+
+/**
+ * Find closest item to this item in a location.
+ *
+ * If filter is a function then all item in the location will be filtered using
+ * following code:
+ *
+ * if (filter(item, options...)){
+ * //code to find closest item
+ * }
+ *
+ * if no arguments provided at all then no filtering will be applied when
+ * looking for closest item.
+ *
+ * @param {string|function} filter  If filter is a String then the function will look only
+ * for items with that class_tsid. If filter is a function then all item in the
+ * location will be filtered using options as a parameter.
+ * @param {object} options the parameter sent to the filter function
+ * @returns {Item} the found item or 'null' if no item found
+ */
+ItemApi.prototype.apiFindCloseItem = function (filter, options) {
+	log.debug('%s.apiFindCloseItem(%s)', this, filter);
+	return this.findCloseItem(filter, options);
+};
