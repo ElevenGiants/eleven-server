@@ -134,6 +134,11 @@ function load(tsid) {
 		metrics.increment('pers.load.remote');
 	}
 	else {
+		// check if object has been loaded in a concurrent request (fiber) in the meantime
+		if (tsid in cache) {
+			log.warn('%s already loaded, discarding redundant copy', tsid);
+			return cache[tsid];
+		}
 		// make sure any changes to the object are persisted
 		obj = persProxy.makeProxy(obj);
 		cache[tsid] = obj;
