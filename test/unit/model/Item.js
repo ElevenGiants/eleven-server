@@ -419,4 +419,15 @@ suite('Item', function () {
 			assert.deepEqual(res, true, 'result was true as a hitbox was removed');
 		});
 	});
+
+
+	suite('getClosestItem', function () {
+
+		test('does not return itself', function () {
+			var l = new Location({}, new Geo());
+			l.items.I1 = new Item({tsid: 'I1', x: -10, y: -10, container: l});
+			l.items.I2 = new Item({tsid: 'I2', x: 15, y: 1, container: l});
+			assert.strictEqual(l.items.I1.getClosestItem().tsid, 'I2');
+		});
+	});
 });

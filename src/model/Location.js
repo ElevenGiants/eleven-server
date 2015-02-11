@@ -456,14 +456,16 @@ Location.prototype.getInRadius = function getInRadius(x, y, r, players, sort) {
  * }
  * ```
  * @param {object} [options] parameter object for the `filter` function
+ * @param {Item} [skipItem] item to exclude from results
  * @returns {Item|null} the found item, or `null` if no item found
  */
-Location.prototype.getClosestItem = function getClosestItem(x, y, filter, options) {
+Location.prototype.getClosestItem = function getClosestItem(x, y, filter,
+	options, skipItem) {
 	var distance = 0;
 	var found = null;
 	for (var k in this.items) {
 		var it = this.items[k];
-		var valid = (arguments.length === 2 ||
+		var valid = (!skipItem || skipItem.tsid !== k) && (!filter ||
 			(typeof filter === 'string') && it.class_tsid === filter ||
 			(typeof filter === 'function') && filter(it, options));
 		if (valid) {

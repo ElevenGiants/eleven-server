@@ -498,7 +498,7 @@ Item.prototype.removeHitBox = function removeHitBox(name) {
  */
 Item.prototype.getClosestItem = function getClosestItem(filter, options) {
 	if (utils.isLoc(this.container)) {
-		return this.container.getClosestItem(this.x, this.y, filter, options);
+		return this.container.getClosestItem(this.x, this.y, filter, options, this);
 	}
 	return null;
 };
