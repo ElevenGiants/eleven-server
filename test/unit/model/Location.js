@@ -136,11 +136,16 @@ suite('Location', function () {
 				dummyPlayer('P2', res),
 				dummyPlayer('P3', res),
 			]}, new Geo());
+			l.players.P1.location = l;
+			l.players.P2.location = l;
+			l.players.P3.location = new Location({}, new Geo());  // some other loc
 			l.send({});
-			assert.deepEqual(res, ['P1', 'P2', 'P3']);
+			assert.deepEqual(res, ['P1', 'P2']);
+			assert.sameMembers(Object.keys(l.players), ['P1', 'P2'],
+				'P3 silently removed (because it is not actually in l)');
 			res.length = 0;  // reset res
 			l.send({}, false, ['P1', 'P4']);
-			assert.deepEqual(res, ['P2', 'P3']);
+			assert.deepEqual(res, ['P2']);
 		});
 
 		test('does not send changes to wrong player(s)', function () {
@@ -153,6 +158,8 @@ suite('Location', function () {
 			p1.session = {send: mockSend.bind(null, p1.tsid)};
 			p2.session = {send: mockSend.bind(null, p2.tsid)};
 			var l = new Location({players: [p1, p2]}, new Geo());
+			p1.location = l;
+			p2.location = l;
 			// simulate queued changes for P1:
 			p1.getPropChanges = function () {
 				return 'FAKE_PROP_CHANGES';
@@ -174,10 +181,17 @@ suite('Location', function () {
 			var b2 = new Bag({tsid: 'B2', items: [b3], hiddenItems: [i3]});
 			var l = new Location({tsid: 'L1', items: [i1, b2]}, new Geo());
 			//jscs:disable disallowQuotedKeysInObjects
-			assert.deepEqual(l.getAllItems(), {
+			assert.deepEqual(l.getAllItems(true), {
 				'I1': i1,
 				'B2': b2,
 				'B2/I3': i3,
+				'B2/B3': b3,
+				'B2/B3/I5': i5,
+			});
+			assert.deepEqual(l.getAllItems(), {
+				'I1': i1,
+				'B2': b2,
+				// hidden item B2/I3 not included
 				'B2/B3': b3,
 				'B2/B3/I5': i5,
 			});
@@ -200,6 +214,87 @@ suite('Location', function () {
 			assert.strictEqual(l.getPath('B1/I2'), i2);
 			assert.isNull(l.getPath('BFOO/IBAR'), 'returns null if path not found');
 			assert.isNull(l.getPath(), 'returns null for invalid argument');
+		});
+	});
+
+
+	suite('sendItemStateChange', function () {
+
+		test('works as expected', function (done) {
+			var isend = new Item({tsid: 'ISEND'});
+			isend.onContainerItemStateChanged = function () {
+				throw new Error('should not be called');
+			};
+			var i1 = new Item({tsid: 'I1'});  // does not have an onContainerItemStateChanged function
+			var i2 = new Item({tsid: 'I2'});
+			i2.onContainerItemStateChanged = function (sender) {
+				assert.strictEqual(sender.tsid, 'ISEND');
+				done();
+			};
+			var l = new Location({tsid: 'L1', items: [i1, i2, isend]}, new Geo());
+			l.sendItemStateChange(isend);
+		});
+	});
+
+
+	suite('getInRadius', function () {
+
+		test('works for items', function () {
+			var l = new Location({items: [
+				{tsid: 'I1', x: -10, y: -10},
+				{tsid: 'I2', x: 15, y: 1},
+				{tsid: 'I3', x: -10, y: 0},
+				{tsid: 'I4', x: -10, y: -1},
+				{tsid: 'I5', x: -7, y: -7},
+				{tsid: 'I6', x: 7, y: -8},
+				{tsid: 'I7', x: NaN, y: 0},
+			]}, new Geo());
+			var res = l.getInRadius(0, 0, 10);
+			assert.deepEqual(res, {
+				I3: {tsid: 'I3', x: -10, y: 0},
+				I5: {tsid: 'I5', x: -7, y: -7},
+			});
+		});
+
+		test('works for players', function () {
+			var l = new Location({players: [
+				{tsid: 'P1', x: 10, y: 10},
+				{tsid: 'P2', x: 15, y: 10},
+				{tsid: 'P3', x: 16, y: 10},
+				{tsid: 'P4', x: 12, y: 13},
+				{tsid: 'P5', x: 14, y: 13},  // just inside
+				{tsid: 'P6', x: 13, y: 6},  // just inside
+				{tsid: 'P7', x: 14, y: 6},  // just outside
+			]}, new Geo());
+			var res = l.getInRadius(10, 10, 5, true);
+			assert.deepEqual(res, {
+				P1: {tsid: 'P1', x: 10, y: 10},
+				P2: {tsid: 'P2', x: 15, y: 10},
+				P4: {tsid: 'P4', x: 12, y: 13},
+				P5: {tsid: 'P5', x: 14, y: 13},
+				P6: {tsid: 'P6', x: 13, y: 6},
+			});
+		});
+
+		test('works for players (sorted)', function () {
+			var l = new Location({players: [
+				{tsid: 'P1', x: 10, y: 10},
+				{tsid: 'P2', x: 15, y: 10},
+				{tsid: 'P3', x: 16, y: 10},
+				{tsid: 'P4', x: 12, y: 13},
+				{tsid: 'P5', x: 14, y: 13},  // just inside
+				{tsid: 'P6', x: 13, y: 6},  // just inside
+				{tsid: 'P7', x: 14, y: 6},  // just outside
+				{tsid: 'P8', x: 5, y: 5},
+			]}, new Geo());
+			var res = l.getInRadius(10, 10, 5, true, true);
+			assert.deepEqual(res, [
+				{pc: {tsid: 'P1', x: 10, y: 10}, dist: 0, x: 10, y: 10},
+				{pc: {tsid: 'P4', x: 12, y: 13}, dist: Math.sqrt(13), x: 12, y: 13},
+				{pc: {tsid: 'P2', x: 15, y: 10}, dist: 5, x: 15, y: 10},
+				{pc: {tsid: 'P5', x: 14, y: 13}, dist: 5, x: 14, y: 13},
+				{pc: {tsid: 'P6', x: 13, y: 6}, dist: 5, x: 13, y: 6},
+			]);
 		});
 	});
 });

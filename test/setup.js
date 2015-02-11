@@ -35,6 +35,9 @@ function initConfig() {
 				},
 			},
 			maxMsgSize: 131072,
+			rpc: {
+				timeout: 10000,
+			},
 		},
 		pers: {
 			backEnd: {

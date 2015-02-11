@@ -189,19 +189,36 @@ suite('Session', function () {
 
 	suite('handleAmfReqError', function () {
 
-		test('sends error response', function (done) {
+		test('sends CLOSE message', function (done) {
 			var s = getTestSession('test', getDummySocket());
-			s.pc = 'xyz';
-			s.send = function (msg) {
-				assert.deepEqual(msg, {
-					msg_id: 12,
-					type: 'moo',
-					success: false,
-					msg: 'foo',
-				});
+			var actionSent;
+			s.pc = {
+				sendServerMsg: function (action) {
+					actionSent = action;
+				},
+				isConnected: function () {
+					return true;
+				},
+			};
+			s.socket.destroy = function (msg) {
+				assert.strictEqual(actionSent, 'CLOSE');
 				done();
 			};
 			s.handleAmfReqError(new Error('foo'), {msg_id: 12, type: 'moo'});
+		});
+
+		test('does not send CLOSE message to offline player', function (done) {
+			var s = getTestSession('test', getDummySocket());
+			s.pc = {
+				sendServerMsg: function () {
+					throw new Error('should not be called');
+				},
+				isConnected: function () {
+					return false;
+				},
+			};
+			s.socket.destroy = done;
+			s.handleAmfReqError(new Error('foo'));
 		});
 	});
 
@@ -211,6 +228,7 @@ suite('Session', function () {
 		test('does its job', function (done) {
 			var socket = getDummySocket();
 			var s = getTestSession('test', socket);
+			s.loggedIn = true;
 			socket.write = function (data) {
 				assert.strictEqual(data.toString('hex'), '0000001d0a0b0d4f626' +
 					'a65637407666f6f06076261720d6d73675f696406033101');
@@ -227,6 +245,7 @@ suite('Session', function () {
 			var p = persProxy.makeProxy(o);
 			var socket = getDummySocket();
 			var s = getTestSession('test', socket);
+			s.loggedIn = true;
 			socket.write = function (data) {
 				data = data.slice(4);  // snip length header
 				var res = amf.deserialize(data.toString('binary')).value;
@@ -234,6 +253,23 @@ suite('Session', function () {
 				done();
 			};
 			s.send(p);
+		});
+
+		test('does not send non-login messages until login is complete',
+			function (done) {
+			var socket = getDummySocket();
+			var s = getTestSession('test', socket);
+			socket.write = function (data) {
+				data = data.slice(4);  // snip length header
+				var res = amf.deserialize(data.toString('binary')).value;
+				assert.notStrictEqual(res.type, 'foo1');
+				if (res.type === 'foo2') {
+					done();
+				}
+			};
+			s.send({type: 'foo1'});  // not sent
+			s.send({type: 'relogin_end'});
+			s.send({type: 'foo2'});  // sent
 		});
 	});
 });

@@ -148,4 +148,43 @@ suite('persProxy', function () {
 			assert.deepEqual(sorted, ['spriggan', 'humbaba', 'cosma', 'alph']);
 		});
 	});
+
+
+	suite('enumerate', function () {
+
+		test('skips undefined properties', function () {
+			var p = pp.makeProxy({
+				a: 'a',
+				b: undefined,
+				c: undefined,
+				d: 1,
+				e: null,
+				f: {x: undefined, y: 'y'},
+			});
+			var l = [];
+			for (var k in p) {
+				l.push(k);
+			}
+			for (var j in p.f) {
+				l.push(j);
+			}
+			assert.deepEqual(l, ['a', 'd', 'e', 'f', 'y']);
+		});
+	});
+
+
+	suite('ownKeys', function () {
+
+		test('skips undefined properties', function () {
+			var p = pp.makeProxy({
+				a: 'a',
+				b: undefined,
+				c: 1,
+				d: null,
+				e: {x: undefined, y: 'y'},
+			});
+			assert.deepEqual(Object.keys(p), ['a', 'c', 'd', 'e']);
+			assert.deepEqual(Object.keys(p.e), ['y']);
+		});
+	});
 });

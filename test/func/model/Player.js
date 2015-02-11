@@ -195,6 +195,16 @@ suite('Player', function () {
 					p.changes[1].itemstack_values.location[it.tsid].count, 0);
 			}, done);
 		});
+
+		test('skips items not visible for the player', function (done) {
+			new RC().run(function () {
+				var p = new Player({tsid: 'PX', location: {tsid: 'LX'}});
+				var it = new Item({tsid: 'IX', class_tsid: 'quoin', tcont: 'LX',
+					only_visible_to: 'POTHER'});
+				p.queueChanges(it);
+				assert.lengthOf(p.changes, 0);
+			}, done);
+		});
 	});
 
 
@@ -247,10 +257,13 @@ suite('Player', function () {
 							assert.deepEqual(p.anncs, []);
 							assert.strictEqual(anncs[0].id, 'someAnnc');
 							assert.strictEqual(anncs[1].mo2, 'problems');
+							assert.deepEqual(origMsg, {}, 'announcements ' +
+								'not added to original message parameter');
 							done();
 						},
 					};
-					p.send({});
+					var origMsg = {};
+					p.send(origMsg);
 				},
 				function (err, res) {
 					if (err) return done(err);
@@ -268,10 +281,13 @@ suite('Player', function () {
 						send: function send(msg) {
 							assert.deepEqual(msg.changes.stat_values, {xp: 555});
 							assert.strictEqual(msg.moo, 'far');
+							assert.deepEqual(origMsg, {moo: 'far'}, 'changes ' +
+								'not added to original message parameter');
 							done();
 						},
 					};
-					p.send({moo: 'far'});
+					var origMsg = {moo: 'far'};
+					p.send(origMsg);
 				},
 				function (err, res) {
 					if (err) return done(err);

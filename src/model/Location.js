@@ -4,16 +4,17 @@ module.exports = Location;
 
 
 var assert = require('assert');
+var config = require('config');
 var GameObject = require('model/GameObject');
 var Geo = require('model/Geo');
 var Bag = require('model/Bag');
 var IdObjRefMap = require('model/IdObjRefMap');
 var OrderedHash = require('model/OrderedHash');
 var pers = require('data/pers');
+var RC = require('data/RequestContext');
 var rpc = require('data/rpc');
 var util = require('util');
 var utils = require('utils');
-var lodash = require('lodash');
 
 
 util.inherits(Location, GameObject);
@@ -61,9 +62,15 @@ function Location(data, geo) {
 	utils.addNonEnumerable(this, 'geometry');
 	utils.addNonEnumerable(this, 'clientGeometry');
 	utils.addNonEnumerable(this, 'geo');
-	var geoData = geo || pers.get(this.getGeoTsid());
+	var geoData = geo || pers.get(this.getGeoTsid(), true);
 	assert(typeof geoData === 'object', 'no geometry data for ' + this);
 	this.updateGeo(geoData);
+	// periodically check whether location can be released from memory
+	var unloadInt = config.get('pers:locUnloadInt', null);
+	if (unloadInt && rpc.isLocal(this)) {
+		this.setGsTimer({fname: 'checkUnload', delay: unloadInt, interval: true,
+			internal: true});
+	}
 }
 
 utils.copyProps(require('model/LocationApi').prototype, Location.prototype);
@@ -116,6 +123,90 @@ Location.prototype.del = function del() {
 
 
 /**
+ * Adds a player to the list of players in this location and calls
+ * various GSJS "onEnter" event handlers.
+ *
+ * @param {Player} player the player to add
+ */
+Location.prototype.addPlayer = function addPlayer(player) {
+	this.players[player.tsid] = player;
+	if (this.onPlayerEnter) {
+		this.onPlayerEnter(player);
+	}
+	for (var k in this.items) {
+		var it = this.items[k];
+		if (it.onPlayerEnter) {
+			try {
+				it.onPlayerEnter(player);
+			}
+			catch (e) {
+				log.error(e, 'error in %s.onPlayerEnter handler', it);
+			}
+		}
+	}
+};
+
+
+/**
+ * Removes a player from the list of players in this location and
+ * calls various GSJS "onExit" event handlers. If after that the
+ * location is empty (no other players remaining), it is unloaded
+ * from memory (including everything in it).
+ *
+ * @param {Player} player the player to remove
+ * @param {Location} [newLoc] the location the player is moving to
+ *        (`undefined` during logout)
+ */
+Location.prototype.removePlayer = function removePlayer(player, newLoc) {
+	delete this.players[player.tsid];
+	if (this.onPlayerExit) {
+		this.onPlayerExit(player, newLoc);
+	}
+	for (var k in this.items) {
+		var it = this.items[k];
+		if (it.onPlayerExit) {
+			try {
+				it.onPlayerExit(player);
+			}
+			catch (e) {
+				log.error(e, 'error in %s.onPlayerExit handler', it);
+			}
+		}
+	}
+};
+
+
+/**
+ * Checks whether it is possible to unload the location, and does so
+ * if it is (called by an interval set up in the constructor).
+ * @private
+ */
+Location.prototype.checkUnload = function checkUnload() {
+	// trivial heuristic for now - may become more complex in the future
+	// (e.g. minimum empty period before unloading)
+	if (this.players.length === 0) {
+		this.unload();
+	}
+};
+
+
+/**
+ * Schedules the location (including geometry) and all contained items
+ * for removal from memory at the end of the current request.
+ */
+Location.prototype.unload = function unload() {
+	log.info('%s.unload', this);
+	var rc = RC.getContext();
+	var items = this.getAllItems();
+	for (var k in items) {
+		rc.setUnload(items[k]);
+	}
+	rc.setUnload(this.geometry);
+	rc.setUnload(this);
+};
+
+
+/**
  * Gets the TSID of the {@link Geo} object for this location.
  *
  * @returns {string} TSID of the corresponding {@link Geo} object
@@ -153,14 +244,14 @@ Location.prototype.updateGeo = function updateGeo(data) {
 	if (!data) data = this.geometry;
 	this.geometry = data;
 	// workaround for GSJS functions that replace the whole geometry property
-	if (!(this.geometry instanceof Geo)) {
+	if (!(utils.isGeo(this.geometry))) {
 		this.geometry.tsid = this.getGeoTsid();  // make sure new data does not have a template TSID
 		this.geometry = Geo.create(this.geometry);
 	}
 	// process connects for GSJS
 	this.geometry.prepConnects();
 	// initialize/update clientGeometry and geo properties
-	this.clientGeometry = this.geometry.getClientGeo();
+	this.clientGeometry = this.geometry.getClientGeo(this);
 	this.geo = this.geometry.getGeo();
 };
 
@@ -216,8 +307,26 @@ Location.prototype.send = function send(msg, skipChanges, exclude) {
 	var excl = utils.playersArgToList(exclude);
 	for (var tsid in this.players) {
 		if (excl.indexOf(tsid) === -1) {
-			this.players[tsid].send(lodash.clone(msg, true), skipChanges);
+			var p = this.players[tsid];
+			if (p.location && p.location.tsid !== this.tsid) {
+				log.warn('removing stale player %s from %s', p, this);
+				delete this.players[tsid];
+			}
+			else {
+				p.send(msg, skipChanges);
+			}
 		}
+	}
+};
+
+
+/**
+ * Sends a special message to all players in the location that includes
+ * all currently queued up announcements and changes.
+ */
+Location.prototype.flush = function flush() {
+	for (var tsid in this.players) {
+		this.players[tsid].send({type: 'location_event'}, false, true);
 	}
 };
 
@@ -249,6 +358,15 @@ Location.prototype.getAllItems = Bag.prototype.getAllItems;
 
 
 /**
+ * Gets a list of items of a particular type in this location.
+ *
+ * @param {string} classTsid item class ID to filter for
+ * @returns {object} found matching items (with TSIDs as keys)
+ */
+Location.prototype.getClassItems = Bag.prototype.getClassItems;
+
+
+/**
  * Retrieves an item in the location by path.
  *
  * @param {string} path a path string pointing to an item in this
@@ -256,37 +374,98 @@ Location.prototype.getAllItems = Bag.prototype.getAllItems;
  * @returns {Item|null} the requested item, or `null` if not found
  */
 Location.prototype.getPath = function getPath(path) {
-	return this.getAllItems()[path] || null;
+	return this.getAllItems(true)[path] || null;
+};
+
+
+/**
+ * Announces an item state change to all other items in the location.
+ *
+ * @param {Item} item the item whose state has changed
+ */
+Location.prototype.sendItemStateChange = function sendItemStateChange(item) {
+	for (var k in this.items) {
+		if (this.items[k] !== item && this.items[k].onContainerItemStateChanged) {
+			this.items[k].onContainerItemStateChanged(item);
+		}
+	}
+};
+
+
+/**
+ * Retrieves a list of items or players in a given radius around a
+ * point in the location. Optionally returns the results in an array
+ * sorted by distance.
+ *
+ * @param {number} x x coordinate to search around
+ * @param {number} y y coordinate to search around
+ * @param {number} r radius to consider (in px)
+ * @param {boolean} [players] if `true`, find players (items otherwise)
+ * @param {boolean} [sort] sort the returned objects by distance from
+ *        the given point if `true`
+ * @returns {object|array} either a hash of the found players or items
+ *          (if `sort` is falsy), or an array sorted by distance
+ *          including additional info, with the following structure:
+ * ```
+ * [
+ *     {pc: [human#PA9S7UKB6ND2IKB], dist: 126.06, x: 780, y: -97},
+ *     {pc: [human#P1KUXVLVASKLUJ8], dist: 234.7, x: 951, y: -12},
+ *     ...
+ * ]```
+ */
+Location.prototype.getInRadius = function getInRadius(x, y, r, players, sort) {
+	var targets = players ? this.players : this.items;
+	var ret = sort ? [] : {};
+	for (var k in targets) {
+		var t = targets[k];
+		// approximate first (to only calculate sqrt when necessary)
+		var dist = (x - t.x) * (x - t.x) + (y - t.y) * (y - t.y);
+		if (dist > r * r) continue;
+		dist = Math.sqrt(dist);
+		if (dist <= r) {
+			if (sort) {
+				ret.push({pc: t, dist: dist, x: t.x, y: t.y});
+			}
+			else {
+				ret[t.tsid] = t;
+			}
+		}
+	}
+	if (sort) {
+		ret.sort(function compare(a, b) {
+			return a.dist - b.dist;
+		});
+	}
+	return ret;
 };
 
 Location.prototype.copyLocation = function copyLocation(label, moteId, hubId, is_instance, alt_class_tsid, custom_tsid){
 	var data = {};
 	if(custom_tsid) data.tsid = 'G' + custom_tsid.slice(1);
 	var newGeo = Geo.create(data);
+ 	log.error('TSID of new Geo: %s', newGeo.tsid);
 	newGeo.copyGeometryData(this.geometry);
-	//newGeo = pers.write(newGeo);
-	log.warn('Copied Geo tsid: %s', newGeo.tsid);
+	//newGeo = pers.write(newGeo)
 
 	data = {};
 	data.geo = newGeo;
-	if(!alt_class_tsid) data.class_tsid = this.class_tsid;
+	if(!alt_class_tsid) alt_class_tsid = this.class_tsid;
+	data.class_tsid = alt_class_tsid;
 	var newLoc = Location.create(data);
-	log.warn('Copied Loc tsid: %s', newLoc.tsid);
-	log.warn('Before copyLocationData');
 	newLoc.copyLocationData(this);
-	log.warn('After copyLocationData');
 	newLoc.label = label;
 	newLoc.moteid = moteId;
 	newLoc.hubid = hubId;
 	newLoc.is_instance = is_instance;
  	//newLoc = pers.write(newLoc);
-	log.warn('Before updateGeo');
+ 	//log.error('Create geo instance of Geo: %s', (newGeo instanceof Geo));
 	newLoc.updateGeo(newGeo);
-	log.warn('After updateGeo');
 
 	//copy items TODO
 
 	newLoc.onCreateAsCopyOf(this);
+	//log.error('Class of new Location: %s', newLoc.class_tsid);
+	//log.error('Location has pols_setOwnable: %s', newLoc.pols_setOwnable);
 	return newLoc;
 };
 
@@ -327,14 +506,14 @@ Location.prototype.updateGeometry = function updateGeometry(data) {
 		var connects = signpost.connects;
 		signpost.connects = {};
 		for (var j in connects) {
-			signpost.connects[j] = prepConnect(connects[j]);
+			signpost.connects[j] = utils.prepConnect(connects[j]);
 		}
 	}
 	cgeo.layers.middleground.doors = utils.shallowCopy(data.layers.middleground.doors);
 	for (var i in cgeo.layers.middleground.doors) {
 		cgeo.layers.middleground.doors[i] = utils.shallowCopy(data.layers.middleground.doors[i]);
 		var door = cgeo.layers.middleground.doors[i];
-		door.connect = prepConnect(door.connect);
+		door.connect = utils.prepConnect(door.connect);
 	}
 	// create "geo" (only specific fields)
 	this.geo = {};
@@ -347,16 +526,4 @@ Location.prototype.updateGeometry = function updateGeometry(data) {
 	this.geo.signposts = this.clientGeometry.layers.middleground.signposts;
 	this.geo.doors = this.clientGeometry.layers.middleground.doors;
 	this.geo.sources = this.geometry.sources;
-};
-
-function prepConnect(conn) {
-	var ret = utils.shallowCopy(conn);
-	if (conn.target) {
-		ret.target = conn.target;  // may be non-enumerable (when prepConnect used more than once)
-		ret.label = conn.target.label;
-		ret.street_tsid = conn.target.tsid;
-	}
-	// client does not need/want target, only GSJS:
-	utils.makeNonEnumerable(ret, 'target');
-	return ret;
 };

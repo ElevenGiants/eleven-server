@@ -281,4 +281,22 @@ suite('objrefProxy', function () {
 				'a "label" property');
 		});
 	});
+
+
+	suite('wrap', function () {
+
+		test('does its job', function () {
+			var go = new GameObject({left: 'right'});
+			persMock.add(go);
+			var wrapped = orproxy.wrap(go);
+			assert.isTrue(wrapped.__isORP);
+			assert.strictEqual(wrapped.left, 'right');
+			assert.strictEqual(wrapped.__proxyTarget, go);
+		});
+
+		test('handles invalid input data gracefully', function () {
+			assert.isNull(orproxy.wrap(null));
+			assert.isUndefined(orproxy.wrap(undefined));
+		});
+	});
 });

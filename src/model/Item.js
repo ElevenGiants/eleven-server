@@ -9,6 +9,7 @@ var OrderedHash = require('model/OrderedHash');
 var pers = require('data/pers');
 var util = require('util');
 var utils = require('utils');
+var ItemMovement = require('model/ItemMovement');
 
 
 util.inherits(Item, GameObject);
@@ -52,13 +53,15 @@ function Item(data) {
 	Item.super_.call(this, data);
 	if (this.x === undefined) this.x = 0;
 	if (this.y === undefined) this.y = 0;
+	// for NPC Movement
+	utils.addNonEnumerable(this, 'movement', null);
 	if (!utils.isInt(this.count)) this.count = 1;
 	// add some non-enumerable properties (used internally or by GSJS)
 	utils.addNonEnumerable(this, 'collDet', false);
 	utils.addNonEnumerable(this, 'path', this.tsid);
 	// enable collision detection if we have a handler function
 	if (typeof this.onPlayerCollision === 'function') {
-		this['!colliders'] = {};
+		utils.addNonEnumerable(this, '!colliders', {});
 		this.collDet = true;
 	}
 	if (this.message_queue) {
@@ -120,14 +123,30 @@ Item.prototype.updatePath = function updatePath() {
 
 
 /**
- * Sets the coordinates within the `Item`'s current location.
+ * Sets the item's coordinates within the current container. Will place
+ * the item on the next platform below the given coordinates if it is
+ * configured to obey physics and the container is a location.
  *
- * @param {number} x
- * @param {number} y
+ * @param {number} x new horizontal coordinate
+ * @param {number} y new vertical coordinate
+ * @returns {boolean} `true` if the item's coordinates actually changed
  */
 Item.prototype.setXY = function setXY(x, y) {
-	this.x = x;
-	this.y = y;
+	if (this.itemDef && this.itemDef.obey_physics && utils.isLoc(this.container)) {
+		var pp = this.container.geometry.getClosestPlatPoint(x, y, -1, true);
+		if (pp && pp.point) {
+			x = pp.point.x;
+			y = pp.point.y;
+		}
+	}
+	x = Math.round(x);
+	y = Math.round(y);
+	if (x !== this.x || y !== this.y) {
+		this.x = x;
+		this.y = y;
+		return true;
+	}
+	return false;
 };
 
 
@@ -181,6 +200,40 @@ Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 	this.setXY(x, y);
 	this.updatePath();
 	this.queueChanges();
+	this.sendContChangeEvents(prev);
+};
+
+
+/**
+ * Calls various GSJS event handler functions for this item and other
+ * items in the same (current or previous) container after a container
+ * change.
+ *
+ * @param {Location|Player|Bag} [prev] previous container
+ * @private
+ */
+Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
+	var cont = this.container;
+	var k, it;
+	if (prev && prev !== cont) {
+		if (this.onContainerChanged) {
+			this.onContainerChanged(prev, cont);
+		}
+		for (k in prev.items) {
+			it = prev.items[k];
+			if (it.onContainerItemRemoved) {
+				it.onContainerItemRemoved(this, cont);
+			}
+		}
+	}
+	if (!prev || prev !== cont) {
+		for (k in cont.items) {
+			it = cont.items[k];
+			if (it.onContainerItemAdded) {
+				it.onContainerItemAdded(this, prev);
+			}
+		}
+	}
 };
 
 
@@ -255,9 +308,6 @@ Item.prototype.getChangeData = function getChangeData(pc, removed, compact) {
 	if (!removed && this.slot !== undefined) ret.slot = this.slot;
 	if (this.z) ret.z = this.z;
 	if (this.rs) ret.rs = this.rs;
-	if (this.isSelectable && !this.isSelectable(pc)) {
-		ret.not_selectable = true;
-	}
 	if (this.isSoulbound && this.isSoulbound() && this.soulbound_to) {
 		ret.soulbound_to = this.soulbound_to;
 	}
@@ -265,7 +315,10 @@ Item.prototype.getChangeData = function getChangeData(pc, removed, compact) {
 	if (this.is_consumable) ret.consumable_state = this.get_consumable_state();
 	if (this.getTooltipLabel) ret.tooltip_label = this.getTooltipLabel();
 	if (this.make_config) ret.config = this.make_config();
-	if (this.onStatus) ret.status = this.onStatus(pc);
+	if (!this.deleted) {
+		if (this.isSelectable && !this.isSelectable(pc)) ret.not_selectable = true;
+		if (this.onStatus) ret.status = this.onStatus(pc);
+	}
 	return ret;
 };
 /*jshint +W071 */
@@ -343,4 +396,80 @@ Item.prototype.consume = function consume(n) {
 	if (this.count <= 0) this.del();
 	else this.queueChanges();
 	return n;
+};
+
+
+/**
+ * Internal movement interval handler (necessary because the GameObject
+ * timers/intervals system refers to methods by name, so we cannot set
+ * up an interval for the {@link ItemMovement#moveStep} function
+ * directly).
+ * @private
+ */
+Item.prototype.movementTimer = function movementTimer() {
+	if (this.movement) this.movement.moveStep();
+};
+
+
+/**
+ * Starts item movement.
+ *
+ * @param {string} transport the transportation for this movement
+ * @param {object} dest destination for the movement (see {@link
+ *        ItemMovement#startMove})
+ * @param {object} options for this movement (see {@link
+ *        ItemMovement#startMove})
+ * @returns {boolean} true if movement is possible and started
+ */
+Item.prototype.gsStartMoving = function gsStartMoving(transport, dest, options) {
+	if (!this.movement) this.movement = new ItemMovement(this);
+	return this.movement.startMove(transport, dest, options);
+};
+
+
+/**
+ * Stops item movement.
+ */
+Item.prototype.gsStopMoving = function gsStopMoving() {
+	if (this.movement) this.movement.stopMove();
+};
+
+
+/**
+ * Adds a hitbox of given size and name.
+ *
+ * @param {number} w the width of the hitbox
+ * @param {number} h the height of the hitbox
+ * @param {string} [name] the name of the hitbox to add
+ */
+Item.prototype.addHitBox = function addHitBox(w, h, name) {
+	if (name) {
+		if (this.hitBoxes === undefined) {
+			this.hitBoxes = {};
+		}
+		this.hitBoxes[name] = {w: w, h: h};
+	}
+	else {
+		this.hitBox = {w: w, h: h};
+	}
+};
+
+
+/**
+ * Removes a specific hitbox by given name.
+ *
+ * @param {string} name the name of the hitbox to remove
+ * @return {boolean} `true` if the hitbox existed and was successfully
+ *         removed
+ */
+Item.prototype.removeHitBox = function removeHitBox(name) {
+	if (this.hitBoxes && this.hitBoxes.hasOwnProperty(name)) {
+		delete this.hitBoxes[name];
+		// remove entire hitBoxes property if empty
+		if (!Object.keys(this.hitBoxes).length) {
+			delete this.hitBoxes;
+		}
+		return true;
+	}
+	return false;
 };

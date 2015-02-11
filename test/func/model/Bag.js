@@ -57,6 +57,14 @@ suite('Bag', function () {
 				pers.get('B1');
 			}, done);
 		});
+
+		test('preserves non-default capacity', function () {
+			/*jshint -W055 */  // deliberate lowercase constructor name here
+			var ctor = gsjsBridge.getProto('items', 'bag_generic_gray').constructor;
+			var b = new ctor({capacity: 10, class_tsid: 'bag_generic_gray'});
+			assert.strictEqual(b.capacity, 10);
+			/*jshint +W055 */
+		});
 	});
 
 
@@ -205,6 +213,35 @@ suite('Bag', function () {
 				assert.strictEqual(cd.count, 1);
 				assert.strictEqual(cd.path_tsid, b.tsid);
 				assert.strictEqual(cd.slots, 16);
+			}, done);
+		});
+	});
+
+
+	suite('getAllItems', function () {
+
+		test('make sure GSJS does not fill hidden bags when purchasing from vendors',
+			function (done) {
+			new RC().run(function () {
+				var p = pers.create(Player, {location: Location.create(Geo.create())});
+				var remaining = p.createItemFromSource('watering_can', 99, p, true);
+				assert.strictEqual(remaining, 83, '99 cans created, 16 player' +
+					' inventory slots filled, 83 remaining');
+				// check that inventory was filled
+				assert.strictEqual(Object.keys(p.items).length, p.capacity);
+				Object.keys(p.items).forEach(function isCan(tsid) {
+					assert.strictEqual(p.items[tsid].class_tsid, 'watering_can');
+					assert.strictEqual(p.items[tsid].count, 1);
+				});
+				// make sure nothing was added to SDB in furniture bag
+				var fbag = p.hiddenItems[p.furniture.storage_tsid];
+				Object.keys(fbag.items).forEach(function check(tsid) {
+					var it = fbag.items[tsid];
+					if (it.class_tsid === 'bag_furniture_sdb') {
+						assert.strictEqual(Object.keys(it.items).length, 0,
+							'nothing added to SDB in furniture bag');
+					}
+				});
 			}, done);
 		});
 	});

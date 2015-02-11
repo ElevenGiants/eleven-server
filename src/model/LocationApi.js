@@ -29,23 +29,75 @@ LocationApi.prototype.apiPutItemIntoPosition =
 };
 
 
+/**
+ * Find the point on the closest platform below the given point.
+ *
+ * @param {number} x x coordinate of the requested point
+ * @param {number} y y coordinate of the requested point
+ * @returns {object|undefined} the resulting point, or `undefined` if
+ *          no platform could be found.
+ */
 LocationApi.prototype.apiGetPointOnTheClosestPlatformLineBelow =
 	function apiGetPointOnTheClosestPlatformLineBelow(x, y) {
 	log.debug('%s.apiGetPointOnTheClosestPlatformLineBelow(%s, %s)', this, x, y);
-	//TODO implement&document me
-	log.warn('TODO Location.apiGetPointOnTheClosestPlatformLineBelow not ' +
-		'implemented yet');
-	return {x: 1, y: 1};
+	var ret = this.geometry.getClosestPlatPoint(x, y, -1);
+	if (ret) {
+		return ret.point;
+	}
 };
 
 
+/**
+ * Find the point on the closest platform above the given point.
+ *
+ * @param {number} x x coordinate of the requested point
+ * @param {number} y y coordinate of the requested point
+ * @returns {object|undefined} the resulting point, or `undefined` if
+ *          no platform could be found.
+ */
 LocationApi.prototype.apiGetPointOnTheClosestPlatformLineAbove =
 	function apiGetPointOnTheClosestPlatformLineAbove(x, y) {
 	log.debug('%s.apiGetPointOnTheClosestPlatformLineAbove(%s, %s)', this, x, y);
-	//TODO implement&document me
-	log.warn('TODO Location.apiGetPointOnTheClosestPlatformLineAbove not ' +
-		'implemented yet');
-	return {x: 1, y: 1};
+	var ret = this.geometry.getClosestPlatPoint(x, y, 1);
+	if (ret) {
+		return ret.point;
+	}
+};
+
+
+/**
+ * Find the closest platform below the given point.
+ *
+ * @param {number} x x coordinate of the requested point
+ * @param {number} y y coordinate of the requested point
+ * @returns {object|undefined} the resulting platform, or `undefined`
+ *          if no platform could be found.
+ */
+LocationApi.prototype.apiGetClosestPlatformLineBelow =
+	function apiGetClosestPlatformLineBelow(x, y) {
+	log.debug('%s.apiGetClosestPlatformLineBelow(%s, %s)', this, x, y);
+	var ret = this.geometry.getClosestPlatPoint(x, y, -1);
+	if (ret) {
+		return ret.plat;
+	}
+};
+
+
+/**
+ * Find the closest platform above the given point.
+ *
+ * @param {number} x x coordinate of the requested point
+ * @param {number} y y coordinate of the requested point
+ * @returns {object|undefined} the resulting platform, or `undefined`
+ *          if no platform could be found.
+ */
+LocationApi.prototype.apiGetClosestPlatformLineAbove =
+	function apiGetClosestPlatformLineAbove(x, y) {
+	log.debug('%s.apiGetClosestPlatformLineAbove(%s, %s)', this, x, y);
+	var ret = this.geometry.getClosestPlatPoint(x, y, 1);
+	if (ret) {
+		return ret.plat;
+	}
 };
 
 
@@ -183,11 +235,78 @@ LocationApi.prototype.apiLockStack = function apiLockStack(path) {
 };
 
 
+/**
+ * Notifies other items in the location about an item state change.
+ *
+ * @param {Item} item the item whose state has changed
+ */
 LocationApi.prototype.apiNotifyItemStateChanged =
 	function apiNotifyItemStateChanged(item) {
 	log.debug('%s.apiNotifyItemStateChanged(%s)', this, item);
-	//TODO implement&document me
-	log.warn('TODO Location.apiNotifyItemStateChanged not implemented yet');
+	this.sendItemStateChange(item);
+};
+
+
+/**
+ * Finds items within a given radius around a point.
+ *
+ * @param {number} x x coordinate to search around
+ * @param {number} y y coordinate to search around
+ * @param {number} radius radius to consider (in px)
+ * @returns {object} hash of the found items
+ */
+LocationApi.prototype.apiGetItemsInTheRadius = function apiGetItemsInTheRadius(
+	x, y, radius) {
+	log.debug('%s.apiGetItemsInTheRadius(%s, %s, %s)', this, x, y, radius);
+	return this.getInRadius(x, y, radius);
+};
+
+
+/**
+ * Finds active players within a given radius around a point.
+ *
+ * @param {number} x x coordinate to search around
+ * @param {number} y y coordinate to search around
+ * @param {number} radius radius to consider (in px)
+ * @returns {object} hash of the found players
+ */
+LocationApi.prototype.apiGetActivePlayersInTheRadius =
+	function apiGetActivePlayersInTheRadius(x, y, radius) {
+	log.debug('%s.apiGetActivePlayersTheRadius(%s, %s, %s)', this, x, y, radius);
+	return this.getInRadius(x, y, radius, true);
+};
+
+
+/**
+ * Finds active players within a given radius around a point,
+ * and returns them as a sorted list including their distance.
+ *
+ * @param {number} x x coordinate to search around
+ * @param {number} y y coordinate to search around
+ * @param {number} radius radius to consider (in px)
+ * @returns {array} an array containing information about all active
+ *          players within the given radius, ordered by distance,
+ *          closest players first, e.g.
+ * ```
+ * [
+ *     {pc: [human#PA9S7UKB6ND2IKB], dist: 126.06, x: 780, y: -97},
+ *     {pc: [human#P1KUXVLVASKLUJ8], dist: 234.7, x: 951, y: -12},
+ *     ...
+ * ]```
+ */
+LocationApi.prototype.apiGetActivePlayersInTheRadiusX =
+	function apiGetActivePlayersInTheRadiusX(x, y, radius) {
+	log.debug('%s.apiGetActivePlayersTheRadiusX(%s, %s, %s)', this, x, y, radius);
+	return this.getInRadius(x, y, radius, true, true);
+};
+
+
+LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId,
+	hubId, isInstance, altClassTsid) {
+	log.debug('%s.apiCopyLocation(%s, %s, %s, %s, %s)', this, label, moteId,
+		hubId, isInstance, altClassTsid);
+	//TODO: implement&document me
+	log.warn('TODO Location.apiCopyLocation not implemented yet');
 };
 
 LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId, hubId, is_instance, alt_class_tsid, custom_tsid){

@@ -17,7 +17,7 @@ suite('rpc', function () {
 		gameServers: {
 			gs01: {host: '127.0.0.1', ports: [3000, 3001]},
 		},
-		rpc: {basePort: 17000},
+		rpc: {basePort: 17000, timeout: 10000},
 	}};
 	// fake client GS connection to make rpc module establish client
 	// connection to its own server:

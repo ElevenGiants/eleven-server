@@ -78,20 +78,16 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 	wait.launchFiber(function rcFiber() {
 		var res = null;
 		try {
-			rc.fiber = Fiber.current;
-			rc.fiber.rc = rc;
+			Fiber.current.rc = rc;
 			// call function in fiber context
 			res = func();
 			log.debug('finished %s (%s dirty)', tag, Object.keys(rc.dirty).length);
 		}
 		catch (err) {
-			// TODO: nothing is rolled back, so the modified objects might
-			// still be persisted eventually through other calls; i.e. we could
-			// just as well persist them here? Or should we rather roll back
-			// any changes on failure? If so, when doing that by removing the
-			// affected objects from the persistence live object cache, remember
-			// to stop their timers&intervals.
-			return callback(err);
+			pers.postRequestRollback(rc.dirty, tag, function done() {
+				callback(err);
+			});
+			return;
 		}
 		// persist modified objects
 		pers.postRequestProc(rc.dirty, rc.unload, tag, function done() {

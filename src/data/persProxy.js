@@ -93,6 +93,44 @@ function makeProxy(obj, prop) {
 			}
 			return true;  // default delete behavior: return 'true' if property doesn't exist
 		},
+		enumerate: function enumerate(target) {
+			// skip undefined properties because that value cannot be serialized
+			// in RethinkDB persistence back-end (no JSON representation)
+			var list = [];
+			for (var k in target) {
+				if (target[k] !== undefined) list.push(k);
+				else log.trace('skipped undefined property: ' + k);
+			}
+			return iterator(list);
+		},
+		ownKeys: function ownKeys(target) {
+			// skip undefined properties because that value cannot be serialized
+			// in RethinkDB persistence back-end (no JSON representation)
+			var list = Reflect.ownKeys(target);
+			var ret = [];
+			for (var i = 0; i < list.length; i++) {
+				var k = list[i];
+				if (target[k] !== undefined) ret.push(k);
+				else log.trace('skipped undefined property: ' + k);
+			}
+			return ret;
+		},
 	});
 	return ret;
+}
+
+
+function iterator(list) {
+	var i = 0;
+	return {
+		next: function next() {
+			if (i === list.length) return {
+				done: true,
+			};
+			return {
+				done: false,
+				value: list[i++],
+			};
+		}
+	};
 }

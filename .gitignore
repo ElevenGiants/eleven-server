@@ -1,8 +1,7 @@
-config_local.js
-persdata
-log
+/config_local.js
+/log
 docs
-src/gsjs
-node_modules/**/out
-node_modules/**/build
+/src/gsjs
+/node_modules/**/out
+/node_modules/**/build
 npm-debug.log

@@ -29,6 +29,7 @@ Geo.prototype.TSID_INITIAL = 'G';
 function Geo(data) {
 	data = data || {};
 	if (!data.tsid) data.tsid = rpc.makeLocalTsid(Geo.prototype.TSID_INITIAL);
+	if (!data.layers) data.layers = {middleground: {}};
 	Geo.super_.call(this, data);
 	this.prepConnects();
 }
@@ -60,7 +61,7 @@ Geo.prototype.prepConnects = function prepConnects() {
 		for (k in mg.signposts) {
 			var signpost = mg.signposts[k];
 			for (i in signpost.connects) {
-				signpost.connects[i] = prepConnect(signpost.connects[i]);
+				signpost.connects[i] = utils.prepConnect(signpost.connects[i]);
 				// remove links to unavailable locations:
 				if (!pers.exists(signpost.connects[i].street_tsid)) {
 					log.info('%s: removing unavailable signpost connect %s',
@@ -73,7 +74,7 @@ Geo.prototype.prepConnects = function prepConnects() {
 			var door = mg.doors[k];
 			if(door.connect.target != null)
 			{
-				door.connect = prepConnect(door.connect);
+				door.connect = utils.prepConnect(door.connect);
 				// remove links to unavailable locations:
 				if (!pers.exists(door.connect.street_tsid)) {
 					log.info('%s: removing unavailable door connect %s',
@@ -84,19 +85,6 @@ Geo.prototype.prepConnects = function prepConnects() {
 		}
 	}
 };
-
-
-function prepConnect(conn) {
-	var ret = utils.shallowCopy(conn);
-	if (conn.target) {
-		ret.target = conn.target;  // may be non-enumerable (when prepConnect used more than once)
-		ret.label = conn.target.label;
-		ret.street_tsid = conn.target.tsid;
-	}
-	// client does not need/want target, only GSJS:
-	utils.makeNonEnumerable(ret, 'target');
-	return ret;
-}
 
 
 /**
@@ -149,12 +137,14 @@ function revertConnect(conn) {
  * Creates a shallow data-only copy of the geometry to be made
  * available for the GSJS code as `location.clientGeometry`.
  *
+ * @param {Location} loc location corresponding to this geometry object
  * @returns {object} shallow copy of the geometry data
  */
-Geo.prototype.getClientGeo = function getClientGeo() {
+Geo.prototype.getClientGeo = function getClientGeo(loc) {
 	var ret = utils.shallowCopy(this);
-	// client expects location TSID here:
-	ret.tsid = Location.prototype.TSID_INITIAL + this.tsid.slice(1);
+	// client expects location TSID and label here:
+	ret.tsid = loc.tsid;
+	ret.label = loc.label;
 	return ret;
 };
 
@@ -196,3 +186,64 @@ Geo.prototype.getLocTsid = function getLocTsid() {
 Geo.prototype.copyGeometryData = function copyGeometryData(geometry){
 	this.copyProps(geometry, ['tsid', 'id', 'label']);
 }
+
+/**
+ * Gets the closest platform point directly above or below the given
+ * coordinates where a player can stand, resp. an item can be placed.
+ *
+ * @param {number} x x coordinate from which to search for a platform
+ * @param {number} y y coordinate from which to search for a platform
+ * @param {number} dir search direction (-1 means search below y, 1
+ *        means above)
+ * @param {boolean} [useItemPerm] if `true`, check item permeability of
+ *        platforms (instead of player permeability)
+ * @return {object} data structure containing the closest platform
+ *         itself, and the point on it with the given x coordinate
+ */
+Geo.prototype.getClosestPlatPoint = function getClosestPlatPoint(x, y, dir,
+	useItemPerm) {
+	var closestPlat;
+	var point;
+	var dist = Number.MAX_VALUE;
+	for (var k in this.layers.middleground.platform_lines) {
+		var plat = this.layers.middleground.platform_lines[k];
+		if (!useItemPerm && plat.platform_pc_perm === 1) continue;
+		if (useItemPerm && plat.platform_item_perm === 1) continue;
+		var p = utils.pointOnPlat(plat, x);
+		if (p) {
+			var d = Math.abs(p.y - y);
+			if (d < dist && (dir < 0 ? p.y >= y : p.y <= y)) {
+				closestPlat = plat;
+				point = p;
+				dist = d;
+			}
+		}
+	}
+	return {plat: closestPlat, point: point};
+};
+
+
+/**
+ * Gets all hitboxes for this `Geo`'s middleground layer.
+ *
+ * @returns {array} a list of hitbox objects
+ */
+Geo.prototype.getHitBoxes = function getHitBoxes() {
+	var ret = [];
+	for (var j in this.layers.middleground.boxes) {
+		ret.push(this.layers.middleground.boxes[j]);
+	}
+	return ret;
+};
+
+Geo.prototype.fromJson = function fromJson(data) {
+	for (var key in data.dynamic) {
+		this[key] = data.dynamic[key];
+	}
+	for (var key in data) {
+		if (key !== 'dynamic') {
+			this[key] = data[key];
+		}
+	}
+	//TODO: make (some of) these non-enumerable (those that the client doesn't need/want)? -> would need to make pers layer explicitly aware of those properties then, though
+};

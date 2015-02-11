@@ -20,8 +20,10 @@ var db = {};
 var counts = {};
 
 
-function init(fixturePath, callback) {
-	fpath = fixturePath;
+function init(pbeConfig, callback) {
+	if (typeof pbeConfig === 'object') {
+		fpath = pbeConfig.fixturesPath;
+	}
 	db = {};
 	counts = {
 		read: 0,

@@ -25,7 +25,7 @@
 	"disallowSpacesInsideParentheses": true,
 	"disallowQuotedKeysInObjects": "allButReserved",
 	"disallowDanglingUnderscores": {
-		"allExcept": ["__get__", "__set__", "__isGO", "__isPP", "__isORP", "__isRP"]
+		"allExcept": ["__get__", "__set__", "__isGO", "__isPP", "__isORP", "__isRP", "__proxyTarget"]
 	},
 	"disallowSpaceAfterObjectKeys": true,
 	"requireSpaceBeforeObjectValues": true,

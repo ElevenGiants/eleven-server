@@ -56,6 +56,7 @@ util.inherits(Session, events.EventEmitter);
 function Session(id, socket) {
 	Session.super_.call(this);
 	this.id = id;
+	this.loggedIn = false;
 	this.socket = socket;
 	this.ts = new Date().getTime();
 	this.maxMsgSize = config.get('net:maxMsgSize');
@@ -268,13 +269,13 @@ Session.prototype.preRequestProc = function preRequestProc(req) {
 				this.socket.end();
 				return true;
 			}
-			this.pc = pers.get(tsid);
+			this.pc = pers.get(tsid, true);
 			assert(this.pc !== undefined, 'unable to load player: ' + tsid);
 			// prepare Player object for login (e.g. call GSJS events)
 			this.pc.onLoginStart(this, req.type === 'relogin_start');
 			break;
 		case 'logout':
-			this.pc.onDisconnect();
+			if (this.pc) this.pc.onDisconnect();
 			this.socket.end();
 			return true;
 		default:
@@ -306,6 +307,10 @@ Session.prototype.postRequestProc = function postRequestProc(req) {
 			this.pc.location.onPlayerReconnect(this.pc);
 			break;
 	}
+	// make sure changes/announcements caused by this request are sent out
+	if (this.loggedIn) {
+		this.pc.location.flush();
+	}
 };
 
 
@@ -323,28 +328,14 @@ Session.prototype.handleAmfReqError = function handleAmfReqError(err, req) {
 		err = new Error(err);
 	}
 	log.error(err, 'error processing %s request for %s', req.type, this.pc);
-	if (this.pc && req.msg_id) {
-		// send error response back to client
-		var rsp = {
-			msg_id: req.msg_id,
-			type: req.type,
-			success: false,
-			msg: err.message,
-		};
-		log.info({data: rsp}, 'sending error response');
-		try {
-			this.send(rsp);
+	if (this.socket) {
+		if (this.pc && this.pc.isConnected()) {
+			this.pc.sendServerMsg('CLOSE',
+				{msg: util.format('error processing %s request', req.type)});
 		}
-		catch (e) {
-			log.error(e, 'could not send error response to client');
-		}
-	}
-	if (err instanceof auth.AuthError) {
-		log.info({session: this}, 'closing session after authentication error');
+		log.info({session: this}, 'closing session after error');
 		this.socket.destroy();
 	}
-	// TODO: better error handling (disconnect on other errors too? roll back
-	// modified objects (invalidate/reload dirty objects in persistence layer)?)
 };
 
 
@@ -356,6 +347,17 @@ Session.prototype.handleAmfReqError = function handleAmfReqError(err, req) {
  *        that cannot be encoded in AMF3 (e.g. circular references)
  */
 Session.prototype.send = function send(msg) {
+	if (!this.loggedIn) {
+		if (msg.type !== 'login_start' && msg.type !== 'login_end' &&
+			msg.type !== 'relogin_start' && msg.type !== 'relogin_end' &&
+			msg.type !== 'ping') {
+			log.debug('login incomplete, dropping %s message', this, msg.type);
+			return;
+		}
+		if (msg.type === 'login_end' || msg.type === 'relogin_end') {
+			this.loggedIn = true;
+		}
+	}
 	// JSON roundtrip workaround because AMF serialization currently does not
 	// work for ES6 proxies - see e.g. https://github.com/joyent/node/issues/7526
 	//TODO: remove this when it's no longer necessary

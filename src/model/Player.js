@@ -13,6 +13,7 @@ var rpc = require('data/rpc');
 var RC = require('data/RequestContext');
 var util = require('util');
 var utils = require('utils');
+var lodash = require('lodash');
 
 
 util.inherits(Player, Bag);
@@ -25,8 +26,15 @@ var PROPS = {
 	metabolics: ['energy', 'mood'],
 	stats: [
 		'xp', 'currants', 'donation_xp_today', 'imagination', 'credits',
-		'quoins_today', 'meditation_today', 'rube_trades', 'rube_lure_disabled'],
+		'quoins_today', 'meditation_today', 'rube_trades', 'rube_lure_disabled',
+		'recipe_xp_today'],
 	daily_favor: [
+		'alph', 'cosma', 'friendly', 'grendaline', 'humbaba', 'lem', 'mab',
+		'pot', 'spriggan', 'ti', 'zille'],
+	favor_points: [
+		'alph', 'cosma', 'friendly', 'grendaline', 'humbaba', 'lem', 'mab',
+		'pot', 'spriggan', 'ti', 'zille'],
+	giant_emblems: [
 		'alph', 'cosma', 'friendly', 'grendaline', 'humbaba', 'lem', 'mab',
 		'pot', 'spriggan', 'ti', 'zille'],
 };
@@ -55,6 +63,7 @@ var PROPS_CHANGES = {
 function Player(data) {
 	Player.super_.call(this, data);
 	utils.addNonEnumerable(this, 'session');
+	utils.addNonEnumerable(this, 'active', false);
 	utils.addNonEnumerable(this, 'changes', []);
 	utils.addNonEnumerable(this, 'anncs', []);
 	// convert selected properties to "Property" instances (works with simple
@@ -139,7 +148,10 @@ Player.prototype.serialize = function serialize() {
  */
 Player.prototype.onLoginStart = function onLoginStart(session, isRelogin) {
 	this.session = session;
-	this.setGsTimer({fname: 'onTimePlaying', delay: 60000, interval: true});
+	this.resumeGsTimers();
+	if (!this.gsTimerExists('onTimePlaying', true)) {
+		this.setGsTimer({fname: 'onTimePlaying', delay: 60000, interval: true});
+	}
 	if (isRelogin) {
 		this.onRelogin();
 	}
@@ -218,6 +230,7 @@ Player.prototype.isConnected = function isConnected() {
  * schedules their removal at the end of the current request).
  */
 Player.prototype.unload = function unload() {
+	log.debug('%s.unload', this);
 	var objects = this.getConnectedObjects();
 	for (var k in objects) {
 		RC.getContext().setUnload(objects[k]);
@@ -239,7 +252,7 @@ Player.prototype.getConnectedObjects = function getConnectedObjects() {
 	// implicitly avoid duplicate entries
 	var ret = {};
 	// get all bags and items
-	var inventory = this.getAllItems();
+	var inventory = this.getAllItems(true);
 	for (var k in inventory) {
 		ret[inventory[k].tsid] = inventory[k];
 	}
@@ -270,10 +283,23 @@ Player.prototype.getConnectedObjects = function getConnectedObjects() {
 
 
 /**
+ * Resumes timers/intervals (only if the player is actually connected).
+ */
+Player.prototype.resumeGsTimers = function resumeGsTimers() {
+	if (!this.isConnected()) {
+		log.debug('not resuming timers/intervals for offline player %s', this);
+	}
+	else {
+		Player.super_.prototype.resumeGsTimers.call(this);
+	}
+};
+
+
+/**
  * Initiates a location move for this player. Removes the player from
- * the current location, calls various "onExit" handlers and updates
- * the `location` property with the new location. The player is *not*
- * added to the list of players in the new location yet.
+ * the current location, and updates the `location` property with the
+ * new location. The player is *not* added to the list of players in
+ * the new location yet.
  *
  * @param {Location} [newLoc] the target location (if undefined, the
  *        current location stays unchanged; this is used during logout)
@@ -288,60 +314,29 @@ Player.prototype.startMove = function startMove(newLoc, x, y) {
 		log.info('moving out');  // logout case
 	}
 	if (this.location) {
-		// remove from current location
-		delete this.location.players[this.tsid];
-		// handle exit callbacks
-		if (typeof this.location.onPlayerExit === 'function') {
-			this.location.onPlayerExit(this, newLoc);
-		}
-		for (var k in this.location.items) {
-			var it = this.location.items[k];
-			if (typeof it.onPlayerExit === 'function') {
-				try {
-					it.onPlayerExit(this);
-				}
-				catch (e) {
-					log.error(e, 'error in %s.onPlayerExit handler', it);
-				}
-			}
-		}
+		this.location.removePlayer(this, newLoc);
 	}
 	if (newLoc) {
 		// update location and position
 		this.location = newLoc;
-		this.setXY(x, y);
+		this.setXY(x, y, true);
 	}
+	this.active = false;
 };
 
 
 /**
- * Finishes a location move for this player. Adds the player to the
- * list of players in the new location and calls various "onEnter"
- * handlers. The `location` property already needs to point to the
- * "new" location at this point (set in
+ * Finishes a location move for this player by adding the player to the
+ * list of active players in the new location. The `location` property
+ * already needs to point to the "new" location at this point (set in
  * {@link Player#startMove|startMove}).
  */
 Player.prototype.endMove = function endMove() {
 	log.info('end move to %s', this.location);
 	assert(utils.isLoc(this.location), util.format(
 		'invalid location property: %s', this.location));
-	// add to active player list of new location
-	this.location.players[this.tsid] = this;
-	// handle enter callbacks
-	if (typeof this.location.onPlayerEnter === 'function') {
-		this.location.onPlayerEnter(this);
-	}
-	for (var k in this.location.items) {
-		var it = this.location.items[k];
-		if (typeof it.onPlayerEnter === 'function') {
-			try {
-				it.onPlayerEnter(this);
-			}
-			catch (e) {
-				log.error(e, 'error in %s.onPlayerEnter handler', it);
-			}
-		}
-	}
+	this.active = true;
+	this.location.addPlayer(this);
 };
 
 
@@ -376,7 +371,9 @@ Player.prototype.gsMoveCheck = function gsMoveCheck(newLocId) {
 	// once the current request is finished
 	var self = this;
 	RC.getContext().setPostPersCallback(function triggerReconnect() {
-		self.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
+		if (self.isConnected()) {
+			self.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
+		}
 	});
 	var ret = utils.shallowCopy(gsConf);
 	ret.token = token;
@@ -395,8 +392,7 @@ Player.prototype.gsMoveCheck = function gsMoveCheck(newLocId) {
  * @param {object} [data] optional additional payload data
  */
 Player.prototype.sendServerMsg = function sendServerMsg(action, data) {
-	assert(this.session !== undefined && this.session !== null,
-		'tried to send to offline player');
+	assert(this.isConnected(), 'trying to send message to offline player ' + this);
 	var msg = data || {};
 	msg.type = 'server_message';
 	msg.action = action;
@@ -447,6 +443,10 @@ Player.prototype.addToAnySlot = function addToAnySlot(item, fromSlot, toSlot,
  */
 Player.prototype.queueChanges = function queueChanges(item, removed, compact) {
 	log.trace('generating changes for %s%s', item, removed ? ' (removed)' : '');
+	if (item.only_visible_to && item.only_visible_to !== this.tsid) {
+		log.trace('%s not visible for %s, skipping', item, this);
+		return;
+	}
 	var pcChanges = {};
 	var locChanges = {};
 	if (item.tcont === this.tsid) {
@@ -487,11 +487,20 @@ Player.prototype.queueAnnc = function queueAnnc(annc) {
  *        that cannot be encoded in AMF3 (e.g. circular references)
  * @param {boolean} [skipChanges] if `true`, queued property and item
  *        changes are **not** included
+ * @param {boolean} [flushOnly] if `true`, the message is only sent if
+ *        there are changes and/or announcements to send along with it
  */
-Player.prototype.send = function send(msg, skipChanges) {
+Player.prototype.send = function send(msg, skipChanges, flushOnly) {
 	if (!this.session) {
 		log.info(new Error('dummy error for stack trace'),
 			'trying to send message to offline player %s', this);
+		if (this.location && this.tsid in this.location.players) {
+			// clean up players "stuck" in a location after a previous error
+			// (asynchronously, in order not to interfere with the current request)
+			log.warn('scheduling offline player removal for %s in %s', this,
+				this.location);
+			this.setGsTimer({fname: 'onDisconnect', delay: 100, internal: true});
+		}
 		return;
 	}
 	// generage "changes" segment
@@ -503,15 +512,21 @@ Player.prototype.send = function send(msg, skipChanges) {
 			changes.stat_values = propChanges;
 		}
 		if (changes) {
+			msg = lodash.clone(msg);  // avoid modifying original message object
 			msg.changes = changes;
 		}
 	}
 	// append "announcements" segment
 	if (this.anncs.length > 0) {
+		if (skipChanges || !msg.changes) {  // only clone if it hasn't already been cloned
+			msg = lodash.clone(msg);
+		}
 		msg.announcements = this.anncs;
 		this.anncs = [];
 	}
-	this.session.send(msg);
+	if (!flushOnly || msg.changes || msg.announcements) {
+		this.session.send(msg);
+	}
 };
 
 
@@ -579,4 +594,138 @@ Player.prototype.getPropChanges = function getPropChanges() {
 		}
 	}
 	return ret;
+};
+
+
+/**
+ * Override setXY of `Item` to handle collision detection
+ *
+ * @param {number} x new horizontal coordinate
+ * @param {number} y new vertical coordinate
+ * @param {boolean} [noCD] `true` to skip collision detection
+ * @returns {boolean} `true` if the player's coordinates actually
+ *          changed
+ */
+Player.prototype.setXY = function setXY(x, y, noCD) {
+	// ignore if the player is currently moving between locations
+	if (!this.active) return;
+	// call setXY of Item to actually move the player (respecting physics/platforms)
+	var actuallyMoved = Player.super_.prototype.setXY.call(this, x, y);
+	// if the player actually moved we may have to handle a collision
+	if (actuallyMoved && !noCD) {
+		for (var k in this.location.items) {
+			var it = this.location.items[k];
+			if (!it || !it.collDet) continue;
+			// test default hitbox of this item
+			this.handleCollision(it, it.hitBox);
+			// test all named hitboxes of this item
+			for (var b in it.hitBoxes) {
+				this.handleCollision(it, it.hitBoxes[b], b);
+			}
+		}
+		if (this.active) {  // if we haven't been teleported away yet
+			// test all hitboxes defined in the geometry of the current location
+			var hitBoxes = this.location.geometry.getHitBoxes();
+			for (var j in hitBoxes) {
+				var box = hitBoxes[j];
+				this.handleCollision(box, box, box.id);
+			}
+		}
+	}
+	return actuallyMoved;
+};
+
+
+/**
+ * Collision detection handler for collision-enabled items and location
+ * hitboxes.
+ *
+ * @param {Item|object} it item to check for collisions, or a location
+ *        hitbox (must have at least `x` and `y` properties)
+ * @param {object} [hitBox] hitbox to test (must have `w` and `h`
+ *        properties); if `undefined`, the default 60*60px hitbox
+ *        configuration is assumed
+ * @param {string} [hitBoxName] ID of the hitbox to test; mandatory for
+ *        location hitboxes, in case of items `undefined` indicates the
+ *        item's default (unnamed) hitbox
+ */
+Player.prototype.handleCollision = function handleCollision(it, hitBox, hitBoxName) {
+	if (!hitBox) hitBox = {w: 60, h: 60};  // default radius 60px
+
+	var hit = this.isHit(it, hitBox);
+
+	if (hit) {
+		var t = Math.round(new Date().getTime() / 1000);
+		if (!it.onPlayerCollision) {
+			// if we just entered a location hitbox
+			if (!this['!colliders'][hitBoxName]) {
+				log.trace('%s entered location hitbox "%s"', this, hitBoxName);
+				// call the handler for this hitbox
+				this.location.hitBox(this, hitBoxName, hit);
+				// "abuse" player's colliders list to keep track of location hitboxes we're in
+				this['!colliders'][hitBoxName] = t;
+			}
+		}
+		else {
+			// if we just entered a named hitbox or an item's default hitbox
+			if (hitBoxName || !it['!colliders'][this.tsid]) {
+				log.trace('%s entered/inside hitbox "%s" of %s', this, hitBoxName, it);
+				// call item's collision handler
+				it.onPlayerCollision(this, hitBoxName);
+				// keep track of player in the item's hitbox
+				if (!hitBoxName) {
+					it['!colliders'][this.tsid] = t;
+				}
+			}
+		}
+	}
+	else {
+		if (!it.onPlayerCollision) {
+			// if we're leaving a location hitbox
+			if (this['!colliders'][hitBoxName]) {
+				log.trace('%s left location hitbox "%s"', this, hitBoxName);
+				// remove this hitbox from the player's list of hitboxes
+				delete this['!colliders'][hitBoxName];
+				// call the handler for leaving the hitbox (if any)
+				if (this.location.onLeavingHitBox) {
+					this.location.onLeavingHitBox(this, hitBoxName);
+				}
+			}
+		}
+		// if we're leaving a default hitbox
+		else if (it['!colliders'][this.tsid] && !hitBoxName) {
+			log.trace('%s left hitbox of %s', this, it);
+			// remove the player from the list of hitboxes
+			delete it['!colliders'][this.tsid];
+			// call the handler for leaving the item's hitbox (if any)
+			if (it.onPlayerLeavingCollisionArea) {
+				it.onPlayerLeavingCollisionArea(this);
+			}
+		}
+	}
+};
+
+
+/**
+ * Helper function used by handleCollision to determine whether a hit
+ * occurred, i.e. whether the player's "hitbox" (its width/height
+ * rectangle) and an item's "hitbox" overlap.
+ *
+ * @param {Item|object} it item to check for collisions, or a location
+ *        hitbox (must have at least `x` and `y` properties)
+ * @param {object} [hitBox] hitbox to test (must have `w` and `h`
+ *        properties)
+ * @private
+ */
+Player.prototype.isHit = function isHit(it, hitBox) {
+	// respect the player's current scale factor
+	var pcHeight = this.h * this.stacked_physics_cache.pc_scale;
+	var pcWidth = this.w * this.stacked_physics_cache.pc_scale;
+	// the x/y properties of items (and players) always indicate the center of their bottom edge
+	var xDist = Math.abs(this.x - it.x);
+	// calculate y distance based on vertical center of player/item hitbox
+	// the y axis is reversed in the in-game coordinate system (i.e. negative values go upward)
+	var yDist = Math.abs((this.y - pcHeight / 2) - (it.y - hitBox.h / 2));
+	// return true if the two hitboxes overlap
+	return xDist < (hitBox.w + pcWidth) / 2 && yDist < (hitBox.h + pcHeight) / 2;
 };

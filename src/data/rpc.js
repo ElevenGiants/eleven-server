@@ -144,6 +144,7 @@ function initClient(gsconf, callback) {
 	var client = new jrpc.client(
 		new jrpc.transports.client.tcp(gsconf.host, port, {
 			logger: getJrpcLogger('client-' + gsid),
+			timeout: config.get('net:rpc:timeout'),
 		}), {},
 		function onConnected(connectedClient) {
 			log.info('RPC client for %s connected', gsid);
@@ -270,6 +271,7 @@ function sendRequest(gsid, rpcFunc, args, callback) {
 	var rpcArgs = [config.getGsid()].concat(args);
 	if (callback) {
 		client.request(rpcFunc, rpcArgs, function cb(err, res) {
+			orProxy.proxify(ret);
 			callback(err, res);
 		});
 	}
@@ -434,7 +436,8 @@ function getGsid(objOrTsid) {
 	}
 	// for all other classes, we need the actual game object
 	var obj = typeof objOrTsid === 'string' ? pers.get(objOrTsid) : objOrTsid;
-	assert(obj !== undefined, 'cannot map nonexistent game object: ' + objOrTsid);
+	assert(typeof obj === 'object' && obj !== null,
+		'cannot map nonexistent game object: ' + objOrTsid);
 	// player mapped by current location
 	if (utils.isPlayer(obj)) {
 		assert(utils.isLoc(obj.location),

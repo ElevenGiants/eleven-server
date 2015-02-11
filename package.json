@@ -1,6 +1,6 @@
 {
   "name": "eleven-server",
-  "version": "0.1.0",
+  "version": "0.1.7",
   "description": "Eleven game server",
   "homepage": "http://elevengiants.com/",
   "license": "MIT",
@@ -13,6 +13,14 @@
     {
       "name": "Joey Thomas",
       "email": "josephthomas619@msn.com"
+    },
+    {
+      "name": "Aric Stewart",
+      "email": "aricstewart@gmail.com"
+    },
+    {
+      "name": "scheijan",
+      "email": "scheijan@gmail.com"
     }
   ],
   "author": "Markus Dolic <aroha@elevengiants.com> (https://twitter.com/ElevenAroha)",
@@ -30,11 +38,13 @@
     "harmony-reflect": "^1.1.1",
     "lodash": "^2.4.1",
     "lynx": "^0.2.0",
+    "memwatch": "^0.2.2",
     "multitransport-jsonrpc": "^0.7.2",
     "murmurhash-js": "^1.0.0",
     "nconf": "^0.6.9",
     "node_amf_cc": "^1.1.1",
     "rethinkdb": "^1.15.0-0",
+    "slack-client": "^1.2.2",
     "token": "0.0.0",
     "wait.for": "^0.6.4"
   },
@@ -50,13 +60,14 @@
   },
   "scripts": {
     "preproc": "python tools/gsjs-preproc.py",
-    "start": "NODE_PATH=src node --harmony ./src/server.js | node_modules/bunyan/bin/bunyan -o short",
+    "start": "NODE_PATH=src node --harmony --expose-gc ./src/server.js | node_modules/bunyan/bin/bunyan -o short",
     "test": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/unit",
     "functest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/func",
     "inttest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/int",
     "alltests": "NODE_PATH=src sh -c 'npm run lint && npm run test -- -R progress && npm run functest -- -R progress && npm run inttest -- -R progress'",
     "bench": "NODE_PATH=src node --harmony bench/runner.js",
-    "lint": "node_modules/jshint/bin/jshint --verbose --exclude src/gsjs src test && node_modules/jscs/bin/jscs --verbose --reporter inline src test",
-    "docs": "node node_modules/jsdoc/jsdoc.js --destination docs --configure jsdoc-conf.json src"
+    "lint": "node_modules/jshint/bin/jshint --verbose --exclude src/gsjs src test tools && node_modules/jscs/bin/jscs --verbose --reporter inline src test tools",
+    "docs": "node node_modules/jsdoc/jsdoc.js --destination docs --configure jsdoc-conf.json src",
+    "repl": "node tools/repl-client.js 7201"
   }
 }

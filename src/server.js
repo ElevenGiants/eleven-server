@@ -23,6 +23,8 @@ var amfServer = require('comm/amfServer');
 var policyServer = require('comm/policyServer');
 var logging = require('logging');
 var metrics = require('metrics');
+var replServer = require('comm/replServer');
+var slack = require('comm/slack');
 var util = require('util');
 
 
@@ -37,6 +39,9 @@ var util = require('util');
 function main() {
 	// init low-level things first (synchronously)
 	config.init(cluster.isMaster);
+	if (config.get('debug').stackTraceLimit) {
+		Error.stackTraceLimit = config.get('debug:stackTraceLimit');
+	}
 	logging.init();
 	metrics.init();
 	// then actually fork workers, resp. start up server components there
@@ -60,8 +65,7 @@ function loadPluggable(modPath, logtag) {
 function persInit(callback) {
 	var modName = config.get('pers:backEnd:module');
 	var pbe = loadPluggable('data/pbe/' + modName, 'persistence back-end');
-	var pbeConfig = config.get('pers:backEnd:config:' + modName);
-	pers.init(pbe, pbeConfig, function cb(err, res) {
+	pers.init(pbe, config.get('pers'), function cb(err, res) {
 		if (err) log.error(err, 'persistence layer initialization failed');
 		else log.info('persistence layer initialized (%s back-end)', modName);
 		callback(err);
@@ -124,6 +128,29 @@ function runWorker() {
 		if (err) log.error(err, 'GSJS bridge initialization failed');
 		else log.info('GSJS prototypes loaded');
 	});
+	// start REPL server if enabled
+	if (config.get('debug').repl && config.get('debug:repl:enable')) {
+		replServer.init();
+	}
+	if (config.get('slack:token', null)) {
+		slack.init();
+	}
+	// start explicit GC interval if configured
+	var gcInt = config.get('debug:gcInt', null);
+	if (gcInt) {
+		if (!global.gc) {
+			log.error('GC interval configured, but global gc() not available ' +
+				'(requires node option --expose_gc)');
+		}
+		else {
+			log.info('starting explicit GC interval (%s ms)', gcInt);
+			setInterval(function explicitGC() {
+				var timer = metrics.createTimer('process.gc_time');
+				global.gc();
+				timer.stop();
+			}, gcInt);
+		}
+	}
 }
 
 

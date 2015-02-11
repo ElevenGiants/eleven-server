@@ -38,6 +38,7 @@ module.exports = {
 	get: get,
 	create: create,
 	postRequestProc: postRequestProc,
+	postRequestRollback: postRequestRollback,
 };
 
 
@@ -64,7 +65,7 @@ var pbe = null;
  *
  * @param {object} backEnd persistence back-end module; must implement
  *        the API shown in the above module docs.
- * @param {object} [config] configuration options for back-end module
+ * @param {object} [config] configuration options
  * @param {function} [callback] called when persistence layer is ready,
  *        or an error occurred during initialization
  */
@@ -76,7 +77,11 @@ function init(backEnd, config, callback) {
 		return Object.keys(cache).length;
 	});
 	if (pbe && typeof pbe.init === 'function') {
-		return pbe.init(config, callback);
+		var pbeConfig;
+		if (config && config.backEnd) {
+			pbeConfig = config.backEnd.config[config.backEnd.module];
+		}
+		return pbe.init(pbeConfig, callback);
 	}
 	else if (callback) {
 		return callback(null);
@@ -114,8 +119,7 @@ function exists(tsid) {
 function load(tsid) {
 	assert(pbe, 'persistence back-end not set');
 	log.debug('pers.load: %s', tsid);
-	var data;
-	data = pbe.read(tsid);
+	var data = pbe.read(tsid);
 	if (typeof data !== 'object' || data === null) {
 		log.info(new Error('dummy error for stack trace'),
 			'no or invalid data for %s', tsid);
@@ -132,14 +136,14 @@ function load(tsid) {
 	else {
 		// make sure any changes to the object are persisted
 		obj = persProxy.makeProxy(obj);
+		cache[tsid] = obj;
 		// resume timers/intervals and send onLoad event if there is a handler
-		if (obj.resumeGsTimers) {
-			obj.resumeGsTimers();
-		}
 		if (obj.onLoad) {
 			obj.onLoad();
 		}
-		cache[tsid] = obj;
+		if (obj.resumeGsTimers) {
+			obj.resumeGsTimers();
+		}
 		metrics.increment('pers.load.local');
 	}
 	metrics.increment('pers.load');
@@ -149,26 +153,41 @@ function load(tsid) {
 
 /**
  * Retrieves the game object with the given TSID, either from the live
- * object cache or request cache if available there, or from the
- * persistence back-end.
+ * object cache or request context cache if available there, or from
+ * the persistence back-end.
  *
  * @param {string} tsid TSID of the object to retrieve
+ * @param {boolean} [dontWrap] by default, returned objects are wrapped
+ *        in a proxy to ensure any access to them is routed through the
+ *        persistence layer (to prevent stale objects after rollbacks);
+ *        in specific cases where this is not desirable, set this
+ *        parameter to `true` to prevent applying the wrapper proxy
  * @returns {GameObject} the requested object
  * @throws {AssertionError} if no object with the given TSID was found
  */
-function get(tsid) {
+function get(tsid, dontWrap) {
 	assert(gsjsBridge.isTsid(tsid), 'not a valid TSID: "' + tsid + '"');
+	var ret;
 	// get "live" objects from server memory
 	if (tsid in cache) {
-		return cache[tsid];
+		ret = cache[tsid];
 	}
-	// otherwise, see if we already have it in the request cache
-	var rc = RC.getContext();
-	if (tsid in rc.cache) {
-		return rc.cache[tsid];
+	else {
+		// otherwise, see if we already have it in the request context cache
+		var rc = RC.getContext();
+		if (tsid in rc.cache) {
+			ret = rc.cache[tsid];
+		}
+		else {
+			// if not, actually load the object
+			ret = load(tsid);
+		}
 	}
-	// if not, actually load the object
-	return load(tsid);
+	// wrap in objref proxy unless specifically asked not to
+	if (!dontWrap) {
+		ret = orProxy.wrap(ret);
+	}
+	return ret;
 }
 
 
@@ -192,6 +211,7 @@ function create(modelType, data) {
 	assert(!(obj.tsid in cache), 'object already exists: ' + obj.tsid);
 	obj = persProxy.makeProxy(obj);
 	cache[obj.tsid] = obj;
+	obj = orProxy.wrap(obj);
 	RC.getContext().setDirty(obj);
 	if (typeof obj.onCreate === 'function') {
 		obj.onCreate();
@@ -209,7 +229,7 @@ function create(modelType, data) {
  *        (TSIDs as keys, objects as values)
  * @param {object} ulist hash containing game objects to release from
  *        the live object cache
- * @param {string} logmsg optional information for log messages
+ * @param {string} [logmsg] optional information for log messages
  * @param {function} [callback] function to be called after persistence
  *        operations have finished
  */
@@ -242,10 +262,6 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
 			for (var k in ulist) {
 				var obj = ulist[k];
 				try {
-					// suspend timers/intervals (if object is actually loaded)
-					if (obj.tsid in cache && obj.suspendGsTimers) {
-						obj.suspendGsTimers();
-					}
 					unload(obj);
 				}
 				catch (e) {
@@ -255,6 +271,27 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
 			if (callback) callback();
 		}
 	);
+}
+
+
+/**
+ * Called by {@link RequestContext#run} when an error occured while
+ * processing the request. Discards all modifications caused by the
+ * request by dropping all tainted objects from the live object cache.
+ *
+ * @param {object} dlist hash containing the modified game objects
+ *        (TSIDs as keys, objects as values)
+ * @param {string} [logmsg] optional information for log messages
+ * @param {function} [callback] function to be called after rollback
+ *        has finished
+ */
+function postRequestRollback(dlist, logmsg, callback) {
+	var tag = 'rollback ' + logmsg;
+	log.info(tag);
+	for (var k in dlist) {
+		unload(dlist[k], tag);
+	}
+	if (callback) callback();
 }
 
 
@@ -293,6 +330,7 @@ function write(obj, logmsg, callback) {
 function del(obj, logmsg, callback) {
 	log.debug('pers.del: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	metrics.increment('pers.del');
+	if (obj.suspendGsTimers) obj.suspendGsTimers();
 	delete cache[obj.tsid];
 	pbe.del(obj, function db(err, res) {
 		if (err) {
@@ -317,6 +355,8 @@ function del(obj, logmsg, callback) {
 function unload(obj, logmsg) {
 	log.debug('pers.unload: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	if (obj.tsid in cache) {
+		// suspend timers/intervals
+		if (obj.suspendGsTimers) obj.suspendGsTimers();
 		delete cache[obj.tsid];
 	}
 }

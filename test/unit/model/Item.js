@@ -206,6 +206,64 @@ suite('Item', function () {
 				it.setContainer(b, 10);
 			}, assert.AssertionError);
 		});
+
+		test('sends appropriate onContainerChanged events', function (done) {
+			var it = new Item({tsid: 'IT'});
+			it.queueChanges = function noop() {};
+			it.onContainerChanged = function onContainerChanged(prev, curr) {
+				assert.strictEqual(prev.tsid, 'LX');
+				assert.strictEqual(curr.tsid, 'BX');
+				done();
+			};
+			it.setContainer(new Location({tsid: 'LX'}, new Geo()));  // does not trigger onContainerChanged (no previous container)
+			it.setContainer(new Bag({tsid: 'BX', tcont: 'LDUMMY'}), 3, 7);
+		});
+
+		test('sends appropriate onContainerItemAdded events', function (done) {
+			var l = new Location({tsid: 'LX'}, new Geo());
+			var l2 = new Location({tsid: 'LY'}, new Geo());
+			var it1 = new Item({tsid: 'IT1'});
+			it1.queueChanges = function noop() {};
+			it1.setContainer(l);
+			var it2 = new Item({tsid: 'IT2'});
+			it2.queueChanges = function noop() {};
+			it2.setContainer(l2);
+			it1.onContainerItemAdded = function (it, prevCont) {
+				assert.strictEqual(it.tsid, 'IT2');
+				assert.strictEqual(prevCont.tsid, 'LY');
+				done();
+			};
+			it2.setContainer(l);
+		});
+
+		test('sends appropriate onContainerItemRemoved events', function (done) {
+			var b = new Bag({tsid: 'BX', tcont: 'LDUMMY'});
+			var it1 = new Item({tsid: 'IT1'});
+			it1.queueChanges = function noop() {};
+			it1.setContainer(b, 1, 0);
+			var it2 = new Item({tsid: 'IT2'});
+			it2.queueChanges = function noop() {};
+			it2.setContainer(b, 2, 0);
+			it2.onContainerItemRemoved = function (it, newCont) {
+				assert.strictEqual(it.tsid, 'IT1');
+				assert.strictEqual(newCont.tsid, 'BY');
+				done();
+			};
+			it1.setContainer(new Bag({tsid: 'BY', tcont: 'LDUMMY'}), 1, 0);
+		});
+
+		test('does not send change events for moves within a container',
+			function () {
+			var it = new Item({tsid: 'IT'});
+			it.queueChanges = function noop() {};
+			var b = new Bag({tsid: 'BX', tcont: 'LDUMMY'});
+			it.setContainer(b, 3, 7);
+			it.onContainerChanged = it.onContainerItemRemoved =
+				it.onContainerItemAdded = function () {
+				throw new Error('should not be called');
+			};
+			it.setContainer(b, 6, 7);  // move to different slot
+		});
 	});
 
 
@@ -294,6 +352,77 @@ suite('Item', function () {
 			assert.throw(function () {
 				it.consume('moo');
 			}, assert.AssertionError);
+		});
+	});
+
+
+	suite('setXY', function () {
+
+		test('rounds coordinates to integer numbers', function () {
+			var it = new Item();
+			it.setXY(1.1, -3.8);
+			assert.strictEqual(it.x, 1);
+			assert.strictEqual(it.y, -4);
+		});
+
+		test('returns whether the position actually changed', function () {
+			var it = new Item({x: 1, y: 2});
+			var res = it.setXY(1.1, -3.8);
+			assert.isTrue(res);
+			res = it.setXY(1.2, -3.9);
+			assert.isFalse(res, 'still the same position after rounding');
+			res = it.setXY(it.x, 5);
+			assert.isTrue(res, 'only one coordinate changing is still a change');
+		});
+	});
+
+
+	suite('addHitBox', function () {
+
+		test('adds/updates default hitbox', function () {
+			var it = new Item();
+			it.addHitBox(23, 23);
+			assert.deepEqual(it.hitBox, {w: 23, h: 23}, 'added default hitbox');
+
+			it.addHitBox(42, 42);
+			assert.deepEqual(it.hitBox, {w: 42, h: 42}, 'changed default hitbox');
+		});
+
+		test('adds/updates named hitbox', function () {
+			var it = new Item();
+			it.addHitBox(23, 23, 'foo');
+			assert.property(it, 'hitBoxes', 'created hitBoxes');
+			assert.deepEqual(it.hitBoxes, {foo: {w: 23, h: 23}}, 'added hitbox');
+
+			it.addHitBox(42, 42, 'bar');
+			assert.lengthOf(Object.keys(it.hitBoxes), 2, 'added second hitbox');
+
+			it.addHitBox(12, 13, 'bar');
+			assert.deepEqual(it.hitBoxes.bar, {w: 12, h: 13}, 'changed named hitbox');
+		});
+	});
+
+
+	suite('removeHitBox', function () {
+
+		test('does its job', function () {
+			var it = new Item();
+
+			it.addHitBox(23, 23, 'foo');
+			it.addHitBox(42, 42, 'bar');
+			assert.lengthOf(Object.keys(it.hitBoxes), 2, 'added two hitboxes');
+
+			var res = it.removeHitBox('foo');
+			assert.lengthOf(Object.keys(it.hitBoxes), 1, 'removed one hitbox');
+			assert.deepEqual(res, true, 'result was true as a hitbox was removed');
+
+			res = it.removeHitBox('does_not_exist');
+			assert.lengthOf(Object.keys(it.hitBoxes), 1, 'one hitbox left');
+			assert.deepEqual(res, false, 'result was false as no hitbox was removed');
+
+			res = it.removeHitBox('bar');
+			assert.notProperty(it, 'hitBoxes', 'property hitBoxes was removed');
+			assert.deepEqual(res, true, 'result was true as a hitbox was removed');
 		});
 	});
 });

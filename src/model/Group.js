@@ -6,6 +6,7 @@ module.exports = Group;
 var GameObject = require('model/GameObject');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
+var slack = require('comm/slack');
 var util = require('util');
 
 
@@ -26,6 +27,7 @@ function Group(data) {
 	data = data || {};
 	if (!data.tsid) data.tsid = rpc.makeLocalTsid(Group.prototype.TSID_INITIAL);
 	Group.super_.call(this, data);
+	slack.patchGroup(this);
 }
 
 

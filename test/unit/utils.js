@@ -4,6 +4,7 @@ var rewire = require('rewire');
 var RC = require('data/RequestContext');
 var utils = require('utils');
 var GameObject = require('model/GameObject');
+var Item = require('model/Item');
 var Bag = require('model/Bag');
 var Player = require('model/Player');
 var orproxy = rewire('data/objrefProxy');
@@ -350,6 +351,31 @@ suite('utils', function () {
 	});
 
 
+	suite('gameObjArgToList', function () {
+
+		test('works as expected', function () {
+			var arg = {
+				I1: new Item({tsid: 'I1'}),
+				G1: new GameObject({tsid: 'G1'}),
+				B1: new Bag({tsid: 'B1'}),
+				F1: {tsid: 'F1', not: 'a real GameObject'},
+			};
+			assert.sameMembers(utils.gameObjArgToList(arg), ['I1', 'G1', 'B1']);
+		});
+
+		test('applies the given filter function', function () {
+			var arg = [
+				new Item({tsid: 'I1'}),
+				new Player({tsid: 'P1'}),
+				new Bag({tsid: 'B1'}),
+			];
+			assert.sameMembers(utils.gameObjArgToList(arg, utils.isBag), ['P1', 'B1']);
+			assert.sameMembers(utils.gameObjArgToList(arg, utils.isPlayer), ['P1']);
+			assert.sameMembers(utils.gameObjArgToList(arg, utils.isGeo), []);
+		});
+	});
+
+
 	suite('playersArgToList', function () {
 
 		test('works with a player hash', function () {
@@ -404,4 +430,35 @@ suite('utils', function () {
 			assert.deepEqual(utils.playersArgToList(new Bag()), []);
 		});
 	});
+
+
+	suite('pointOnPlat', function () {
+
+		var platform = {
+			start: {x: 10, y: 10},
+			end: {x: 20, y: 20},
+			platform_pc_perm: 1,
+			platform_item_perm: 1,
+		};
+
+		test('works within basic platform bounds', function () {
+			assert.equal(utils.pointOnPlat(platform, 9), undefined);
+			assert.deepEqual(utils.pointOnPlat(platform, 10), {x: 10, y: 10});
+			assert.deepEqual(utils.pointOnPlat(platform, 20), {x: 20, y: 20});
+			assert.equal(utils.pointOnPlat(platform, 21), undefined);
+			assert.deepEqual(utils.pointOnPlat(platform, 15), {x: 15, y: 15});
+		});
+
+		test('is unaffected by permeability', function () {
+			platform.platform_pc_perm = 0;
+			assert.deepEqual(utils.pointOnPlat(platform, 10), {x: 10, y: 10});
+			platform.platform_pc_perm = -1;
+			assert.deepEqual(utils.pointOnPlat(platform, 10), {x: 10, y: 10});
+			platform.platform_item_perm = -1;
+			assert.deepEqual(utils.pointOnPlat(platform, 10), {x: 10, y: 10});
+			platform.platform_item_perm = 0;
+			assert.deepEqual(utils.pointOnPlat(platform, 10), {x: 10, y: 10});
+		});
+	});
+
 });

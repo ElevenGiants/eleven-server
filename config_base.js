@@ -39,6 +39,7 @@ module.exports = {
 			// process number is added to the base port for each GS instance
 			// (master = 0 (i.e. running on basePort), workers = 1, 2, 3, ...)
 			basePort: 7000,
+			timeout: 10000,  // ms
 		},
 		// incoming AMF messages bigger than this are considered invalid
 		maxMsgSize: 131072,
@@ -62,6 +63,15 @@ module.exports = {
 			// optional prefix for the metrics names:
 			prefix: '',
 		},
+	},
+	debug: {
+		// REPL server for live debugging/inspection
+		repl: {
+			enable: true,
+			host: '127.0.0.1',  // only local connections allowed by default
+			basePort: 7200,
+		},
+		stackTraceLimit: 20,
 	},
 	gsjs: {
 		// the GSJS configuration variant to load
