@@ -479,3 +479,32 @@ Item.prototype.removeHitBox = function removeHitBox(name) {
 	}
 	return false;
 };
+
+
+/**
+ * Find closest item to this item in a location.
+ *
+ * If filter is a function then all item in the location will be filtered using
+ * following code:
+ *
+ * if (filter(item, options...)){
+ * //code to find closest item
+ * }
+ *
+ * if no arguments provided at all then no filtering will be applied when
+ * looking for closest item.
+ *
+ * @param {string|function} filter  If filter is a String then the function will look only
+ * for items with that class_tsid. If filter is a function then all item in the
+ * location will be filtered using options as a parameter.
+ * @param {object} options the parameter sent to the filter function
+ * @returns {Item|null} the found item or 'null' if no item found
+ */
+Item.prototype.findCloseItem = function findCloseItem(filter, options) {
+	if (utils.isLoc(this.container)) {
+		return this.container.closestItem(this.x, this.y, filter, options);
+	}
+	else {
+		return null;
+	}
+};

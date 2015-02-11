@@ -439,3 +439,46 @@ Location.prototype.getInRadius = function getInRadius(x, y, r, players, sort) {
 	}
 	return ret;
 };
+
+
+/**
+ * Find closest item to in a location.
+ *
+ * If filter is a function then all item in the location will be filtered using
+ * following code:
+ *
+ * if (filter(item, options...)){
+ * //code to find closest item
+ * }
+ *
+ * if no arguments provided at all then no filtering will be applied when
+ * looking for closest item.
+ *
+ * @param {number} x x coordinate to search from
+ * @param {number} y y coordinate to search from
+ * @param {string|function} filter  If filter is a String then the function will look only
+ * for items with that class_tsid. If filter is a function then all item in the
+ * location will be filtered using options as a parameter.
+ * @param {object} options the parameter sent to the filter function
+ * @returns {Item} the found item or 'null' if no item found
+ */
+Location.prototype.closestItem = function closestItem(x, y, filter, options) {
+	var distance = 0;
+	var found = null;
+
+	for (var k in this.items) {
+		var it = this.items[k];
+		var valid = (arguments.length === 2 ||
+			(typeof (filter) === 'string') && it.class_tsid === filter ||
+			(typeof (filter) === 'function') && filter(it, options));
+		if (valid) {
+			var rdist = ((it.x - x) * (it.x - x)) + ((it.y - y) * (it.y - y));
+			if (!found || rdist < distance) {
+				distance = rdist;
+				found = it;
+			}
+		}
+	}
+
+	return found;
+};
