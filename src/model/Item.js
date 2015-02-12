@@ -479,3 +479,26 @@ Item.prototype.removeHitBox = function removeHitBox(name) {
 	}
 	return false;
 };
+
+
+/**
+ * Find the closest item to this item in its location.
+ *
+ * @param {string|function} [filter] if this is a string, only look for
+ *        items with a matching `class_tsid`; if it is a function, the
+ *        items in the location will be filtered using `options` as a
+ *        parameter like this:
+ * ```
+ * if (filter(item, options)) {
+ *     //code to find closest item
+ * }
+ * ```
+ * @param {object} [options] parameter object for the `filter` function
+ * @returns {Item|null} the found item, or `null` if no item found
+ */
+Item.prototype.getClosestItem = function getClosestItem(filter, options) {
+	if (utils.isLoc(this.container)) {
+		return this.container.getClosestItem(this.x, this.y, filter, options, this);
+	}
+	return null;
+};
