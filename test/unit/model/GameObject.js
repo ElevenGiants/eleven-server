@@ -412,6 +412,27 @@ suite('GameObject', function () {
 			assert.notProperty(go.gsTimers.foo, 'handle',
 				'interval itself not resumed');  // it is still configured but we don't care, the object is deleted anyway
 		});
+
+		test('does not catch up interval if noCatchUp is true', function (done) {
+			var go = new GameObject();
+			go.gsTimers = {
+				foo: {
+					options: {fname: 'foo', delay: 30, interval: true, noCatchUp: true},
+					start: new Date().getTime() - 80,
+				},
+			};
+			var count = 0;
+			var resumeFinished = false;
+			go.foo = function foo() {
+				count++;
+				assert.isTrue(resumeFinished);
+				assert.strictEqual(count, 1, 'first regular interval call, ' +
+					'no catch-up calls');
+				done();
+			};
+			go.resumeGsTimers();
+			resumeFinished = true;
+		});
 	});
 
 
