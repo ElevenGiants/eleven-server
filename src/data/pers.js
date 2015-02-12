@@ -142,12 +142,9 @@ function load(tsid) {
 		// make sure any changes to the object are persisted
 		obj = persProxy.makeProxy(obj);
 		cache[tsid] = obj;
-		// resume timers/intervals and send onLoad event if there is a handler
-		if (obj.onLoad) {
-			obj.onLoad();
-		}
-		if (obj.resumeGsTimers) {
-			obj.resumeGsTimers();
+		// post-construction operations (resume timers/intervals, GSJS onLoad etc.)
+		if (obj.gsOnLoad) {
+			obj.gsOnLoad();
 		}
 		metrics.increment('pers.load.local');
 	}

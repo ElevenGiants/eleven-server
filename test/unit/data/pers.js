@@ -57,22 +57,17 @@ suite('pers', function () {
 			assert.isTrue(cache[o.tsid].__isPP);
 		});
 
-		test('calls onLoad and resumeGsTimers', function () {
+		test('calls gsOnLoad', function () {
 			var onLoadCalled = false;
-			var resumeGsTimersCalled = false;
 			var o = {
 				tsid: 'ITEM',
-				onLoad: function onLoad() {
+				gsOnLoad: function gsOnLoad() {
 					onLoadCalled = true;
-				},
-				resumeGsTimers: function resumeGsTimers() {
-					resumeGsTimersCalled = true;
 				},
 			};
 			pbeMock.write(o);
 			load(o.tsid);
 			assert.isTrue(onLoadCalled);
-			assert.isTrue(resumeGsTimersCalled);
 		});
 
 		test('does not choke on objref cycles', function () {
@@ -120,7 +115,7 @@ suite('pers', function () {
 			var onLoadCalls = 0;
 			pbeMock.write({
 				tsid: 'I1',
-				onLoad: function onLoad() {
+				gsOnLoad: function gsOnLoad() {
 					onLoadCalls++;
 				},
 			});
