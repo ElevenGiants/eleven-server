@@ -5,6 +5,7 @@ module.exports = GameObject;
 
 var assert = require('assert');
 var config = require('config');
+var errors = require('errors');
 var util = require('util');
 var utils = require('utils');
 var RC = require('data/RequestContext');
@@ -220,6 +221,12 @@ GameObject.prototype.setGsTimer = function setGsTimer(options) {
  */
 GameObject.prototype.scheduleTimer = function scheduleTimer(options, key) {
 	var self = this;
+	if (options.delay > 2147483647) {
+		// see https://github.com/joyent/node/issues/3605
+		log.error(new errors.DummyError(), 'timer/interval delay too long: %s',
+			options.delay);
+		options.delay = 2147483647;
+	}
 	var handle = setTimeout(
 		function execTimer() {
 			var rc = new RC(options.fname, self);

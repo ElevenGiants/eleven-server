@@ -146,6 +146,24 @@ suite('GameObject', function () {
 			};
 			go.scheduleTimer({fname: 'foo'}, 'key');
 		});
+
+		test('clamps delay to maximum possible value', function (done) {
+			var go = new GameObject();
+			var called = false;
+			go.foo = function foo() {
+				called = true;
+			};
+			var opts = {fname: 'foo', delay: 2147483648};
+			// check that we're
+			var handle = go.scheduleTimer(opts, 'key');
+			setTimeout(function () {
+				assert.isFalse(called, 'prevented the timer from firing ' +
+					'immediately for a delay value >= 2^31');
+				assert.strictEqual(opts.delay, 2147483647, 'delay value limited');
+				clearTimeout(handle);  // clean up
+				done();
+			}, 5);
+		});
 	});
 
 
