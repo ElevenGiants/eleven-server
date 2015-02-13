@@ -65,12 +65,6 @@ function Location(data, geo) {
 	var geoData = geo || pers.get(this.getGeoTsid(), true);
 	assert(typeof geoData === 'object', 'no geometry data for ' + this);
 	this.updateGeo(geoData);
-	// periodically check whether location can be released from memory
-	var unloadInt = config.get('pers:locUnloadInt', null);
-	if (unloadInt && rpc.isLocal(this)) {
-		this.setGsTimer({fname: 'checkUnload', delay: unloadInt, interval: true,
-			internal: true});
-	}
 }
 
 utils.copyProps(require('model/LocationApi').prototype, Location.prototype);
@@ -90,6 +84,17 @@ Object.defineProperty(Location.prototype, 'activePlayers', {
 		return this.players;
 	},
 });
+
+
+Location.prototype.gsOnLoad = function gsOnLoad() {
+	Location.super_.prototype.gsOnLoad.call(this);
+	// periodically check whether location can be released from memory
+	var unloadInt = config.get('pers:locUnloadInt', null);
+	if (unloadInt) {
+		this.setGsTimer({fname: 'checkUnload', delay: unloadInt, interval: true,
+			internal: true});
+	}
+};
 
 
 /**

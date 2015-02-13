@@ -54,6 +54,21 @@ utils.copyProps(require('model/GameObjectApi').prototype, GameObject.prototype);
 
 
 /**
+ * Called by the persistence layer when the object is loaded, right
+ * after construction and proxification.
+ * **Caution**: Operations in this function (including anything added
+ * by subclasses) must not allow yielding before the object is fully
+ * loaded, initialized and "ready to use".
+ */
+GameObject.prototype.gsOnLoad = function gsOnLoad() {
+	if (this.onLoad) {
+		this.onLoad();
+	}
+	this.resumeGsTimers();
+};
+
+
+/**
  * Creates a processed shallow copy of this game object's data,
  * prepared for serialization.
  *

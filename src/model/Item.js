@@ -67,10 +67,15 @@ function Item(data) {
 	if (this.message_queue) {
 		this.message_queue = new OrderedHash(this.message_queue);
 	}
-	this.updatePath();
 }
 
 utils.copyProps(require('model/ItemApi').prototype, Item.prototype);
+
+
+Item.prototype.gsOnLoad = function gsOnLoad() {
+	this.updatePath();
+	Item.super_.prototype.gsOnLoad.call(this);
+};
 
 
 /**
