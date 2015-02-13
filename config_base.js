@@ -44,6 +44,13 @@ module.exports = {
 		// incoming AMF messages bigger than this are considered invalid
 		maxMsgSize: 131072,
 	},
+	proc: {
+		// timeouts for graceful worker process shutdown
+		shutdownTimeout: 20000,  // ms to wait for graceful shutdown
+		disconnectTimeout: 5000,  // ms to wait for worker.disconnect()
+		// timeout for workers to actually exit before master itself quits
+		masterTimeout: 30000,  // ms
+	},
 	log: {
 		// dir can be an absolute path, or relative to eleven-server directory
 		dir: './log',
