@@ -9,6 +9,7 @@
 // public interface
 module.exports = {
 	init: init,
+	shutdown: shutdown,
 	newSession: newSession,
 	getSessionCount: getSessionCount,
 	getPlayerInfo: getPlayerInfo,
@@ -27,6 +28,14 @@ var sessions = {};
 function init() {
 	sessions = {};
 	metrics.setupGaugeInterval('session.count', getSessionCount);
+}
+
+
+function shutdown() {
+	log.info('closing and disconnecting %s session(s)', getSessionCount());
+	forEachSession(function endSession(session, cb) {
+		session.close(cb);
+	});
 }
 
 

@@ -11,6 +11,7 @@ exports.getDummySocket = function getDummySocket() {
 		ret.emit('data', data);  // simple echo
 	};
 	ret.setNoDelay = function setNoDelay() {};  // dummy
+	ret.end = function end() {};
 	return ret;
 };
 

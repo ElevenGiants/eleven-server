@@ -65,10 +65,8 @@ suite('rpc', function () {
 						'server and client endpoints are connected');
 					// test shutdown, too
 					rpc.shutdown(function callback() {
-						assert.isUndefined(rpc.__get__('server'));
 						assert.deepEqual(rpc.__get__('clients'), {});
 						// multitransport-jsonrpc specific stuff:
-						assert.isFalse(server.transport.notClosed);
 						assert.isTrue(client.transport.con.destroyed);
 						done();
 					});

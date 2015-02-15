@@ -22,6 +22,7 @@ var rpc = require('data/rpc');
 var amfServer = require('comm/amfServer');
 var metrics = require('metrics');
 var replServer = require('comm/replServer');
+var logging = require('logging');
 var slack = require('comm/slack');
 var util = require('util');
 var segfaultHandler = require('segfault-handler');
@@ -153,6 +154,29 @@ function shutdown() {
 		return log.warn('graceful shutdown already in progress');
 	}
 	log.info('initiating graceful shutdown');
-	//TODO: actual graceful shutdown code here...
-	process.exit();
+	shuttingDown = true;
+	rpc.preShutdown();
+	async.series([
+		// first, close and disconnect all client sessions
+		amfServer.close,
+		// then shut down RPC and persistence layer
+		rpc.shutdown,
+		pers.shutdown,
+		// then everything else can go (no more incoming requests possible)
+		function finish(cb) {
+			async.parallel([
+				slack.shutdown,
+				replServer.shutdown,
+				metrics.shutdown,
+			], cb);
+		},
+	], function done(err, results) {
+		if (err) {
+			log.error(err, 'graceful shutdown failed');
+		}
+		else {
+			log.info('graceful shutdown finished');
+		}
+		logging.end(process.exit, err ? 1 : 0);
+	});
 }
