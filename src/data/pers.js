@@ -50,6 +50,7 @@ var persProxy = require('data/persProxy');
 var rpc = require('data/rpc');
 var RC = require('data/RequestContext');
 var metrics = require('metrics');
+var DummyError = require('errors').DummyError;
 
 
 // live game object cache
@@ -121,8 +122,7 @@ function load(tsid) {
 	log.debug('pers.load: %s', tsid);
 	var data = pbe.read(tsid);
 	if (typeof data !== 'object' || data === null) {
-		log.info(new Error('dummy error for stack trace'),
-			'no or invalid data for %s', tsid);
+		log.info(new DummyError(), 'no or invalid data for %s', tsid);
 		return null;
 	}
 	orProxy.proxify(data);
