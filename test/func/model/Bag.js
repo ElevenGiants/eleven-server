@@ -10,6 +10,7 @@ var Geo = require('model/Geo');
 var pers = require('data/pers');
 var utils = require('utils');
 var pbeMock = require('../../mock/pbe');
+var helpers = require('../../helpers');
 
 
 suite('Bag', function () {
@@ -179,7 +180,7 @@ suite('Bag', function () {
 			var rc = new RC();
 			rc.run(function () {
 				var l = Location.create(Geo.create());
-				var p = new Player({tsid: 'PX', location: l});
+				var p = helpers.getOnlinePlayer({tsid: 'PX', location: l});
 				l.players[p.tsid] = rc.cache[p.tsid] = p;
 				var fbag = Bag.create('bag_bigger_green');
 				fbag.setContainer(l, 1, 2);

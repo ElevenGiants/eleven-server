@@ -2,6 +2,7 @@
 
 var amf = require('node_amf_cc');
 var events = require('events');
+var Player = require('model/Player');
 
 
 exports.getDummySocket = function getDummySocket() {
@@ -10,6 +11,16 @@ exports.getDummySocket = function getDummySocket() {
 		ret.emit('data', data);  // simple echo
 	};
 	ret.setNoDelay = function setNoDelay() {};  // dummy
+	return ret;
+};
+
+
+exports.getOnlinePlayer = function getOnlinePlayer(data) {
+	// create a "connected" player instance with a dummy session object
+	var ret = new Player(data);
+	ret.session = {
+		send: function send() {},
+	};
 	return ret;
 };
 

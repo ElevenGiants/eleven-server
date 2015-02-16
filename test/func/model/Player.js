@@ -10,6 +10,7 @@ var Bag = require('model/Bag');
 var pers = require('data/pers');
 var utils = require('utils');
 var pbeMock = require('../../mock/pbe');
+var helpers = require('../../helpers');
 
 
 suite('Player', function () {
@@ -153,7 +154,8 @@ suite('Player', function () {
 
 		test('works as expected (basic changeset)', function (done) {
 			new RC().run(function () {
-				var p = new Player({tsid: 'PX', location: {tsid: 'LDUMMY'}});
+				var p = helpers.getOnlinePlayer(
+					{tsid: 'PX', location: {tsid: 'LDUMMY'}});
 				var it = new Item(
 					{tsid: 'IX', class_tsid: 'meat', count: 3, tcont: 'PX'});
 				p.queueChanges(it);
@@ -171,7 +173,8 @@ suite('Player', function () {
 
 		test('works as expected (basic removal changeset)', function (done) {
 			new RC().run(function () {
-				var p = new Player({tsid: 'PX', location: {tsid: 'LDUMMY'}});
+				var p = helpers.getOnlinePlayer(
+					{tsid: 'PX', location: {tsid: 'LDUMMY'}});
 				var it = new Item(
 					{tsid: 'IX', class_tsid: 'meat', count: 3, tcont: 'PX'});
 				p.queueChanges(it, true);
@@ -184,7 +187,7 @@ suite('Player', function () {
 
 		test('works as expected (location changesets)', function (done) {
 			new RC().run(function () {
-				var p = new Player({tsid: 'PX', location: {tsid: 'LX'}});
+				var p = helpers.getOnlinePlayer({tsid: 'PX', location: {tsid: 'LX'}});
 				var it = new Item({tsid: 'IX', class_tsid: 'apple', tcont: 'LX'});
 				p.queueChanges(it);  // added to location
 				p.queueChanges(it, true);  // removed from location again
@@ -223,7 +226,6 @@ suite('Player', function () {
 					rc.cache[p.tsid] = p;
 					var it = new Item({tsid: 'IX', class_tsid: 'pi',
 						tcont: l.tsid, container: l});
-					p.addToSlot(it, 5);
 					p.session = {
 						send: function send(msg) {
 							assert.strictEqual(msg.changes.location_tsid, l.tsid);
@@ -236,6 +238,7 @@ suite('Player', function () {
 							done();
 						},
 					};
+					p.addToSlot(it, 5);
 					p.send({});
 				},
 				function (err, res) {
@@ -248,8 +251,6 @@ suite('Player', function () {
 			new RC().run(
 				function () {
 					var p = new Player();
-					p.queueAnnc({id: 'someAnnc', data: 5});
-					p.queueAnnc({mo1: 'money', mo2: 'problems'});
 					p.session = {
 						send: function send(msg) {
 							var anncs = msg.announcements;
@@ -262,6 +263,8 @@ suite('Player', function () {
 							done();
 						},
 					};
+					p.queueAnnc({id: 'someAnnc', data: 5});
+					p.queueAnnc({mo1: 'money', mo2: 'problems'});
 					var origMsg = {};
 					p.send(origMsg);
 				},

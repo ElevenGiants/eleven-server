@@ -442,6 +442,7 @@ Player.prototype.addToAnySlot = function addToAnySlot(item, fromSlot, toSlot,
  *        (only coordinates and state, for NPC movement)
  */
 Player.prototype.queueChanges = function queueChanges(item, removed, compact) {
+	if (!this.session) return;  // don't queue changes for offline players
 	log.trace('generating changes for %s%s', item, removed ? ' (removed)' : '');
 	if (item.only_visible_to && item.only_visible_to !== this.tsid) {
 		log.trace('%s not visible for %s, skipping', item, this);
@@ -474,6 +475,7 @@ Player.prototype.queueChanges = function queueChanges(item, removed, compact) {
  * @param {object} annc announcement data
  */
 Player.prototype.queueAnnc = function queueAnnc(annc) {
+	if (!this.session) return;  // don't queue announcements for offline players
 	log.trace({annc: annc}, 'queueing annc');
 	this.anncs.push(annc);
 };
