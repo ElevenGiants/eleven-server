@@ -14,6 +14,7 @@ var RC = require('data/RequestContext');
 var util = require('util');
 var utils = require('utils');
 var lodash = require('lodash');
+var DummyError = require('errors').DummyError;
 
 
 util.inherits(Player, Bag);
@@ -492,7 +493,7 @@ Player.prototype.queueAnnc = function queueAnnc(annc) {
  */
 Player.prototype.send = function send(msg, skipChanges, flushOnly) {
 	if (!this.session) {
-		log.info(new Error('dummy error for stack trace'),
+		log.info(new DummyError(),
 			'trying to send message to offline player %s', this);
 		return;
 	}
