@@ -193,6 +193,10 @@ ItemMovement.prototype.findPlatform = function findPlatform(x, y) {
 		if (!this.platform) {  // then above
 			this.platform = this.getGeo().getClosestPlatPoint(x, y, 1).plat;
 		}
+		if (!this.platform) {
+			log.error('movement: failed to find initial platform for %s',
+				this.item);
+		}
 	}
 	else {
 		// Find a new platform:
@@ -212,9 +216,6 @@ ItemMovement.prototype.findPlatform = function findPlatform(x, y) {
 				this.platform = below.plat;
 			}
 		}
-	}
-	if (!this.platform) {
-		log.error('movement: failed to find platform for %s', this.item);
 	}
 };
 
