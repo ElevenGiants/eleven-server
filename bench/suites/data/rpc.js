@@ -17,7 +17,7 @@ var CONFIG = {net: {
 	gameServers: {
 		gs01: {host: '127.0.0.1', ports: [3000]},
 	},
-	rpc: {basePort: 7000},
+	rpc: {basePort: 6000, timeout: 10000},
 }};
 // dummy game object to call RPC functions on
 var DUMMY_OBJ = new GameObject({
