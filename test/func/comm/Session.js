@@ -6,13 +6,13 @@ var abePassthrough = require('comm/abe/passthrough');
 var net = require('net');
 var path = require('path');
 var config = require('config');
-var helpers = require('../../helpers');
 var RC = require('data/RequestContext');
 var Session = require('comm/Session');
 var sessionMgr = require('comm/sessionMgr');
 var pers = require('data/pers');
 var pbeMock = require('../../mock/pbe');
 var gsjsBridge = require('model/gsjsBridge');
+var helpers = require('../../helpers');
 
 
 suite('Session', function () {

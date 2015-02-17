@@ -9,9 +9,9 @@ var Location = require('model/Location');
 var Geo = require('model/Geo');
 var Item = require('model/Item');
 var Bag = require('model/Bag');
-var Player = require('model/Player');
 var gsjsBridge = require('model/gsjsBridge');
 var utils = require('utils');
+var helpers = require('../../helpers');
 
 
 suite('Location', function () {
@@ -166,7 +166,7 @@ suite('Location', function () {
 			rc.run(function () {
 				// setup (create/initialize loc, player, bag)
 				var l = Location.create(Geo.create());
-				var p = new Player({tsid: 'PX', location: {tsid: l.tsid}});
+				var p = helpers.getOnlinePlayer({tsid: 'PX', location: {tsid: l.tsid}});
 				l.players = {PX: p};  // put player in loc (so loc changes are queued for p)
 				rc.cache[p.tsid] = p;  // required so b.tcont can be "loaded" from persistence
 				var b = new Bag({tsid: 'BX', class_tsid: 'bag_bigger_green'});
