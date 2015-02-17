@@ -58,7 +58,8 @@ suite('rpc', function () {
 						1, 'exactly one client connected to server');
 					var connection = server.transport.connections[Object.keys(
 						server.transport.connections)[0]];
-					assert.strictEqual(connection.remoteAddress, '127.0.0.1');
+					assert.isTrue(connection.remoteAddress === '127.0.0.1' ||
+						connection.remoteAddress === '::ffff:127.0.0.1');
 					assert.strictEqual(connection.remotePort,
 						client.transport.con.localPort,
 						'server and client endpoints are connected');
