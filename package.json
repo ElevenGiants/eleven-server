@@ -60,7 +60,7 @@
     "jscs-jsdoc": "^0.3.2",
     "jsdoc": "^3.3.0-alpha9",
     "jshint": "^2.5.5",
-    "mocha": "^1.20.1",
+    "mocha": "^2.1.0",
     "rewire": "^2.1.0"
   },
   "scripts": {
