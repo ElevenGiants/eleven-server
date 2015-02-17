@@ -151,7 +151,8 @@ Player.prototype.onLoginStart = function onLoginStart(session, isRelogin) {
 	this.session = session;
 	this.resumeGsTimers();
 	if (!this.gsTimerExists('onTimePlaying', true)) {
-		this.setGsTimer({fname: 'onTimePlaying', delay: 60000, interval: true});
+		this.setGsTimer({fname: 'onTimePlaying', delay: 60000, interval: true,
+			noCatchUp: true});
 	}
 	if (isRelogin) {
 		this.onRelogin();
