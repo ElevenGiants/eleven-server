@@ -255,18 +255,20 @@ suite('Session', function () {
 		});
 
 		test('works with proxies', function (done) {
-			var o = {
+			var p = persProxy.makeProxy({
 				a: [1, 2, 3],
 				b: {giant: 'humbaba'},
-			};
-			var p = persProxy.makeProxy(o);
+			});
 			var socket = getDummySocket();
 			var s = getTestSession('test', socket);
 			s.loggedIn = true;
 			socket.write = function (data) {
 				data = data.slice(4);  // snip length header
 				var res = amf.deserialize(data.toString('binary')).value;
-				assert.deepEqual(res, o);
+				assert.deepEqual(res, {
+					a: [1, 2, 3],
+					b: {giant: 'humbaba'},
+				});
 				done();
 			};
 			s.send(p);

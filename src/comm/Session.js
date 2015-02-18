@@ -403,7 +403,11 @@ Session.prototype.send = function send(msg) {
 		}
 	}
 	// JSON roundtrip workaround because AMF serialization currently does not
-	// work for ES6 proxies - see e.g. https://github.com/joyent/node/issues/7526
+	// work correctly for arrays wrapped in ES6 proxies, i.e.
+	//     amf.serialize(new Proxy([1,2,3], {}))
+	// does not return the same data as:
+	//     amf.serialize([1,2,3])
+	//
 	//TODO: remove this when it's no longer necessary
 	msg = JSON.parse(JSON.stringify(msg));
 	if (log.trace()) {
