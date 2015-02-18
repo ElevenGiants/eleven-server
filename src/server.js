@@ -144,11 +144,7 @@ function runWorker() {
 		}
 		else {
 			log.info('starting explicit GC interval (%s ms)', gcInt);
-			setInterval(function explicitGC() {
-				var timer = metrics.createTimer('process.gc_time');
-				global.gc();
-				timer.stop();
-			}, gcInt);
+			setInterval(global.gc, gcInt);
 		}
 	}
 }

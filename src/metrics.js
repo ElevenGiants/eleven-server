@@ -24,7 +24,7 @@ module.exports = {
 require('harmony-reflect');
 var config = require('config');
 var Lynx = require('lynx');
-var memwatch = require('memwatch');
+var GCStats = require('gc-stats');
 
 var STATSD_FLUSH_INT = 10000;  // statsd flush interval in ms
 
@@ -220,20 +220,21 @@ function startSystemMetrics() {
 			timer.stop();
 		});
 	}, undefined, 1000);
-	// memwatch events (postpone until after startup with data preloading etc)
-	setTimeout(function registerMemwatchEvents() {
-		var gcTimer;
-		memwatch.on('leak', function onMemwatchLeaks(info) {
-			lynx.gauge('memwatch.growth', info.growth);
-			log.warn(info, 'memwatch leak event emitted');
-		});
-		memwatch.on('stats', function onMemwatchStats(stats) {
-			log.info(stats, 'memwatch stats');
-			lynx.gauge('memwatch.current_base', stats.current_base);
-			lynx.gauge('memwatch.estimated_base', stats.estimated_base);
-			lynx.gauge('memwatch.usage_trend', stats.usage_trend);
-			if (gcTimer) gcTimer.stop();
-			gcTimer = createTimer('memwatch.full_gc');
-		});
-	}, 60000);
+	// GC events
+	var gcStats = new GCStats();
+	gcStats.on('stats', function afterGC(stats) {
+		if (stats.gctype === 1) {  // scavenge
+			increment('process.memory.gc.minor');
+			lynx.timing('process.memory.gc.minor', stats.pauseMS);
+		}
+		else {  // mark-sweep or compact
+			log.info(stats, 'GC stats');
+			increment('process.memory.gc.major');
+			lynx.timing('process.memory.gc.major', stats.pauseMS);
+			lynx.gauge('process.memory.post_gc.heap_total', stats.after.totalHeapSize);
+			lynx.gauge('process.memory.post_gc.heap_used', stats.after.usedHeapSize);
+			lynx.gauge('process.memory.post_gc.heap_exec',
+				stats.after.totalHeapExecutableSize);
+		}
+	});
 }

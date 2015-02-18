@@ -26,7 +26,6 @@ var repl = require('repl');
 var util = require('util');
 var vm = require('vm');
 var bunyan = require('bunyan');
-var memwatch = require('memwatch');
 var config = require('config');
 var pers = require('data/pers');
 var RC = require('data/RequestContext');
@@ -71,7 +70,6 @@ function handleConnect(socket) {
 	r.context.admin = gsjsBridge.getAdmin();
 	r.context.api = globalApi;
 	r.context.gsrpc = rpcApi;
-	r.context.memwatch = memwatch;
 	r.context.slack = slack.getClient();
 	r.context.rpc = rpc;
 	r.context.config = config;
