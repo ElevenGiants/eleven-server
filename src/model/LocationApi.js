@@ -305,14 +305,7 @@ LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId,
 	hubId, isInstance, altClassTsid) {
 	log.debug('%s.apiCopyLocation(%s, %s, %s, %s, %s)', this, label, moteId,
 		hubId, isInstance, altClassTsid);
-	//TODO: implement&document me
-	log.warn('TODO Location.apiCopyLocation not implemented yet');
-};
-
-LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId, hubId, is_instance, alt_class_tsid, custom_tsid){
-	log.debug('%s.apiCopyLocation(%s, %s, %s, %s, %s)', this, label, moteId,
-		hubId, is_instance, alt_class_tsid, custom_tsid);
-	return this.copyLocation(label, moteId, hubId, is_instance, alt_class_tsid, custom_tsid);
+	return this.copyLocation(label, moteId, hubId, isInstance, altClassTsid);
 };
 
 LocationApi.prototype.apiGeometryUpdated = function apiGeometryUpdated() {

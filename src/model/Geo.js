@@ -72,8 +72,7 @@ Geo.prototype.prepConnects = function prepConnects() {
 		}
 		for (k in mg.doors) {
 			var door = mg.doors[k];
-			if(door.connect.target != null)
-			{
+			if (door.connect.target) {
 				door.connect = utils.prepConnect(door.connect);
 				// remove links to unavailable locations:
 				if (!pers.exists(door.connect.street_tsid)) {
@@ -183,9 +182,9 @@ Geo.prototype.getLocTsid = function getLocTsid() {
 	return Location.prototype.TSID_INITIAL + this.tsid.slice(1);
 };
 
-Geo.prototype.copyGeometryData = function copyGeometryData(geometry){
+Geo.prototype.copyGeometryData = function copyGeometryData(geometry) {
 	this.copyProps(geometry, ['tsid', 'id', 'label']);
-}
+};
 
 /**
  * Gets the closest platform point directly above or below the given
@@ -237,10 +236,11 @@ Geo.prototype.getHitBoxes = function getHitBoxes() {
 };
 
 Geo.prototype.fromJson = function fromJson(data) {
-	for (var key in data.dynamic) {
+	var key;
+	for (key in data.dynamic) {
 		this[key] = data.dynamic[key];
 	}
-	for (var key in data) {
+	for (key in data) {
 		if (key !== 'dynamic') {
 			this[key] = data[key];
 		}

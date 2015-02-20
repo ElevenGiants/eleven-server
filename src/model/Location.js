@@ -15,6 +15,7 @@ var RC = require('data/RequestContext');
 var rpc = require('data/rpc');
 var util = require('util');
 var utils = require('utils');
+var api = require('model/globalApi');
 
 
 util.inherits(Location, GameObject);
@@ -101,7 +102,7 @@ Object.defineProperty(Location.prototype, 'activePlayers', {
  */
 Location.create = function create(data) {
 	data = data || {};
-	if(data.geo)
+	if (data.geo)
 		data.tsid = data.geo.getLocTsid();
 	data.class_tsid = data.class_tsid || 'town';
 	return pers.create(Location, data);
@@ -439,43 +440,47 @@ Location.prototype.getInRadius = function getInRadius(x, y, r, players, sort) {
 	return ret;
 };
 
-Location.prototype.copyLocation = function copyLocation(label, moteId, hubId, is_instance, alt_class_tsid, custom_tsid){
+/*jshint -W072 */  // suppress "too many parameters" warning (API function following the spec)
+Location.prototype.copyLocation = function copyLocation(label, moteId, hubId,
+	isInstance, altClassTsid) {
 	var data = {};
-	if(custom_tsid) data.tsid = 'G' + custom_tsid.slice(1);
 	var newGeo = Geo.create(data);
- 	log.error('TSID of new Geo: %s', newGeo.tsid);
 	newGeo.copyGeometryData(this.geometry);
-	//newGeo = pers.write(newGeo)
 
 	data = {};
 	data.geo = newGeo;
-	if(!alt_class_tsid) alt_class_tsid = this.class_tsid;
-	data.class_tsid = alt_class_tsid;
+	if (!altClassTsid) altClassTsid = this.class_tsid;
+	data.class_tsid = altClassTsid;
 	var newLoc = Location.create(data);
 	newLoc.copyLocationData(this);
 	newLoc.label = label;
 	newLoc.moteid = moteId;
 	newLoc.hubid = hubId;
-	newLoc.is_instance = is_instance;
- 	//newLoc = pers.write(newLoc);
- 	//log.error('Create geo instance of Geo: %s', (newGeo instanceof Geo));
+	newLoc.is_instance = isInstance;
 	newLoc.updateGeo(newGeo);
 
-	//copy items TODO
+	newLoc.items = new IdObjRefMap({});
+	for (var i in this.items) {
+		var srcItem = this.items[i];
+		var newItem = api.apiNewItemStack(srcItem.class_tsid, srcItem.count);
+		newItem.copyProps(srcItem, ['tsid', 'class_tsid', 'count', 'tcont',
+				'pcont', 'container']);
+		newItem.setContainer(newLoc);
+		newLoc.items[newItem.tsid] = newItem;
+	}
 
 	newLoc.onCreateAsCopyOf(this);
-	//log.error('Class of new Location: %s', newLoc.class_tsid);
-	//log.error('Location has pols_setOwnable: %s', newLoc.pols_setOwnable);
 	return newLoc;
 };
+/*jshint +W072 */
 
-Location.prototype.copyLocationData = function copyLocationData(location){
+Location.prototype.copyLocationData = function copyLocationData(location) {
 	this.copyProps(location, ['tsid', 'id', 'class_tsid', 'class_id', 'instances',
 	 'playsers', 'activePlayers']);
 
 };
 
-Location.prototype.processGeometryUpdate = function processGeometryUpdate(){
+Location.prototype.processGeometryUpdate = function processGeometryUpdate() {
 	if (!(this.geometry instanceof GameObject)) {
 		// replace the entire geometry object
 		var data = this.geometry;
@@ -498,10 +503,13 @@ Location.prototype.updateGeometry = function updateGeometry(data) {
 	// adjust connect (doors, signposts) proxies for client, without modifying original geometry object
 	cgeo.layers = utils.shallowCopy(data.layers);
 	cgeo.layers.middleground = utils.shallowCopy(data.layers.middleground);
-	cgeo.layers.middleground.signposts = utils.shallowCopy(data.layers.middleground.signposts);
+	cgeo.layers.middleground.signposts =
+		utils.shallowCopy(data.layers.middleground.signposts);
 	//TODO: should probably use location.prototype.prep_geometry instead of this:
-	for (var i in cgeo.layers.middleground.signposts) {
-		cgeo.layers.middleground.signposts[i] = utils.shallowCopy(data.layers.middleground.signposts[i]);
+	var i;
+	for (i in cgeo.layers.middleground.signposts) {
+		cgeo.layers.middleground.signposts[i] =
+			utils.shallowCopy(data.layers.middleground.signposts[i]);
 		var signpost = cgeo.layers.middleground.signposts[i];
 		var connects = signpost.connects;
 		signpost.connects = {};
@@ -510,12 +518,16 @@ Location.prototype.updateGeometry = function updateGeometry(data) {
 		}
 	}
 	cgeo.layers.middleground.doors = utils.shallowCopy(data.layers.middleground.doors);
-	for (var i in cgeo.layers.middleground.doors) {
-		cgeo.layers.middleground.doors[i] = utils.shallowCopy(data.layers.middleground.doors[i]);
+	for (i in cgeo.layers.middleground.doors) {
+		cgeo.layers.middleground.doors[i] =
+			utils.shallowCopy(data.layers.middleground.doors[i]);
 		var door = cgeo.layers.middleground.doors[i];
 		door.connect = utils.prepConnect(door.connect);
 	}
-	// create "geo" (only specific fields)
+	this.createGeo();
+};
+
+Location.prototype.createGeo = function createGeo() {
 	this.geo = {};
 	this.geo.l = this.geometry.l;
 	this.geo.r = this.geometry.r;

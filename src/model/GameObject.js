@@ -371,32 +371,32 @@ GameObject.prototype.cancelGsTimer = function cancelGsTimer(fname, interval) {
 };
 
 GameObject.prototype.copyProps = function copyProps(from, skipList) {
-	for (var key in from){
+	for (var key in from) {
 		var value = from[key];
-		//Skip functions, as they're defined in Server/GSJS code and not to be persisted
-		if(typeof value === 'function') continue;
-		//Skip instance specific properties
-		if(!from.hasOwnProperty(key)) continue;
-		//Skip items specified to skip
-		if(skipList && skipList.indexOf(key) !== -1) continue;
-		//Directly copy primitive types
-		if(!(value instanceof Object)){
+		// Skip functions, as they're defined in Server/GSJS code and not to be persisted
+		if (typeof value === 'function') continue;
+		// Skip instance specific properties
+		if (!from.hasOwnProperty(key)) continue;
+		// Skip items specified to skip
+		if (skipList && skipList.indexOf(key) !== -1) continue;
+		// Directly copy primitive types
+		if (!(value instanceof Object)) {
 			this[key] = value;
 		}
-		else{
-			//Directly copy objref proxies without digging down
-			if(value.__isORP || value.__isPP || value.__isRP) {
+		else {
+			// Directly copy objref proxies without digging down
+			if (value.__isORP) {
 				this[key] = value;
 			}
-			//Recurse down for complex objects/arrays
-			else{
+			// Recurse down for complex objects/arrays
+			else {
 				this[key] = value instanceof Array ? [] : {};
-				//don't provide skiplist, only want to skip top level items
-				this.copyProps(value, null);
+				// don't provide skiplist, only want to skip top level items
+				GameObject.prototype.copyProps.call(this[key], value);
 			}
 		}
 	}
-}
+};
 
 /**
  * Checks if there are any pending timers calls/active interval calls
