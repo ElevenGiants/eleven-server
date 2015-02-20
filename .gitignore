@@ -4,4 +4,7 @@ docs
 /src/gsjs
 /node_modules/**/out
 /node_modules/**/build
+/node_modules/**/fibers/bin/**
+!/node_modules/**/fibers/bin/.npmignore
 npm-debug.log
+builderror.log
