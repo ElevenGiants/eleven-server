@@ -3,8 +3,10 @@
 require('../../setup');
 var suite = new (require('benchmark')).Suite;
 module.exports = suite;
+var fs = require('fs');
 var rewire = require('rewire');
 var pp = rewire('data/persProxy');
+var Player = require('model/Player');
 var rcMock = require('../../../test/mock/RequestContext');
 // workaround to make Proxy available in persProxy module after rewiring:
 require('harmony-reflect');
@@ -21,6 +23,10 @@ var obj = {
 	},
 };
 obj = pp.makeProxy(obj);
+var pc = new Player(JSON.parse(
+	fs.readFileSync('bench/fixtures/PUVF8UK15083AI1XXX.json')));
+var ppc = pp.makeProxy(new Player(JSON.parse(
+	fs.readFileSync('bench/fixtures/PUVF8UK15083AI1XXX.json'))));
 
 
 suite.on('start', function() {
@@ -52,4 +58,12 @@ suite.add('pProxy get&set', function() {
 suite.add('pProxy del&set', function() {
 	delete obj.a;
 	obj.a = 1;
+});
+
+suite.add('serialize pProxied player', function() {
+	ppc.serialize();
+});
+
+suite.add('serialize non-pProxied player', function() {
+	pc.serialize();
 });
