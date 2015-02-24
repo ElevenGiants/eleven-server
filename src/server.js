@@ -26,6 +26,7 @@ var metrics = require('metrics');
 var replServer = require('comm/replServer');
 var slack = require('comm/slack');
 var util = require('util');
+var segfaultHandler = require('segfault-handler');
 
 
 /**
@@ -111,6 +112,7 @@ function runMaster() {
 
 function runWorker() {
 	log.info('starting cluster worker %s', config.getGsid());
+	segfaultHandler.registerHandler();
 	// initialize and wait for modules required for GS operation
 	async.series([
 			persInit,
