@@ -281,11 +281,6 @@ if (cluster.isMaster) {
 
 // uncaught error handler; log as FATAL error and quit
 process.on('uncaughtException', function onUncaughtException(err) {
-	if (typeof err === 'object' && err.type === 'stack_overflow') {
-		// special treatment for stack overflow errors
-		// see https://github.com/trentm/node-bunyan/issues/127
-		err = new Error(err.message);
-	}
 	if (global.log) {
 		log.fatal(err, 'uncaught error');
 		logging.end(process.exit, 1);

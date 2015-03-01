@@ -365,11 +365,6 @@ Session.prototype.flushPreLoginBuffer = function flushPreLoginBuffer() {
 Session.prototype.handleAmfReqError = function handleAmfReqError(err, req) {
 	if (!err) return;
 	if (typeof req !== 'object') req = {};
-	if (typeof err === 'object' && err.type === 'stack_overflow') {
-		// special treatment for stack overflow errors
-		// see https://github.com/trentm/node-bunyan/issues/127
-		err = new Error(err.message);
-	}
 	if (typeof err === 'string') {
 		// catch malcontents throwing strings instead of Errors, e.g.
 		// https://github.com/tvcutsem/harmony-reflect/issues/38
