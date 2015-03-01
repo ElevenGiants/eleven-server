@@ -46,8 +46,8 @@ suite('pers', function () {
 		test('loaded game objects are initialized correctly', function (done) {
 			new RC().run(function () {
 				var o = pers.get('IHFK8C8NB6J2FJ5');
-				assert.instanceOf(o.__proxyTarget, Item);
-				assert.instanceOf(o.__proxyTarget, GameObject);
+				assert.instanceOf(o, Item);
+				assert.instanceOf(o, GameObject);
 				assert.strictEqual(o.constructor.name, o.class_tsid);
 				assert.property(o, 'distributeQuoinShards', 'quoin-specific property');
 				assert.property(o, 'distanceFromPlayer', 'property from item.js');
@@ -58,7 +58,7 @@ suite('pers', function () {
 			function (done) {
 			new RC().run(function () {
 				var p = pers.get('P00000000000002');
-				assert.instanceOf(p.__proxyTarget, Player);
+				assert.instanceOf(p, Player);
 				assert.deepEqual(Object.keys(p.items), ['I00000000000002']);
 				assert.isTrue(p.items.I00000000000002.__isORP);
 			}, done);
