@@ -10,10 +10,12 @@ module.exports = {
 	getDirtyList: getDirtyList,
 	getUnloadList: getUnloadList,
 	preAdd: preAdd,
+	registerProxy: registerProxy,
 };
 
 
 var cache = {};
+var proxyCache = {};
 var dlist = {};
 var alist = {};
 var ulist = {};
@@ -21,16 +23,21 @@ var ulist = {};
 
 function reset() {
 	cache = {};
+	proxyCache = {};
 	dlist = {};
 	alist = {};
 	ulist = {};
 }
 
 
-function get(tsid, dontCache) {
+function get(tsid, noProxy) {
 	if (tsid in cache) {
 		log.debug('cache hit: %s', tsid);
 		return cache[tsid];
+	}
+	else if (!noProxy && tsid in proxyCache) {
+		log.debug('proxy cache hit: %s', tsid);
+		return proxyCache[tsid];
 	}
 	log.debug('cache miss: %s', tsid);
 }
@@ -62,6 +69,16 @@ function postRequestProc(dl, al, ul, logmsg, postPersCallback) {
 function postRequestRollback(dl, al, logmsg, callback) {
 	ulist = dl;  // dirty objects are unloaded here
 	if (callback) callback();
+}
+
+
+function registerProxy(objref) {
+	proxyCache[objref.tsid] = {
+		tsid: objref.tsid,
+		label: objref.label,
+		objref: true,
+		__isORP: true,
+	};
 }
 
 

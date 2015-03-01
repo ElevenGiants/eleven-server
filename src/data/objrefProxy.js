@@ -37,12 +37,12 @@ module.exports = {
 	makeProxy: makeProxy,
 	proxify: proxify,
 	refify: refify,
-	wrap: wrap,
 };
 
 
 require('harmony-reflect');
 var pers = require('data/pers');
+var utils = require('utils');
 
 
 /**
@@ -143,8 +143,8 @@ function resolve(objref) {
 
 
 /**
- * Recursively replaces objrefs with proxies in the supplied data
- * (in-place replacement, **the input data will be modified!**).
+ * Recursively replaces objrefs with getters/setters in the supplied
+ * data (in-place replacement, **the input data will be modified!**).
  *
  * @param {object} data arbitrary data containing objrefs; must not be
  *        an objref itself
@@ -156,7 +156,8 @@ function proxify(data, handled) {
 		var v = data[k];
 		if (v instanceof Object) {
 			if (v.objref === true) {  // explicit check for boolean-type property
-				data[k] = makeProxy(v);
+				pers.registerProxy(v);
+				setupObjRefProp(v.tsid, data, k);
 			}
 			else {
 				if (handled.indexOf(v) !== -1) continue;  // circular ref, v is already covered
@@ -165,6 +166,26 @@ function proxify(data, handled) {
 			}
 		}
 	}
+}
+
+
+function setupObjRefProp(tsid, parent, name) {
+	Object.defineProperty(parent, name, {
+		configurable: true,
+		enumerable: true,
+		get: function get() {
+			return pers.get(tsid);
+		},
+		set: function set(val) {
+			delete this[name];
+			if (utils.isGameObject(val)) {
+				setupObjRefProp(val.tsid, this, name);
+			}
+			else {
+				this[name] = val;
+			}
+		},
+	});
 }
 
 
@@ -220,21 +241,4 @@ function makeRef(obj) {
 	};
 	if (obj.label !== undefined) ret.label = obj.label;
 	return ret;
-}
-
-
-/**
- * Wraps a "regular" game object (i.e. not an objref) in an objref
- * proxy. This can be used to make sure there are no stale copies of an
- * object (i.e. any operations on objects are always performed on the
- * instances in the persistence layer cache; see {@link
- * module:data/pers}).
- *
- * @param {GameObject} obj the game object to wrap
- * @returns {Proxy} A proxy wrapper for the given objref (as described
- *          in the module docs above).
- */
-function wrap(obj) {
-	if (typeof obj !== 'object' || obj === null || obj.__isORP) return obj;
-	return makeProxy(makeRef(obj));
 }

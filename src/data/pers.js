@@ -38,6 +38,7 @@ module.exports = {
 	exists: exists,
 	get: get,
 	create: create,
+	registerProxy: registerProxy,
 	postRequestProc: postRequestProc,
 	postRequestRollback: postRequestRollback,
 };
@@ -54,8 +55,13 @@ var metrics = require('metrics');
 var DummyError = require('errors').DummyError;
 
 
-var cache = {};  // live game object cache
-var pbe = null;  // persistence back-end
+// live game object cache
+var cache = {};
+// game object proxy cache
+var proxyCache = {};
+// persistence back-end
+var pbe = null;
+// shutdown in progress flag
 var shuttingDown = false;
 
 
@@ -71,11 +77,14 @@ var shuttingDown = false;
  */
 function init(backEnd, config, callback) {
 	cache = {};
+	proxyCache = {};
 	pbe = backEnd;
 	shuttingDown = false;
 	metrics.setupGaugeInterval('pers.loc.size', function getLocSize() {
-		if (!cache) return 0;
-		return Object.keys(cache).length;
+		return cache ? Object.keys(cache).length : 0;
+	});
+	metrics.setupGaugeInterval('pers.poc.size', function getPocSize() {
+		return proxyCache ? Object.keys(proxyCache).length : 0;
 	});
 	if (pbe && typeof pbe.init === 'function') {
 		var pbeConfig;
@@ -177,25 +186,46 @@ function load(tsid) {
 
 
 /**
- * Retrieves the game object with the given TSID, either from the live
- * object cache or request context cache if available there, or from
- * the persistence back-end.
+ * Creates and caches a proxy wrapper for a game object reference,
+ * which can subsequently be returned in {@link module:data/pers~get|
+ * get} in order to only load the referenced object when actually
+ * necessary.
+ *
+ * @param {object} objref a game object reference (see {@link
+ *        module:data/objrefProxy|objrefProxy})
+ */
+function registerProxy(objref) {
+	if (!(objref.tsid in cache || objref.tsid in proxyCache)) {
+		proxyCache[objref.tsid] = orProxy.makeProxy(objref);
+	}
+}
+
+
+/**
+ * Retrieves the game object with the given TSID. If this is the
+ * authoritative GS instance for the object, returns the object itself
+ * (loading it from the persistence back-end if necessary), or an
+ * objref proxy wrapper (depending on the `noProxy` argument).
+ * Otherwise, an RPC proxy is returned.
  *
  * @param {string} tsid TSID of the object to retrieve
- * @param {boolean} [dontWrap] by default, returned objects are wrapped
- *        in a proxy to ensure any access to them is routed through the
- *        persistence layer (to prevent stale objects after rollbacks);
- *        in specific cases where this is not desirable, set this
- *        parameter to `true` to prevent applying the wrapper proxy
+ * @param {boolean} [noProxy] if `true`, the returned object **must**
+ *        be the actual `GameObject` instance; otherwise, an objref
+ *        proxy wrapper may be returned if that object has not been
+ *        loaded yet (irrelevant if this is not the authoritative GS)
  * @returns {GameObject} the requested object
  * @throws {AssertionError} if no object with the given TSID was found
  */
-function get(tsid, dontWrap) {
+function get(tsid, noProxy) {
 	assert(gsjsBridge.isTsid(tsid), 'not a valid TSID: "' + tsid + '"');
 	var ret;
 	// get "live" objects from server memory
 	if (tsid in cache) {
 		ret = cache[tsid];
+	}
+	// or just a proxy if that's enough
+	else if (!noProxy && tsid in proxyCache) {
+		ret = proxyCache[tsid];
 	}
 	else {
 		// otherwise, see if we already have it in the request context cache
@@ -207,10 +237,6 @@ function get(tsid, dontWrap) {
 			// if not, actually load the object
 			ret = load(tsid);
 		}
-	}
-	// wrap in objref proxy unless specifically asked not to
-	if (!dontWrap) {
-		ret = orProxy.wrap(ret);
 	}
 	return ret;
 }
@@ -236,7 +262,6 @@ function create(modelType, data) {
 	assert(!(obj.tsid in cache), 'object already exists: ' + obj.tsid);
 	obj = persProxy.makeProxy(obj);
 	cache[obj.tsid] = obj;
-	obj = orProxy.wrap(obj);
 	RC.getContext().setDirty(obj, true);
 	if (typeof obj.onCreate === 'function') {
 		obj.onCreate();
@@ -352,6 +377,12 @@ function postRequestProcStep(step, objects, logmsg, callback) {
  */
 function postRequestRollback(dlist, alist, logmsg, callback) {
 	assert(!shuttingDown, 'persistence layer shutdown initiated');
+	//TODO: remove rollbacks entirely, or modify to make them "safe" (no stale
+	// objects left behind). Maybe this can be achieved by *always* representing
+	// objrefs through getters/setters in live objects (see
+	// objrefProxy.setupObjRefProp)? Probably not possible to enforce this
+	// reliably, though (e.g. when completely new refs are added to an existing
+	// object).
 	var tag = 'rollback ' + logmsg;
 	log.info(tag);
 	for (let k in dlist) {
@@ -399,8 +430,13 @@ function write(obj, logmsg, callback) {
 function del(obj, logmsg, callback) {
 	log.debug('pers.del: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	metrics.increment('pers.del');
-	obj.suspendGsTimers();
-	delete cache[obj.tsid];
+	if (obj.tsid in cache) {
+		obj.suspendGsTimers();
+		delete cache[obj.tsid];
+	}
+	if (obj.tsid in proxyCache) {
+		delete proxyCache[obj.tsid];
+	}
 	pbe.del(obj, function db(err, res) {
 		if (err) {
 			log.error(err, 'could not delete: %s', obj.tsid);
@@ -427,5 +463,8 @@ function unload(obj, logmsg) {
 		// suspend timers/intervals
 		obj.suspendGsTimers();
 		delete cache[obj.tsid];
+	}
+	if (obj.tsid in proxyCache) {
+		delete proxyCache[obj.tsid];
 	}
 }
