@@ -1,5 +1,6 @@
 {
 	"eqeqeq": true,
+	"esnext": true,
 	"freeze": true,
 	"globals": {
 		"log": true,
