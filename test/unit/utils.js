@@ -155,6 +155,45 @@ suite('utils', function () {
 	});
 
 
+	suite('intVal', function () {
+
+		test('works as expected', function () {
+			assert.strictEqual(utils.intVal('0'), 0);
+			assert.strictEqual(utils.intVal('123'), 123);
+			assert.strictEqual(utils.intVal(' 123'), 123);
+			assert.strictEqual(utils.intVal('0123'), 123);
+			assert.strictEqual(utils.intVal('-17'), -17);
+			assert.strictEqual(utils.intVal('1e3'), 1,
+				'does not handle exponential notation as one might expect');
+			assert.strictEqual(utils.intVal('1e-3'), 1);
+		});
+
+		test('works for number-type input, too', function () {
+			assert.strictEqual(utils.intVal(0), 0);
+			assert.strictEqual(utils.intVal(10.12), 10);
+			assert.strictEqual(utils.intVal(1e4), 10000);
+		});
+
+		test('fails with non-finite/NaN and other invalid values', function () {
+			assert.throw(function () {
+				utils.intVal('blubb');
+			}, Error);
+			assert.throw(function () {
+				utils.intVal(-1 / 0);
+			}, Error);
+			assert.throw(function () {
+				utils.intVal('');
+			}, Error);
+			assert.throw(function () {
+				utils.intVal(undefined);
+			}, Error);
+			assert.throw(function () {
+				utils.intVal(null);
+			}, Error);
+		});
+	});
+
+
 	suite('makeNonEnumerable', function () {
 
 		test('does its job', function () {

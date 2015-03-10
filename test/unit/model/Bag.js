@@ -177,4 +177,24 @@ suite('Bag', function () {
 			assert.deepEqual(b.getSlots(4), [i2, null, null, i1]);
 		});
 	});
+
+
+	suite('addToSlot', function () {
+
+		test('works with string-type slot argument', function () {
+			var i1 = new Item({tsid: 'I1'});
+			var i2 = new Item({tsid: 'I2', x: 123, y: 345});
+			var b = new Bag({tsid: 'B1', tcont: 'PDUMMY'});
+			b.capacity = 1;
+			// changeset creation not tested here:
+			i1.queueChanges = i2.queueChanges = b.queueChanges = function noop() {};
+			b.addToSlot(i1, 0);
+			var merged = b.addToSlot(i2, '0');  // GSJS actually does this :/
+			assert.strictEqual(merged, 0, 'not added to occupied slot');
+			assert.deepEqual(b.items, {I1: i1});
+			assert.strictEqual(i1.slot, 0);
+			assert.isUndefined(i2.slot);
+			assert.strictEqual(i2.x, 123);
+		});
+	});
 });
