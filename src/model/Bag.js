@@ -198,6 +198,7 @@ Bag.prototype.getClassItems = function getClassItems(classTsid, max) {
  *          is empty
  */
 Bag.prototype.getSlot = function getSlot(slot) {
+	slot = utils.intVal(slot);
 	for (var k in this.items) {
 		if (this.items[k].x === slot) {
 			return this.items[k];
