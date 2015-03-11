@@ -278,6 +278,14 @@ Session.prototype.preRequestProc = function preRequestProc(req) {
 			if (this.pc) this.pc.onDisconnect();
 			this.socket.end();
 			return true;
+		case 'ping':
+			this.send({
+				msg_id: req.msg_id,
+				type: req.type,
+				success: true,
+				ts: Math.round(new Date().getTime() / 1000),
+			});
+			return true;
 		default:
 			if (!this.pc) {
 				log.info({session: this}, 'closing session after unexpected' +
