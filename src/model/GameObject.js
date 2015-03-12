@@ -370,6 +370,12 @@ GameObject.prototype.cancelGsTimer = function cancelGsTimer(fname, interval) {
 	return ret;
 };
 
+/**
+ * Copies an entire object minus the exceptions from the skipList
+ *
+ * @param {object} from : The object to copy into this object
+ * @param {array} skipList : The list of top level properties not to copy
+ */
 GameObject.prototype.copyProps = function copyProps(from, skipList) {
 	for (var key in from) {
 		var value = from[key];

@@ -182,6 +182,11 @@ Geo.prototype.getLocTsid = function getLocTsid() {
 	return Location.prototype.TSID_INITIAL + this.tsid.slice(1);
 };
 
+/**
+ * Copies a provided Geo into this object
+ *
+ * @param {object} geometry : The Geo to copy
+ */
 Geo.prototype.copyGeometryData = function copyGeometryData(geometry) {
 	this.copyProps(geometry, ['tsid', 'id', 'label']);
 };
@@ -235,6 +240,11 @@ Geo.prototype.getHitBoxes = function getHitBoxes() {
 	return ret;
 };
 
+/**
+ * Build up this Geo object from a json object
+ *
+ * @param {object} data : the json version of data to copy
+ */
 Geo.prototype.fromJson = function fromJson(data) {
 	var key;
 	for (key in data.dynamic) {
