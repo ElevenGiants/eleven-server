@@ -45,6 +45,7 @@ function toString() {
  * Wrapper for RPC functions that must be executed on the "right" GS
  * instance for a game object; forwards calls to the appropriate
  * instance when necessary, otherwise just calls the function directly.
+ * NB: only works for functions with a fixed number of parameters.
  *
  * @param {function} func the RPC call handler to wrap
  * @param {string} [fixedTsid] if provided, requests will *always* be
@@ -54,18 +55,23 @@ function toString() {
  *        its TSID
  * @returns {function} the wrapped RPC handler function
  */
-// forward calls to appropriate GS instance if necessary
 function redirWrap(func, fixedTsid) {
 	return function redirWrapper() {
-		var objOrTsid = fixedTsid || arguments[0];
+		var args = Array.prototype.slice.call(arguments);
+		var objOrTsid = fixedTsid || args[0];
 		if (rpc.isLocal(objOrTsid)) {
-			return func.apply(null, arguments);
+			return func.apply(null, args.slice(0, func.length));
 		}
 		else {
+			// slightly hacky trick to prevent redirect loops without extending
+			// the RPC mechanism: append an indicator flag to the function args
+			if (arguments[func.length]) {
+				throw new rpc.RpcError('redirect loop detected');
+			}
+			args[func.length] = true;  // set forwarded flag
 			var gsid = rpc.getGsid(objOrTsid);
 			log.debug('forwarding %s request to %s', func.name, gsid);
-			return rpc.sendRequest(gsid, 'gs',
-				[func.name, Array.prototype.slice.call(arguments)]);
+			return rpc.sendRequest(gsid, 'gs', [func.name, args]);
 		}
 	};
 }
