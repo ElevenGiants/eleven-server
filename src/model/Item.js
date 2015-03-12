@@ -193,13 +193,13 @@ Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 		}
 		cont[hidden ? 'hiddenItems' : 'items'][this.tsid] = this;
 	}
-	this.is_hidden = !!hidden;
 	// queue removal change if top container changed
 	if (tcont !== this.tcont) {
 		this.queueChanges(true);
 	}
 	// assign to new container and queue addition/update changes
 	this.tcont = tcont;
+	this.is_hidden = !!hidden;
 	this.setXY(x, y);
 	this.updatePath();
 	this.queueChanges();
@@ -282,7 +282,7 @@ Item.prototype.getPosObject = function getPosObject() {
  *        (only coordinates and state, for NPC movement)
  */
 Item.prototype.queueChanges = function queueChanges(removed, compact) {
-	if (this.tcont) {
+	if (this.tcont && !this.is_hidden) {
 		pers.get(this.tcont).queueChanges(this, removed, compact);
 	}
 };
