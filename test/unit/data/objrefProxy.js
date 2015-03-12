@@ -298,5 +298,13 @@ suite('objrefProxy', function () {
 			assert.isNull(orproxy.wrap(null));
 			assert.isUndefined(orproxy.wrap(undefined));
 		});
+
+		test('label changes in wrapped objects are reflected in proxy', function () {
+			var go = new GameObject();
+			persMock.add(go);
+			var wrapped = orproxy.wrap(go);
+			wrapped.label = 'Lemmiwinks';
+			assert.strictEqual(wrapped.label, 'Lemmiwinks');
+		});
 	});
 });

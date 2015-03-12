@@ -97,6 +97,10 @@ function makeProxy(objref) {
 		},
 		// other operations: resolve reference and perform operation on actual object
 		set: function set(target, name, val, receiver) {
+			if (name === 'label' && val !== undefined) {
+				// special case: sync label property in proxy
+				target[name] = val;
+			}
 			resolve(target)[name] = val;
 		},
 		has: function has(target, name) {
