@@ -104,7 +104,7 @@ GameObjectApi.prototype.apiTimerExists = function apiTimerExists(fname) {
  */
 GameObjectApi.prototype.apiSetInterval = function apiSetInterval(fname, period) {
 	log.debug('%s.apiSetInterval(%s, %s)', this, fname, period);
-	this.setGsTimer({fname: fname, delay: period * 60000});
+	this.setGsTimer({fname: fname, interval: true, delay: period * 60000});
 };
 
 
