@@ -72,8 +72,8 @@ suite('RequestContext', function () {
 		test('waits for persistence operation callback if desired', function (done) {
 			var persDone = false;
 			RC.__set__('pers', {
-				postRequestProc: function postRequestProc(dlist, ulist, logtag,
-					callback) {
+				postRequestProc: function postRequestProc(dlist, alist, ulist,
+					logtag, callback) {
 					// simulate an async persistence operation that takes 20ms
 					setTimeout(function () {
 						persDone = true;

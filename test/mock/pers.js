@@ -15,12 +15,14 @@ module.exports = {
 
 var cache = {};
 var dlist = {};
+var alist = {};
 var ulist = {};
 
 
 function reset() {
 	cache = {};
 	dlist = {};
+	alist = {};
 	ulist = {};
 }
 
@@ -49,14 +51,15 @@ function preAdd() {
 }
 
 
-function postRequestProc(dl, ul, logmsg, postPersCallback) {
+function postRequestProc(dl, al, ul, logmsg, postPersCallback) {
 	dlist = dl;
+	alist = al;
 	ulist = ul;
 	if (postPersCallback) postPersCallback();
 }
 
 
-function postRequestRollback(dl, logmsg, callback) {
+function postRequestRollback(dl, al, logmsg, callback) {
 	ulist = dl;  // dirty objects are unloaded here
 	if (callback) callback();
 }

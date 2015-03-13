@@ -186,7 +186,7 @@ suite('pers', function () {
 			};
 			dlist.I2.deleted = true;
 			dlist.P1.deleted = false;
-			pers.postRequestProc(dlist, {});
+			pers.postRequestProc(dlist, {}, {});
 			assert.strictEqual(pbeMock.getCounts().write, 2);
 			assert.strictEqual(pbeMock.getCounts().del, 1);
 		});
@@ -196,7 +196,7 @@ suite('pers', function () {
 			var o2 = new GameObject({tsid: 'I2'});
 			pers.__set__('cache', {I1: o1, I2: o2});
 			var ulist = {I2: o2};
-			pers.postRequestProc({}, ulist);
+			pers.postRequestProc({}, {}, ulist);
 			assert.strictEqual(pbeMock.getCounts().write, 0);
 			assert.strictEqual(pbeMock.getCounts().del, 0);
 			assert.deepEqual(pers.__get__('cache'), {I1: o1});
@@ -217,12 +217,51 @@ suite('pers', function () {
 				}
 			};
 			pers.init(pbe, undefined, function () {  // set custom back-end mock
-				pers.postRequestProc(dlist, {}, '', function cb() {
+				pers.postRequestProc(dlist, {}, {}, '', function cb() {
 					callbackCalled = true;
 					assert.isTrue(writeCalled);
 					done();
 				});
 			});
+		});
+
+		test('performs operation on all objects, even in case of errors', function () {
+			var errorThrown = false;
+			var o1 = new GameObject({tsid: 'I1'});
+			var o2 = new GameObject({tsid: 'I2'});
+			o1.serialize = function dummy() {
+				errorThrown = true;
+				throw new Error('should not prevent persisting o2');
+			};
+			pers.__set__('cache', {I1: o1, I2: o2});
+			pers.postRequestProc({I1: o1, I2: o2}, {}, {});
+			assert.isTrue(errorThrown);
+			assert.strictEqual(pbeMock.getCounts().write, 1, 'o2 written');
+		});
+
+		test('does not perform updates if additions failed', function () {
+			var o1 = new GameObject({tsid: 'I1'});
+			var o2 = new GameObject({tsid: 'I2'});
+			o1.serialize = function dummy() {
+				throw new Error('should prevent updates');
+			};
+			pers.__set__('cache', {I1: o1});
+			pers.postRequestProc({I2: o2}, {I1: o1}, {});
+			assert.strictEqual(pbeMock.getCounts().write, 0,
+				'writing o1 failed, further operations (updates) cancelled');
+		});
+
+		test('does not perform deletions if updates failed', function () {
+			var o1 = new GameObject({tsid: 'I1'});
+			var o2 = new GameObject({tsid: 'I2'});
+			o2.deleted = true;
+			o1.serialize = function dummy() {
+				throw new Error('should prevent deletion of o2');
+			};
+			pers.__set__('cache', {I1: o1, I2: o2});
+			pers.postRequestProc({I1: o1, I2: o2}, {}, {});
+			assert.strictEqual(pbeMock.getCounts().del, 0,
+				'updating o1 failed, further operations (deletes) cancelled');
 		});
 	});
 
@@ -234,7 +273,7 @@ suite('pers', function () {
 			var o2 = new GameObject({tsid: 'I2'});
 			pers.__set__('cache', {I1: o1, I2: o2});
 			var dlist = {I2: o2};
-			pers.postRequestRollback(dlist, null, function cb() {
+			pers.postRequestRollback(dlist, {}, null, function cb() {
 				assert.deepEqual(pers.__get__('cache'), {I1: o1});
 				done();
 			});
