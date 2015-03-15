@@ -3,6 +3,7 @@
 var Item = require('model/Item');
 var Geo = require('model/Geo');
 var Location = require('model/Location');
+var NpcMovementError = require('errors').NpcMovementError;
 
 
 var STATUS = {
@@ -90,19 +91,13 @@ suite('ItemMovement', function () {
 			assert.isFalse(moveStarted);
 		});
 
-		test('does not start if there is no suitable platform', function (done) {
+		test('fails if there is no suitable platform', function () {
 			var i1 = newItem({tsid: 'I1', npc_walk_speed: 10});
-			i1.doneMoving = function doneMoving(args) {
-				assert.isDefined(args.status);
-				if (args.status !== STATUS.DIR_CHANGE) {
-					assert.strictEqual(args.status, STATUS.ARRIVED_NEAR);
-					done();
-				}
-			};
 			addToTestLoc(i1, 35, 25, gPlat);  // on the edge of plat3, no way to go right
-			var moveStarted = i1.gsStartMoving('walking', {x: 50, y: 25},
-				{callback: 'doneMoving'});
-			assert.isFalse(moveStarted);
+			assert.throw(function () {
+				i1.gsStartMoving('walking', {x: 50, y: 25},
+					{callback: 'doneMoving'});
+			}, NpcMovementError);
 		});
 
 		test('walks towards target until no further platform is available',
