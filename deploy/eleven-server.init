@@ -1,0 +1,162 @@
+#!/bin/sh
+#
+# An init.d script for the Eleven Giants game server (on Debian/Ubuntu).
+#
+# Loosely based on/inspired by:
+# https://gist.github.com/peterhost/715255
+# https://github.com/chovy/node-startup/blob/master/init.d/node-app
+#
+# Also see:
+# http://refspecs.linuxbase.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/iniscrptact.html
+# http://refspecs.linuxbase.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/iniscrptfunc.html
+#
+### BEGIN INIT INFO
+# Provides:             eleven-server
+# Required-Start:       $syslog $remote_fs
+# Required-Stop:        $syslog $remote_fs
+# Should-Start:         $local_fs
+# Should-Stop:          $local_fs
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    Eleven Giants game server
+# Description:          Eleven Giants game server
+### END INIT INFO
+
+# load rcS variables and LSB functions (depends on lsb-base >= 3.0-6)
+. /lib/init/vars.sh
+. /lib/lsb/init-functions
+
+# various process management settings; if necessary, override these according
+# to the local environment in /etc/default/$NAME
+NAME=eleven-server
+NODE=/usr/local/bin/node
+NODE_USER=eleven
+NODE_ARGS="--harmony"
+NODE_ENV="production"
+APP_DIR="/eleven/eleven-server"
+LOG_DIR="/var/log/eleven"
+PID_DIR="/var/run"
+TERM_TIMEOUT=180
+
+# include local config overrides
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
+# derived variables (should not normally need to modify these):
+LOG_STDOUT="$LOG_DIR/$NAME.out.log"
+LOG_STDERR="$LOG_DIR/$NAME.err.log"
+PID_FILE="$PID_DIR/$NAME.pid"
+SRC_DIR="$APP_DIR/src"
+NODE_CMDLINE="$NODE $NODE_ARGS $SRC_DIR/server.js >> $LOG_STDOUT 2>> $LOG_STDERR"
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
+
+
+do_start() {
+	# make sure we can write log files
+	for f in "$LOG_STDOUT" "$LOG_STDERR"; do
+		touch "$f" && chown $NODE_USER "$f"
+		if [ "$?" -ne "0" ]; then
+			exit 1
+		fi
+	done
+	# start, unless it's already running
+	if [ -n "$(running)" ]; then
+		[ "$VERBOSE" != no ] && log_daemon_msg "Already running" "$NAME"; return 1;
+	fi
+	NODE_PATH="$SRC_DIR" NODE_ENV=$NODE_ENV start-stop-daemon \
+		--start --quiet --chuid $NODE_USER --pidfile $PID_FILE --background \
+		--make-pidfile --chdir "$APP_DIR" --startas /bin/bash -- -c "exec $NODE_CMDLINE" \
+		|| { [ "$VERBOSE" != no ] && log_daemon_msg "Could not start" "$NAME"; return 2; }
+	# start-stop-daemon may return 0 even in error cases (e.g. when it cannot
+	# create the PID file), so catch that here; a nicer and safer way to make
+	# sure that the GS is actually running would be neat
+	sleep 1
+	[ ! -n "$(running)" ] && return 2
+	if [ "$VERBOSE" != no ]; then
+		log_daemon_msg "Started" "$NAME"
+	fi
+}
+
+do_stop() {
+	start-stop-daemon --stop --quiet --retry=TERM/$TERM_TIMEOUT/KILL/5 \
+		--pidfile $PID_FILE --chuid $NODE_USER --exec $NODE
+	RETVAL="$?"
+	[ "$RETVAL" = 2 ] && return 2
+	[ "$RETVAL" = 0 ] && rm -f $PID_FILE
+	[ "$VERBOSE" != no -a "$RETVAL" = 1 ] && log_daemon_msg "Not running" "$NAME"
+	[ "$VERBOSE" != no -a "$RETVAL" = 0 ] && log_daemon_msg "Stopped" "$NAME"
+	return "$RETVAL"
+}
+
+do_status() {
+	RUNNING=$(running)
+	ispidactive=$(pidof $NAME | grep `cat $PID_FILE 2>&1` > /dev/null 2>&1)
+	ISPIDACTIVE=$?
+	if [ -n "$RUNNING" ]; then
+		if [ $ISPIDACTIVE ]; then
+			pid=$(cat "$PID_FILE")
+			log_success_msg "$NAME is running (PID $pid)"
+			exit 0
+		fi
+	else
+		if [ -f $PID_FILE ]; then
+			log_success_msg "$NAME is not running (phantom PID file $PID_FILE)"
+			exit 1
+		else
+			log_success_msg "$NAME is not running"
+			exit 3
+		fi
+	fi
+}
+
+running() {
+	RUNSTAT=$(start-stop-daemon \
+		--start --quiet --chuid $NODE_USER --pidfile $PID_FILE --background \
+		--test --startas /bin/bash -- -c "exec $NODE_CMDLINE")
+	if [ "$?" = 1 ]; then
+		echo y
+	fi
+}
+
+
+case "$1" in
+	start)
+		[ "$VERBOSE" != no ] && log_daemon_msg "Starting" "$NAME" && echo
+		do_start
+		case "$?" in
+			0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;; # started or already running
+			2) [ "$VERBOSE" != no ] && log_end_msg 1 ;; # error
+		esac
+		;;
+	stop)
+		[ "$VERBOSE" != no ] && log_daemon_msg "Stopping" "$NAME" && echo
+		do_stop
+		case "$?" in
+			0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;; # (already) stopped
+			2) [ "$VERBOSE" != no ] && log_end_msg 1 ;; # error
+		esac
+		;;
+	restart)
+		[ "$VERBOSE" != no ] && log_daemon_msg "Restarting" "$NAME" && echo
+		do_stop
+		case "$?" in
+			0|1)
+				[ "$VERBOSE" != no ] && log_end_msg 0
+				do_start
+				case "$?" in
+					0) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+					1) [ "$VERBOSE" != no ] && log_end_msg 1 ;; # old process is still running (should not be possible - something is wrong)
+					*) [ "$VERBOSE" != no ] && log_end_msg 1 ;; # failed to start
+				esac
+				;;
+			*) [ "$VERBOSE" != no ] && log_end_msg 1 ;; # failed to stop
+		esac
+		;;
+	status)
+		do_status
+		;;
+	*)
+		echo "Usage: `basename $0` {start|stop|restart|status}"
+		exit 1
+		;;
+esac
+exit 0
