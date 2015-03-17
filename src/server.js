@@ -12,21 +12,16 @@
  * @module
  */
 
-var auth = require('comm/auth');
-var async = require('async');
 var cluster = require('cluster');
 var config = require('config');
-var gsjsBridge = require('model/gsjsBridge');
-var pers = require('data/pers');
-var rpc = require('data/rpc');
-var amfServer = require('comm/amfServer');
 var policyServer = require('comm/policyServer');
 var logging = require('logging');
 var metrics = require('metrics');
-var replServer = require('comm/replServer');
-var slack = require('comm/slack');
-var util = require('util');
-var segfaultHandler = require('segfault-handler');
+var worker = require('worker');
+
+
+var workers = {};
+var shutdownTimers = {};
 
 
 /**
@@ -45,56 +40,9 @@ function main() {
 	}
 	logging.init();
 	metrics.init();
-	// then actually fork workers, resp. start up server components there
+	// then actually fork workers, resp. defer to worker module there
 	if (cluster.isMaster) runMaster();
-	else runWorker();
-}
-
-
-function loadPluggable(modPath, logtag) {
-	try {
-		return require(modPath);
-	}
-	catch (e) {
-		var msg = util.format('could not load pluggable %s module "%s": %s',
-			logtag, modPath, e.message);
-		throw new config.ConfigError(msg);
-	}
-}
-
-
-function persInit(callback) {
-	var modName = config.get('pers:backEnd:module');
-	var pbe = loadPluggable('data/pbe/' + modName, 'persistence back-end');
-	pers.init(pbe, config.get('pers'), function cb(err, res) {
-		if (err) log.error(err, 'persistence layer initialization failed');
-		else log.info('persistence layer initialized (%s back-end)', modName);
-		callback(err);
-	});
-}
-
-
-function authInit(callback) {
-	var modName = config.get('auth:backEnd:module');
-	var mod = loadPluggable('comm/abe/' + modName, 'authentication back-end');
-	var abeConfig;  // may stay undefined (no config required for some ABEs)
-	if (config.get('auth:backEnd').config) {
-		abeConfig = config.get('auth:backEnd').config[modName];
-	}
-	auth.init(mod, abeConfig, function cb(err) {
-		if (err) log.error(err, 'auth layer initialization failed');
-		else log.info('auth layer initialized (%s back-end)', modName);
-		callback(err);
-	});
-}
-
-
-function rpcInit(callback) {
-	rpc.init(function cb(err) {
-		if (err) log.error(err, 'RPC initialization failed');
-		else log.info('RPC connections established');
-		callback(err);
-	});
+	else worker.run();
 }
 
 
@@ -104,52 +52,96 @@ function runMaster() {
 		var id = gsconf.gsid;
 		log.info('forking child process %s (%s)', id, gsconf.hostPort);
 		var env = {gsid: id};
-		cluster.fork(env);
+		workers[id] = cluster.fork(env);
 	});
 	policyServer.start();
+	process.on('SIGINT', shutdown);
+	process.on('SIGTERM', shutdown);
 }
 
 
-function runWorker() {
-	log.info('starting cluster worker %s', config.getGsid());
-	segfaultHandler.registerHandler();
-	// initialize and wait for modules required for GS operation
-	async.series([
-			persInit,
-			authInit,
-			rpcInit,
-		],
-		function callback(err, res) {
-			if (err) throw err;  // bail if anything went wrong
-			// otherwise, start listening for requests
-			amfServer.start();
-		}
-	);
-	// gsjs bridge loads stuff in the background (don't need to wait for it)
-	gsjsBridge.init(function callback(err) {
-		if (err) log.error(err, 'GSJS bridge initialization failed');
-		else log.info('GSJS prototypes loaded');
+/**
+ * Handles SIGTERM/SIGINT by attempting to gracefully shut down all
+ * worker processes, and disconnecting or eventually killing them if
+ * they do not comply within the configured timeouts.
+ *
+ * @private
+ */
+function shutdown() {
+	log.info('shutdown signal received');
+	Object.keys(workers).forEach(function shutdownWorker(gsid) {
+		var worker = workers[gsid];
+		shutdownTimers[worker.id] = setTimeout(disconnectWorker,
+			config.get('proc:shutdownTimeout'), worker, gsid);
+		log.info('sending shutdown message to worker %s (%s)', worker.id, gsid);
+		worker.send('shutdown');
 	});
-	// start REPL server if enabled
-	if (config.get('debug').repl && config.get('debug:repl:enable')) {
-		replServer.init();
-	}
-	if (config.get('slack:token', null)) {
-		slack.init();
-	}
-	// start explicit GC interval if configured
-	var gcInt = config.get('debug:gcInt', null);
-	if (gcInt) {
-		if (!global.gc) {
-			log.error('GC interval configured, but global gc() not available ' +
-				'(requires node option --expose_gc)');
-		}
-		else {
-			log.info('starting explicit GC interval (%s ms)', gcInt);
-			setInterval(global.gc, gcInt);
-		}
+	waitForWorkerShutdown(new Date().getTime());
+}
+
+
+function disconnectWorker(worker, gsid) {
+	log.warn('shutdown timeout for worker %s (%s), disconnecting', worker.id, gsid);
+	shutdownTimers[worker.id] = setTimeout(killWorker,
+		config.get('proc:disconnectTimeout'), worker, gsid);
+	if (worker.connected) {
+		worker.disconnect();
 	}
 }
+
+
+function killWorker(worker, gsid) {
+	log.warn('shutdown/disconnect timeout, killing worker %s (%s)', worker.id, gsid);
+	worker.kill();
+}
+
+
+/**
+ * Exits the process if all workers have exited, or the global shutdown
+ * timeout has been exceeded. Otherwise, schedules itself again for
+ * periodic shutdown status log output.
+ *
+ * @private
+ */
+function waitForWorkerShutdown(start) {
+	if (new Date().getTime() - start > config.get('proc:masterTimeout')) {
+		log.error('could not shut down/disconnect/kill all workers. Giving up.');
+		logging.end(process.exit, 1);
+	}
+	var n = Object.keys(cluster.workers).length;
+	if (n > 0) {
+		log.info('waiting for %s worker(s) to shut down...', n);
+		setTimeout(waitForWorkerShutdown, 1000, start);
+	}
+	else {
+		log.info('all workers gone. Bye.');
+		logging.end(process.exit);
+	}
+}
+
+
+if (cluster.isMaster) {
+	cluster.on('disconnect', function onDisconnect(worker) {
+		log.info('worker %s disconnected', worker.id);
+	});
+	cluster.on('exit', function onExit(worker, code, signal) {
+		log.info('worker %s exited (code %s/signal %s)', worker.id, code, signal);
+		clearTimeout(shutdownTimers[worker.id]);
+		delete shutdownTimers[worker.id];
+	});
+}
+
+
+// uncaught error handler; log as FATAL error and quit
+process.on('uncaughtException', function onUncaughtException(err) {
+	if (typeof err === 'object' && err.type === 'stack_overflow') {
+		// special treatment for stack overflow errors
+		// see https://github.com/trentm/node-bunyan/issues/127
+		err = new Error(err.message);
+	}
+	log.fatal(err, 'uncaught error');
+	logging.end(process.exit, 1);
+});
 
 
 if (require.main === module) {

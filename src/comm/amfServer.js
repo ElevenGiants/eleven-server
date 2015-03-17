@@ -10,6 +10,7 @@
 // public interface
 module.exports = {
 	start: start,
+	close: close,
 };
 
 
@@ -27,6 +28,13 @@ function start() {
 	server.on('listening', function onListening() {
 		log.info('%s ready (pid=%s)', config.getGsid(), process.pid);
 	});
+}
+
+
+function close(callback) {
+	log.info('AMF server shutdown');
+	server.close(callback);
+	sessionMgr.shutdown();
 }
 
 

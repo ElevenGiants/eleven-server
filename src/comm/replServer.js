@@ -18,6 +18,7 @@
 // public interface
 module.exports = {
 	init: init,
+	shutdown: shutdown,
 };
 
 
@@ -36,19 +37,35 @@ var rpcApi = require('data/rpcApi');
 var slack = require('comm/slack');
 var logging = require('logging');
 
+var server;
+var connections = [];
+
 
 function init() {
 	var port = config.getServicePort('debug:repl:basePort');
 	var host = config.get('debug:repl:host');
-	var server = net.createServer(handleConnect).listen(port, host);
+	server = net.createServer(handleConnect).listen(port, host);
 	server.on('listening', function onListening() {
 		log.info('debugging REPL listening on %s:%s', host, port);
 	});
 }
 
 
+function shutdown(done) {
+	log.info('REPL server shutdown');
+	server.close(done);
+	for (var k in connections) {
+		connections[k].destroy();
+	}
+}
+
+
 function handleConnect(socket) {
 	var addr = socket.remoteAddress + ':' + socket.remotePort;
+	connections[addr] = socket;
+	socket.on('close', function close() {
+		delete connections[addr];
+	});
 	log.info('REPL connection opened: %s', addr);
 	var r = repl.start({
 		prompt: config.getGsid() + '> ',

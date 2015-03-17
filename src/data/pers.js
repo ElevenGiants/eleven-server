@@ -34,6 +34,7 @@
 // public interface
 module.exports = {
 	init: init,
+	shutdown: shutdown,
 	exists: exists,
 	get: get,
 	create: create,
@@ -53,11 +54,9 @@ var metrics = require('metrics');
 var DummyError = require('errors').DummyError;
 
 
-// live game object cache
-var cache = {};
-
-// persistence back-end
-var pbe = null;
+var cache = {};  // live game object cache
+var pbe = null;  // persistence back-end
+var shuttingDown = false;
 
 
 /**
@@ -73,6 +72,7 @@ var pbe = null;
 function init(backEnd, config, callback) {
 	cache = {};
 	pbe = backEnd;
+	shuttingDown = false;
 	metrics.setupGaugeInterval('pers.loc.size', function getLocSize() {
 		if (!cache) return 0;
 		return Object.keys(cache).length;
@@ -87,6 +87,29 @@ function init(backEnd, config, callback) {
 	else if (callback) {
 		return callback(null);
 	}
+}
+
+
+function shutdown(done) {
+	log.info('persistence layer shutdown initiated');
+	shuttingDown = true;
+	// first, suspend all timers (so they don't interfere with unloading)
+	for (var k in cache) {
+		cache[k].suspendGsTimers();
+	}
+	// then actually unload the objects
+	var num = Object.keys(cache).length;
+	async.eachLimit(Object.keys(cache), 5, function iter(k, cb) {
+		var obj = cache[k];
+		delete cache[k];
+		write(obj, 'shutdown', cb);
+		if (--num % 50 === 0 && num > 0) {
+			log.info('persistence layer shutdown: %s objects remaining', num);
+		}
+	}, function callback() {
+		log.info('persistence layer shutdown complete');
+		done();
+	});
 }
 
 
@@ -237,6 +260,7 @@ function create(modelType, data) {
  *        operations have finished
  */
 function postRequestProc(dlist, alist, ulist, logmsg, callback) {
+	assert(!shuttingDown, 'persistence layer shutdown initiated');
 	// process persistence changes in a safe order (add new, then modify
 	// existing, then remove deleted objects); this may leave behind orphaned
 	// data, but it should at least avoid invalid object references
@@ -327,6 +351,7 @@ function postRequestProcStep(step, objects, logmsg, callback) {
  *        has finished
  */
 function postRequestRollback(dlist, alist, logmsg, callback) {
+	assert(!shuttingDown, 'persistence layer shutdown initiated');
 	var tag = 'rollback ' + logmsg;
 	log.info(tag);
 	for (let k in dlist) {
@@ -374,7 +399,7 @@ function write(obj, logmsg, callback) {
 function del(obj, logmsg, callback) {
 	log.debug('pers.del: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	metrics.increment('pers.del');
-	if (obj.suspendGsTimers) obj.suspendGsTimers();
+	obj.suspendGsTimers();
 	delete cache[obj.tsid];
 	pbe.del(obj, function db(err, res) {
 		if (err) {
@@ -400,7 +425,7 @@ function unload(obj, logmsg) {
 	log.debug('pers.unload: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	if (obj.tsid in cache) {
 		// suspend timers/intervals
-		if (obj.suspendGsTimers) obj.suspendGsTimers();
+		obj.suspendGsTimers();
 		delete cache[obj.tsid];
 	}
 }

@@ -11,6 +11,7 @@
 // public interface
 module.exports = {
 	init: init,
+	shutdown: shutdown,
 	getClient: getClient,
 	patchGroup: patchGroup,
 	handleGroupMsg: handleGroupMsg,
@@ -48,6 +49,18 @@ function init() {
 	slack.on('error', onSlackError);
 	slack.on('message', onSlackMessage);
 	slack.login();
+}
+
+
+/**
+ * Shuts down integration, closes connection to Slack.
+ */
+function shutdown(done) {
+	if (slack) {
+		log.info('Slack client shutdown');
+		slack.disconnect();
+	}
+	if (done) done();
 }
 
 

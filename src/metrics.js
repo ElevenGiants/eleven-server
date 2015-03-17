@@ -12,9 +12,11 @@
 // public interface
 module.exports = {
 	init: init,
+	shutdown: shutdown,
 	increment: increment,
 	decrement: decrement,
 	count: count,
+	gauge: gauge,
 	createTimer: createTimer,
 	setupGaugeInterval: setupGaugeInterval,
 	setupTimerInterval: setupTimerInterval,
@@ -30,6 +32,7 @@ var STATSD_FLUSH_INT = 10000;  // statsd flush interval in ms
 
 var lynx = getMockLynx();
 var intervals = {};
+var gauges = {};
 
 
 /**
@@ -50,6 +53,21 @@ function init() {
 			{scope: scope, on_error: lynxErrorHandler});
 	}
 	startSystemMetrics();
+}
+
+
+/**
+ * Cleans up by setting all gauges (that were used in the current
+ * process lifetime) to zero.
+ */
+function shutdown(done) {
+	log.info('monitoring shutdown');
+	log.debug({stats: Object.keys(gauges)}, 'resetting gauges');
+	for (var stat in gauges) {
+		lynx.gauge(stat, 0);
+	}
+	lynx = getMockLynx();
+	if (done) done();
 }
 
 
@@ -119,6 +137,17 @@ function count(stats, delta, sampleRate) {
 
 
 /**
+ * Set a new value for a gauge metric.
+ * see {@link https://github.com/dscape/lynx/ lynx} and {@link
+ * https://github.com/etsy/statsd statsd} docs for details.
+ */
+function gauge(stat, val, sampleRate) {
+	gauges[stat] = true;
+	return lynx.gauge(stat, val, sampleRate);
+}
+
+
+/**
  * Create a timer object for timing measurements.
  * see {@link https://github.com/dscape/lynx/ lynx} and {@link
  * https://github.com/etsy/statsd statsd} docs for details.
@@ -144,8 +173,8 @@ function createTimer(stat, sampleRate) {
  *        (default statsd flush interval by default)
  */
 function setupGaugeInterval(stat, valueGetter, sampleRate, delay) {
-	setupInterval(stat, 'gauge', delay, function gauge() {
-		lynx.gauge(stat, valueGetter(), sampleRate);
+	setupInterval(stat, 'gauge', delay, function exec() {
+		gauge(stat, valueGetter(), sampleRate);
 	});
 }
 
@@ -165,7 +194,7 @@ function setupGaugeInterval(stat, valueGetter, sampleRate, delay) {
  *        (default statsd flush interval by default)
  */
 function setupTimerInterval(stat, resolver, sampleRate, delay) {
-	setupInterval(stat, 'timer', delay, function timer() {
+	setupInterval(stat, 'timer', delay, function exec() {
 		resolver(createTimer(stat, sampleRate));
 	});
 }
@@ -231,9 +260,9 @@ function startSystemMetrics() {
 			log.info(stats, 'GC stats');
 			increment('process.memory.gc.major');
 			lynx.timing('process.memory.gc.major', stats.pauseMS);
-			lynx.gauge('process.memory.post_gc.heap_total', stats.after.totalHeapSize);
-			lynx.gauge('process.memory.post_gc.heap_used', stats.after.usedHeapSize);
-			lynx.gauge('process.memory.post_gc.heap_exec',
+			gauge('process.memory.post_gc.heap_total', stats.after.totalHeapSize);
+			gauge('process.memory.post_gc.heap_used', stats.after.usedHeapSize);
+			gauge('process.memory.post_gc.heap_exec',
 				stats.after.totalHeapExecutableSize);
 		}
 	});

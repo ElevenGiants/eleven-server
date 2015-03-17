@@ -24,6 +24,7 @@ module.exports = {
 	RpcError: RpcError,
 	init: init,
 	shutdown: shutdown,
+	preShutdown: preShutdown,
 	makeProxy: makeProxy,
 	sendRequest: sendRequest,
 	sendObjRequest: sendObjRequest,
@@ -76,6 +77,8 @@ RpcError.prototype.name = 'RpcError';
 var clients = {};
 // RPC server (for other GSs to connect to):
 var server;
+// flag to activate special shutdown behavior:
+var shuttingDown = false;
 
 
 /**
@@ -91,6 +94,7 @@ var server;
  * contains the error object or message)
  */
 function init(callback) {
+	shuttingDown = false;
 	clients = {};
 	initServer(function cb() {
 		config.forEachGS(initClient, callback);
@@ -160,6 +164,22 @@ function initClient(gsconf, callback) {
 
 
 /**
+ * Prepares RPC layer for graceful shutdown.
+ */
+function preShutdown() {
+	// TODO: This is a hack that currently just drops all RPC requests during
+	// the shutdown, so players are at least cleanly removed from locations.
+	// Eventually, we probably want a two-phase shutdown that disconnects all
+	// clients first, and *then* starts taking apart the RPC connections.
+	shuttingDown = true;
+	for (var k in clients) {
+		clients[k].transport.retries = 0;
+		clients[k].transport.reconnects = 0;
+	}
+}
+
+
+/**
  * Shuts down all RPC client connections and the RPC server for this
  * GS.
  *
@@ -167,18 +187,28 @@ function initClient(gsconf, callback) {
  *        been terminated
  */
 function shutdown(callback) {
+	log.info('RPC subsystem shutdown');
 	// first shut down the clients...
 	async.each(Object.keys(clients), function iterator(gsid, cb) {
-		if (clients[gsid]) clients[gsid].shutdown(cb);
+		log.debug('shutting down RPC client for %s', gsid);
+		clients[gsid].shutdown(function () {
+			log.debug('RPC client for %s shut down', gsid);
+			cb();
+		});
 	},
 	function clientsDone(err) {
-		if (err) log.error(err, 'error shutting down RPC clients');
 		// ...then the server (regardless of client shutdown errors)
-		server.shutdown(function cleanup() {
+		if (err) log.error(err, 'error shutting down RPC clients');
+		clients = {};
+		log.debug('shutting down RPC server');
+		server.shutdown(function () {
+			log.debug('RPC server shut down');
 			server = undefined;
-			clients = {};
-			if (callback) callback();
 		});
+		// TODO: this should really be in the server.shutdown callback above,
+		// but for unknown reasons that one is not called reliably, so we'll
+		// just return right away here:
+		if (callback) return callback();
 	});
 }
 
@@ -260,6 +290,11 @@ function sendObjRequest(objOrTsid, fname, args, callback) {
  */
 function sendRequest(gsid, rpcFunc, args, callback) {
 	assert(gsid !== config.getGsid(), 'RPC to self');
+	if (shuttingDown) {
+		// hack - see above (preShutdown)
+		log.info('shutdown in progress, dropping %s RPC request', rpcFunc);
+		return;
+	}
 	var client = clients[gsid];
 	if (!client) {
 		throw new RpcError(util.format('no RPC client found for "%s"', gsid));
@@ -537,7 +572,7 @@ function getOnClientRetryHandler(gsid) {
 
 function getOnClientEndHandler(gsid) {
 	return function onClientEnd() {
-		log.warn('[jrpc client for %s] connection ended (failed to reconnect)', gsid);
+		log.info('[jrpc client for %s] connection ended', gsid);
 	};
 }
 
