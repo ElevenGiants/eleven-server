@@ -358,9 +358,6 @@ function handleRequest(callerId, objOrTsid, fname, args, callback) {
 				throw new RpcError(util.format('no such function: %s.%s',
 					objOrTsid, fname));
 			}
-			if (obj.__isRP) {
-				throw new RpcError('redirect loop detected: ' + objOrTsid);
-			}
 			var ret = obj[fname].apply(obj, args);
 			// convert <undefined> result to <null> so RPC lib produces a valid
 			// response (it just omits the <result> property otherwise)
