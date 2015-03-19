@@ -285,8 +285,13 @@ process.on('uncaughtException', function onUncaughtException(err) {
 		// see https://github.com/trentm/node-bunyan/issues/127
 		err = new Error(err.message);
 	}
-	log.fatal(err, 'uncaught error');
-	logging.end(process.exit, 1);
+	if (global.log) {
+		log.fatal(err, 'uncaught error');
+		logging.end(process.exit, 1);
+	}
+	else {
+		console.error(err.stack);
+	}
 });
 
 

@@ -135,7 +135,8 @@ function makeProxy(objref) {
 function resolve(objref) {
 	var ret = pers.get(objref.tsid, true);
 	if (ret === undefined || ret === null) {
-		throw new ObjRefProxyError('referenced object not found: ' + objref.tsid);
+		throw new ObjRefProxyError('referenced object not found: ' +
+			objref.tsid + ' (' + objref.label + ')');
 	}
 	return ret;
 }

@@ -76,7 +76,7 @@ function lynxErrorHandler(err) {
 	// because of their sample rate
 	// see: https://github.com/dscape/lynx/issues/10
 	if (err.message !== 'Nothing to send') {
-		log.error(err, 'error in statsd client');
+		log.error({err: err, lib: 'lynx'}, 'error in statsd client');
 	}
 }
 
