@@ -453,7 +453,13 @@ Location.prototype.copyLocation = function copyLocation(label, moteId, hubId,
 	data.class_tsid = altClassTsid;
 	var newLoc = Location.create(data);
 	newLoc.copyLocationData(this);
+	console.log("original label: " + this.label);
+	console.log("label: " + label);
+	//newLoc.label = 'test';
+	//console.log("location label: " + newLoc.label);
+	delete newLoc.label;
 	newLoc.label = label;
+	console.log("location label: " + newLoc.label);
 	newLoc.moteid = moteId;
 	newLoc.hubid = hubId;
 	newLoc.is_instance = isInstance;

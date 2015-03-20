@@ -14,6 +14,7 @@ var RC = require('data/RequestContext');
 var util = require('util');
 var utils = require('utils');
 var lodash = require('lodash');
+var orProxy = require('data/objrefProxy');
 
 
 util.inherits(Player, Bag);
@@ -524,7 +525,9 @@ Player.prototype.send = function send(msg, skipChanges, flushOnly) {
 		msg.announcements = this.anncs;
 		this.anncs = [];
 	}
+	//console.log(msg);
 	if (!flushOnly || msg.changes || msg.announcements) {
+		msg = orProxy.refify(msg);
 		this.session.send(msg);
 	}
 };
