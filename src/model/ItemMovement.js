@@ -520,6 +520,7 @@ ItemMovement.prototype.moveStep = function moveStep() {
  * ```
  */
 ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
+	var geo = this.getGeo();
 	var path;
 	if (transport === 'walking') {
 		//TODO: actual pathing
@@ -558,8 +559,8 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 	}
 	else if (transport === 'kicked') {
 		path = [{
-			x: this.item.x + this.options.vx,
-			y: this.item.y + this.options.vy,
+			x: geo.limitX(this.item.x + this.options.vx),
+			y: geo.limitY(this.item.y + this.options.vy),
 			speed: 90,
 			transport: 'direct',
 		}];
@@ -568,15 +569,15 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 			var speed = Math.min(Math.abs(tx) / 2, 45);
 			speed = Math.max(3, speed);
 			path.push({
-				x: this.item.x + tx,
-				y: this.item.y + this.options.vy,
+				x: geo.limitX(this.item.x + tx),
+				y: geo.limitY(this.item.y + this.options.vy),
 				speed: speed,
 				transport: 'direct'
 			});
 		}
 		// TODO: Handle more than just platform landings
-		tx = this.item.x + (3 * this.options.vx);
-		var platform = this.getGeo().getClosestPlatPoint(tx,
+		tx = geo.limitX(this.item.x + (3 * this.options.vx));
+		var platform = geo.getClosestPlatPoint(tx,
 			(this.item.y + this.options.vy), -1).plat;
 		if (!platform) {
 			throw new NpcMovementError(this, 'failed to find landing platform',
