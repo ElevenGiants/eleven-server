@@ -3,6 +3,7 @@
 
 #include <node.h>
 #include <stdint.h>
+#include "nan.h"
 #include "write_buffer.h"
 
 #ifdef _MSC_VER
@@ -23,7 +24,7 @@ class Serializer : public node::ObjectWrap {
 
   static int bigEndian;
 
-  static v8::Handle<v8::Value> Run(const v8::Arguments& args);
+  static NAN_METHOD(Run);
 
   void clear();
 

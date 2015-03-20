@@ -15,6 +15,7 @@ var util = require('util');
 var utils = require('utils');
 var lodash = require('lodash');
 var orProxy = require('data/objrefProxy');
+var DummyError = require('errors').DummyError;
 
 
 util.inherits(Player, Bag);
@@ -151,7 +152,8 @@ Player.prototype.onLoginStart = function onLoginStart(session, isRelogin) {
 	this.session = session;
 	this.resumeGsTimers();
 	if (!this.gsTimerExists('onTimePlaying', true)) {
-		this.setGsTimer({fname: 'onTimePlaying', delay: 60000, interval: true});
+		this.setGsTimer({fname: 'onTimePlaying', delay: 60000, interval: true,
+			noCatchUp: true});
 	}
 	if (isRelogin) {
 		this.onRelogin();
@@ -443,6 +445,7 @@ Player.prototype.addToAnySlot = function addToAnySlot(item, fromSlot, toSlot,
  *        (only coordinates and state, for NPC movement)
  */
 Player.prototype.queueChanges = function queueChanges(item, removed, compact) {
+	if (!this.session) return;  // don't queue changes for offline players
 	log.trace('generating changes for %s%s', item, removed ? ' (removed)' : '');
 	if (item.only_visible_to && item.only_visible_to !== this.tsid) {
 		log.trace('%s not visible for %s, skipping', item, this);
@@ -475,6 +478,7 @@ Player.prototype.queueChanges = function queueChanges(item, removed, compact) {
  * @param {object} annc announcement data
  */
 Player.prototype.queueAnnc = function queueAnnc(annc) {
+	if (!this.session) return;  // don't queue announcements for offline players
 	log.trace({annc: annc}, 'queueing annc');
 	this.anncs.push(annc);
 };
@@ -493,15 +497,8 @@ Player.prototype.queueAnnc = function queueAnnc(annc) {
  */
 Player.prototype.send = function send(msg, skipChanges, flushOnly) {
 	if (!this.session) {
-		log.info(new Error('dummy error for stack trace'),
+		log.info(new DummyError(),
 			'trying to send message to offline player %s', this);
-		if (this.location && this.tsid in this.location.players) {
-			// clean up players "stuck" in a location after a previous error
-			// (asynchronously, in order not to interfere with the current request)
-			log.warn('scheduling offline player removal for %s in %s', this,
-				this.location);
-			this.setGsTimer({fname: 'onDisconnect', delay: 100, internal: true});
-		}
 		return;
 	}
 	// generage "changes" segment
@@ -525,7 +522,6 @@ Player.prototype.send = function send(msg, skipChanges, flushOnly) {
 		msg.announcements = this.anncs;
 		this.anncs = [];
 	}
-	//console.log(msg);
 	if (!flushOnly || msg.changes || msg.announcements) {
 		msg = orProxy.refify(msg);
 		this.session.send(msg);

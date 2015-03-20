@@ -25,6 +25,7 @@ var utils = require('utils');
 var logging = require('logging');
 var lodash = require('lodash');
 var slack = require('comm/slack');
+var crypto = require('crypto');
 
 
 function getItemType(classTsid) {
@@ -445,6 +446,12 @@ exports.apiSendToGroup = function apiSendToGroup(msg, recipients) {
 exports.apiSendToHub = function apiSendToHub(msg, hubId) {
 	log.debug('global.apiSendToHub(%s)', msg);
 	log.warn('TODO global.apiSendToHub not implemented yet');
+};
+
+
+exports.apiMD5 = function apiMD5(string) {
+	log.debug('global.apiMD5(%s)', string);
+	return crypto.createHash('md5').update(string).digest('hex');
 };
 
 

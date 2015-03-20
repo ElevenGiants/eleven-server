@@ -8,6 +8,7 @@ var util = require('util');
 var wait = require('wait.for');
 var Fiber = require('wait.for/node_modules/fibers');
 var pers = require('data/pers');
+var utils = require('utils');
 
 
 /**
@@ -39,7 +40,8 @@ function RequestContext(logtag, owner, session) {
 	this.session = session;
 	// request-local game object cache
 	this.cache = {};
-	// dirty object collector for persistence
+	// dirty object collectors for persistence
+	this.added = {};
 	this.dirty = {};
 	// objects scheduled for unloading after current request
 	this.unload = {};
@@ -81,16 +83,20 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 			Fiber.current.rc = rc;
 			// call function in fiber context
 			res = func();
-			log.debug('finished %s (%s dirty)', tag, Object.keys(rc.dirty).length);
+			log.debug('finished %s (%s dirty, %s added)', tag,
+				Object.keys(rc.dirty).length, Object.keys(rc.added).length);
 		}
 		catch (err) {
-			pers.postRequestRollback(rc.dirty, tag, function done() {
+			/*jshint -W030 */  // trigger prepareStackTrace (parts of the trace might not be available outside the RC)
+			err.stack;
+			/*jshint +W030 */
+			pers.postRequestRollback(rc.dirty, rc.added, tag, function done() {
 				callback(err);
 			});
 			return;
 		}
 		// persist modified objects
-		pers.postRequestProc(rc.dirty, rc.unload, tag, function done() {
+		pers.postRequestProc(rc.dirty, rc.added, rc.unload, tag, function done() {
 			// invoke special post-persistence callback if there is one
 			if (typeof rc.postPersCallback === 'function') {
 				rc.postPersCallback();
@@ -149,10 +155,16 @@ RequestContext.logSerialize = function logSerialize(rc) {
  * finishes successfully). Can only be called from within a request
  * (see {@link RequestContext#run|run}).
  *
- * @param {GameObject} obj
+ * @param {GameObject} obj the new or updated object
+ * @param {boolean} [added] `true` if `obj` is a newly created object
  */
-RequestContext.prototype.setDirty = function setDirty(obj) {
-	this.dirty[obj.tsid] = obj;
+RequestContext.prototype.setDirty = function setDirty(obj, added) {
+	if (added) {
+		this.added[obj.tsid] = obj;
+	}
+	else if (!(obj.tsid in this.added)) {
+		this.dirty[obj.tsid] = obj;
+	}
 };
 
 
@@ -165,6 +177,7 @@ RequestContext.prototype.setDirty = function setDirty(obj) {
  * @param {GameObject} obj
  */
 RequestContext.prototype.setUnload = function setUnload(obj) {
+	utils.addNonEnumerable(obj, 'stale', true);
 	this.unload[obj.tsid] = obj;
 };
 

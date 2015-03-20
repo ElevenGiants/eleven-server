@@ -12,6 +12,7 @@ module.exports = {
 	checkUniqueHashes: checkUniqueHashes,
 	copyProps: copyProps,
 	isInt: isInt,
+	intVal: intVal,
 	isGameObject: isGameObject,
 	isBag: isBag,
 	isPlayer: isPlayer,
@@ -123,6 +124,23 @@ function copyProps(from, to) {
  */
 function isInt(i) {
 	return i !== null && i !== '' && typeof i !== 'boolean' && i % 1 === 0;
+}
+
+
+/**
+ * Converts a string containing a numeric value to the actual
+ * corresponding number (radix 10).
+ *
+ * @param {string|number} i the string to convert (finite numbers are
+ *        also accepted and just passed through)
+ * @returns {number} the parsed numeric value
+ * @throws {AssertionError} in case the given string cannot be parsed
+ *         to a finite integer value
+ */
+function intVal(i) {
+	var ret = parseInt(i, 10);
+	assert(!isNaN(ret) && isFinite(ret), 'invalid numeric value: ' + i);
+	return ret;
 }
 
 

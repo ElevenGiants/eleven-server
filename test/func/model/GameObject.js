@@ -59,7 +59,7 @@ suite('GameObject', function () {
 			go.intTest = function intTest() {
 				calls++;
 				if (calls === 3) {
-					clearInterval(go.gsTimers.interval.intTest.handle);  // clean up
+					delete go.gsTimers.intTest;  // clean up
 					done();
 				}
 			};
@@ -69,6 +69,62 @@ suite('GameObject', function () {
 				interval: true,
 			});
 			assert.strictEqual(calls, 0);
+		});
+
+		test('timers on stale objects are not executed', function (done) {
+			var go = new GameObject();
+			var called = false;
+			go.foo = function () {
+				called = true;
+			};
+			go.setGsTimer({fname: 'foo', delay: 5});
+			setTimeout(function () {
+				assert.isTrue(go.stale);
+				assert.isFalse(called);
+				done();
+			}, 10);
+			go.stale = true;
+		});
+
+		test('intervals on stale objects are cleared', function (done) {
+			var go = new GameObject();
+			var calledOnStale = false;
+			var c = 0;
+			go.foo = function () {
+				c++;
+				if (go.stale) calledOnStale = true;
+				go.stale = true;
+			};
+			go.setGsTimer({fname: 'foo', delay: 5, interval: true});
+			setTimeout(function () {
+				assert.isTrue(go.stale);
+				assert.strictEqual(c, 1);
+				assert.isFalse(calledOnStale);
+				done();
+			}, 20);
+		});
+
+		test('timers/intervals are persistently removed after errors', function (done) {
+			var go = new GameObject();
+			var c = 0;
+			go.foo = function () {
+				throw new Error('something went wrong here');
+			};
+			go.bar = function () {
+				c++;
+				throw new Error('something went wrong here too');
+			};
+			go.setGsTimer({fname: 'foo', delay: 5});
+			go.setGsTimer({fname: 'bar', delay: 5, interval: true});
+			assert.property(go.gsTimers, 'foo');
+			setTimeout(function () {
+				assert.notProperty(go.gsTimers, 'foo',
+					'timer removed in spite of an execution error');
+				assert.notProperty(go.gsTimers, 'bar',
+					'interval removed in spite of an execution error');
+				assert.strictEqual(c, 1, 'interval only executed once');
+				done();
+			}, 20);
 		});
 	});
 });

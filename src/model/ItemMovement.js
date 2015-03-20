@@ -28,16 +28,15 @@ var MOVE_CB_STATUS = {
  *   ItemMovement#startMove|startMove}
  * * `startMove` calls {@link ItemMovement#buildPath|buildPath} to
  *   create a movement path (which may consist of multiple segments)
- * * `startMove` sets up the internal movement interval
- * * the interval periodically calls {@link
- *   ItemMovement#moveStep|moveStep}, which
+ * * `startMove` makes the first `moveStep` call, initiating movement
+ * * {@link ItemMovement#moveStep|moveStep}
  *   * calls the movement handler function for the selected
  *     movement type ({@link ItemMovement#moveWalking|moveWalking},
  *     {@link ItemMovement#moveFlying|moveFlying}, {@link
  *     ItemMovement#moveDirect|moveDirect})
  *   * updates the item position according to the results
  *   * switches to the next path segment when necessary
- *   * eventually ends the move
+ *   * sets up a timer to call itself again, or ends the move
  * * any relevant events occurring during the move are sent to the
  *   defined movement callback handler
  *
@@ -120,7 +119,7 @@ ItemMovement.prototype.dirY = function dirY(targetY) {
 ItemMovement.prototype.stopMove = function stopMove(status, queueChanges) {
 	if (!status) status = MOVE_CB_STATUS.STOP;
 	var fullStatus = false;
-	this.item.cancelGsTimer('movementTimer', true);
+	this.item.cancelGsTimer('movementTimer');
 	// clear the path
 	this.path = null;
 	// notify the callback
@@ -194,6 +193,10 @@ ItemMovement.prototype.findPlatform = function findPlatform(x, y) {
 		if (!this.platform) {  // then above
 			this.platform = this.getGeo().getClosestPlatPoint(x, y, 1).plat;
 		}
+		if (!this.platform) {
+			log.error('movement: failed to find initial platform for %s',
+				this.item);
+		}
 	}
 	else {
 		// Find a new platform:
@@ -213,9 +216,6 @@ ItemMovement.prototype.findPlatform = function findPlatform(x, y) {
 				this.platform = below.plat;
 			}
 		}
-	}
-	if (!this.platform) {
-		log.error('movement: failed to find platform for %s', this.item);
 	}
 };
 
@@ -489,6 +489,8 @@ ItemMovement.prototype.moveStep = function moveStep() {
 		if (nextStep && nextStep.status) status = nextStep.status;
 		return this.stopMove(status, true);
 	}
+	// Set the timer for the next movement step
+	this.item.setGsTimer({fname: 'movementTimer', delay: 333, internal: true});
 };
 
 
@@ -553,16 +555,21 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 			x: this.item.x + this.options.vx,
 			y: this.item.y + this.options.vy,
 			speed: 90,
-			stopAtEnd: true,
-			transport: 'flying',
-		}, {
-			x: this.item.x + (2 * this.options.vx),
-			y: this.item.y + this.options.vy,
-			speed: (this.options.vx >= 9) ? Math.abs(this.options.vx / 3) : 3,
-			stopAtEnd: true,
-			transport: 'flying'
+			transport: 'direct',
 		}];
-		var tx = this.item.x + (3 * this.options.vx);
+		var tx = 2 * this.options.vx;
+		if (tx >= 6) {
+			var speed = Math.min(Math.abs(tx) / 2, 45);
+			speed = Math.max(3, speed);
+			path.push({
+				x: this.item.x + tx,
+				y: this.item.y + this.options.vy,
+				speed: speed,
+				transport: 'direct'
+			});
+		}
+		// TODO: Handle more than just platform landings
+		tx = this.item.x + (3 * this.options.vx);
 		var ty;
 		var platform = this.getGeo().getClosestPlatPoint(tx,
 			(this.item.y + this.options.vy), -1).plat;
@@ -573,7 +580,9 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 			log.error('movement: failed to find landing platform for %s', this.item);
 			ty = ('ground_y' in this.getGeo()) ? this.getGeo().ground_y : this.getGeo().b;
 		}
-		path.push({x: tx, y: ty, speed: 90, stopAtEnd: true, transport: 'flying'});
+		path.push({x: tx, y: ty, speed: 90, transport: 'direct'});
+
+		this.callback = this.item.onPlatformLanding;
 	}
 	return path;
 };
@@ -581,8 +590,7 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 
 /**
  * Starts movement to a given destination with specific parameters.
- * This is the main entry point that triggers building the path and
- * sets up the movement interval.
+ * This is the main entry point that triggers building the path.
  *
  * @param {string} transport the transportation mode for this movement
  *        (must be `walking`, `direct`, `flying` or `kicked`)
@@ -625,7 +633,5 @@ ItemMovement.prototype.startMove = function startMove(transport, dest, options) 
 	if (!this.path || this.path.length === 0) {
 		return false;
 	}
-	this.item.setGsTimer({fname: 'movementTimer', delay: 333, interval: true,
-		internal: true});
 	return true;
 };

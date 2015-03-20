@@ -11,6 +11,7 @@
 // public interface
 module.exports = {
 	init: init,
+	shutdown: shutdown,
 	getClient: getClient,
 	patchGroup: patchGroup,
 	handleGroupMsg: handleGroupMsg,
@@ -48,6 +49,18 @@ function init() {
 	slack.on('error', onSlackError);
 	slack.on('message', onSlackMessage);
 	slack.login();
+}
+
+
+/**
+ * Shuts down integration, closes connection to Slack.
+ */
+function shutdown(done) {
+	if (slack) {
+		log.info('Slack client shutdown');
+		slack.disconnect();
+	}
+	if (done) done();
 }
 
 
@@ -139,16 +152,17 @@ function onSlackMessage(msg) {
 		var rc = new RC('slackMsg', groupTsid);
 		rc.run(
 			function dispatchMsg() {
-				pers.get(groupTsid).chat_send_msg({
+				var out = {
 					type: 'pc_groups_chat',
 					tsid: groupTsid,
 					pc: {
 						tsid: 'PSLACK' + user.id,  // unique pseudo TSID so client assigns different colors
-						label: '[Slack] ' + user.name,
+						label: user.name,
 					},
 					txt: processMsgText(msg.text),
-					fromSlack: true,
-				});
+				};
+				utils.addNonEnumerable(out, 'fromSlack', true);
+				pers.get(groupTsid).chat_send_msg(out);
 			},
 			function callback(e) {
 				if (e) {
@@ -242,7 +256,7 @@ function patchGroup(group) {
 			for (var i = 0; i < channel.members.length; i++) {
 				var user = slack.getUserByID(channel.members[i]);
 				if (user.presence === 'active' && user.id !== slack.self.id) {
-					roster[user.id] = {label: '[Slack] ' + user.name};
+					roster[user.id] = {label: user.name + ' (Slack)'};
 				}
 			}
 			return orig.call({chat_roster: roster});

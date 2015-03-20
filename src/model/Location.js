@@ -66,12 +66,6 @@ function Location(data, geo) {
 	var geoData = geo || pers.get(this.getGeoTsid(), true);
 	assert(typeof geoData === 'object', 'no geometry data for ' + this);
 	this.updateGeo(geoData);
-	// periodically check whether location can be released from memory
-	var unloadInt = config.get('pers:locUnloadInt', null);
-	if (unloadInt && rpc.isLocal(this)) {
-		this.setGsTimer({fname: 'checkUnload', delay: unloadInt, interval: true,
-			internal: true});
-	}
 }
 
 utils.copyProps(require('model/LocationApi').prototype, Location.prototype);
@@ -91,6 +85,17 @@ Object.defineProperty(Location.prototype, 'activePlayers', {
 		return this.players;
 	},
 });
+
+
+Location.prototype.gsOnLoad = function gsOnLoad() {
+	Location.super_.prototype.gsOnLoad.call(this);
+	// periodically check whether location can be released from memory
+	var unloadInt = config.get('pers:locUnloadInt', null);
+	if (unloadInt) {
+		this.setGsTimer({fname: 'checkUnload', delay: unloadInt, interval: true,
+			internal: true});
+	}
+};
 
 
 /**
@@ -136,7 +141,7 @@ Location.prototype.addPlayer = function addPlayer(player) {
 	}
 	for (var k in this.items) {
 		var it = this.items[k];
-		if (it.onPlayerEnter) {
+		if (it && it.onPlayerEnter) {
 			try {
 				it.onPlayerEnter(player);
 			}
@@ -165,7 +170,7 @@ Location.prototype.removePlayer = function removePlayer(player, newLoc) {
 	}
 	for (var k in this.items) {
 		var it = this.items[k];
-		if (it.onPlayerExit) {
+		if (it && it.onPlayerExit) {
 			try {
 				it.onPlayerExit(player);
 			}
@@ -453,13 +458,8 @@ Location.prototype.copyLocation = function copyLocation(label, moteId, hubId,
 	data.class_tsid = altClassTsid;
 	var newLoc = Location.create(data);
 	newLoc.copyLocationData(this);
-	console.log("original label: " + this.label);
-	console.log("label: " + label);
-	//newLoc.label = 'test';
-	//console.log("location label: " + newLoc.label);
 	delete newLoc.label;
 	newLoc.label = label;
-	console.log("location label: " + newLoc.label);
 	newLoc.moteid = moteId;
 	newLoc.hubid = hubId;
 	newLoc.is_instance = isInstance;
@@ -471,7 +471,7 @@ Location.prototype.copyLocation = function copyLocation(label, moteId, hubId,
 		var newItem = api.apiNewItemStack(srcItem.class_tsid, srcItem.count);
 		newItem.copyProps(srcItem, ['tsid', 'class_tsid', 'count', 'tcont',
 				'pcont', 'container']);
-		newItem.setContainer(newLoc);
+		newItem.setContainer(newLoc, srcItem.x, srcItem.y, srcItem.is_hidden);
 		newLoc.items[newItem.tsid] = newItem;
 	}
 
@@ -544,4 +544,42 @@ Location.prototype.createGeo = function createGeo() {
 	this.geo.signposts = this.clientGeometry.layers.middleground.signposts;
 	this.geo.doors = this.clientGeometry.layers.middleground.doors;
 	this.geo.sources = this.geometry.sources;
+};
+
+/**
+ * Find the closest item to the given position in this location.
+ *
+ * @param {number} x x coordinate to search from
+ * @param {number} y y coordinate to search from
+ * @param {string|function} [filter] if this is a string, only look for
+ *        items with a matching `class_tsid`; if it is a function, the
+ *        items in the location will be filtered using `options` as a
+ *        parameter like this:
+ * ```
+ * if (filter(item, options)) {
+ *     //code to find closest item
+ * }
+ * ```
+ * @param {object} [options] parameter object for the `filter` function
+ * @param {Item} [skipItem] item to exclude from results
+ * @returns {Item|null} the found item, or `null` if no item found
+ */
+Location.prototype.getClosestItem = function getClosestItem(x, y, filter,
+	options, skipItem) {
+	var distance = 0;
+	var found = null;
+	for (var k in this.items) {
+		var it = this.items[k];
+		var valid = (!skipItem || skipItem.tsid !== k) && (!filter ||
+			(typeof filter === 'string') && it.class_tsid === filter ||
+			(typeof filter === 'function') && filter(it, options));
+		if (valid) {
+			var rdist = ((it.x - x) * (it.x - x)) + ((it.y - y) * (it.y - y));
+			if (!found || rdist < distance) {
+				distance = rdist;
+				found = it;
+			}
+		}
+	}
+	return found;
 };

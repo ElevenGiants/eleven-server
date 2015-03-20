@@ -41,13 +41,6 @@ To run benchmarks:
     $ npm install amflib benchmark segfault-handler
     $ node tests/benchmark.js
 
-Still need to support:
-* Serialization of proxy objects.
-
-You can workaround the lack of support for proxies with something like
-JSON.parse(JSON.stringify(msg)) till I have time to implement serialization
-code for them.
-
 No plans to support:
 * AMF 0 specification
 * XMLDocument Type

@@ -67,10 +67,15 @@ function Item(data) {
 	if (this.message_queue) {
 		this.message_queue = new OrderedHash(this.message_queue);
 	}
-	this.updatePath();
 }
 
 utils.copyProps(require('model/ItemApi').prototype, Item.prototype);
+
+
+Item.prototype.gsOnLoad = function gsOnLoad() {
+	this.updatePath();
+	Item.super_.prototype.gsOnLoad.call(this);
+};
 
 
 /**
@@ -132,6 +137,7 @@ Item.prototype.updatePath = function updatePath() {
  * @returns {boolean} `true` if the item's coordinates actually changed
  */
 Item.prototype.setXY = function setXY(x, y) {
+	assert(!isNaN(x) && !isNaN(y), 'invalid coordinates: x=' + x + ', y=' + y);
 	if (this.itemDef && this.itemDef.obey_physics && utils.isLoc(this.container)) {
 		var pp = this.container.geometry.getClosestPlatPoint(x, y, -1, true);
 		if (pp && pp.point) {
@@ -177,29 +183,34 @@ Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 				util.format('invalid slot number for %s: %s', this, x));
 		}
 	}
-	// change entries in old and new container
+	// change entries in old and new container (unless they are one and the same)
 	var prev = this.container;
 	this.container = cont;
-	if (prev) {
-		delete prev.items[this.tsid];
-		delete prev.hiddenItems[this.tsid];
+	if (!prev || prev.tsid !== cont.tsid) {
+		if (prev) {
+			delete prev.items[this.tsid];
+			delete prev.hiddenItems[this.tsid];
+		}
+		cont[hidden ? 'hiddenItems' : 'items'][this.tsid] = this;
 	}
-	if (hidden) {
-		cont.hiddenItems[this.tsid] = this;
-	}
-	else {
-		cont.items[this.tsid] = this;
-	}
-	this.is_hidden = !!hidden;
-	// queue removal change
-	if (prev && prev !== cont) {
+	// queue removal change if top container changed
+	if (tcont !== this.tcont) {
 		this.queueChanges(true);
 	}
 	// assign to new container and queue addition/update changes
 	this.tcont = tcont;
+	this.is_hidden = !!hidden;
 	this.setXY(x, y);
 	this.updatePath();
 	this.queueChanges();
+	// send changes immediately when adding a new item to a location; in case
+	// it is replacing another item (e.g. reviving a trant with fertilidust, or
+	// assembling a machine), the client tries to handle the "delete" change
+	// twice otherwise (resulting in a "... not exists in location, but a delete
+	// changes was sent for it" error popup)
+	if (!prev && utils.isLoc(cont)) {
+		cont.flush();
+	}
 	this.sendContChangeEvents(prev);
 };
 
@@ -221,7 +232,7 @@ Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
 		}
 		for (k in prev.items) {
 			it = prev.items[k];
-			if (it.onContainerItemRemoved) {
+			if (it && it.onContainerItemRemoved) {
 				it.onContainerItemRemoved(this, cont);
 			}
 		}
@@ -229,7 +240,7 @@ Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
 	if (!prev || prev !== cont) {
 		for (k in cont.items) {
 			it = cont.items[k];
-			if (it.onContainerItemAdded) {
+			if (it && it.onContainerItemAdded) {
 				it.onContainerItemAdded(this, prev);
 			}
 		}
@@ -271,7 +282,7 @@ Item.prototype.getPosObject = function getPosObject() {
  *        (only coordinates and state, for NPC movement)
  */
 Item.prototype.queueChanges = function queueChanges(removed, compact) {
-	if (this.tcont) {
+	if (this.tcont && !this.is_hidden) {
 		pers.get(this.tcont).queueChanges(this, removed, compact);
 	}
 };
@@ -472,4 +483,27 @@ Item.prototype.removeHitBox = function removeHitBox(name) {
 		return true;
 	}
 	return false;
+};
+
+
+/**
+ * Find the closest item to this item in its location.
+ *
+ * @param {string|function} [filter] if this is a string, only look for
+ *        items with a matching `class_tsid`; if it is a function, the
+ *        items in the location will be filtered using `options` as a
+ *        parameter like this:
+ * ```
+ * if (filter(item, options)) {
+ *     //code to find closest item
+ * }
+ * ```
+ * @param {object} [options] parameter object for the `filter` function
+ * @returns {Item|null} the found item, or `null` if no item found
+ */
+Item.prototype.getClosestItem = function getClosestItem(filter, options) {
+	if (utils.isLoc(this.container)) {
+		return this.container.getClosestItem(this.x, this.y, filter, options, this);
+	}
+	return null;
 };

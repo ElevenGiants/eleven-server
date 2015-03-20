@@ -187,6 +187,23 @@ suite('Session', function () {
 	});
 
 
+	suite('preRequestProc', function () {
+
+		test('handles ping request', function (done) {
+			var s = getTestSession('test', getDummySocket());
+			s.send = function (msg) {
+				assert.strictEqual(msg.type, 'ping');
+				assert.strictEqual(msg.msg_id, 12);
+				assert.isTrue(msg.success);
+				assert.closeTo(msg.ts * 1000, new Date().getTime(), 1000);
+				done();
+			};
+			var res = s.preRequestProc({type: 'ping', msg_id: 12});
+			assert.isTrue(res);
+		});
+	});
+
+
 	suite('handleAmfReqError', function () {
 
 		test('sends CLOSE message', function (done) {

@@ -82,6 +82,44 @@ Bag.prototype.serialize = function serialize() {
 };
 
 
+/**
+ * Assigns the bag to a container. This overrides {@link
+ * Item#setContainer} to recursively perform the operation on the
+ * objects contained in the bag.
+ *
+ * @param {Location|Player|Bag} cont new container for the bag
+ * @param {number} x x coordinate in the new location, or slot number
+ *        if the container is a player or bag (irrelevant when adding
+ *        as hidden item)
+ * @param {number} y y coordinate in the new location (irrelevant when
+ *        adding to player/bag)
+ * @param {boolean} [hidden] item will be hidden in the new container
+ *        (`false` by default)
+ */
+Bag.prototype.setContainer = function setContainer(cont, x, y, hidden) {
+	var ptcont = this.tcont;  // previous top container
+	Bag.super_.prototype.setContainer.call(this, cont, x, y, hidden);
+	if (this.tcont !== ptcont) {
+		for (var k in this.items) {
+			var it = this.items[k];
+			it.setContainer(this, it.x, it.y, it.isHidden);
+		}
+	}
+};
+
+
+/**
+ * Overrides {@link Item#getChangeData} to add bag-specific extra
+ * properties.
+ *
+ * @param {Player} pc player whose client this data will be sent to
+ *        (required because some of the fields are "personalized")
+ * @param {boolean} [removed] if `true`, this record will mark the
+ *        item as deleted (used when items change containers, in which
+ *        case they are marked deleted in the changes for the previous
+ *        container)
+ * @returns {object} changes data set
+ */
 Bag.prototype.getChangeData = function getChangeData(pc, removed) {
 	var ret = Bag.super_.prototype.getChangeData.call(this, pc, removed);
 	if (this.hasTag && !this.hasTag('not_openable')) ret.slots = this.capacity;
@@ -160,6 +198,7 @@ Bag.prototype.getClassItems = function getClassItems(classTsid, max) {
  *          is empty
  */
 Bag.prototype.getSlot = function getSlot(slot) {
+	slot = utils.intVal(slot);
 	for (var k in this.items) {
 		if (this.items[k].x === slot) {
 			return this.items[k];

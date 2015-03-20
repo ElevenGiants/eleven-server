@@ -10,6 +10,7 @@ var Item = require('model/Item');
 var pbeMock = require('../../mock/pbe');
 var RC = require('data/RequestContext');
 var orproxy = require('data/objrefProxy');
+var wait = require('wait.for');
 
 
 suite('pers', function () {
@@ -112,8 +113,8 @@ suite('pers', function () {
 				},
 				function cb(err, res) {
 					if (err) done(err);
-					assert.notProperty(gsTimers.go1.timer.foo, 'handle');
-					assert.notProperty(gsTimers.go2.interval.foo, 'handle');
+					assert.notProperty(gsTimers.go1.foo, 'handle');
+					assert.notProperty(gsTimers.go2.foo, 'handle');
 				}
 			);
 			setTimeout(function wait() {
@@ -135,6 +136,49 @@ suite('pers', function () {
 					done();
 				}
 			);
+		});
+	});
+
+
+	suite('data integrity and consistency', function () {
+
+		test('no duplicate objects with slow async back-end and fibers',
+			function (done) {
+			// set up "slow" fibers based back-end mock
+			pers.init({
+				read: function read(tsid) {
+					return wait.for(function (callback) {
+						setTimeout(function () {
+							callback(null, {tsid: tsid});
+						}, 10);
+					});
+				},
+			}, {});
+			// launch some quasi-parallel requests that all load the same object
+			var firstLoaded;
+			var err;
+			/*jshint -W083 */  // oh well, it's just a test
+			for (var i = 0; i < 10; i++) {
+				setImmediate(function launchReq() {
+					new RC().run(function () {
+						var o = pers.get('GXYZ', true);
+						if (!firstLoaded) firstLoaded = o;
+						assert.strictEqual(o, firstLoaded, 'subsequent get ' +
+							'calls return reference to the first and only ' +
+							'instance of that object');
+					},
+					function cb(e, res) {
+						// store first error (and repackage it, so mocha
+						// doesn't fall over the nonexistent RC later)
+						if (e && !err) err = new Error(e);
+					});
+				});
+			}
+			/*jshint +W083 */
+			// wait for all requests to finish and report first error (if any)
+			setTimeout(function () {
+				done(err);
+			}, 100);
 		});
 	});
 });

@@ -125,15 +125,31 @@ Session.prototype.onSocketTimeout = function onSocketTimeout() {
 
 Session.prototype.onSocketClose = function onSocketClose(hadError) {
 	log.info({session: this}, 'socket close (hadError: %s)', hadError);
-	if (this.pc && this.pc.session) {
+	if (this.pc && this.pc.isConnected()) {
 		// if pc is still linked to session, socket has been closed without a
 		// "logout" request; could be an error/unexpected connection loss or a
 		// move to another GS (Player#onDisconnect will act accordingly)
-		new RC('socketClose', this.pc, this).run(
-			this.pc.onDisconnect.bind(this.pc),
-			this.handleAmfReqError.bind(this));
+		this.close(this.emit.bind(this, 'close', this));
 	}
-	this.emit('close', this);
+	else {
+		this.emit('close', this);
+	}
+};
+
+
+Session.prototype.close = function close(done) {
+	log.info({session: this}, 'session close');
+	if (this.pc && this.pc.isConnected()) {
+		var self = this;
+		new RC('sessionClose', this.pc, this).run(
+			this.pc.onDisconnect.bind(this.pc),
+			function cb(err) {
+				if (err) log.error(err, 'error while closing session');
+				if (self.socket) self.socket.destroy();
+				if (done) done();
+			}, true
+		);
+	}
 };
 
 
@@ -278,6 +294,14 @@ Session.prototype.preRequestProc = function preRequestProc(req) {
 			if (this.pc) this.pc.onDisconnect();
 			this.socket.end();
 			return true;
+		case 'ping':
+			this.send({
+				msg_id: req.msg_id,
+				type: req.type,
+				success: true,
+				ts: Math.round(new Date().getTime() / 1000),
+			});
+			return true;
 		default:
 			if (!this.pc) {
 				log.info({session: this}, 'closing session after unexpected' +
@@ -351,7 +375,7 @@ Session.prototype.send = function send(msg) {
 		if (msg.type !== 'login_start' && msg.type !== 'login_end' &&
 			msg.type !== 'relogin_start' && msg.type !== 'relogin_end' &&
 			msg.type !== 'ping') {
-			log.debug('login incomplete, dropping %s message', this, msg.type);
+			log.debug('login incomplete, dropping %s message', msg.type);
 			return;
 		}
 		if (msg.type === 'login_end' || msg.type === 'relogin_end') {

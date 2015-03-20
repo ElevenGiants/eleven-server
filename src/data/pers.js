@@ -34,6 +34,7 @@
 // public interface
 module.exports = {
 	init: init,
+	shutdown: shutdown,
 	exists: exists,
 	get: get,
 	create: create,
@@ -50,13 +51,12 @@ var persProxy = require('data/persProxy');
 var rpc = require('data/rpc');
 var RC = require('data/RequestContext');
 var metrics = require('metrics');
+var DummyError = require('errors').DummyError;
 
 
-// live game object cache
-var cache = {};
-
-// persistence back-end
-var pbe = null;
+var cache = {};  // live game object cache
+var pbe = null;  // persistence back-end
+var shuttingDown = false;
 
 
 /**
@@ -72,6 +72,7 @@ var pbe = null;
 function init(backEnd, config, callback) {
 	cache = {};
 	pbe = backEnd;
+	shuttingDown = false;
 	metrics.setupGaugeInterval('pers.loc.size', function getLocSize() {
 		if (!cache) return 0;
 		return Object.keys(cache).length;
@@ -86,6 +87,29 @@ function init(backEnd, config, callback) {
 	else if (callback) {
 		return callback(null);
 	}
+}
+
+
+function shutdown(done) {
+	log.info('persistence layer shutdown initiated');
+	shuttingDown = true;
+	// first, suspend all timers (so they don't interfere with unloading)
+	for (var k in cache) {
+		cache[k].suspendGsTimers();
+	}
+	// then actually unload the objects
+	var num = Object.keys(cache).length;
+	async.eachLimit(Object.keys(cache), 5, function iter(k, cb) {
+		var obj = cache[k];
+		delete cache[k];
+		write(obj, 'shutdown', cb);
+		if (--num % 50 === 0 && num > 0) {
+			log.info('persistence layer shutdown: %s objects remaining', num);
+		}
+	}, function callback() {
+		log.info('persistence layer shutdown complete');
+		done();
+	});
 }
 
 
@@ -121,8 +145,7 @@ function load(tsid) {
 	log.debug('pers.load: %s', tsid);
 	var data = pbe.read(tsid);
 	if (typeof data !== 'object' || data === null) {
-		log.info(new Error('dummy error for stack trace'),
-			'no or invalid data for %s', tsid);
+		log.info(new DummyError(), 'no or invalid data for %s', tsid);
 		return null;
 	}
 	orProxy.proxify(data);
@@ -134,15 +157,17 @@ function load(tsid) {
 		metrics.increment('pers.load.remote');
 	}
 	else {
+		// check if object has been loaded in a concurrent request (fiber) in the meantime
+		if (tsid in cache) {
+			log.warn('%s already loaded, discarding redundant copy', tsid);
+			return cache[tsid];
+		}
 		// make sure any changes to the object are persisted
 		obj = persProxy.makeProxy(obj);
 		cache[tsid] = obj;
-		// resume timers/intervals and send onLoad event if there is a handler
-		if (obj.onLoad) {
-			obj.onLoad();
-		}
-		if (obj.resumeGsTimers) {
-			obj.resumeGsTimers();
+		// post-construction operations (resume timers/intervals, GSJS onLoad etc.)
+		if (obj.gsOnLoad) {
+			obj.gsOnLoad();
 		}
 		metrics.increment('pers.load.local');
 	}
@@ -212,7 +237,7 @@ function create(modelType, data) {
 	obj = persProxy.makeProxy(obj);
 	cache[obj.tsid] = obj;
 	obj = orProxy.wrap(obj);
-	RC.getContext().setDirty(obj);
+	RC.getContext().setDirty(obj, true);
 	if (typeof obj.onCreate === 'function') {
 		obj.onCreate();
 	}
@@ -225,50 +250,89 @@ function create(modelType, data) {
  * Called by {@link RequestContext#run} after processing a request has
  * finished, writes all resulting game object changes to persistence.
  *
- * @param {object} dlist hash containing the modified game objects
+ * @param {object} dlist hash containing modified game objects
  *        (TSIDs as keys, objects as values)
+ * @param {object} alist hash containing newly added game objects
  * @param {object} ulist hash containing game objects to release from
  *        the live object cache
  * @param {string} [logmsg] optional information for log messages
  * @param {function} [callback] function to be called after persistence
  *        operations have finished
  */
-function postRequestProc(dlist, ulist, logmsg, callback) {
-	async.each(Object.keys(dlist),
-		function iterate(k, iterCallback) {
-			var obj = dlist[k];
+function postRequestProc(dlist, alist, ulist, logmsg, callback) {
+	assert(!shuttingDown, 'persistence layer shutdown initiated');
+	// process persistence changes in a safe order (add new, then modify
+	// existing, then remove deleted objects); this may leave behind orphaned
+	// data, but it should at least avoid invalid object references
+	async.series([
+		postRequestProcStep.bind(undefined, 'add', alist, logmsg),
+		postRequestProcStep.bind(undefined, 'upd', dlist, logmsg),
+		postRequestProcStep.bind(undefined, 'del', dlist, logmsg),
+	], function cb(err) {
+		// unload objects scheduled to be released from cache (take care not
+		// to load objects here if they are not loaded in the first place)
+		for (var k in ulist) {
 			try {
-				// stop timers/intervals for deleted objects
-				if (obj.deleted && obj.suspendGsTimers) {
-					obj.suspendGsTimers();
-				}
-				// perform write or del operation; we're not inside the fiber
-				// anymore (due to async), so handle errors carefully here
-				var op = obj.deleted ? del : write;
-				op(obj, logmsg, function cb(err, res) {
-					// silently ignore errors (we're not interested in them here,
-					// but we want to call callback when *all* ops have finished)
-					iterCallback(null);
-				});
+				unload(ulist[k]);
 			}
 			catch (e) {
-				log.error(e, 'failed to process %s', obj);
-				iterCallback(null);
+				log.error(e, 'failed to unload %s', k);
+			}
+		}
+		if (callback) callback(err);
+	});
+}
+
+
+/**
+ * Helper for `postRequestProc` to process individual operations (add/
+ * update/delete objects) separately. This will always try to execute
+ * the operation on all given objects, even if some of those operations
+ * fail. In case of errors, only the **first** encountered error is
+ * passed to the callback.
+ *
+ * @param {string} step persistence operation (must be `add`, `upd` or
+ *         `del`)
+ * @param {object} objects hash containing game objects to process
+ *        (TSIDs as keys, objects as values)
+ * @param {string} logmsg information for log messages
+ * @param {function} callback function to be called after persistence
+ *        operations have finished
+ * @private
+ */
+function postRequestProcStep(step, objects, logmsg, callback) {
+	var err = null;
+	async.each(Object.keys(objects),
+		function iter(k, cb) {
+			var o = objects[k];
+			try {
+				if (step === 'del') {
+					// skip dirty objects that are not actually deleted
+					if (!o.deleted) return cb(null);
+					// stop timers/intervals for deleted objects
+					if (o.suspendGsTimers) o.suspendGsTimers();
+					return del(o, logmsg, function (e) {
+						if (e && !err) err = e;
+						return cb();
+					});
+				}
+				else {
+					// skip dirty objects that will be deleted later anyway
+					if (o.deleted) return cb(null);
+					return write(o, logmsg, function (e) {
+						if (e && !err) err = e;
+						return cb();
+					});
+				}
+			}
+			catch (e) {
+				log.error(e, 'failed to %s %s', step, o);
+				if (!err) err = e;
+				return cb();
 			}
 		},
-		function cb() {
-			// unload objects scheduled to be released from cache (take care not
-			// to load objects here if they are not loaded in the first place)
-			for (var k in ulist) {
-				var obj = ulist[k];
-				try {
-					unload(obj);
-				}
-				catch (e) {
-					log.error(e, 'failed to unload %s', obj);
-				}
-			}
-			if (callback) callback();
+		function (e, res) {
+			callback(err || e, res);
 		}
 	);
 }
@@ -279,17 +343,22 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
  * processing the request. Discards all modifications caused by the
  * request by dropping all tainted objects from the live object cache.
  *
- * @param {object} dlist hash containing the modified game objects
+ * @param {object} dlist hash containing modified game objects
  *        (TSIDs as keys, objects as values)
+ * @param {object} alist hash containing added game objects
  * @param {string} [logmsg] optional information for log messages
  * @param {function} [callback] function to be called after rollback
  *        has finished
  */
-function postRequestRollback(dlist, logmsg, callback) {
+function postRequestRollback(dlist, alist, logmsg, callback) {
+	assert(!shuttingDown, 'persistence layer shutdown initiated');
 	var tag = 'rollback ' + logmsg;
 	log.info(tag);
-	for (var k in dlist) {
+	for (let k in dlist) {
 		unload(dlist[k], tag);
+	}
+	for (let k in alist) {
+		unload(alist[k], tag);
 	}
 	if (callback) callback();
 }
@@ -330,7 +399,7 @@ function write(obj, logmsg, callback) {
 function del(obj, logmsg, callback) {
 	log.debug('pers.del: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	metrics.increment('pers.del');
-	if (obj.suspendGsTimers) obj.suspendGsTimers();
+	obj.suspendGsTimers();
 	delete cache[obj.tsid];
 	pbe.del(obj, function db(err, res) {
 		if (err) {
@@ -356,7 +425,7 @@ function unload(obj, logmsg) {
 	log.debug('pers.unload: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	if (obj.tsid in cache) {
 		// suspend timers/intervals
-		if (obj.suspendGsTimers) obj.suspendGsTimers();
+		obj.suspendGsTimers();
 		delete cache[obj.tsid];
 	}
 }

@@ -9,9 +9,9 @@ var Location = require('model/Location');
 var Geo = require('model/Geo');
 var Item = require('model/Item');
 var Bag = require('model/Bag');
-var Player = require('model/Player');
 var gsjsBridge = require('model/gsjsBridge');
 var utils = require('utils');
+var helpers = require('../../helpers');
 
 
 suite('Location', function () {
@@ -87,8 +87,8 @@ suite('Location', function () {
 				assert.strictEqual(l.geometry.tsid, 'GX',
 					'TSID changed back according to Location TSID');
 				// check that it will be persisted
-				assert.deepEqual(Object.keys(rc.dirty), ['GX']);
-				var newG = rc.dirty.GX;
+				assert.deepEqual(Object.keys(rc.added), ['GX']);
+				var newG = rc.added.GX;
 				assert.instanceOf(newG.__proxyTarget, Geo);
 				assert.strictEqual(newG.tsid, 'GX');
 				assert.strictEqual(newG.something, 'foomp');
@@ -166,7 +166,7 @@ suite('Location', function () {
 			rc.run(function () {
 				// setup (create/initialize loc, player, bag)
 				var l = Location.create(Geo.create());
-				var p = new Player({tsid: 'PX', location: {tsid: l.tsid}});
+				var p = helpers.getOnlinePlayer({tsid: 'PX', location: {tsid: l.tsid}});
 				l.players = {PX: p};  // put player in loc (so loc changes are queued for p)
 				rc.cache[p.tsid] = p;  // required so b.tcont can be "loaded" from persistence
 				var b = new Bag({tsid: 'BX', class_tsid: 'bag_bigger_green'});
@@ -197,8 +197,8 @@ suite('Location', function () {
 					i2 = Item.create('banana');
 					b = new Bag({class_tsid: 'bag_bigger_green', items: [i2]});
 					l = Location.create(Geo.create());
-					l.addItem(i1);
-					l.addItem(b);
+					l.addItem(i1, 12, 13);
+					l.addItem(b, 12, 13);
 					l.unload();
 				},
 				function callback(err, res) {

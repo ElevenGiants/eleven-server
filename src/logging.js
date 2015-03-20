@@ -12,6 +12,7 @@
 module.exports = {
 	init: init,
 	logAction: logAction,
+	end: end,
 };
 
 
@@ -49,14 +50,17 @@ function init() {
 		src: cfg.includeLoc,
 		streams: [
 			{
+				name: 'stdout',
 				level: cfg.level.stdout,
 				stream: process.stdout,
 			},
 			{
+				name: 'file',
 				level: cfg.level.file,
 				path: path.join(dir, masterGsid + '-default.log'),
 			},
 			{
+				name: 'errfile',
 				level: 'error',
 				path: path.join(dir, masterGsid + '-errors.log'),
 			},
@@ -90,6 +94,38 @@ function init() {
 		levels: logger.levels.bind(logger),
 		reopenFileStreams: logger.reopenFileStreams.bind(logger),
 	};
+}
+
+
+/**
+ * Helper function for flushing all log streams before exiting the
+ * process. No further log output is possible once this function has
+ * been called.
+ * @see https://github.com/trentm/node-bunyan/issues/37
+ *
+ * @param {function} done called when finished
+ * @param {...*} [args] arbitrary arguments for `done`
+ */
+function end(done) {
+	var doneArgs = Array.prototype.slice.call(arguments, 1);
+	// determine number of streams to be closed
+	var n = 0;
+	for (var i = 0; i < logger.streams.length; i++) {
+		if (logger.streams[i].closeOnExit) n++;
+	}
+	if (n === 0) return done.apply(null, doneArgs);
+	// close them and wait for all callbacks
+	var c = 0;
+	logger.streams.forEach(function closeStream(s) {
+		if (s.closeOnExit) {
+			s.stream.on('close', function onClose() {
+				if (++c >= n) return done.apply(null, doneArgs);
+			});
+			s.stream.end();
+			s.closeOnExit = false;
+			s.stream.write = function () {};  // prevent errors on further write attempts
+		}
+	});
 }
 
 

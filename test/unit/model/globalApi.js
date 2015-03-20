@@ -54,4 +54,14 @@ suite('globalApi', function () {
 		});
 	});
 
+
+	suite('apiMD5', function () {
+
+		test('works as expected', function () {
+			assert.strictEqual(globalApi.apiMD5('asdasddfg'),
+				'f85066a23fccd8a8b85ff9d761614923');
+			assert.strictEqual(globalApi.apiMD5(''),
+				'd41d8cd98f00b204e9800998ecf8427e');
+		});
+	});
 });

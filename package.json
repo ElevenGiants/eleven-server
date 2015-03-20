@@ -1,6 +1,6 @@
 {
   "name": "eleven-server",
-  "version": "0.1.7",
+  "version": "0.1.9",
   "description": "Eleven game server",
   "homepage": "http://elevengiants.com/",
   "license": "MIT",
@@ -21,6 +21,10 @@
     {
       "name": "scheijan",
       "email": "scheijan@gmail.com"
+    },
+    {
+      "name": "Justin Patrin",
+      "email": "papercrane@reversefold.com"
     }
   ],
   "author": "Markus Dolic <aroha@elevengiants.com> (https://twitter.com/ElevenAroha)",
@@ -35,15 +39,16 @@
   "dependencies": {
     "async": "^0.9.0",
     "bunyan": "^1.0.1",
-    "harmony-reflect": "^1.1.1",
+    "gc-stats": "^0.0.3",
+    "harmony-reflect": "^1.1.2",
     "lodash": "^2.4.1",
     "lynx": "^0.2.0",
-    "memwatch": "^0.2.2",
     "multitransport-jsonrpc": "^0.7.2",
     "murmurhash-js": "^1.0.0",
     "nconf": "^0.6.9",
-    "node_amf_cc": "^1.1.1",
+    "node_amf_cc": "^1.2.1",
     "rethinkdb": "^1.15.0-0",
+    "segfault-handler": "^0.2.4",
     "slack-client": "^1.2.2",
     "token": "0.0.0",
     "wait.for": "^0.6.4"
@@ -55,7 +60,7 @@
     "jscs-jsdoc": "^0.3.2",
     "jsdoc": "^3.3.0-alpha9",
     "jshint": "^2.5.5",
-    "mocha": "^1.20.1",
+    "mocha": "^2.1.0",
     "rewire": "^2.1.0"
   },
   "scripts": {

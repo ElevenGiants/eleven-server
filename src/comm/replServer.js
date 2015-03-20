@@ -18,6 +18,7 @@
 // public interface
 module.exports = {
 	init: init,
+	shutdown: shutdown,
 };
 
 
@@ -25,28 +26,46 @@ var net = require('net');
 var repl = require('repl');
 var util = require('util');
 var vm = require('vm');
-var memwatch = require('memwatch');
+var bunyan = require('bunyan');
 var config = require('config');
 var pers = require('data/pers');
 var RC = require('data/RequestContext');
 var gsjsBridge = require('model/gsjsBridge');
 var globalApi = require('model/globalApi');
+var rpc = require('data/rpc');
 var rpcApi = require('data/rpcApi');
 var slack = require('comm/slack');
+var logging = require('logging');
+
+var server;
+var connections = [];
 
 
 function init() {
 	var port = config.getServicePort('debug:repl:basePort');
 	var host = config.get('debug:repl:host');
-	var server = net.createServer(handleConnect).listen(port, host);
+	server = net.createServer(handleConnect).listen(port, host);
 	server.on('listening', function onListening() {
 		log.info('debugging REPL listening on %s:%s', host, port);
 	});
 }
 
 
+function shutdown(done) {
+	log.info('REPL server shutdown');
+	server.close(done);
+	for (var k in connections) {
+		connections[k].destroy();
+	}
+}
+
+
 function handleConnect(socket) {
 	var addr = socket.remoteAddress + ':' + socket.remotePort;
+	connections[addr] = socket;
+	socket.on('close', function close() {
+		delete connections[addr];
+	});
 	log.info('REPL connection opened: %s', addr);
 	var r = repl.start({
 		prompt: config.getGsid() + '> ',
@@ -68,8 +87,11 @@ function handleConnect(socket) {
 	r.context.admin = gsjsBridge.getAdmin();
 	r.context.api = globalApi;
 	r.context.gsrpc = rpcApi;
-	r.context.memwatch = memwatch;
 	r.context.slack = slack.getClient();
+	r.context.rpc = rpc;
+	r.context.config = config;
+	r.context.logging = logging;
+	r.context.bunyan = bunyan;
 }
 
 
