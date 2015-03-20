@@ -456,6 +456,12 @@ function pointOnPlat(plat, x) {
 	return ret;
 }
 
+/**
+ * Sets up a connection for the client
+ *
+ * @param {object} [conn] connection to prepare
+ * @returns {object} client friendly connect
+ */
 function prepConnect(conn) {
 	var ret = shallowCopy(conn);
 	if (conn.target) {

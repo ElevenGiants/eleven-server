@@ -445,6 +445,16 @@ Location.prototype.getInRadius = function getInRadius(x, y, r, players, sort) {
 	return ret;
 };
 
+/**
+ *	Copies creates a copy of this location
+ *
+ * @param {string} [label] name for new location
+ * @param {string} [moteId] mote Id for new location
+ * @param {string} [hubId] hub Id for new location
+ * @param {boolean} [isInstance] Is this new location an instance?
+ * @param {string} [altClassTsid] class of new location, defaults to source locations class
+ * @returns {Location} the copy of this location
+ */
 /*jshint -W072 */  // suppress "too many parameters" warning (API function following the spec)
 Location.prototype.copyLocation = function copyLocation(label, moteId, hubId,
 	isInstance, altClassTsid) {
@@ -480,12 +490,20 @@ Location.prototype.copyLocation = function copyLocation(label, moteId, hubId,
 };
 /*jshint +W072 */
 
+/**
+ *	Copies the data from the provided location into this location
+ *
+ * @param {Location} [location] the location to copy data from
+ */
 Location.prototype.copyLocationData = function copyLocationData(location) {
 	this.copyProps(location, ['tsid', 'id', 'class_tsid', 'class_id', 'instances',
 	 'playsers', 'activePlayers']);
 
 };
 
+/**
+ *	Replaces the currently persisted geometry with the version in memory
+ */
 Location.prototype.processGeometryUpdate = function processGeometryUpdate() {
 	if (!(this.geometry instanceof GameObject)) {
 		// replace the entire geometry object
@@ -498,6 +516,11 @@ Location.prototype.processGeometryUpdate = function processGeometryUpdate() {
 	this.updateGeometry(this.geometry);
 };
 
+/**
+ *	Sets up clientGemoetry object and links doors and signposts
+ *
+ * @param {object} [data] the location to copy data from
+ */
 Location.prototype.updateGeometry = function updateGeometry(data) {
 	log.debug('%s.updateGeometry', this);
 	this.geometry = data;
@@ -533,6 +556,9 @@ Location.prototype.updateGeometry = function updateGeometry(data) {
 	this.createGeo();
 };
 
+/**
+ *	Sets up the geo object based on current geometry and clientGeometry
+ */
 Location.prototype.createGeo = function createGeo() {
 	this.geo = {};
 	this.geo.l = this.geometry.l;

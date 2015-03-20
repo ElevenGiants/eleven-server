@@ -56,6 +56,12 @@ function safeClone(obj) {
 	return ret;
 }
 
+/**
+ * Creates a copy of a Geo object
+ *
+ * @param {object} obj Geo to copy
+ * @returns {object} copy of the given object
+ */
 function geoCopy(obj) {
 	var ret = {};
 	GameObject.prototype.copyProps.call(ret, obj);
