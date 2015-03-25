@@ -242,7 +242,7 @@ suite('Item', function () {
 			var rc = new RC();
 			rc.run(function () {
 				var p = new Player({tsid: 'PX', location: {tsid: 'LDUMMY'}});
-				var l = Location.create(Geo.create());
+				var l = Location.create({geo: Geo.create()});
 				rc.cache[p.tsid] = p;
 				var it = Item.create('meat', 7);
 				it.setContainer(p, 3);
@@ -307,7 +307,7 @@ suite('Item', function () {
 		test('queues appropriate changes', function (done) {
 			var rc = new RC();
 			rc.run(function () {
-				var l = Location.create(Geo.create());
+				var l = Location.create({geo: Geo.create()});
 				var p = helpers.getOnlinePlayer({tsid: 'PX', location: l});
 				var p2 = helpers.getOnlinePlayer({tsid: 'PY', location: l});
 				l.players[p.tsid] = p;
@@ -335,7 +335,7 @@ suite('Item', function () {
 			var rc = new RC();
 			rc.run(function () {
 				// setup
-				var l = Location.create(Geo.create());
+				var l = Location.create({geo: Geo.create()});
 				var p1 = helpers.getOnlinePlayer({tsid: 'P1', location: l});
 				rc.cache[p1.tsid] = p1;
 				var p2 = helpers.getOnlinePlayer({tsid: 'P2', location: l});
@@ -422,7 +422,7 @@ suite('Item', function () {
 
 		test('honors Newton', function (done) {
 			new RC().run(function () {
-				var l = Location.create(Geo.create(geoData));
+				var l = Location.create({geo: Geo.create(geoData)});
 				var it = Item.create('pi');
 				it.setContainer(l, 150, -25);  // calls setXY internally
 				assert.strictEqual(it.x, 150);
@@ -437,7 +437,7 @@ suite('Item', function () {
 
 		test('ignores Newton for items that do not obey physics', function (done) {
 			new RC().run(function () {
-				var l = Location.create(Geo.create(geoData));
+				var l = Location.create({geo: Geo.create(geoData)});
 				var it = Item.create('bunch_of_grapes_hell');
 				it.setContainer(l, 150, -25);  // calls setXY internally
 				assert.strictEqual(it.y, -25, 'item does not obey physics, y unchanged');

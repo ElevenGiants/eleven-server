@@ -1,5 +1,6 @@
 'use strict';
 
+var rewire = require('rewire');
 var Location = require('model/Location');
 var Geo = require('model/Geo');
 var Item = require('model/Item');
@@ -7,6 +8,8 @@ var Bag = require('model/Bag');
 var Player = require('model/Player');
 var pers = require('data/pers');
 var pbeMock = require('../../mock/pbe');
+var RC = rewire('data/RequestContext');
+var persMock = require('../../mock/pers');
 
 
 suite('Location', function () {
@@ -15,7 +18,7 @@ suite('Location', function () {
 		// blank dummy object to prevent Location from trying to retrieve
 		// geometry from persistence
 		return new Geo();
-	}
+	};
 
 
 	suite('ctor', function () {
@@ -77,42 +80,6 @@ suite('Location', function () {
 			l.updateGeo();
 			assert.notProperty(l.clientGeometry.layers.middleground.doors, 'd');
 			assert.notProperty(l.geo.doors, 'd');
-		});
-	});
-
-	suite('copyLocation', function () {
-
-		setup(function () {
-			pers.init(pbeMock);
-		});
-
-		teardown(function () {
-			pers.init();  // disable mock back-end
-		});
-
-		test('does its job', function () {
-			var src = new Location({}, new Geo({layers: {middleground: {doors: {d: {connect: {target: {label: 'uranus', tsid: 'LABC'}}}}}}}));
-			var copy = src.copyLocation('Test Label', 'Mote Test', 'Hub Test', true, 'fakeClass');
-
-			// assert.deepEqual(copy.geometry = {layers: {middleground: {doors: {d: {connect: {target: {label: 'uranus', tsid: 'LABC'}}}}}}});
-			// assert.strictEqual(copy.label = 'Test Label');
-			// assert.strictEqual(copy.moteid = 'Mote Test');
-			// assert.strictEqual(copy.hubid = 'HubTest');
-			// assert.isTrue(copy.is_instance);
-			// assert.strictEqual(copy.class_tsid, 'fakeClass');
-		});
-
-		test('copies items', function () {
-			var i = new Item({tsid: 'I1', class_tsid: 'fakeItem'});
-			var b = new Bag({tsid: 'B1', items: [i]});
-			i.container = b;
-			var src = new Location({items: [b]}, new Geo({layers: {middleground: {doors: {d: {connect: {target: {label: 'uranus', tsid: 'LABC'}}}}}}}));
-			// var copy = src.copyLocation('Test Label', 'Mote Test', 'Hub Test', true, 'fakeClass');			
-
-			// assert.strictEqual(copy.items[0].tsid[0], 'B');
-			// assert.notEqual(copy.items[0].tsid, 'B1');
-			// assert.strictEqual(copy.items[0].items[0].tsid[0], 'I');
-			// assert.notEqual(copy.items[0].items[0].tsid, 'I1');
 		});
 	});
 

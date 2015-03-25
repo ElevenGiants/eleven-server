@@ -35,7 +35,7 @@ suite('Player', function () {
 				function () {
 					var g = Geo.create();
 					rc.cache[g.tsid] = g;
-					var l = Location.create(g);
+					var l = Location.create({geo: g});
 					rc.cache[l.tsid] = l;
 					p = Player.create({
 						label: 'Edgar',
@@ -218,7 +218,7 @@ suite('Player', function () {
 			rc.run(
 				function () {
 					var g = Geo.create();
-					var l = Location.create(g);
+					var l = Location.create({geo: g});
 					var p = new Player({tsid: 'PX', location: l});
 					l.players[p.tsid] = p;
 					rc.cache[g.tsid] = g;
