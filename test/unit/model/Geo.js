@@ -275,4 +275,32 @@ suite('Geo', function () {
 			assert.deepEqual(new Geo().getHitBoxes(), []);
 		});
 	});
+
+
+	suite('limitX', function () {
+
+		test('does its job', function () {
+			var g = new Geo(getSampleData());
+			assert.strictEqual(g.limitX(0), 0);
+			assert.strictEqual(g.limitX(333.33), 333.33);
+			assert.strictEqual(g.limitX(-3000), -3000);
+			assert.strictEqual(g.limitX(-3000.1), -3000);
+			assert.strictEqual(g.limitX(-Infinity), -3000);
+			assert.strictEqual(g.limitX(12345), 3000);
+			assert.isTrue(isNaN(g.limitX(NaN)), 'not trying to "fix" NaN here');
+		});
+	});
+
+
+	suite('limitY', function () {
+
+		test('does its job', function () {
+			var g = new Geo(getSampleData());
+			assert.strictEqual(g.limitY(0), 0);
+			assert.strictEqual(g.limitY(-3000), -1000);
+			assert.strictEqual(g.limitY(500), 0);
+			assert.strictEqual(g.limitY(Infinity), 0);
+			assert.isTrue(isNaN(g.limitY(NaN)), 'not trying to "fix" NaN here');
+		});
+	});
 });
