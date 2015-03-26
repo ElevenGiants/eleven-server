@@ -45,11 +45,12 @@ module.exports = {
 		maxMsgSize: 131072,
 	},
 	proc: {
-		// timeouts for graceful worker process shutdown
-		shutdownTimeout: 20000,  // ms to wait for graceful shutdown
-		disconnectTimeout: 5000,  // ms to wait for worker.disconnect()
-		// timeout for workers to actually exit before master itself quits
-		masterTimeout: 30000,  // ms
+		// timeout (in ms) for graceful worker process shutdown:
+		shutdownTimeout: 30000,
+		// timeout for worker.kill() or SIGTERM, before sending SIGKILL:
+		killTimeout: 5000,
+		// global timeout for worker shutdown before master itself exits:
+		masterTimeout: 45000,
 	},
 	log: {
 		// dir can be an absolute path, or relative to eleven-server directory
