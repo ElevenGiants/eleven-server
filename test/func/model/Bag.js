@@ -224,7 +224,8 @@ suite('Bag', function () {
 		test('make sure GSJS does not fill hidden bags when purchasing from vendors',
 			function (done) {
 			new RC().run(function () {
-				var p = pers.create(Player, {location: Location.create({geo: Geo.create()})});
+				var p = pers.create(Player,
+							{location: Location.create({geo: Geo.create()})});
 				var remaining = p.createItemFromSource('watering_can', 99, p, true);
 				assert.strictEqual(remaining, 83, '99 cans created, 16 player' +
 					' inventory slots filled, 83 remaining');

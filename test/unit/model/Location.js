@@ -1,6 +1,5 @@
 'use strict';
 
-var rewire = require('rewire');
 var Location = require('model/Location');
 var Geo = require('model/Geo');
 var Item = require('model/Item');
@@ -8,8 +7,6 @@ var Bag = require('model/Bag');
 var Player = require('model/Player');
 var pers = require('data/pers');
 var pbeMock = require('../../mock/pbe');
-var RC = rewire('data/RequestContext');
-var persMock = require('../../mock/pers');
 
 
 suite('Location', function () {
@@ -18,7 +15,7 @@ suite('Location', function () {
 		// blank dummy object to prevent Location from trying to retrieve
 		// geometry from persistence
 		return new Geo();
-	};
+	}
 
 
 	suite('ctor', function () {

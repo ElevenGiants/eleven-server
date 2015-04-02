@@ -55,7 +55,9 @@ suite('GameObject', function () {
 			var src = new GameObject({
 				tsid: 'GXYZ',
 				class_tsid: 'something',
-				func: function() { return true; }
+				func: function () {
+					return true;
+				}
 			});
 			var copy = new GameObject();
 			copy.copyProps(src);

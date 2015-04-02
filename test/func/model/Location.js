@@ -212,33 +212,68 @@ suite('Location', function () {
 	});
 
 	suite('copyLocation', function () {
-		test('does its job', function () {
-			var src = new Location({}, new Geo({layers: {middleground: {doors: {d: {connect: {target: {label: 'uranus', tsid: 'LABC'}}}}}}}));
-			new RC().run(function () {
-				var copy = src.copyLocation('Test Label', 'Mote Test', 'Hub Test', true, 'home');
 
-				assert.deepEqual(copy.geometry = {layers: {middleground: {doors: {d: {connect: {target: {label: 'uranus', tsid: 'LABC'}}}}}}});
-				assert.strictEqual(copy.label = 'Test Label');
-				assert.strictEqual(copy.moteid = 'Mote Test');
-				assert.strictEqual(copy.hubid = 'HubTest');
+		test('does its job', function (done) {
+			new RC().run(function () {
+				var src = new Location({}, new Geo({layers: {middleground: {}}}));
+				var copy = src.copyLocation('Test Label', 'Mote Test', 'Hub Test',
+								true, 'home');
+
+				assert.notEqual(copy.geometry.layers.middleground, undefined);
+				assert.strictEqual(copy.label, 'Test Label');
+				assert.strictEqual(copy.moteid, 'Mote Test');
+				assert.strictEqual(copy.hubid, 'Hub Test');
 				assert.isTrue(copy.is_instance);
-				assert.strictEqual(copy.class_tsid, 'fakeClass');
-			});
+				assert.strictEqual(copy.class_tsid, 'home');
+			}, done);
 		});
 
-		test('copies items', function () {
-			//var i = new Item({tsid: 'I1', class_tsid: 'fakeItem'});
-			var b = new Bag({tsid: 'B1', items: [], class_tsid: 'bag_bigger'});
-			//i.container = b;
-			var src = new Location({items: [b]}, new Geo({layers: {middleground: {doors: {d: {connect: {target: {label: 'uranus', tsid: 'LABC'}}}}}}}));
+		test('copies items', function (done) {
 			new RC().run(function () {
-				var copy = src.copyLocation('Test Label', 'Mote Test', 'Hub Test', true, 'home');			
+				var src = new Location({items: {BX: new Bag({tsid: 'BX',
+								class_tsid: 'bag_bigger'})}},
+							new Geo({layers: {middleground: {doors: {d: {connect:
+								{target: {label: 'uranus', tsid: 'LABC'}}}}}}}));
+				var copy = src.copyLocation('Test Label', 'Mote Test',
+								'Hub Test', true, 'home');
 
-				assert.strictEqual(copy.items[0].tsid[0], 'B');
-				assert.notEqual(copy.items[0].tsid, 'B1');
-				//assert.strictEqual(copy.items[0].items[0].tsid[0], 'I');
-				//assert.notEqual(copy.items[0].items[0].tsid, 'I1');
-			})
+				assert.doesNotThrow(function () {
+					var count = 0;
+					for (var i in copy.items) {
+						count++;
+						assert.strictEqual(copy.items[i].tsid[0], 'B');
+						assert.notStrictEqual(copy.items[i].tsid, 'BX');
+					}
+					assert.notStrictEqual(count, 0);
+				});
+			}, done);
+		});
+	});
+
+	suite('updateGeometry', function () {
+		test('does its job', function (done) {
+			new RC().run(function () {
+				var l = new Location({tsid: 'L1', class_tsid: 'town'}, new Geo());
+				l.updateGeometry({layers: {middleground: {}}});
+
+				assert.notEqual(l.geometry.layers.middleground, undefined);
+				assert.notEqual(l.clientGeometry.layers.middleground, undefined);
+			}, done);
+		});
+	});
+
+	suite('createGeo', function () {
+		test('does its job', function (done) {
+			new RC().run(function () {
+				var l = new Location({tsid: 'L1', class_tsid: 'town'},
+							new Geo({l: 1, r: 2, t: 3, b: 4,
+								layers: {middleground: {signposts: {}}}}));
+				l.createGeo();
+
+				assert.notEqual(l.geo.signposts, undefined);
+				assert.strictEqual(l.geo.l, 1);
+				assert.strictEqual(l.geo.r, 2);
+			}, done);
 		});
 	});
 });
