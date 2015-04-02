@@ -250,7 +250,8 @@ suite('Bag', function () {
 		test('adds items to bags by slot order',
 			function (done) {
 			new RC().run(function () {
-				var p = pers.create(Player, {location: Location.create(Geo.create())});
+				var p = pers.create(Player,
+							{location: Location.create({geo: Geo.create()})});
 				p.capacity = 2;
 				var b1 = Bag.create('bag_generic');
 				b1.setContainer(p, 0);
@@ -267,7 +268,8 @@ suite('Bag', function () {
 		test('adds items to existing stacks by slot order',
 			function (done) {
 			new RC().run(function () {
-				var p = pers.create(Player, {location: Location.create(Geo.create())});
+				var p = pers.create(Player,
+							{location: Location.create({geo: Geo.create()})});
 				var i1 = Item.create('tomato');
 				i1.setContainer(p, 0);
 				var i2 = Item.create('tomato');
