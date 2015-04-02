@@ -1,6 +1,7 @@
 'use strict';
 
 var utils = require('utils');
+var NpcMovementError = require('errors').NpcMovementError;
 
 module.exports = ItemMovement;
 
@@ -194,8 +195,8 @@ ItemMovement.prototype.findPlatform = function findPlatform(x, y) {
 			this.platform = this.getGeo().getClosestPlatPoint(x, y, 1).plat;
 		}
 		if (!this.platform) {
-			log.error('movement: failed to find initial platform for %s',
-				this.item);
+			throw new NpcMovementError(this, 'failed to find initial platform',
+				{dx: x, dy: y});
 		}
 	}
 	else {
@@ -467,6 +468,9 @@ ItemMovement.prototype.moveStep = function moveStep() {
 	// determine next movement step along the current path segment
 	var nextStep = this.transport(this.path[0]);
 	if (nextStep && !nextStep.forceStop) {
+		if (nextStep.dx < this.getGeo().l || nextStep.dx > this.getGeo().r) {
+			throw new NpcMovementError(this, 'step destination out of bounds');
+		}
 		// actually move and announce the resulting changes
 		this.item.setXY(nextStep.dx, nextStep.dy);
 		this.item.queueChanges(false, nextStep.fullChanges);
@@ -474,6 +478,7 @@ ItemMovement.prototype.moveStep = function moveStep() {
 		// advance to next path segment
 		if (nextStep.finished) {
 			this.path.shift();
+			log.debug({path: this.path}, 'movement: path segment finished');
 		}
 	}
 	else if (nextStep && nextStep.forceStop) {
@@ -482,6 +487,7 @@ ItemMovement.prototype.moveStep = function moveStep() {
 	else {
 		// fallback (transport method failed to process path segment properly)
 		this.path.shift();
+		log.debug({path: this.path}, 'movement: transport did not return next step');
 	}
 	// no more path segments -> announce that we're done here
 	if (this.path.length === 0) {
@@ -514,6 +520,7 @@ ItemMovement.prototype.moveStep = function moveStep() {
  * ```
  */
 ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
+	var geo = this.getGeo();
 	var path;
 	if (transport === 'walking') {
 		//TODO: actual pathing
@@ -552,8 +559,8 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 	}
 	else if (transport === 'kicked') {
 		path = [{
-			x: this.item.x + this.options.vx,
-			y: this.item.y + this.options.vy,
+			x: geo.limitX(this.item.x + this.options.vx),
+			y: geo.limitY(this.item.y + this.options.vy),
 			speed: 90,
 			transport: 'direct',
 		}];
@@ -562,26 +569,22 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 			var speed = Math.min(Math.abs(tx) / 2, 45);
 			speed = Math.max(3, speed);
 			path.push({
-				x: this.item.x + tx,
-				y: this.item.y + this.options.vy,
+				x: geo.limitX(this.item.x + tx),
+				y: geo.limitY(this.item.y + this.options.vy),
 				speed: speed,
 				transport: 'direct'
 			});
 		}
 		// TODO: Handle more than just platform landings
-		tx = this.item.x + (3 * this.options.vx);
-		var ty;
-		var platform = this.getGeo().getClosestPlatPoint(tx,
+		tx = geo.limitX(this.item.x + (3 * this.options.vx));
+		var platform = geo.getClosestPlatPoint(tx,
 			(this.item.y + this.options.vy), -1).plat;
-		if (platform) {
-			ty = utils.pointOnPlat(platform, tx).y;
+		if (!platform) {
+			throw new NpcMovementError(this, 'failed to find landing platform',
+				{tx: tx, path: path, options: this.options});
 		}
-		else {
-			log.error('movement: failed to find landing platform for %s', this.item);
-			ty = ('ground_y' in this.getGeo()) ? this.getGeo().ground_y : this.getGeo().b;
-		}
+		var ty = utils.pointOnPlat(platform, tx).y;
 		path.push({x: tx, y: ty, speed: 90, transport: 'direct'});
-
 		this.callback = this.item.onPlatformLanding;
 	}
 	return path;
@@ -627,6 +630,7 @@ ItemMovement.prototype.startMove = function startMove(transport, dest, options) 
 	}
 	else {
 		this.path = this.buildPath(transport, dest);
+		log.debug({path: this.path}, 'movement: new path set');
 	}
 	// explicit first step to check if we are stuck, i.e. completely unable to move
 	this.moveStep();

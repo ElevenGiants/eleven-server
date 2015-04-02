@@ -228,6 +228,30 @@ Geo.prototype.getClosestPlatPoint = function getClosestPlatPoint(x, y, dir,
 
 
 /**
+ * Makes sure an x coordinate is within the geometry boundaries.
+ *
+ * @param {number} x coordinate to test
+ * @returns {number} the given `x` if it is within geometry limits,
+ *          otherwise the closest x coordinate that is
+ */
+Geo.prototype.limitX = function limitX(x) {
+	return Math.max(this.l, Math.min(this.r, x));
+};
+
+
+/**
+ * Makes sure a y coordinate is within the geometry boundaries.
+ *
+ * @param {number} y coordinate to test
+ * @returns {number} the given `y` if it is within geometry limits,
+ *          otherwise the closest y coordinate that is
+ */
+Geo.prototype.limitY = function limitY(y) {
+	return Math.min(this.b, Math.max(this.t, y));
+};
+
+
+/**
  * Gets all hitboxes for this `Geo`'s middleground layer.
  *
  * @returns {array} a list of hitbox objects

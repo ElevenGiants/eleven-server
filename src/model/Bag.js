@@ -149,7 +149,15 @@ Bag.prototype.getChangeData = function getChangeData(pc, removed) {
  */
 Bag.prototype.getAllItems = function getAllItems(includeHidden, aggregate, pathPrefix) {
 	var ret = aggregate || {};
-	var lookIn = [this.items];
+	var lookIn = [];
+	var items = this.items;
+	var sortedItems = {};
+	Object.keys(items).sort(function sort(a, b) {
+		return items[a].x - items[b].x;
+	}).forEach(function add(item) {
+		sortedItems[item] = items[item];
+	});
+	lookIn.push(sortedItems);
 	if (includeHidden) {
 		lookIn.push(this.hiddenItems);
 	}

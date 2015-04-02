@@ -221,7 +221,7 @@ suite('Bag', function () {
 
 	suite('getAllItems', function () {
 
-		test('make sure GSJS does not fill hidden bags when purchasing from vendors',
+		test('makes sure GSJS does not fill hidden bags when purchasing from vendors',
 			function (done) {
 			new RC().run(function () {
 				var p = pers.create(Player,
@@ -244,6 +244,39 @@ suite('Bag', function () {
 							'nothing added to SDB in furniture bag');
 					}
 				});
+			}, done);
+		});
+
+		test('adds items to bags by slot order',
+			function (done) {
+			new RC().run(function () {
+				var p = pers.create(Player, {location: Location.create(Geo.create())});
+				p.capacity = 2;
+				var b1 = Bag.create('bag_generic');
+				b1.setContainer(p, 0);
+				var b2 = Bag.create('bag_generic');
+				b2.setContainer(p, 1);
+				var i = Item.create('moon');
+				b1.setContainer(p, 1);
+				b2.setContainer(p, 0);
+				p.addItemStack(i);
+				assert.strictEqual(Object.keys(b2.items).length, 1);
+			}, done);
+		});
+
+		test('adds items to existing stacks by slot order',
+			function (done) {
+			new RC().run(function () {
+				var p = pers.create(Player, {location: Location.create(Geo.create())});
+				var i1 = Item.create('tomato');
+				i1.setContainer(p, 0);
+				var i2 = Item.create('tomato');
+				i2.setContainer(p, 1);
+				var i3 = Item.create('tomato');
+				i1.setContainer(p, 1);
+				i2.setContainer(p, 0);
+				p.addItemStack(i3);
+				assert.strictEqual(i2.count, 2);
 			}, done);
 		});
 	});
