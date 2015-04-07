@@ -302,3 +302,14 @@ ItemApi.prototype.apiFindCloseItem = function apiFindCloseItem(filter, options) 
 	log.debug('%s.apiFindCloseItem(%s)', this, filter);
 	return this.getClosestItem(filter, options);
 };
+
+
+/**
+ * Start flocking behavior
+ *
+ * @returns {boolean} `true` if the item can start moving
+ */
+ItemApi.prototype.apiMakeBird = function apiMakeBird() {
+	log.debug('%s.apiMakeBird()', this);
+	return this.gsStartMoving('flock', null, null);
+};
