@@ -392,7 +392,7 @@ GameObject.prototype.cancelGsTimer = function cancelGsTimer(fname, interval) {
 	var entry = this.gsTimers[fname];
 	/*jshint -W018 */
 	if (entry && !!entry.options.interval === !!interval) {
-	/*jshint +W018 */
+		/*jshint +W018 */
 		if (entry.handle) {
 			clearTimeout(entry.handle);
 			ret = true;

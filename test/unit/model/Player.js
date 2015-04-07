@@ -465,7 +465,8 @@ suite('Player', function () {
 								path_tsid: 'B1Q8BNQAR14BZA0ABK0/I1Q8BNQAR14BZA22MG4',
 								class_tsid: 'pi',
 								label: 'Pi',
-				}}}}, {
+							}}}},
+				{
 					location_tsid: 'L1Q8BNQAR14BZ7T3O8C',
 					itemstack_values: {
 						pc: {
@@ -474,9 +475,10 @@ suite('Player', function () {
 								path_tsid: 'B1Q8BNQAR14BZA0ABK0/I1Q8BNQAR14BZA22MG4',
 								class_tsid: 'pi',
 								label: 'Pi',
-						}},
+							}},
 						location: {},
-				}},
+					},
+				},
 			];
 			assert.deepEqual(p.mergeChanges(), {
 				location_tsid: 'L1Q8BNQAR14BZ7T3O8C',
@@ -487,14 +489,14 @@ suite('Player', function () {
 							path_tsid: 'B1Q8BNQAR14BZA0ABK0/I1Q8BNQAR14BZA22MG4',
 							class_tsid: 'pi',
 							label: 'Pi',
-					}},
+						}},
 					location: {
 						I1Q8BNQAR14BZA22MG4: {
 							x: 3, y: 0, slot: 3, count: 1,
 							path_tsid: 'B1Q8BNQAR14BZA0ABK0/I1Q8BNQAR14BZA22MG4',
 							class_tsid: 'pi',
 							label: 'Pi',
-				}}}
+						}}},
 			});
 		});
 
@@ -513,8 +515,8 @@ suite('Player', function () {
 						pc: {},
 						location: {
 							IX: {path_tsid: 'IX'},
-				}}},
-				{
+						}}
+				}, {
 					location_tsid: 'LCANADA',
 					itemstack_values: {
 						pc: {
@@ -522,7 +524,8 @@ suite('Player', function () {
 						},
 						location: {
 							IY: {path_tsid: 'IY'},
-				}}},
+						}},
+				},
 			];
 			assert.deepEqual(p.mergeChanges(), {
 				location_tsid: 'LPANAMA',
@@ -533,7 +536,9 @@ suite('Player', function () {
 					},
 					location: {
 						IX: {path_tsid: 'IX'},
-			}}});
+					},
+				},
+			});
 		});
 
 		test('picks last change if multiple changes for the same item are queued',
@@ -543,16 +548,15 @@ suite('Player', function () {
 			p.changes = [
 				{
 					location_tsid: 'L1',
-					itemstack_values: {
-						location: {
-							IX: {path_tsid: 'IX', count: 2},
-				}}},
-				{
+					itemstack_values: {location: {
+						IX: {path_tsid: 'IX', count: 2},
+					}},
+				}, {
 					location_tsid: 'L1',
-					itemstack_values: {
-						location: {
-							IX: {path_tsid: 'IX', count: 3},
-				}}},
+					itemstack_values: {location: {
+						IX: {path_tsid: 'IX', count: 3},
+					}},
+				},
 			];
 			assert.deepEqual(p.mergeChanges(), {
 				location_tsid: 'L1',
@@ -560,7 +564,8 @@ suite('Player', function () {
 					pc: {},
 					location: {
 						IX: {path_tsid: 'IX', count: 3},
-			}}});
+					}},
+			});
 		});
 	});
 
