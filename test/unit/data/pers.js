@@ -264,19 +264,4 @@ suite('pers', function () {
 				'updating o1 failed, further operations (deletes) cancelled');
 		});
 	});
-
-
-	suite('postRequestRollback', function () {
-
-		test('unloads tainted objects from live object cache', function (done) {
-			var o1 = new GameObject({tsid: 'I1'});
-			var o2 = new GameObject({tsid: 'I2'});
-			pers.__set__('cache', {I1: o1, I2: o2});
-			var dlist = {I2: o2};
-			pers.postRequestRollback(dlist, {}, null, function cb() {
-				assert.deepEqual(pers.__get__('cache'), {I1: o1});
-				done();
-			});
-		});
-	});
 });
