@@ -40,7 +40,6 @@ module.exports = {
 	create: create,
 	registerProxy: registerProxy,
 	postRequestProc: postRequestProc,
-	postRequestRollback: postRequestRollback,
 };
 
 
@@ -360,38 +359,6 @@ function postRequestProcStep(step, objects, logmsg, callback) {
 			callback(err || e, res);
 		}
 	);
-}
-
-
-/**
- * Called by {@link RequestContext#run} when an error occured while
- * processing the request. Discards all modifications caused by the
- * request by dropping all tainted objects from the live object cache.
- *
- * @param {object} dlist hash containing modified game objects
- *        (TSIDs as keys, objects as values)
- * @param {object} alist hash containing added game objects
- * @param {string} [logmsg] optional information for log messages
- * @param {function} [callback] function to be called after rollback
- *        has finished
- */
-function postRequestRollback(dlist, alist, logmsg, callback) {
-	assert(!shuttingDown, 'persistence layer shutdown initiated');
-	//TODO: remove rollbacks entirely, or modify to make them "safe" (no stale
-	// objects left behind). Maybe this can be achieved by *always* representing
-	// objrefs through getters/setters in live objects (see
-	// objrefProxy.setupObjRefProp)? Probably not possible to enforce this
-	// reliably, though (e.g. when completely new refs are added to an existing
-	// object).
-	var tag = 'rollback ' + logmsg;
-	log.info(tag);
-	for (let k in dlist) {
-		unload(dlist[k], tag);
-	}
-	for (let k in alist) {
-		unload(alist[k], tag);
-	}
-	if (callback) callback();
 }
 
 

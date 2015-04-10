@@ -90,10 +90,7 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 			/*jshint -W030 */  // trigger prepareStackTrace (parts of the trace might not be available outside the RC)
 			err.stack;
 			/*jshint +W030 */
-			pers.postRequestRollback(rc.dirty, rc.added, tag, function done() {
-				callback(err);
-			});
-			return;
+			return callback(err);
 		}
 		// persist modified objects
 		pers.postRequestProc(rc.dirty, rc.added, rc.unload, tag, function done() {
