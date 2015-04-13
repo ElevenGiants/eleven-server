@@ -105,8 +105,7 @@ Item.prototype.patchFuncStatsUpdate = function patchFuncStatsUpdate(fname) {
  *
  * @param {string} classTsid specific class of the item
  * @param {number} [count] item stack size (1 by default)
- * @returns {object} an `Item` instance wrapped in a {@link
- * module:data/persProxy|persistence proxy}
+ * @returns {object} an `Item` object
  */
 Item.create = function create(classTsid, count) {
 	assert(classTsid.substr(0, 4) !== 'bag_', util.format(

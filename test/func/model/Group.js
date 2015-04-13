@@ -24,22 +24,12 @@ suite('Group', function () {
 
 
 		test('does its job', function (done) {
-			new RC().run(
-				function () {
-					var g = Group.create('rook_attack', 'somehub');
-					assert.isTrue(g.__isPP);
-					assert.isTrue(utils.isGroup(g));
-					assert.strictEqual(g.class_tsid, 'rook_attack');
-					assert.strictEqual(g.hubid, 'somehub');
-				},
-				function cb(err, res) {
-					if (err) return done(err);
-					var db = pbeMock.getDB();
-					assert.strictEqual(pbeMock.getCounts().write, 1);
-					assert.strictEqual(Object.keys(db).length, 1);
-					done();
-				}
-			);
+			new RC().run(function () {
+				var g = Group.create('rook_attack', 'somehub');
+				assert.isTrue(utils.isGroup(g));
+				assert.strictEqual(g.class_tsid, 'rook_attack');
+				assert.strictEqual(g.hubid, 'somehub');
+			}, done);
 		});
 
 		test('works without the optional parameters', function (done) {

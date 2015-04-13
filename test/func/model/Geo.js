@@ -37,20 +37,10 @@ suite('Geo', function () {
 
 
 		test('does its job', function (done) {
-			new RC().run(
-				function () {
-					var g = Geo.create();
-					assert.isTrue(g.__isPP);
-					assert.isTrue(utils.isGeo(g));
-				},
-				function cb(err, res) {
-					if (err) return done(err);
-					var db = pbeMock.getDB();
-					assert.strictEqual(pbeMock.getCounts().write, 1);
-					assert.strictEqual(Object.keys(db).length, 1);
-					done();
-				}
-			);
+			new RC().run(function () {
+				var g = Geo.create();
+				assert.isTrue(utils.isGeo(g));
+			}, done);
 		});
 
 		test('fails with invalid custom TSID', function () {

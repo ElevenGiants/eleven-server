@@ -97,8 +97,7 @@ Location.prototype.gsOnLoad = function gsOnLoad() {
  * @param {Geo} geo geometry data (location TSID will be derived from
  *        `geo.tsid`)
  * @param {object} [data] additional properties
- * @returns {object} a `Location` instance wrapped in a {@link
- * module:data/persProxy|persistence proxy}
+ * @returns {object} a `Location` object
  */
 Location.create = function create(geo, data) {
 	data = data || {};

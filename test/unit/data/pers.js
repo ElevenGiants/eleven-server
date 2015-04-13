@@ -46,7 +46,7 @@ suite('pers', function () {
 
 		var load = pers.__get__('load');
 
-		test('loads local objects and proxifies them', function () {
+		test('loads local objects', function () {
 			var o = {tsid: 'ITEST', some: 'data'};
 			pbeMock.write(o);
 			var lo = load(o.tsid);
@@ -54,7 +54,6 @@ suite('pers', function () {
 			var cache = pers.__get__('cache');
 			assert.property(cache, o.tsid);
 			assert.strictEqual(cache[o.tsid].some, 'data');
-			assert.isTrue(cache[o.tsid].__isPP);
 		});
 
 		test('calls gsOnLoad', function () {
@@ -101,7 +100,6 @@ suite('pers', function () {
 			pbeMock.write(o);
 			var lo = load(o.tsid);
 			assert.isTrue(lo.__isRP, 'is wrapped in RPC proxy');
-			assert.isUndefined(lo.__isPP, 'is not wrapped in persistence proxy');
 			assert.isDefined(rcMock.getContext().cache.ITEST, 'in request cache');
 			assert.notProperty(pers.__get__('cache'), 'ITEST',
 				'not in live object cache');
@@ -144,18 +142,15 @@ suite('pers', function () {
 
 	suite('create', function () {
 
-		test('adds created objects to the live object cache, proxifies them ' +
-			'and flags them as dirty', function () {
-			var p = pers.create(Item, {
+		test('adds created objects to the live object cache', function () {
+			var i = pers.create(Item, {
 				tsid: 'I123',
 				something: 'dumb',
 			});
 			var cache = pers.__get__('cache');
 			assert.property(cache, 'I123');
 			assert.strictEqual(cache.I123.something, 'dumb');
-			assert.isTrue(p.__isPP);
-			assert.isTrue(cache.I123.__isPP);
-			assert.deepEqual(rcMock.getDirtyList(), ['I123']);
+			assert.strictEqual(i, cache.I123);
 		});
 
 		test('fails with TSID of an already existing object', function () {
@@ -179,33 +174,22 @@ suite('pers', function () {
 	suite('postRequestProc/write/del/unload', function () {
 
 		test('does the job', function () {
-			var dlist = {
-				I1: new GameObject({tsid: 'I1'}),
-				I2: new GameObject({tsid: 'I2'}),
-				P1: new GameObject({tsid: 'P1'}),
-			};
-			dlist.I2.deleted = true;
-			dlist.P1.deleted = false;
-			pers.postRequestProc(dlist, {}, {});
-			assert.strictEqual(pbeMock.getCounts().write, 2);
-			assert.strictEqual(pbeMock.getCounts().del, 1);
-		});
-
-		test('unloads objects from cache', function () {
 			var o1 = new GameObject({tsid: 'I1'});
 			var o2 = new GameObject({tsid: 'I2'});
-			pers.__set__('cache', {I1: o1, I2: o2});
-			var ulist = {I2: o2};
-			pers.postRequestProc({}, {}, ulist);
-			assert.strictEqual(pbeMock.getCounts().write, 0);
-			assert.strictEqual(pbeMock.getCounts().del, 0);
-			assert.deepEqual(pers.__get__('cache'), {I1: o1});
+			var o3 = new GameObject({tsid: 'P1'});
+			pers.__set__('cache', {I1: o1, I2: o2, P1: o3});
+			var ulist = {I1: o1, I2: o2, P1: o3};
+			ulist.I2.deleted = true;
+			ulist.P1.deleted = false;
+			pers.postRequestProc(ulist);
+			assert.strictEqual(pbeMock.getCounts().write, 2);
+			assert.strictEqual(pbeMock.getCounts().del, 1);
+			assert.deepEqual(pers.__get__('cache'), {});
 		});
 
 		test('calls callback after persistence operations', function (done) {
 			var o1 = new GameObject({tsid: 'I1'});
-			pers.__set__('cache', {I1: o1});
-			var dlist = {I1: o1};
+			var ulist = {I1: o1};
 			var callbackCalled = false;
 			var writeCalled = false;
 			var pbe = {
@@ -217,7 +201,8 @@ suite('pers', function () {
 				}
 			};
 			pers.init(pbe, undefined, function () {  // set custom back-end mock
-				pers.postRequestProc(dlist, {}, {}, '', function cb() {
+				pers.__set__('cache', {I1: o1});
+				pers.postRequestProc(ulist, '', function cb() {
 					callbackCalled = true;
 					assert.isTrue(writeCalled);
 					done();
@@ -234,21 +219,9 @@ suite('pers', function () {
 				throw new Error('should not prevent persisting o2');
 			};
 			pers.__set__('cache', {I1: o1, I2: o2});
-			pers.postRequestProc({I1: o1, I2: o2}, {}, {});
+			pers.postRequestProc({I1: o1, I2: o2});
 			assert.isTrue(errorThrown);
 			assert.strictEqual(pbeMock.getCounts().write, 1, 'o2 written');
-		});
-
-		test('does not perform updates if additions failed', function () {
-			var o1 = new GameObject({tsid: 'I1'});
-			var o2 = new GameObject({tsid: 'I2'});
-			o1.serialize = function dummy() {
-				throw new Error('should prevent updates');
-			};
-			pers.__set__('cache', {I1: o1});
-			pers.postRequestProc({I2: o2}, {I1: o1}, {});
-			assert.strictEqual(pbeMock.getCounts().write, 0,
-				'writing o1 failed, further operations (updates) cancelled');
 		});
 
 		test('does not perform deletions if updates failed', function () {
@@ -259,7 +232,7 @@ suite('pers', function () {
 				throw new Error('should prevent deletion of o2');
 			};
 			pers.__set__('cache', {I1: o1, I2: o2});
-			pers.postRequestProc({I1: o1, I2: o2}, {}, {});
+			pers.postRequestProc({I1: o1, I2: o2});
 			assert.strictEqual(pbeMock.getCounts().del, 0,
 				'updating o1 failed, further operations (deletes) cancelled');
 		});

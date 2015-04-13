@@ -2,7 +2,6 @@
 
 var path = require('path');
 var pers = require('data/pers');
-var persProxy = require('data/persProxy');
 var RC = require('data/RequestContext');
 var pbeMock = require('../../mock/pbe');
 var Location = require('model/Location');
@@ -48,30 +47,6 @@ suite('Location', function () {
 		});
 
 
-		test('Location initialization does not flag Location or Geo as dirty',
-			function (done) {
-			var rc = new RC();
-			rc.run(function () {
-				var g = persProxy.makeProxy(new Geo({tsid: 'GX'}));
-				persProxy.makeProxy(new Location({tsid: 'LX'}, g));
-				assert.strictEqual(Object.keys(rc.dirty).length, 0);
-			}, done);
-		});
-
-		test('geometry changes do not set dirty flag for Location', function (done) {
-			var g = persProxy.makeProxy(new Geo(
-				{tsid: 'GX', layers: {middleground: {doors: {}}}}));
-			var l = persProxy.makeProxy(new Location({tsid: 'LX'}, g));
-			var rc = new RC();
-			rc.run(function () {
-				l.geometry.layers.middleground.doors.d = {
-					connect: {target: {label: 'china', tsid: 'LABC'}},
-				};
-				l.updateGeo();
-				assert.deepEqual(Object.keys(rc.dirty), ['GX']);
-			}, done);
-		});
-
 		test('replacing the whole geometry with a plain object is handled right',
 			function (done) {
 			// GSJS does that (loc.geometry = {})
@@ -86,12 +61,6 @@ suite('Location', function () {
 				assert.strictEqual(l.geometry.something, 'foomp');
 				assert.strictEqual(l.geometry.tsid, 'GX',
 					'TSID changed back according to Location TSID');
-				// check that it will be persisted
-				assert.deepEqual(Object.keys(rc.added), ['GX']);
-				var newG = rc.added.GX;
-				assert.instanceOf(newG, Geo);
-				assert.strictEqual(newG.tsid, 'GX');
-				assert.strictEqual(newG.something, 'foomp');
 			}, done);
 		});
 
@@ -116,23 +85,13 @@ suite('Location', function () {
 	suite('create', function () {
 
 		test('does its job and creates "town" by default', function (done) {
-			new RC().run(
-				function () {
-					var g = Geo.create();
-					var l = Location.create(g);
-					assert.isTrue(l.__isPP);
-					assert.isTrue(utils.isLoc(l));
-					assert.strictEqual(l.class_tsid, 'town');
-					assert.strictEqual(l.tsid.substr(1), g.tsid.substr(1));
-				},
-				function cb(err, res) {
-					if (err) return done(err);
-					var db = pbeMock.getDB();
-					assert.strictEqual(pbeMock.getCounts().write, 2);
-					assert.strictEqual(Object.keys(db).length, 2);
-					done();
-				}
-			);
+			new RC().run(function () {
+				var g = Geo.create();
+				var l = Location.create(g);
+				assert.isTrue(utils.isLoc(l));
+				assert.strictEqual(l.class_tsid, 'town');
+				assert.strictEqual(l.tsid.substr(1), g.tsid.substr(1));
+			}, done);
 		});
 
 		test('fails if Geo object not available in persistence', function () {

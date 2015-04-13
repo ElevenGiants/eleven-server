@@ -36,8 +36,7 @@ function Group(data) {
  *
  * @param {string} [classTsid] specific class of the group
  * @param {string} [hubId] hub to attach the group to
- * @returns {object} a `Group` instance wrapped in a {@link
- * module:data/persProxy|persistence proxy}
+ * @returns {object} a `Group` object
  */
 Group.create = function create(classTsid, hubId) {
 	var data = {};

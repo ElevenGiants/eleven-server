@@ -117,6 +117,8 @@ GameObject.prototype.toString = function toString() {
  */
 GameObject.prototype.del = function del() {
 	this.deleted = true;
+	var rc = RC.getContext(true);
+	if (rc) rc.setUnload(this);
 };
 
 
@@ -205,8 +207,6 @@ GameObject.prototype.setGsTimer = function setGsTimer(options) {
 		start: new Date().getTime(),
 		options: options,
 	};
-	// make sure update timer setup is persisted (gsTimers is non-enumerable)
-	RC.setDirty(this);
 };
 
 
@@ -256,8 +256,6 @@ GameObject.prototype.scheduleTimer = function scheduleTimer(options, key) {
 						delete self.gsTimers[key];
 						self.setGsTimer(options);
 					}
-					// make sure update timer setup is persisted
-					rc.setDirty(self);
 				},
 				function callback(e) {
 					if (e) {
@@ -398,8 +396,6 @@ GameObject.prototype.cancelGsTimer = function cancelGsTimer(fname, interval) {
 			ret = true;
 		}
 		delete this.gsTimers[fname];
-		// make sure update timer setup is persisted (gsTimers is non-enumerable)
-		RC.setDirty(this);
 	}
 	return ret;
 };
