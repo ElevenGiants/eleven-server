@@ -121,6 +121,8 @@ GameObject.prototype.toString = function toString() {
  */
 GameObject.prototype.del = function del() {
 	this.deleted = true;
+	var rc = RC.getContext(true);
+	if (rc) rc.setUnload(this);
 };
 
 

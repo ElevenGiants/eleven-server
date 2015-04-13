@@ -43,37 +43,16 @@ suite('RequestContext', function () {
 				var ctx = RC.getContext();
 				assert.property(ctx, 'cache');
 				assert.deepEqual(ctx.cache, {});
-				assert.property(ctx, 'dirty');
-				assert.deepEqual(ctx.dirty, {});
+				assert.property(ctx, 'unload');
+				assert.deepEqual(ctx.unload, {});
 				done();
 			});
-		});
-
-		test('persists dirty objects after request is finished', function (done) {
-			new RC().run(
-				function () {
-					var rc = RC.getContext();
-					rc.setDirty({tsid: 'IA'});
-					rc.setDirty({tsid: 'IB', deleted: true});
-					assert.deepEqual(Object.keys(rc.dirty), ['IA', 'IB']);
-					assert.deepEqual(persMock.getDirtyList(), {},
-						'request in progress, list not processed yet');
-				},
-				function callback() {
-					assert.deepEqual(persMock.getDirtyList(), {
-						IA: {tsid: 'IA'},
-						IB: {tsid: 'IB', deleted: true},
-					});
-					done();
-				}
-			);
 		});
 
 		test('waits for persistence operation callback if desired', function (done) {
 			var persDone = false;
 			RC.__set__('pers', {
-				postRequestProc: function postRequestProc(dlist, alist, ulist,
-					logtag, callback) {
+				postRequestProc: function postRequestProc(ulist, logtag, callback) {
 					// simulate an async persistence operation that takes 20ms
 					setTimeout(function () {
 						persDone = true;
@@ -108,15 +87,17 @@ suite('RequestContext', function () {
 			rc.run(
 				function () {
 					rc.setUnload({tsid: 'IA'});
-					assert.deepEqual(Object.keys(rc.unload), ['IA']);
+					rc.setUnload({tsid: 'IB', deleted: true});
+					assert.deepEqual(Object.keys(rc.unload), ['IA', 'IB']);
 					assert.deepEqual(persMock.getUnloadList(), {},
 						'request in progress, list not processed yet');
 				},
 				function callback() {
-					assert.deepEqual(persMock.getUnloadList(), {IA: {tsid: 'IA'}});
+					assert.deepEqual(persMock.getUnloadList(), {
+						IA: {tsid: 'IA'},
+						IB: {tsid: 'IB', deleted: true},
+					});
 					assert.isTrue(persMock.getUnloadList().IA.stale);
-					assert.deepEqual(persMock.getDirtyList(), {},
-						'objects to unload are *not* implicitly flagged dirty');
 				}
 			);
 			done();

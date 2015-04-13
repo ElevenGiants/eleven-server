@@ -6,7 +6,6 @@ module.exports = {
 	get: get,
 	add: add,
 	postRequestProc: postRequestProc,
-	getDirtyList: getDirtyList,
 	getUnloadList: getUnloadList,
 	preAdd: preAdd,
 	registerProxy: registerProxy,
@@ -15,16 +14,12 @@ module.exports = {
 
 var cache = {};
 var proxyCache = {};
-var dlist = {};
-var alist = {};
 var ulist = {};
 
 
 function reset() {
 	cache = {};
 	proxyCache = {};
-	dlist = {};
-	alist = {};
 	ulist = {};
 }
 
@@ -44,7 +39,6 @@ function get(tsid, noProxy) {
 
 function add(obj, flush) {
 	cache[obj.tsid] = obj;
-	dlist[obj.tsid] = obj;
 	return obj;
 }
 
@@ -57,9 +51,7 @@ function preAdd() {
 }
 
 
-function postRequestProc(dl, al, ul, logmsg, postPersCallback) {
-	dlist = dl;
-	alist = al;
+function postRequestProc(ul, logmsg, postPersCallback) {
 	ulist = ul;
 	if (postPersCallback) postPersCallback();
 }
@@ -72,11 +64,6 @@ function registerProxy(objref) {
 		objref: true,
 		__isORP: true,
 	};
-}
-
-
-function getDirtyList() {
-	return dlist;
 }
 
 

@@ -23,10 +23,6 @@
  *
  * Once loaded, game objects are kept in a cache data structure here,
  * to avoid having to reload them from the back-end for each access.
- * Game logic functions do not need to take care of saving modified
- * objects explicitly; this happens automatically at the end of each
- * request processed through {@link RequestContext#run}, with help of
- * the {@link module:data/persProxy|persProxy} wrapper.
  *
  * @module
  */
@@ -47,7 +43,6 @@ var assert = require('assert');
 var async = require('async');
 var gsjsBridge = require('model/gsjsBridge');
 var orProxy = require('data/objrefProxy');
-var persProxy = require('data/persProxy');
 var rpc = require('data/rpc');
 var RC = require('data/RequestContext');
 var metrics = require('metrics');
@@ -141,8 +136,7 @@ function exists(tsid) {
 /**
  * Loads the game object with the given TSID from persistence.
  * Depending on whether the GS is "responsible" for this object, it
- * will be wrapped either in a {@link module:data/persProxy|persProxy}
- * or {@link module:data/rpcProxy|rpcProxy}.
+ * may be wrapped in an {@link module:data/rpcProxy|rpcProxy}.
  *
  * @param {string} tsid TSID of the object to load
  * @returns {GameObject|null} the requested object, or `null` if no
@@ -170,8 +164,6 @@ function load(tsid) {
 			log.warn('%s already loaded, discarding redundant copy', tsid);
 			return cache[tsid];
 		}
-		// make sure any changes to the object are persisted
-		obj = persProxy.makeProxy(obj);
 		cache[tsid] = obj;
 		// post-construction operations (resume timers/intervals, GSJS onLoad etc.)
 		if (obj.gsOnLoad) {
@@ -242,11 +234,8 @@ function get(tsid, noProxy) {
 
 
 /**
- * Creates a new game object of the given type and adds it to
- * persistence. The returned object is wrapped in a ({@link
- * module:data/persProxy|persProxy}) to make sure all future changes
- * to the object are automatically persisted.
- * Also calls the object's GSJS `onCreate` handler, if there is one.
+ * Creates a new game object of the given type. Also calls the object's
+ * GSJS `onCreate` handler, if there is one.
  *
  * @param {function} modelType the desired game object model type (i.e.
  *        a constructor like `Player` or `Geo`)
@@ -259,9 +248,7 @@ function create(modelType, data) {
 	data = data || {};
 	var obj = gsjsBridge.create(data, modelType);
 	assert(!(obj.tsid in cache), 'object already exists: ' + obj.tsid);
-	obj = persProxy.makeProxy(obj);
 	cache[obj.tsid] = obj;
-	RC.getContext().setDirty(obj, true);
 	if (typeof obj.onCreate === 'function') {
 		obj.onCreate();
 	}
@@ -272,26 +259,23 @@ function create(modelType, data) {
 
 /**
  * Called by {@link RequestContext#run} after processing a request has
- * finished, writes all resulting game object changes to persistence.
+ * finished; writes a list of game objects to persistence, and unloads
+ * those objects from the live object cache.
  *
- * @param {object} dlist hash containing modified game objects
- *        (TSIDs as keys, objects as values)
- * @param {object} alist hash containing newly added game objects
  * @param {object} ulist hash containing game objects to release from
  *        the live object cache
  * @param {string} [logmsg] optional information for log messages
  * @param {function} [callback] function to be called after persistence
  *        operations have finished
  */
-function postRequestProc(dlist, alist, ulist, logmsg, callback) {
+function postRequestProc(ulist, logmsg, callback) {
 	assert(!shuttingDown, 'persistence layer shutdown initiated');
-	// process persistence changes in a safe order (add new, then modify
-	// existing, then remove deleted objects); this may leave behind orphaned
-	// data, but it should at least avoid invalid object references
+	// process persistence changes in a safe order (add/modify first, then
+	// delete); this may leave behind orphaned data, but should at least avoid
+	// avoid invalid object references
 	async.series([
-		postRequestProcStep.bind(undefined, 'add', alist, logmsg),
-		postRequestProcStep.bind(undefined, 'upd', dlist, logmsg),
-		postRequestProcStep.bind(undefined, 'del', dlist, logmsg),
+		postRequestProcStep.bind(undefined, 'write', ulist, logmsg),
+		postRequestProcStep.bind(undefined, 'delete', ulist, logmsg),
 	], function cb(err) {
 		// unload objects scheduled to be released from cache (take care not
 		// to load objects here if they are not loaded in the first place)
@@ -309,14 +293,14 @@ function postRequestProc(dlist, alist, ulist, logmsg, callback) {
 
 
 /**
- * Helper for `postRequestProc` to process individual operations (add/
- * update/delete objects) separately. This will always try to execute
+ * Helper for `postRequestProc` to process individual operations
+ * write/delete objects) separately. This will always try to execute
  * the operation on all given objects, even if some of those operations
  * fail. In case of errors, only the **first** encountered error is
  * passed to the callback.
  *
- * @param {string} step persistence operation (must be `add`, `upd` or
- *         `del`)
+ * @param {string} step persistence operation (must be `write` or
+ *         `delete`)
  * @param {object} objects hash containing game objects to process
  *        (TSIDs as keys, objects as values)
  * @param {string} logmsg information for log messages
@@ -329,19 +313,19 @@ function postRequestProcStep(step, objects, logmsg, callback) {
 	async.each(Object.keys(objects),
 		function iter(k, cb) {
 			var o = objects[k];
+			// skip if not a "live" object the first place
+			if (!(k in cache)) return cb();
 			try {
-				if (step === 'del') {
-					// skip dirty objects that are not actually deleted
+				if (step === 'delete') {
+					// skip objects that are not actually deleted
 					if (!o.deleted) return cb(null);
-					// stop timers/intervals for deleted objects
-					if (o.suspendGsTimers) o.suspendGsTimers();
 					return del(o, logmsg, function (e) {
 						if (e && !err) err = e;
 						return cb();
 					});
 				}
 				else {
-					// skip dirty objects that will be deleted later anyway
+					// skip objects that will be deleted later anyway
 					if (o.deleted) return cb(null);
 					return write(o, logmsg, function (e) {
 						if (e && !err) err = e;

@@ -33,8 +33,7 @@ function DataContainer(data) {
  *
  * @param {Location|Group|Item|Bag|Player} owner top-level game object
  *        this DC belongs to
- * @returns {object} a `DataContainer` instance wrapped in a {@link
- * module:data/persProxy|persistence proxy}
+ * @returns {object} a `DataContainer` object
  */
 DataContainer.create = function create(owner) {
 	assert(utils.isLoc(owner) || utils.isItem(owner) || utils.isGroup(owner),

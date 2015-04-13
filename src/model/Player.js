@@ -86,8 +86,7 @@ utils.copyProps(require('model/PlayerApi').prototype, Player.prototype);
  *
  * @param {object} [data] player data; must contain everything required
  *        for a new player
- * @returns {object} a `Player` instance wrapped in a {@link
- * module:data/persProxy|persistence proxy}
+ * @returns {object} a `Player` object
  */
 Player.create = function create(data) {
 	assert(typeof data === 'object', 'minimal player data set required');
