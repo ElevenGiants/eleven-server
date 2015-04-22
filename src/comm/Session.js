@@ -61,6 +61,8 @@ function Session(id, socket) {
 	this.socket = socket;
 	this.ts = new Date().getTime();
 	this.maxMsgSize = config.get('net:maxMsgSize');
+	this.msgQueue = [];
+	this.busy = false;
 	// disable Nagle's algorithm (we need all messages delivered as quickly as possible)
 	this.socket.setNoDelay(true);
 	// set up domain for low-level issue handling (networking and
@@ -221,7 +223,7 @@ Session.prototype.checkForMessages = function checkForMessages() {
 		}
 		// still here? then schedule message handling
 		var timer = metrics.createTimer('req.wait', 0.1);
-		setImmediate(this.handleMessage.bind(this), msg, timer);
+		setImmediate(this.enqueueMessage.bind(this), msg, timer);
 	}
 	if (bufstr.length === 0) {
 		delete this.buffer;  // buffer fully processed
@@ -234,10 +236,31 @@ Session.prototype.checkForMessages = function checkForMessages() {
 };
 
 
-Session.prototype.handleMessage = function handleMessage(msg, waitTimer) {
+Session.prototype.enqueueMessage = function enqueueMessage(msg, waitTimer) {
+	if (msg.type === 'ping') {
+		this.handleMessage(msg, waitTimer);
+	}
+	else {
+		this.msgQueue.push({msg: msg, waitTimer: waitTimer});
+		this.dequeueMessage();
+	}
+};
+
+
+Session.prototype.dequeueMessage = function dequeueMessage() {
+	log.trace({qLen: this.msgQueue.length}, 'checking for next message');
+	if (!this.busy && this.msgQueue.length) {
+		var queued = this.msgQueue.shift();
+		this.handleMessage(queued.msg, queued.waitTimer, true);
+	}
+};
+
+
+Session.prototype.handleMessage = function handleMessage(msg, waitTimer, exclusive) {
 	if (waitTimer) waitTimer.stop();
 	log.trace({data: msg}, 'got %s request', msg.type);
 	metrics.increment('net.amf.rx', 0.01);
+	if (exclusive) this.busy = true;
 	var self = this;
 	var rc = new RC(msg.type, this.pc, this);
 	this.dom.run(function domWrapper() {
@@ -249,7 +272,10 @@ Session.prototype.handleMessage = function handleMessage(msg, waitTimer) {
 				if (procTimer) procTimer.stop();
 			},
 			function callback(err) {
+				log.trace('finished %s request', msg.type);
+				if (exclusive) self.busy = false;
 				if (err) self.handleAmfReqError.call(self, err, msg);
+				else self.dequeueMessage.call(self);
 			}
 		);
 	});

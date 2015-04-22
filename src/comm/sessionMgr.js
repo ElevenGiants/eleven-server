@@ -28,6 +28,7 @@ var sessions = {};
 function init() {
 	sessions = {};
 	metrics.setupGaugeInterval('session.count', getSessionCount);
+	metrics.setupGaugeInterval('session.avg_qlen', getAvgQueueLength);
 }
 
 
@@ -67,6 +68,24 @@ function onSessionClose(session) {
 function getSessionCount() {
 	if (!sessions) return 0;
 	return Object.keys(sessions).length;
+}
+
+
+/**
+ * Calculates the average message queue size over all sessions.
+ *
+ * @returns {number} average message queue length
+ */
+function getAvgQueueLength() {
+	if (!sessions) return 0;
+	var sum = 0;
+	var count = 0;
+	for (var id in sessions) {
+		var session = sessions[id];
+		sum += session.msgQueue.length;
+		count++;
+	}
+	return sum / count;
 }
 
 

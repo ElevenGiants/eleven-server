@@ -5,6 +5,7 @@ var auth = require('comm/auth');
 var abePassthrough = require('comm/abe/passthrough');
 var net = require('net');
 var path = require('path');
+var wait = require('wait.for');
 var config = require('config');
 var RC = require('data/RequestContext');
 var Session = require('comm/Session');
@@ -178,6 +179,35 @@ suite('Session', function () {
 				// does not bubble up to the surface
 				done();
 			}, 20);
+		});
+	});
+
+
+	suite('FIFO request processing', function () {
+
+		test('processes regular requests in FIFO order', function (done) {
+			var s = helpers.getTestSession();
+			var fastDone = false;
+			var slowDone = false;
+			s.processRequest = function processRequest(req) {
+				if (req.type === 'fast') {
+					fastDone = true;
+					assert.isTrue(slowDone);
+					done();
+				}
+				if (req.type === 'slow') {
+					// simulate a "slow" GSJS request that yields its fiber
+					wait.for(function (cb) {
+						setTimeout(function () {
+							slowDone = true;
+							assert.isFalse(fastDone);
+							cb();
+						}, 100);
+					});
+				}
+			};
+			s.enqueueMessage({type: 'slow'});
+			s.enqueueMessage({type: 'fast'});
 		});
 	});
 });
