@@ -43,6 +43,10 @@ module.exports = {
 		},
 		// incoming AMF messages bigger than this are considered invalid
 		maxMsgSize: 131072,
+		heartbeat: {
+			interval: 3000,
+			timeout: 60000,
+		},
 	},
 	proc: {
 		// timeout (in ms) for graceful worker process shutdown:
