@@ -77,4 +77,15 @@ module.exports = {
 			enable: false,
 		},
 	},
+	slack: {
+		// the in-game chat group integration requires a "bot user" to be set
+		// up in Slack, and the resulting API token needs to be set here
+		chat: {
+			token: 'xoxo-1234567890-T0keNfr0mSL4cK',
+			groups: {
+				RA512UITCLA22AD: 'livehelp',
+				RA9118JTCLA204I: 'global',
+			},
+		},
+	},
 };
