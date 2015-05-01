@@ -203,7 +203,7 @@ Location.prototype.checkUnload = function checkUnload() {
 Location.prototype.unload = function unload() {
 	log.info('%s.unload', this);
 	var rc = RC.getContext();
-	var items = this.getAllItems();
+	var items = this.getAllItems(false, false);
 	for (var k in items) {
 		rc.setUnload(items[k]);
 	}
