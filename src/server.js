@@ -18,6 +18,7 @@ var policyServer = require('comm/policyServer');
 var logging = require('logging');
 var metrics = require('metrics');
 var rpc = require('data/rpc');
+var slack = require('comm/slackNotify');
 var util = require('util');
 var worker = require('worker');
 
@@ -68,6 +69,9 @@ function runMaster() {
 			setInterval(checkHeartbeats, heartbeatInt);
 		}
 	});
+	if (config.get('slack:notify:webhookUrl', null)) {
+		slack.init();
+	}
 }
 
 
@@ -81,7 +85,8 @@ function startWorker(gsconf) {
 
 function startHeartbeat(gsconf) {
 	var gsid = gsconf.gsid;
-	log.info('starting heartbeat interval for %s', gsid);
+	log.info('(re)starting heartbeat interval for %s', gsid);
+	var restart = gsid in heartbeats;
 	heartbeats[gsid] = {last: Date.now()};
 	heartbeats[gsid].handle = setInterval(function ping() {
 		log.trace('heartbeat ping %s', gsid);
@@ -92,6 +97,11 @@ function startHeartbeat(gsconf) {
 			else {
 				log.trace('heartbeat pong %s', gsid);
 				heartbeats[gsid].last = Date.now();
+				if (restart) {
+					slack.info('%s reconnected (pid %s)', gsid,
+						workers[gsid].process.pid);
+					restart = false;
+				}
 			}
 		});
 	}, heartbeatInt);
@@ -99,9 +109,9 @@ function startHeartbeat(gsconf) {
 
 
 function stopHeartbeat(gsid) {
-	if (heartbeats[gsid]) {
+	if (heartbeats[gsid].handle) {
 		clearInterval(heartbeats[gsid].handle);
-		delete heartbeats[gsid];
+		delete heartbeats[gsid].handle;
 	}
 }
 
@@ -111,11 +121,14 @@ function checkHeartbeats() {
 	var now = Date.now();
 	config.forEachLocalGS(function check(gsconf, callback) {
 		var gsid = gsconf.gsid;
-		if (heartbeats[gsid]) {
+		if (heartbeats[gsid].handle) {
 			var age = now - heartbeats[gsid].last;
 			log.trace('last heartbeat for %s: %s ms', gsid, age);
 			if (age > heartbeatTimeout) {
-				log.error('last heartbeat for %s was %s ms ago; restarting', gsid, age);
+				log.error('last heartbeat for %s was %s ms ago; restarting',
+					gsid, age);
+				slack.warning('lost contact to %s (pid %s; last heartbeat: ' +
+					'%s ms ago)', gsid, workers[gsid].process.pid, age);
 				stopHeartbeat(gsid);
 				shutdownWorker(gsid);
 			}
@@ -254,6 +267,8 @@ if (cluster.isMaster) {
 		delete shutdownTimers[worker.id];
 		if (!clusterShutdown) {
 			log.info('restarting %s', gsid);
+			slack.warning('restarting %s (pid %s exited with code %s)',
+				gsid, worker.process.pid, code);
 			var gsconf = config.getGSConf(gsid);
 			stopHeartbeat(gsid);
 			startWorker(gsconf);

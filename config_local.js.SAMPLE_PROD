@@ -87,5 +87,12 @@ module.exports = {
 				RA9118JTCLA204I: 'global',
 			},
 		},
+		// server notifications/alerts need an "incoming WebHook" configured
+		// in Slack, and its URL added here
+		notify: {
+			webhookUrl: 'https://hooks.slack.com/services/XYZ/asdfghjkl',
+			channel: 'server-admins',
+			botName: 'gameserver PROD',
+		},
 	},
 };
