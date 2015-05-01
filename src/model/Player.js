@@ -254,7 +254,7 @@ Player.prototype.getConnectedObjects = function getConnectedObjects() {
 	// implicitly avoid duplicate entries
 	var ret = {};
 	// get all bags and items
-	var inventory = this.getAllItems(true);
+	var inventory = this.getAllItems(true, false);
 	for (var k in inventory) {
 		ret[inventory[k].tsid] = inventory[k];
 	}
