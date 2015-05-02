@@ -1,16 +1,35 @@
 'use strict';
 
+/**
+ * Simplistic game server benchmark script; creates a number of dummy
+ * players, logs them in and continuously moves them around with random
+ * coordinates (within their location).
+ *
+ * Start it like this:
+ *   node tools/bench.js | bunyan
+ *
+ * CAVEATS:
+ * * Currently requires the GS to be configured with a single worker
+ *   process and the "passthrough" authentication back-end.
+ */
+
 var amf = require('../node_modules/node_amf_cc');
-// var jrpc = require('../node_modules/multitransport-jsonrpc');
+var jrpc = require('../node_modules/multitransport-jsonrpc');
 var events = require('events');
 var net = require('net');
 var util = require('util');
 
-var log = require('bunyan').createLogger({name: 'bench', level: 'info'});
-
 
 var GS_AMFHOST = '192.168.23.23';
 var GS_AMFPORT = 1443;
+var GS_RPCHOST = '192.168.23.23';
+var GS_RPCPORT = 6001;
+var NUM_CLIENTS = 5;
+var MOVE_IMMEDIATELY = false;
+
+var log = require('bunyan').createLogger({name: 'bench', level: 'info'});
+var rpc;
+var clients = [];
 
 
 process.on('uncaughtException', function (err) {
@@ -19,10 +38,10 @@ process.on('uncaughtException', function (err) {
 
 
 util.inherits(Client, events.EventEmitter);
-function Client(num) {
+function Client(num, tsid) {
 	this.num = num;
+	this.tsid = tsid;
 	this.socket = net.connect(GS_AMFPORT, GS_AMFHOST);
-	this.tsid = 'NEW';
 	this.msg_id = 1;
 	this.socket.on('data', this.onData.bind(this));
 	this.socket.on('end', this.onEnd.bind(this));
@@ -46,10 +65,7 @@ Client.prototype.send = function (msg) {
 	process.nextTick(function () {
 		self.on(msg.msg_id, getProfilingCallback(msg.type, process.hrtime()));
 		self.socket.write(new Buffer(data, 'binary'));
-		log.info('%s sent %s request (id#%s)', self, msg.type, msg.msg_id);
-		if (self.socket.bufferSize > 0) {
-			log.warn('socket.bufferSize: %s', self.socket.bufferSize);
-		}
+		log.debug('%s sent %s request (id#%s)', self, msg.type, msg.msg_id);
 	});
 	return msg.msg_id;
 };
@@ -113,13 +129,10 @@ Client.prototype.onData = function (data) {
 
 
 Client.prototype.onMessage = function (msgBuf) {
-	log.debug('onMessage (%s bytes)', msgBuf.length);
+	log.trace('onMessage (%s bytes)', msgBuf.length);
 	var deser = amf.deserialize(msgBuf.toString('binary'));
 	var data = deser.value;
-	if (data.type === 'login_start') {
-		this.tsid = data.pc.tsid;
-	}
-	log.info('%s received %s %s', this, data.type,
+	log.debug('%s received %s %s', this, data.type,
 		data.msg_id ? 'response (id#' + data.msg_id + ')' : 'message');
 	if (data.msg_id) {
 		this.emit(data.msg_id, data);
@@ -155,28 +168,67 @@ Client.prototype.onClose = function (hadError) {
 };
 
 
-Client.prototype.loginAndMoveRandomly = function () {
+Client.prototype.login = function (callback) {
 	var self = this;
-	self.request({type: 'login_start', token: 'PTODO'}, function (res) {
-		self.request('login_end', function () {
-			setInterval(function () {
-				self.request({
-					type: 'move_xy',
-					x: Math.ceil(Math.random() * 1000),
-					y: Math.ceil(Math.random() * 1000),
-				});
-			}, 100);
+	self.request({type: 'login_start', token: this.tsid}, function (res) {
+		self.request('login_end', function (res) {
+			log.info('%s logged in', this);
+			callback(null, res);
 		});
 	});
 };
 
 
-
-var i = 0;
-var f = function () {
-	log.info('starting client %s', ++i);
-	var c = new Client(i);
-	c.loginAndMoveRandomly();
+Client.prototype.moveRandomly = function () {
+	log.info('starting movement for %s', this);
+	var self = this;
+	setInterval(function () {
+		self.request({
+			type: 'move_xy',
+			x: Math.ceil(Math.random() * 1000),
+			y: Math.ceil(Math.random() * 1000),
+		});
+	}, 100);
 };
-f();
-setInterval(f, 60000);
+
+
+function createPlayer(num, name, callback) {
+	rpc.gs('BENCH_DRIVER', 'createPlayer', [num, name], function cb(err, tsid) {
+		if (err) return callback(err);
+		log.info('created player for client %s: %s', num, tsid);
+		return callback(null, new Client(num, tsid));
+	});
+}
+
+
+function initClients(done) {
+	var i = clients.length;
+	createPlayer('' + i, 'bencho' + i, function (err, client) {
+		if (err) throw err;
+		clients.push(client);
+		client.login(function (err, res) {
+			if (err) throw err;
+			if (MOVE_IMMEDIATELY) client.moveRandomly();
+			if (clients.length < NUM_CLIENTS) initClients(done);
+			else return done();
+		});
+	});
+}
+
+
+// main
+if (!module.parent) {
+
+	rpc = new jrpc.client(new jrpc.transports.client.tcp(GS_RPCHOST, GS_RPCPORT));
+	rpc.register(['obj', 'api', 'admin', 'gs']);
+
+	initClients(function done() {
+		if (!MOVE_IMMEDIATELY) {
+			clients.forEach(function (client, i) {
+				setTimeout(function startMovement() {
+					client.moveRandomly();
+				}, i * 10000);
+			});
+		}
+	});
+}
