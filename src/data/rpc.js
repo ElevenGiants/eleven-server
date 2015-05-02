@@ -38,6 +38,7 @@ var assert = require('assert');
 var async = require('async');
 var config = require('config');
 var jrpc = require('multitransport-jsonrpc');
+var metrics = require('metrics');
 var orProxy = require('data/objrefProxy');
 var pers = require('data/pers');
 var RC = require('data/RequestContext');
@@ -320,6 +321,7 @@ function sendRequest(gsid, rpcFunc, args, callback) {
 	args = orProxy.refify(args);
 	var logmsg = util.format('%s(%s) @%s', rpcFunc, args.join(', '), gsid);
 	log.debug('calling %s', logmsg);
+	metrics.increment('net.rpc.tx', 0.01);
 	var rpcArgs = [config.getGsid()].concat(args);
 	if (callback) {
 		client.request(rpcFunc, rpcArgs, function cb(err, res) {
@@ -360,6 +362,7 @@ function sendRequest(gsid, rpcFunc, args, callback) {
  * the remote caller
  */
 function handleRequest(callerId, objOrTsid, fname, args, callback) {
+	metrics.increment('net.rpc.rx', 0.01);
 	orProxy.proxify(args);  // unmarshal arguments
 	var logmsg = util.format('RPC from %s: %s.%s', callerId, objOrTsid, fname);
 	log.debug('%s(%s)', logmsg, args instanceof Array ? args.join(', ') : args);

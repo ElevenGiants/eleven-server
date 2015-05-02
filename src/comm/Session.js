@@ -236,6 +236,7 @@ Session.prototype.checkForMessages = function checkForMessages() {
 Session.prototype.handleMessage = function handleMessage(msg, waitTimer) {
 	if (waitTimer) waitTimer.stop();
 	log.trace({data: msg}, 'got %s request', msg.type);
+	metrics.increment('net.amf.rx', 0.01);
 	var self = this;
 	var rc = new RC(msg.type, this.pc, this);
 	this.dom.run(function domWrapper() {
@@ -396,4 +397,5 @@ Session.prototype.send = function send(msg) {
 	buf.writeUInt32BE(size, 0);
 	buf.write(data, 4, size, 'binary');
 	this.socket.write(buf);
+	metrics.increment('net.amf.tx', 0.01);
 };
