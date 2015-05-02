@@ -31,6 +31,7 @@ module.exports = {
 	gameObjArgToList: gameObjArgToList,
 	playersArgToList: playersArgToList,
 	pointOnPlat: pointOnPlat,
+	typeGuard: typeGuard,
 };
 
 
@@ -453,4 +454,30 @@ function pointOnPlat(plat, x) {
 		ret = {x: x, y: Math.floor(y)};
 	}
 	return ret;
+}
+
+
+/**
+ * Recursively removes properties with "non JSON safe" values (`NaN`,
+ * `Infinity`, `undefined`) from an object. Works **in place**, i.e.
+ * the given object is modified.
+ *
+ * @param {object} obj the object to cleanse
+ * @param {boolean} [nullify] when `true`, sets properties with unsafe
+ *        values to `null` instead of removing them
+ * @returns {object} the modified input object
+ */
+function typeGuard(obj, nullify) {
+	assert(typeof obj === 'object' && obj !== null);
+	for (var k in obj) {
+		var v = obj[k];
+		if (typeof v === 'object' && v !== null) {
+			typeGuard(v, nullify);
+		}
+		else if (v === undefined || typeof v === 'number' && !isFinite(v)) {
+			if (nullify) obj[k] = null;
+			else delete obj[k];
+		}
+	}
+	return obj;
 }
