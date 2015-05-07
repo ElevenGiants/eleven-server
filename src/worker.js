@@ -23,7 +23,7 @@ var amfServer = require('comm/amfServer');
 var metrics = require('metrics');
 var replServer = require('comm/replServer');
 var logging = require('logging');
-var slack = require('comm/slack');
+var slackChat = require('comm/slackChat');
 var util = require('util');
 var segfaultHandler = require('segfault-handler');
 
@@ -63,8 +63,8 @@ function run() {
 	if (config.get('debug').repl && config.get('debug:repl:enable')) {
 		replServer.init();
 	}
-	if (config.get('slack:token', null)) {
-		slack.init();
+	if (config.get('slack:chat:token', null)) {
+		slackChat.init();
 	}
 	startGCInterval();
 }
@@ -165,7 +165,7 @@ function shutdown() {
 		// then everything else can go (no more incoming requests possible)
 		function finish(cb) {
 			async.parallel([
-				slack.shutdown,
+				slackChat.shutdown,
 				replServer.shutdown,
 				metrics.shutdown,
 			], cb);

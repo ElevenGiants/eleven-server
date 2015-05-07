@@ -12,6 +12,7 @@ var NEW_PLAYER_LOC = 'LLI32G3NUTD100I';
 // public interface
 module.exports = {
 	toString: toString,
+	ping: ping,
 	getConnectData: getConnectData,
 	createPlayer: redirWrap(createPlayer, NEW_PLAYER_LOC),
 	resetPlayer: redirWrap(resetPlayer),
@@ -74,6 +75,14 @@ function redirWrap(func, fixedTsid) {
 			return rpc.sendRequest(gsid, 'gs', [func.name, args]);
 		}
 	};
+}
+
+
+/**
+ * Trivial ping function for monitoring (e.g. cluster heartbeat).
+ */
+function ping() {
+	return 'pong';
 }
 
 

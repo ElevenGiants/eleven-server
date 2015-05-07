@@ -85,6 +85,8 @@ var shuttingDown = false;
  * Initializes the RPC subsystem (server for this GS instance, and
  * client connections to all other GS instances).
  *
+ * @param {boolean} [startServer] start an RPC server on this GS
+ *        instance (`true` by default)
  * @param {function} [callback]
  * ```
  * callback(err)
@@ -93,12 +95,25 @@ var shuttingDown = false;
  * (`err` argument is `null`), or when an error occurred (`err`
  * contains the error object or message)
  */
-function init(callback) {
+function init(startServer, callback) {
 	shuttingDown = false;
 	clients = {};
-	initServer(function cb() {
+	if (arguments.length < 2) {
+		if (typeof startServer === 'function') {
+			callback = startServer;
+		}
+		if (typeof startServer !== 'boolean') {
+			startServer = true;
+		}
+	}
+	if (startServer) {
+		initServer(function cb() {
+			config.forEachGS(initClient, callback);
+		});
+	}
+	else {
 		config.forEachGS(initClient, callback);
-	});
+	}
 }
 
 
@@ -297,7 +312,9 @@ function sendRequest(gsid, rpcFunc, args, callback) {
 	}
 	var client = clients[gsid];
 	if (!client) {
-		throw new RpcError(util.format('no RPC client found for "%s"', gsid));
+		var err = new RpcError(util.format('no RPC client found for "%s"', gsid));
+		if (callback) return callback(err);
+		else throw err;
 	}
 	// argument marshalling (replace objref proxies with actual objrefs)
 	args = orProxy.refify(args);

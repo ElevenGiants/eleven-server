@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Slack integration/GS Slack bot module. Allows coupling game groups
+ * Slack integration for in-game chat. Allows coupling game groups
  * (e.g. global, live help) with Slack channels, using the Slack
  * real-time messaging API.
  *
