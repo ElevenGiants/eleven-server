@@ -435,6 +435,326 @@ ItemMovement.prototype.moveDirect = function moveDirect(nextPath) {
 
 
 /**
+ * Helper for flocking vector functions. Normalize and limit
+ * the vector.
+ *
+ * @param {number} vX current vX
+ * @param {number} vY current vY
+ * @param {number} limit limiting magnitude
+ * @returns {object} vx, vy object with the limited vector
+ */
+ItemMovement.prototype.limitVector = function limitVector(vX, vY, limit) {
+	var n = Math.sqrt(vX * vX + vY * vY);
+	if (n > limit) {
+		vX = ((vX * (1 / n)) * limit);
+		vY = ((vY * (1 / n)) * limit);
+	}
+	return {vx: vX, vy: vY};
+};
+
+/**
+ * Helper for{@link ItemMovement#flockGather}; steer toward a vector
+ */
+ItemMovement.prototype.steer = function steer(X, Y, nextPath) {
+	var dx = X - this.item.x;
+	var dy = Y - this.item.y;
+	// Just looking for non-zero so no need for a distance calculation
+	if (dx !== 0 || dy !== 0) {
+		var desired = this.limitVector(dx, dy, nextPath.speed);
+		X = desired.vx - nextPath.vx;
+		Y = desired.vy - nextPath.vy;
+		desired = this.limitVector(X, Y, nextPath.speed);
+		return desired;
+	}
+	else {
+		return {vx: 0, vy: 0};
+	}
+};
+
+
+/**
+ * Helper for {@link ItemMovement#moveFlock}; calculates the gather
+ * vector for flocking.
+ *
+ * @param {object} nextPath the current path segment
+ * @param {array} neighbours set of neighbours that are being used
+ * @returns {object} vx, vy object which is the gather vector
+ */
+ItemMovement.prototype.flockGather = function flockGather(nextPath, neighbours) {
+	// This value will dictate how close a member needs to be to be considered
+	// part of the flock, right now 400
+	var neighbourRadius = 160000; // avoid a square root
+	// Flocking behavior 2: Gathering
+	var gatherCount = 0;
+	var gatherX = 0;
+	var gatherY = 0;
+
+	for (var k in neighbours) {
+		var n = neighbours[k];
+		var dx = this.item.x - n.x;
+		// our Y is backwards from what the normal algorithms expect
+		var dy = this.item.y - n.y;
+		var dd = (dx * dx) + (dy * dy);
+
+		if (dd > 0  && dd < neighbourRadius) {
+			gatherX += n.x;
+			gatherY += n.y;
+			gatherCount++;
+		}
+	}
+
+	if (gatherCount > 0) {
+		// Turn gather into a vector
+		gatherX =  (gatherX / gatherCount);
+		gatherY =  (gatherY / gatherCount);
+
+		// Steer
+		return this.steer(gatherX, gatherY, nextPath);
+	}
+	else {
+		return {vx: 0, vy: 0};
+	}
+};
+
+/**
+ * Helper for {@link ItemMovement#moveFlock}; calculates the align
+ * vector for flocking.
+ *
+ * @param {object} nextPath the current path segment
+ * @param {array} neighbours set of neighbours that are being used
+ * @returns {object} vx, vy object which is the gather vector
+ */
+ItemMovement.prototype.flockAlign = function flockAlign(nextPath, neighbours) {
+	// This value will dictate how close a member needs to be to be considered
+	// part of the flock, right now 400
+	var neighbourRadius = 160000; // avoid a square root
+	// Flocking behavior 1 (Alignment)
+	var alignCount = 0;
+	var alignVx = 0;
+	var alignVy = 0;
+
+	for (var k in neighbours) {
+		var n = neighbours[k];
+		var dx = this.item.x - n.x;
+		// our Y is backwards from what the normal algorithms expect
+		var dy = this.item.y - n.y;
+		var dd = (dx * dx) + (dy * dy);
+
+		if (dd > 0  && dd < neighbourRadius) {
+			if (n.movement && n.movement.path &&
+				n.movement.path.length > 0 && 'vx' in n.movement.path[0]) {
+				alignVx += n.movement.path[0].vx;
+				alignVy += n.movement.path[0].vy;
+				alignCount++;
+			}
+		}
+	}
+
+	if (alignCount > 0) {
+		// average align
+		alignVx = (alignVx / alignCount);
+		alignVy = (alignVy / alignCount);
+
+		// Limit align
+		return this.limitVector(alignVx, alignVy, nextPath.speed);
+	}
+	else {
+		return {vx: 0, vy: 0};
+	}
+};
+
+
+/**
+ * Helper for {@link ItemMovement#moveFlock}; calculates the repel
+ * vector for flocking.
+ *
+ * @param {object} nextPath the current path segment
+ * @param {array} neighbours set of neighbours that are being used
+ * @returns {object} vx, vy object which is the gather vector
+ */
+ItemMovement.prototype.flockRepel = function flockRepel(nextPath, neighbours) {
+	// Flocking behavior 3: Repelling
+	// This value dictacts how much seperation flock members will try to
+	// maintain from each other, right now 50
+	var desiredSeperation = 100;
+	var repelCount = 0;
+	var repelVx = 0;
+	var repelVy = 0;
+
+	for (var k in neighbours) {
+		var n = neighbours[k];
+		var dx = this.item.x - n.x;
+		var dy = this.item.y - n.y;
+		var dd = Math.sqrt(dx * dx + dy * dy);
+
+		if (dd > 0 && dd < desiredSeperation) {
+			repelVx += ((dx * (1 / dd)) / dd) * nextPath.speed;
+			repelVy += ((dy * (1 / dd)) / dd) * nextPath.speed;
+			repelCount++;
+		}
+	}
+
+	if (repelCount > 0) {
+		// Repel mean
+		repelVx = repelVx / repelCount;
+		repelVy = repelVy / repelCount;
+	}
+
+	return {vx: repelVx, vy: repelVy};
+};
+
+
+/**
+ * Helper for {@link ItemMovement#moveFlock}; bounce off boundries
+ *
+ * @param {object} nextPath the current path segment
+ */
+ItemMovement.prototype.flockBounce = function flockBounce(nextPath) {
+	// Keep the flock on the street
+	if (nextPath.x < this.item.container.geo.l) {
+		nextPath.x = this.item.container.geo.l;
+		nextPath.vx *= -1;
+	}
+	if (nextPath.x > this.item.container.geo.r) {
+		nextPath.x = this.item.container.geo.r;
+		nextPath.vx *= -1;
+	}
+	if (nextPath.y > this.item.container.geo.b) {
+		nextPath.y = this.item.container.geo.b;
+		nextPath.vy *= -1;
+	}
+	if (nextPath.y < this.item.container.geo.t) {
+		nextPath.y = this.item.container.geo.t;
+		nextPath.vy *= -1;
+	}
+};
+
+/**
+ * Helper for {@link ItemMovement#moveFlock}; build the flock
+ *
+ * @returns {array} array of flock items
+ */
+ItemMovement.prototype.flockBuild = function flockBuild() {
+	var neighbours = [];
+
+	for (var k in this.item.container.items) {
+		var it = this.item.container.items[k];
+		if (it.class_tsid !== this.item.class_tsid) {
+			continue;
+		}
+		if (it.tsid === this.item.tsid) {
+			continue;
+		}
+		if (it === undefined || isNaN(it.x) || isNaN(it.y))
+			continue;
+
+		neighbours.push(it);
+	}
+
+	return neighbours;
+};
+
+/**
+ * Helper for {@link ItemMovement#moveFlock}; sets the animation state
+ * and direction according to current position and destination.
+ *
+ * @param {number} vX horizontal distance from the destination
+ * @param {number} vY vertical distance from the destination
+ * @param {number} dirX X direction of the destination
+ * @param {number} dirY Y direction of the destination
+ * @param {number} oVx old X direction
+ * @private
+ */
+ItemMovement.prototype.changeFlockState = function changeFlockState(vX, vY, dirX,
+		dirY, oVx) {
+	var distX = Math.abs(vX);
+	var distY = Math.abs(vY);
+	var sX = vX ? vX < 0 ? -1 : 1 : 0;
+	var soX = oVx ? oVx < 0 ? -1 : 1 : 0;
+	if (sX !== soX) {
+		this.item.state = 'turnRight';
+	}
+	else {
+		this.item.state = 'swim';
+		var t = Math.abs(distY / distX);
+		if (t < 0.13) {
+			this.item.state += 'Right';
+		}
+		else {
+			if (dirY < 0) {
+				if (t < 0.39) {
+					this.item.state += 'RightUp15';
+				}
+				else {
+					this.item.state += 'RightUp30';
+				}
+			}
+			else {
+				if (t < 0.39) {
+					this.item.state += 'RightDown15';
+				}
+				else {
+					this.item.state += 'RightDown30';
+				}
+			}
+		}
+	}
+
+	if (dirX > 0) {
+		this.item.dir = 'right';
+	}
+	else {
+		this.item.dir = 'left';
+	}
+};
+
+
+/**
+ * Flocking movement
+ * Calculate the flock movement vector and then use Direct movement
+ * to move the NPC along that vector.
+ *
+ * @param {object} nextPath the current path segment
+ * @returns {object} the next step toward the destination
+ */
+ItemMovement.prototype.moveFlock = function moveFlock(nextPath) {
+	var neighbours = this.flockBuild();
+	var align = this.flockAlign(nextPath, neighbours);
+	var gather = this.flockGather(nextPath, neighbours);
+	var repel = this.flockRepel(nextPath, neighbours);
+
+	var oldVx = nextPath.vx;
+	nextPath.vx = nextPath.vx + gather.vx + 20 * repel.vx + align.vx;
+	nextPath.vy = nextPath.vy + gather.vy + 20 * repel.vy + align.vy;
+
+	if (nextPath.vx === 0 && nextPath.vy === 0) {
+		// Don't be sedentary
+		nextPath.vx = Math.random() * 10;
+		nextPath.vy = Math.random() * 10;
+	}
+
+	nextPath.x = Math.round(this.item.x + nextPath.vx);
+	nextPath.y = Math.round(this.item.y + nextPath.vy);
+	this.flockBounce(nextPath);
+
+	var dirX = this.dirX(nextPath.x);
+	var dirY = this.dirY(nextPath.y);
+	this.changeFlockState(nextPath.vx, nextPath.vy, dirX,
+		dirY, oldVx);
+
+	var r = this.moveDirect(nextPath);
+	r.finished = false;
+	if (r.force_stop) {
+		r.dx = this.item.x;
+		r.dy = this.item.y;
+		r.force_stop = 0;
+	}
+
+	return r;
+};
+
+
+/**
  * Dispatches the next path segment to the specific movement handler
  * for the selected transportation mode.
  *
@@ -450,6 +770,8 @@ ItemMovement.prototype.transport = function transport(nextPath) {
 			return this.moveFlying(nextPath);
 		case 'direct':
 			return this.moveDirect(nextPath);
+		case 'flock':
+			return this.moveFlock(nextPath);
 	}
 };
 
@@ -586,6 +908,14 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 		var ty = utils.pointOnPlat(platform, tx).y;
 		path.push({x: tx, y: ty, speed: 90, transport: 'direct'});
 		this.callback = this.item.onPlatformLanding;
+	}
+	else if (transport === 'flock') {
+		path = [{
+			vx: 0,
+			vy: 0,
+			speed: 300,
+			transport: 'flock',
+		}];
 	}
 	return path;
 };
