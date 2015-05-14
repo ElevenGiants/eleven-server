@@ -177,7 +177,7 @@ function resetPlayer(tsid) {
 			}
 		}
 	})(pc.items);
-	Object.keys(pc.quests).forEach(function check(key) {
+	Object.keys(pc.quests || {}).forEach(function check(key) {
 		var dc = pc.quests[key];
 		if (!dc || !dc.quests) return;
 		for (var k in dc.quests) {
