@@ -37,7 +37,7 @@ var channelToGroup = {};
  * Should be called on each GS worker during startup.
  */
 function init() {
-	var token = config.get('slack:token');
+	var token = config.get('slack:chat:token');
 	if (!token) {
 		log.info('Slack integration not configured (no token)');
 		return;
@@ -71,7 +71,7 @@ function shutdown(done) {
  */
 function onSlackOpen() {
 	log.info('connected to Slack as %s', slack.self.name);
-	var groups = config.get('slack:groups', {});
+	var groups = config.get('slack:chat:groups', {});
 	for (var tsid in groups) {
 		var chanName = groups[tsid];
 		log.debug('hooking up group %s to Slack channel #%s', tsid, chanName);
