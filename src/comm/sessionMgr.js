@@ -82,7 +82,7 @@ function getAvgQueueLength() {
 	var count = 0;
 	for (var id in sessions) {
 		var session = sessions[id];
-		sum += session.msgQueue.length;
+		sum += session.rq.getLength();
 		count++;
 	}
 	return sum / count;

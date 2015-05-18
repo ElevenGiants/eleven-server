@@ -13,6 +13,7 @@ var pers = require('data/pers');
 var rpc = require('data/rpc');
 var util = require('util');
 var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 var gsjsBridge = require('model/gsjsBridge');
 var metrics = require('metrics');
 
@@ -61,8 +62,6 @@ function Session(id, socket) {
 	this.socket = socket;
 	this.ts = new Date().getTime();
 	this.maxMsgSize = config.get('net:maxMsgSize');
-	this.msgQueue = [];
-	this.busy = false;
 	// disable Nagle's algorithm (we need all messages delivered as quickly as possible)
 	this.socket.setNoDelay(true);
 	// set up domain for low-level issue handling (networking and
@@ -70,6 +69,7 @@ function Session(id, socket) {
 	this.dom = domain.create();
 	this.dom.add(this.socket);
 	this.dom.on('error', this.handleError.bind(this));
+	this.rq = new RQ(undefined, this.dom);
 	this.setupSocketEventHandlers();
 	this.gsjsProcessMessage = gsjsBridge.getMain().processMessage;
 	log.info({session: this}, 'new session created');
@@ -222,8 +222,7 @@ Session.prototype.checkForMessages = function checkForMessages() {
 			break;
 		}
 		// still here? then schedule message handling
-		var timer = metrics.createTimer('req.wait', 0.1);
-		setImmediate(this.enqueueMessage.bind(this), msg, timer);
+		setImmediate(this.enqueueMessage.bind(this), msg);
 	}
 	if (bufstr.length === 0) {
 		delete this.buffer;  // buffer fully processed
@@ -236,58 +235,32 @@ Session.prototype.checkForMessages = function checkForMessages() {
 };
 
 
-Session.prototype.enqueueMessage = function enqueueMessage(msg, waitTimer) {
+Session.prototype.enqueueMessage = function enqueueMessage(msg) {
+	log.trace({data: msg}, 'queueing %s request', msg.type);
+	metrics.increment('net.amf.rx', 0.01);
 	if (msg.type === 'ping') {
-		this.handleMessage(msg, waitTimer);
+		this.processRequest(msg);
 	}
 	else {
-		this.msgQueue.push({msg: msg, waitTimer: waitTimer});
-		this.dequeueMessage();
+		this.rq.push(msg.type, this.processRequest.bind(this, msg), this,
+			this.handleAmfReqError.bind(this, msg));
 	}
-};
-
-
-Session.prototype.dequeueMessage = function dequeueMessage() {
-	log.trace({qLen: this.msgQueue.length}, 'checking for next message');
-	if (!this.busy && this.msgQueue.length) {
-		var queued = this.msgQueue.shift();
-		this.handleMessage(queued.msg, queued.waitTimer, true);
-	}
-};
-
-
-Session.prototype.handleMessage = function handleMessage(msg, waitTimer, exclusive) {
-	if (waitTimer) waitTimer.stop();
-	log.trace({data: msg}, 'got %s request', msg.type);
-	metrics.increment('net.amf.rx', 0.01);
-	if (exclusive) this.busy = true;
-	var self = this;
-	var rc = new RC(msg.type, this.pc, this);
-	this.dom.run(function domWrapper() {
-		rc.run(
-			function clientReq() {
-				var procTimer = metrics.createTimer('req.proc.' + msg.type,
-					(msg.type === 'move_xy') ? 0.1 : undefined);
-				self.processRequest.call(self, msg);
-				if (procTimer) procTimer.stop();
-			},
-			function callback(err) {
-				log.trace('finished %s request', msg.type);
-				if (exclusive) self.busy = false;
-				if (err) self.handleAmfReqError.call(self, err, msg);
-				else self.dequeueMessage.call(self);
-			}
-		);
-	});
 };
 
 
 Session.prototype.processRequest = function processRequest(req) {
 	log.trace({data: req}, 'handling %s request', req.type);
-	var abort = this.preRequestProc(req);
-	if (abort) return;
-	this.gsjsProcessMessage(this.pc, req);
-	this.postRequestProc(req);
+	var timer = metrics.createTimer('req.proc.' + req.type,
+		(req.type === 'move_xy') ? 0.1 : undefined);
+	try {
+		var abort = this.preRequestProc(req);
+		if (abort) return;
+		this.gsjsProcessMessage(this.pc, req);
+		this.postRequestProc(req);
+	}
+	finally {
+		timer.stop();
+	}
 };
 
 
@@ -315,6 +288,7 @@ Session.prototype.preRequestProc = function preRequestProc(req) {
 			}
 			this.pc = pers.get(tsid, true);
 			assert(this.pc !== undefined, 'unable to load player: ' + tsid);
+			this.rq.owner = this.pc;
 			// prepare Player object for login (e.g. call GSJS events)
 			this.pc.onLoginStart(this, req.type === 'relogin_start');
 			break;
@@ -388,7 +362,7 @@ Session.prototype.flushPreLoginBuffer = function flushPreLoginBuffer() {
 };
 
 
-Session.prototype.handleAmfReqError = function handleAmfReqError(err, req) {
+Session.prototype.handleAmfReqError = function handleAmfReqError(req, err) {
 	if (!err) return;
 	if (typeof req !== 'object') req = {};
 	if (typeof err === 'string') {

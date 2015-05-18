@@ -171,14 +171,14 @@ suite('Session', function () {
 			// a chance to handle it
 			// see https://github.com/mochajs/mocha/issues/513#issuecomment-26963630
 			process.nextTick(function () {
-				s.handleMessage({});
+				s.enqueueMessage({});
+				setTimeout(function () {
+					assert.isTrue(thrown);
+					// nothing else to assert - we're just testing that the
+					// error does not bubble up to the surface
+					done();
+				}, 20);
 			});
-			setTimeout(function () {
-				assert.isTrue(thrown);
-				// nothing else to assert - we're just testing that the error
-				// does not bubble up to the surface
-				done();
-			}, 20);
 		});
 	});
 

@@ -110,7 +110,7 @@ suite('Session', function () {
 		test('deserializes one message', function (done) {
 			var s = helpers.getTestSession('test');
 			s.buffer = new Buffer(TEST_AMF3_MSG, 'hex');
-			s.handleMessage = function (msg) {
+			s.enqueueMessage = function (msg) {
 				assert.deepEqual(msg, {type: 'test', msg_id: '1'});
 				assert.notProperty(s, 'buffer');
 				done();
@@ -123,7 +123,7 @@ suite('Session', function () {
 			var buf = new Buffer(TEST_AMF3_MSG, 'hex');
 			s.buffer = Buffer.concat([buf, buf]);
 			var i = 0;
-			s.handleMessage = function (msg) {
+			s.enqueueMessage = function (msg) {
 				assert.deepEqual(msg, {type: 'test', msg_id: '1'});
 				if (++i === 2) {
 					assert.notProperty(s, 'buffer');
@@ -137,7 +137,7 @@ suite('Session', function () {
 			var s = helpers.getTestSession('test');
 			s.buffer = Buffer.concat([new Buffer(TEST_AMF3_MSG, 'hex'),
 				new Buffer('foo')]);
-			s.handleMessage = function (msg) {
+			s.enqueueMessage = function (msg) {
 				assert.deepEqual(msg, {type: 'test', msg_id: '1'});
 				assert.strictEqual(s.buffer.toString(), 'foo');
 				done();
@@ -157,83 +157,32 @@ suite('Session', function () {
 
 		test('enqueues regular messages', function (done) {
 			var s = helpers.getTestSession('test');
-			s.dequeueMessage = function stub() {
-				assert.deepEqual(s.msgQueue, [{
-					msg: {type: 'dummymsg'},
-					waitTimer: {thing: 'dummyTimer'},
-				}]);
-				done();
+			s.rq = {
+				push: function stub(tag, func, session, callback) {
+					assert.deepEqual(tag, 'dummymsg');
+					done();
+				},
 			};
-			s.handleMessage = function dummy(msg, timer, exclusive) {
+			s.processRequest = function dummy(msg) {
 				if (msg.type !== 'ping') {
 					throw new Error('should not happen');
 				}
 			};
-			s.enqueueMessage({type: 'ping'}, {thing: 'dummyTimer'});
-			s.enqueueMessage({type: 'dummymsg'}, {thing: 'dummyTimer'});
+			s.enqueueMessage({type: 'ping'});
+			s.enqueueMessage({type: 'dummymsg'});
 		});
-	});
-
-
-	suite('dequeueMessage', function () {
-
-		test('dequeues messages one by one', function () {
-			var s = helpers.getTestSession('test');
-			s.handleMessage = function check(msg, timer, exclusive) {
-				assert.strictEqual(exclusive, true);
-			};
-			s.msgQueue = [
-				{
-					msg: {type: 'dummymsg'},
-					waitTimer: {thing: 'dummyTimer'},
-				},
-				{
-					msg: {type: 'dummy2'},
-					waitTimer: {thing: 'dummyTimer'},
-				},
-			];
-			s.dequeueMessage();
-			assert.lengthOf(s.msgQueue, 1);
-			s.dequeueMessage();
-			assert.lengthOf(s.msgQueue, 0);
-		});
-
-		test('does nothing when called with empty queue', function () {
-			var s = helpers.getTestSession('test');
-			s.handleMessage = function check() {
-				throw new Error('should not happen');
-			};
-			s.dequeueMessage();
-		});
-
-		test('does nothing when already busy processing a message', function () {
-			var s = helpers.getTestSession('test');
-			s.processRequest = function check() {
-				throw new Error('should not happen');
-			};
-			s.msgQueue = [{
-				msg: {type: 'dummymsg'},
-				waitTimer: {thing: 'dummyTimer'},
-			}];
-			s.busy = true;
-			s.dequeueMessage();
-		});
-	});
-
-
-	suite('handleMessage', function () {
 
 		test('handles errors with request error handler', function (done) {
 			var s = helpers.getTestSession('test');
 			s.processRequest = function () {
 				throw new Error('boo');
 			};
-			s.handleAmfReqError = function (err, msg) {
+			s.handleAmfReqError = function (msg, err) {
 				assert.strictEqual(err.message, 'boo');
 				assert.strictEqual(msg.test, 'x');
 				done();
 			};
-			s.handleMessage({test: 'x'});
+			s.enqueueMessage({test: 'x'});
 		});
 	});
 
@@ -272,7 +221,7 @@ suite('Session', function () {
 				assert.strictEqual(actionSent, 'CLOSE');
 				done();
 			};
-			s.handleAmfReqError(new Error('foo'), {msg_id: 12, type: 'moo'});
+			s.handleAmfReqError({msg_id: 12, type: 'moo'}, new Error('foo'));
 		});
 
 		test('does not send CLOSE message to offline player', function (done) {
@@ -286,7 +235,7 @@ suite('Session', function () {
 				},
 			};
 			s.socket.destroy = done;
-			s.handleAmfReqError(new Error('foo'));
+			s.handleAmfReqError(undefined, new Error('foo'));
 		});
 	});
 
