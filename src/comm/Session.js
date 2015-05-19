@@ -69,7 +69,6 @@ function Session(id, socket) {
 	this.dom = domain.create();
 	this.dom.add(this.socket);
 	this.dom.on('error', this.handleError.bind(this));
-	this.rq = new RQ(undefined, this.dom);
 	this.setupSocketEventHandlers();
 	this.gsjsProcessMessage = gsjsBridge.getMain().processMessage;
 	log.info({session: this}, 'new session created');
@@ -242,9 +241,14 @@ Session.prototype.enqueueMessage = function enqueueMessage(msg) {
 		this.processRequest(msg);
 	}
 	else {
-		this.rq.push(msg.type, this.processRequest.bind(this, msg), this,
+		this.getRQ().push(msg.type, this.processRequest.bind(this, msg), this,
 			this.handleAmfReqError.bind(this, msg));
 	}
+};
+
+
+Session.prototype.getRQ = function getRQ() {
+	return this.pc ? this.pc.getRQ() : RQ.getGlobal();
 };
 
 
@@ -288,7 +292,6 @@ Session.prototype.preRequestProc = function preRequestProc(req) {
 			}
 			this.pc = pers.get(tsid, true);
 			assert(this.pc !== undefined, 'unable to load player: ' + tsid);
-			this.rq.owner = this.pc;
 			// prepare Player object for login (e.g. call GSJS events)
 			this.pc.onLoginStart(this, req.type === 'relogin_start');
 			break;

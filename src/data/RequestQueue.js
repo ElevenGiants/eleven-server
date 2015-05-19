@@ -7,27 +7,48 @@ var metrics = require('metrics');
 var RC = require('data/RequestContext');
 var util = require('util');
 
+// a generic "global" request queue (e.g. for operations on new objects that are
+// not assigned to a group or location yet)
+var globalRQ;
+
 
 /**
  * Generic request processing helper, managing sequential, one-by-one execution
  * of requests (received as `function` objects through {@link RequestQueue#push|
  * push}).
  *
- * @param {GameObject|undefined} owner game object that this queue is logically
- *        assigned to
- * @param {domain} [domain] for wrapping request execution in a
- *        {@link https://nodejs.org/docs/latest/api/domain.html|node.js domain}
+ * @param {GameObject|string|undefined} owner game object that this queue is
+ *        logically assigned to, or a short string representation for logging
  *
  * @constructor
  */
-function RequestQueue(owner, domain) {
+function RequestQueue(owner) {
 	RequestQueue.super_.call(this);
 	this.queue = [];
 	this.busy = false;
 	this.owner = owner;
-	this.domain = domain;
 }
 util.inherits(RequestQueue, events.EventEmitter);
+
+
+/**
+ * Returns a generic request queue that can be used for operations where a more
+ * "specific" queue is not available (e.g. new objects not assigned to a group
+ * or location yet). Only one such global queue exists per GS instance.
+ *
+ * @returns {RequestQueue} the global request queue
+ * @static
+ */
+RequestQueue.getGlobal = function getGlobal() {
+	if (!globalRQ) globalRQ = new RequestQueue('global');
+	return globalRQ;
+};
+
+
+RequestQueue.prototype.toString = function toString() {
+	var owner = typeof this.owner === 'object' ? this.owner.tsid : this.owner;
+	return '[rq~' + owner + ']';
+};
 
 
 /**
@@ -76,13 +97,7 @@ RequestQueue.prototype.push = function push(tag, func, session, callback) {
 RequestQueue.prototype.next = function next() {
 	log.trace({len: this.queue.length}, 'checking for next request');
 	if (!this.busy && this.queue.length) {
-		var req = this.queue.shift();
-		if (this.domain) {
-			this.domain.run(this.handle.bind(this, req));
-		}
-		else {
-			this.handle(req);
-		}
+		this.handle(this.queue.shift());
 	}
 };
 

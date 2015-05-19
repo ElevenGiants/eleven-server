@@ -155,34 +155,6 @@ suite('Session', function () {
 	});
 
 
-	suite('error handling', function () {
-
-		test('unhandled errors during request processing are caught by domain',
-			function (done) {
-			var s = new Session('TEST', helpers.getDummySocket());
-			var thrown = false;
-			s.processRequest = function processRequest(req) {
-				RC.getContext().setPostPersCallback(function cb() {
-					thrown = true;
-					throw new Error('unhandled error in RC.run');
-				});
-			};
-			// hack to prevent mocha from catching the error, so the domain has
-			// a chance to handle it
-			// see https://github.com/mochajs/mocha/issues/513#issuecomment-26963630
-			process.nextTick(function () {
-				s.enqueueMessage({});
-				setTimeout(function () {
-					assert.isTrue(thrown);
-					// nothing else to assert - we're just testing that the
-					// error does not bubble up to the surface
-					done();
-				}, 20);
-			});
-		});
-	});
-
-
 	suite('FIFO request processing', function () {
 
 		test('processes regular requests in FIFO order', function (done) {

@@ -47,6 +47,16 @@ Geo.create = function create(data) {
 
 
 /**
+ * Retrieves the request queue for the location corresponding to this `Geo`.
+ *
+ * @returns {RequestQueue} the request queue for this `Geo`'s location
+ */
+Geo.prototype.getRQ = function getRQ() {
+	return pers.get(this.getLocTsid()).getRQ();
+};
+
+
+/**
  * Converts geometry data `connect` objects in signposts and doors to
  * the format expected by GSJS and client (containing additional
  * properties not present in the persistent data). It is safe to call

@@ -6,6 +6,7 @@ module.exports = Quest;
 var assert = require('assert');
 var GameObject = require('model/GameObject');
 var pers = require('data/pers');
+var RQ = require('data/RequestQueue');
 var util = require('util');
 var utils = require('utils');
 
@@ -41,4 +42,20 @@ Quest.create = function create(classTsid, owner) {
 		'invalid Quest owner: %s', owner));
 	var quest = pers.create(Quest, {class_tsid: classTsid, owner: owner});
 	return quest;
+};
+
+
+/**
+ * Retrieves the request queue for this quest (typically, the queue of its
+ * owner).
+ *
+ * @returns {RequestQueue} the request queue for this DC
+ */
+Quest.prototype.getRQ = function getRQ() {
+	if (this.owner) {
+		return this.owner.getRQ();
+	}
+	else {
+		return RQ.getGlobal();
+	}
 };

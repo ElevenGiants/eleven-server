@@ -8,6 +8,8 @@ var GameObject = require('model/GameObject');
 var OrderedHash = require('model/OrderedHash');
 var pers = require('data/pers');
 var RC = require('data/RequestContext');
+var rpc = require('data/rpc');
+var RQ = require('data/RequestQueue');
 var util = require('util');
 var utils = require('utils');
 var ItemMovement = require('model/ItemMovement');
@@ -116,6 +118,22 @@ Item.create = function create(classTsid, count) {
 		data.count = count;
 	}
 	return pers.create(Item, data);
+};
+
+
+/**
+ * Retrieves the request queue for this item (typically, the queue of the
+ * location the item is currently in).
+ *
+ * @returns {RequestQueue} the request queue for this item
+ */
+Item.prototype.getRQ = function getRQ() {
+	if (this.container && rpc.isLocal(this.container)) {
+		return this.container.getRQ();
+	}
+	else {
+		return RQ.getGlobal();
+	}
 };
 
 

@@ -11,6 +11,7 @@ var Bag = require('model/Bag');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
 var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 var util = require('util');
 var utils = require('utils');
 var lodash = require('lodash');
@@ -193,6 +194,22 @@ Player.prototype.serialize = function serialize() {
 		}
 	}
 	return ret;
+};
+
+
+/**
+ * Retrieves the request queue for this player (typically, the queue of the
+ * location the player is currently in).
+ *
+ * @returns {RequestQueue} the request queue for this player
+ */
+Player.prototype.getRQ = function getRQ() {
+	if (this.location && rpc.isLocal(this.location)) {
+		return RQ.get(this.location);
+	}
+	else {
+		return RQ.getGlobal();
+	}
 };
 
 

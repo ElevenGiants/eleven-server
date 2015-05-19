@@ -10,6 +10,7 @@ var orProxy = require('data/objrefProxy');
 var util = require('util');
 var utils = require('utils');
 var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 
 
 GameObject.prototype.TSID_INITIAL = 'G';
@@ -120,6 +121,17 @@ GameObject.prototype.unload = function unload() {
 	log.debug('%s.unload', this);
 	var rc = RC.getContext(true);
 	if (rc) rc.setUnload(this);
+};
+
+
+/**
+ * Retrieves the right request queue to process operations on this object.
+ * Should be overridden by subclasses when appropriate.
+ *
+ * @returns {RequestQueue} the request queue for this object
+ */
+GameObject.prototype.getRQ = function getRQ() {
+	return RQ.getGlobal();
 };
 
 

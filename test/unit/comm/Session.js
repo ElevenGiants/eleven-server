@@ -157,10 +157,14 @@ suite('Session', function () {
 
 		test('enqueues regular messages', function (done) {
 			var s = helpers.getTestSession('test');
-			s.rq = {
-				push: function stub(tag, func, session, callback) {
-					assert.deepEqual(tag, 'dummymsg');
-					done();
+			s.pc = {
+				getRQ: function getRQ() {
+					return {
+						push: function stub(tag, func, session, callback) {
+							assert.deepEqual(tag, 'dummymsg');
+							done();
+						},
+					};
 				},
 			};
 			s.processRequest = function dummy(msg) {

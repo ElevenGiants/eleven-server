@@ -6,6 +6,7 @@ module.exports = DataContainer;
 var assert = require('assert');
 var GameObject = require('model/GameObject');
 var pers = require('data/pers');
+var RQ = require('data/RequestQueue');
 var util = require('util');
 var utils = require('utils');
 
@@ -40,4 +41,20 @@ DataContainer.create = function create(owner) {
 		util.format('invalid DC owner: %s', owner));
 	var dc = pers.create(DataContainer, {owner: owner});
 	return dc;
+};
+
+
+/**
+ * Retrieves the request queue for this data container (typically, the queue of
+ * its owner).
+ *
+ * @returns {RequestQueue} the request queue for this DC
+ */
+DataContainer.prototype.getRQ = function getRQ() {
+	if (this.owner) {
+		return this.owner.getRQ();
+	}
+	else {
+		return RQ.getGlobal();
+	}
 };

@@ -11,6 +11,7 @@ var Bag = require('model/Bag');
 var IdObjRefMap = require('model/IdObjRefMap');
 var OrderedHash = require('model/OrderedHash');
 var pers = require('data/pers');
+var RQ = require('data/RequestQueue');
 var rpc = require('data/rpc');
 var util = require('util');
 var utils = require('utils');
@@ -44,6 +45,7 @@ function Location(data, geo) {
 		}
 	}
 	Location.super_.call(this, data);
+	utils.addNonEnumerable(this, 'rq', new RQ(this));
 	// initialize items and players, convert to IdObjRefMap
 	this.players = new IdObjRefMap(this.players);
 	this.items = new IdObjRefMap(this.items);
@@ -103,6 +105,16 @@ Location.create = function create(geo, data) {
 	data.tsid = geo.getLocTsid();
 	data.class_tsid = data.class_tsid || 'town';
 	return pers.create(Location, data);
+};
+
+
+/**
+ * Retrieves the request queue for this location.
+ *
+ * @returns {RequestQueue} the request queue for this location
+ */
+Location.prototype.getRQ = function getRQ() {
+	return this.rq;
 };
 
 
