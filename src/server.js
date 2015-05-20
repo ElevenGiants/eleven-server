@@ -268,8 +268,8 @@ if (cluster.isMaster) {
 		delete shutdownTimers[worker.id];
 		if (!clusterShutdown) {
 			log.info('restarting %s', gsid);
-			slack.warning('restarting %s (pid %s exited with code %s)',
-				gsid, worker.process.pid, code);
+			slack.warning('restarting %s (pid %s exited; code %s/signal %s)',
+				gsid, worker.process.pid, code, signal);
 			var gsconf = config.getGSConf(gsid);
 			stopHeartbeat(gsid);
 			startWorker(gsconf);
