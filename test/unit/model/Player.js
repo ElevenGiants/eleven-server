@@ -101,6 +101,21 @@ suite('Player', function () {
 			assert.strictEqual(p.daily_favor.alph.value, 17);
 			assert.strictEqual(p.daily_favor.alph.label, 'alph');
 		});
+
+		test('serializes an object containing properties', function () {
+			var p = new Player({
+				tsid: 'P1',
+				stats: {
+					recipe_xp_today: {
+						14: new Property('14', 10),
+						20: new Property('20', 100)
+					}
+				}
+			});
+			var data = p.serialize();
+			var keys = Object.keys(data.stats.recipe_xp_today);
+			assert.sameMembers(keys, ['14', '20']);
+		});
 	});
 
 
