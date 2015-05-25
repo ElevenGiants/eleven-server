@@ -31,8 +31,8 @@ suite('rpcApi', function () {
 			var g = new Geo({tsid: 'GLI32G3NUTD100I'});
 			var l = new Location({tsid: 'LLI32G3NUTD100I'}, g);
 			var db = pbeMock.getDB();
-			db[g.tsid] = g;
-			db[l.tsid] = l;
+			db[g.tsid] = g.serialize();
+			db[l.tsid] = l.serialize();
 			var tsid;
 			new RC().run(
 				function () {

@@ -46,13 +46,7 @@ function Location(data, geo) {
 	}
 	Location.super_.call(this, data);
 	// initialize items and players, convert to IdObjRefMap
-	if (!this.players || this.players instanceof Array) {
-		this.players = utils.arrayToHash(this.players);
-	}
 	this.players = new IdObjRefMap(this.players);
-	if (!this.items || this.items instanceof Array) {
-		this.items = utils.arrayToHash(this.items);
-	}
 	this.items = new IdObjRefMap(this.items);
 	// convert neighbor list to OrderedHash
 	if (this.neighbors) {

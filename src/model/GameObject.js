@@ -6,6 +6,7 @@ module.exports = GameObject;
 var assert = require('assert');
 var config = require('config');
 var errors = require('errors');
+var orProxy = require('data/objrefProxy');
 var util = require('util');
 var utils = require('utils');
 var RC = require('data/RequestContext');
@@ -38,13 +39,8 @@ function GameObject(data) {
 	utils.addNonEnumerable(this, 'deleted', false);
 	utils.addNonEnumerable(this, 'stale', false);
 	// copy supplied data
-	var key;
-	for (key in data) {
-		this[key] = data[key];
-	}
-	if (!this.ts) {
-		this.ts = new Date().getTime();
-	}
+	orProxy.copyOwnProps(data, this);
+	this.ts = this.ts || Date.now();
 	if (!this.gsTimers) this.gsTimers = {};
 	utils.makeNonEnumerable(this, 'gsTimers');
 }

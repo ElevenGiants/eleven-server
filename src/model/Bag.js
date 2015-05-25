@@ -4,6 +4,7 @@ module.exports = Bag;
 
 
 var assert = require('assert');
+var IdObjRefMap = require('model/IdObjRefMap');
 var Item = require('model/Item');
 var pers = require('data/pers');
 var util = require('util');
@@ -27,14 +28,8 @@ Bag.prototype.TSID_INITIAL = 'B';
 function Bag(data) {
 	Bag.super_.call(this, data);
 	if (!('capacity' in this)) this.capacity = 16;
-	if (!this.items) this.items = {};
-	if (this.items instanceof Array) {
-		this.items = utils.arrayToHash(this.items);
-	}
-	if (!this.hiddenItems) this.hiddenItems = {};
-	if (this.hiddenItems instanceof Array) {
-		this.hiddenItems = utils.arrayToHash(this.hiddenItems);
-	}
+	this.items = new IdObjRefMap(this.items);
+	this.hiddenItems = new IdObjRefMap(this.hiddenItems);
 	this.patchFuncStatsUpdate('onInputBoxResponse');
 }
 

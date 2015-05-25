@@ -102,16 +102,14 @@ function init(backEnd, config, callback) {
 function shutdown(done) {
 	log.info('persistence layer shutdown initiated');
 	shuttingDown = true;
-	// first, suspend all timers (so they don't interfere with unloading)
+	// first, suspend all timers to avoid interference
 	for (var k in cache) {
 		cache[k].suspendGsTimers();
 	}
-	// then actually unload the objects
+	// then actually write the objects
 	var num = Object.keys(cache).length;
 	async.eachLimit(Object.keys(cache), 5, function iter(k, cb) {
-		var obj = cache[k];
-		delete cache[k];
-		write(obj, 'shutdown', cb);
+		write(cache[k], 'shutdown', cb);
 		if (--num % 50 === 0 && num > 0) {
 			log.info('persistence layer shutdown: %s objects remaining', num);
 		}

@@ -37,6 +37,8 @@ module.exports = {
 	makeProxy: makeProxy,
 	proxify: proxify,
 	refify: refify,
+	setupObjRefProp: setupObjRefProp,
+	copyOwnProps: copyOwnProps,
 };
 
 
@@ -174,6 +176,16 @@ function proxify(data, handled) {
 }
 
 
+/**
+ * Sets up an accessor property descriptor representing an objref. The getter
+ * refers access straight to the persistence layer (returning the referenced
+ * object itself or a proxy, depending on whether it was already loaded), while
+ * the setter causes a new descriptor to be created for the new value.
+ *
+ * @param {string} tsid TSID of the referenced game object
+ * @param {object} parent holder of the reference
+ * @param {string} name the desired property name
+ */
 function setupObjRefProp(tsid, parent, name) {
 	Object.defineProperty(parent, name, {
 		configurable: true,
@@ -191,6 +203,23 @@ function setupObjRefProp(tsid, parent, name) {
 			}
 		},
 	});
+}
+
+
+/**
+ * Shallow copies own enumerable properties from one object to another,
+ * preserving objref accessor descriptors.
+ *
+ * @param {object} from the source object
+ * @param {object} to the target object
+ */
+function copyOwnProps(from, to) {
+	for (var key in from) {
+		if (from.hasOwnProperty(key) && !to.hasOwnProperty(key)) {
+			var desc = Object.getOwnPropertyDescriptor(from, key);
+			Object.defineProperty(to, key, desc);
+		}
+	}
 }
 
 
