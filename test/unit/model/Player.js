@@ -5,13 +5,10 @@ var auth = require('comm/auth');
 var abePassthrough = require('comm/abe/passthrough');
 var Property = require('model/Property');
 var Player = rewire('model/Player');
-var Quest = require('model/Quest');
 var Location = require('model/Location');
-var DataContainer = require('model/DataContainer');
 var Geo = require('model/Geo');
 var Item = require('model/Item');
 var RC = rewire('data/RequestContext');
-var utils = require('utils');
 var rpcMock = require('../../mock/rpc');
 var persMock = require('../../mock/pers');
 
@@ -384,70 +381,6 @@ suite('Player', function () {
 						},
 					]);
 					done(err);
-				}
-			);
-		});
-	});
-
-
-	suite('getConnectedObjects', function () {
-
-		test('does its job', function () {
-			var p = new Player({tsid: 'P1',
-				buffs: new DataContainer({label: 'Buffs'}),
-				achievements: new DataContainer({label: 'Achievements'}),
-				jobs: {
-					todo: new DataContainer({label: 'To Do'}),
-					done: new DataContainer({label: 'Done'}),
-				},
-				friends: {
-					group1: new DataContainer({label: 'Buddies'}),
-					reverse: new DataContainer({label: 'Reverse Contacts'}),
-				},
-				quests: {
-					todo: new DataContainer({label: 'To Do', quests: {
-						lightgreenthumb_1: new Quest(),
-						soilappreciation_1: new Quest(),
-					}}),
-					done: new DataContainer({label: 'Done'}),
-					// fail_repeat and misc missing on purpose
-				},
-			});
-			var objects = p.getConnectedObjects();
-			var keys = Object.keys(objects);
-			assert.strictEqual(keys.filter(utils.isPlayer).length, 1);
-			assert.strictEqual(keys.filter(utils.isDC).length, 8);
-			assert.strictEqual(keys.filter(utils.isQuest).length, 2);
-			assert.strictEqual(keys.length, 11,
-				'does not contain any other objects');
-		});
-	});
-
-
-	suite('unload', function () {
-
-		test('does its job', function (done) {
-			var p = new Player({tsid: 'P1',
-				buffs: new DataContainer({tsid: 'DC1'}),
-				jobs: {
-					todo: new DataContainer({tsid: 'DC2'}),
-				},
-				quests: {
-					todo: new DataContainer({tsid: 'DC3', quests: {
-						lightgreenthumb_1: new Quest({tsid: 'Q1'}),
-					}}),
-				},
-			});
-			var rc = new RC();
-			rc.run(
-				function () {
-					p.unload();
-				},
-				function callback(err, res) {
-					if (err) return done(err);
-					assert.sameMembers(Object.keys(persMock.getUnloadList()),
-						['P1', 'DC1', 'DC2', 'DC3', 'Q1']);
-					done();
 				}
 			);
 		});

@@ -113,12 +113,22 @@ GameObject.prototype.toString = function toString() {
 
 
 /**
+ * Schedules this object to be released from the live object cache after the
+ * current request.
+ */
+GameObject.prototype.unload = function unload() {
+	log.debug('%s.unload', this);
+	var rc = RC.getContext(true);
+	if (rc) rc.setUnload(this);
+};
+
+
+/**
  * Schedules this object for deletion after the current request.
  */
 GameObject.prototype.del = function del() {
 	this.deleted = true;
-	var rc = RC.getContext(true);
-	if (rc) rc.setUnload(this);
+	this.unload();
 };
 
 
@@ -306,7 +316,7 @@ GameObject.prototype.gsTimerExists = function gsTimerExists(fname, interval, act
 
 /**
  * Suspends all currently active timers/intervals on the object.
- * This must be called before unloading an object.
+ * Called from the persistence layer before unloading an object.
  */
 GameObject.prototype.suspendGsTimers = function suspendGsTimers() {
 	for (var key in this.gsTimers) {

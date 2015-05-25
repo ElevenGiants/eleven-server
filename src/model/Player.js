@@ -285,64 +285,6 @@ Player.prototype.isConnected = function isConnected() {
 
 
 /**
- * Removes the player and all related objects (inventory items, DCs,
- * quests etc) from the GS live object cache (or more specifically,
- * schedules their removal at the end of the current request).
- */
-Player.prototype.unload = function unload() {
-	log.debug('%s.unload', this);
-	var objects = this.getConnectedObjects();
-	for (var k in objects) {
-		RC.getContext().setUnload(objects[k]);
-	}
-};
-
-
-/**
- * Creates a flat hash of all game objects that are "contained" in this
- * player (bags, items, DCs, quests), including the player object
- * itself.
- *
- * @returns {object} an object with TSIDs as prop names and {@link
- *          GameObject} instances as properties
- * @private
- */
-Player.prototype.getConnectedObjects = function getConnectedObjects() {
-	// collect objects in a hash (object with TSIDs as property names) to
-	// implicitly avoid duplicate entries
-	var ret = {};
-	// get all bags and items
-	var inventory = this.getAllItems(true, false);
-	for (var k in inventory) {
-		ret[inventory[k].tsid] = inventory[k];
-	}
-	// get all DCs and quests
-	var hashes = [this, this.jobs, this.friends];
-	if (this.quests) {
-		hashes.push(this.quests);
-		if (this.quests.todo) hashes.push(this.quests.todo.quests);
-		if (this.quests.done) hashes.push(this.quests.done.quests);
-		if (this.quests.fail_repeat) hashes.push(this.quests.fail_repeat.quests);
-		if (this.quests.misc) hashes.push(this.quests.misc.quests);
-	}
-	hashes.forEach(function collectDCs(hash) {
-		if (typeof hash !== 'object') return;  // guard against uninitialized structures
-		Object.keys(hash).forEach(function iter(k) {
-			var prop = hash[k];
-			if (typeof prop === 'object' && (utils.isDC(prop) || utils.isQuest(prop))) {
-				ret[prop.tsid] = prop;
-			}
-		});
-	});
-	// add player itself
-	ret[this.tsid] = this;
-	return ret;
-	// Yes, this function contains way too much game specific knowledge about
-	// the GSJS player data. A more generic solution would be preferable.
-};
-
-
-/**
  * Resumes timers/intervals (only if the player is actually connected).
  */
 Player.prototype.resumeGsTimers = function resumeGsTimers() {

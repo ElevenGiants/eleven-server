@@ -41,6 +41,7 @@ module.exports = {
 
 var assert = require('assert');
 var async = require('async');
+var lodash = require('lodash');
 var gsjsBridge = require('model/gsjsBridge');
 var orProxy = require('data/objrefProxy');
 var rpc = require('data/rpc');
@@ -258,10 +259,12 @@ function create(modelType, data) {
 
 /**
  * Called by {@link RequestContext#run} after processing a request has finished;
- * saves changed game objects to persistence, and unloads objects from the live
- * object cache.
+ * writes object additions and deletions to persistence, and persists and
+ * unloads game objects and connected "child" objects that this GS worker is
+ * not managing anymore after the request (e.g. in case of player movement to
+ * another server).
  *
- * @param {object} dlist hash containing game objects to persist
+ * @param {object} dlist hash with added or deleted game objects to persist
  * @param {object} ulist hash containing game objects to persist and release
  *        from the live object cache
  * @param {string} [logmsg] optional information for log messages
@@ -270,22 +273,35 @@ function create(modelType, data) {
  */
 function postRequestProc(dlist, ulist, logmsg, callback) {
 	assert(!shuttingDown, 'persistence layer shutdown initiated');
+	var dtsids = Object.keys(dlist);
+	var utsids = [];
+	for (var k in ulist) {
+		if (k in cache) {
+			utsids = utsids.concat(getLoadedRefs(cache[k]));
+		}
+	}
+	if (!dtsids.length && !utsids.length) {
+		return callback ? callback(null) : undefined;
+	}
+	utsids = lodash.uniq(utsids);
+	log.trace('objects to release after %s request: %s', logmsg, utsids);
 	// process persistence changes in a safe order (add/modify first, then
 	// delete); this may leave behind orphaned data, but should at least avoid
 	// invalid object references
 	async.series([
-		postRequestProcStep.bind(undefined, 'write', dlist, logmsg),
-		postRequestProcStep.bind(undefined, 'write', ulist, logmsg),
-		postRequestProcStep.bind(undefined, 'delete', ulist, logmsg),
+		postRequestProcStep.bind(undefined, 'write', dtsids, logmsg),
+		postRequestProcStep.bind(undefined, 'write', utsids, logmsg),
+		postRequestProcStep.bind(undefined, 'delete', utsids, logmsg),
+		postRequestProcStep.bind(undefined, 'delete', dtsids, logmsg),
 	], function cb(err) {
 		// unload objects scheduled to be released from cache (take care not
 		// to load objects here if they are not loaded in the first place)
-		for (var k in ulist) {
+		for (var i = 0; i < utsids.length; i++) {
 			try {
-				unload(ulist[k]);
+				unload(utsids[i]);
 			}
 			catch (e) {
-				log.error(e, 'failed to unload %s', k);
+				log.error(e, 'failed to unload %s', utsids[i]);
 			}
 		}
 		if (callback) callback(err);
@@ -302,20 +318,19 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
  *
  * @param {string} step persistence operation (must be `write` or
  *         `delete`)
- * @param {object} objects hash containing game objects to process
- *        (TSIDs as keys, objects as values)
+ * @param {array} tsids list of tsids of game objects to process
  * @param {string} logmsg information for log messages
  * @param {function} callback function to be called after persistence
  *        operations have finished
  * @private
  */
-function postRequestProcStep(step, objects, logmsg, callback) {
+function postRequestProcStep(step, tsids, logmsg, callback) {
 	var err = null;
-	async.each(Object.keys(objects),
-		function iter(k, cb) {
-			var o = objects[k];
+	async.each(tsids,
+		function iter(tsid, cb) {
 			// skip if not a "live" object in the first place
-			if (!(k in cache)) return cb();
+			if (!(tsid in cache)) return cb();
+			var o = cache[tsid];
 			try {
 				if (step === 'delete') {
 					// skip objects that are not actually deleted
@@ -346,6 +361,53 @@ function postRequestProcStep(step, objects, logmsg, callback) {
 			setImmediate(callback, err || e, res);
 		}
 	);
+}
+
+
+/**
+ * Recursively collects references to dependent objects (items/bags, data
+ * containers, quests) within a "parent" game object (location, group, player).
+ *
+ * @param {GameObject} obj object to retrieve referenced "child" objects for
+ * @param {GameObject} [root] for internal use
+ * @param {array} [ret] for internal use
+ * @returns {array} the list of game objects referenced in `obj` (i.e. a
+ *          "self-contained object graph" that should be safe to release
+ *          from the live object cache when the root object is unloaded)
+ */
+function getLoadedRefs(obj, root, ret) {
+	root = root || obj;
+	ret = ret || [obj.tsid];
+	for (var k in obj) {
+		// optimization: don't follow well-known "parent" references
+		if (k === 'owner' || k === 'container' || k === 'location') continue;
+		var v = obj[k];
+		// skip non-object properties
+		if (typeof v !== 'object' || v === null) continue;
+		// skip references to game objects that are not currently loaded
+		if (v.__isORP) continue;
+		// skip if this is not one of the game object types we need to pick up
+		var isGO = v.tsid && typeof v.tsid === 'string' && v.tsid.length;
+		var type = isGO ? v.tsid[0] : null;
+		if (isGO && type !== 'B' && type !== 'I' && type !== 'D' && type !== 'Q') {
+			continue;
+		}
+		// otherwise, pick up (if it's a game object)
+		if (isGO) {
+			if (ret.indexOf(v.tsid) !== -1) {
+				log.warn('unexpected objref cycle detected: %s in %s',
+					v.tsid, root.tsid);
+				continue;
+			}
+			ret.push(v.tsid);
+		}
+		// and follow the reference
+		getLoadedRefs(v, root, ret);
+	}
+	if (obj === root) {
+		log.trace('loaded referenced objects for %s: %s', root.tsid, ret);
+	}
+	return ret;
 }
 
 
@@ -407,18 +469,18 @@ function del(obj, logmsg, callback) {
  * pending timers), i.e. it cannot guarantee that memory is eventually
  * freed through garbage collection.
  *
- * @param {GameObject} obj game object to unload
+ * @param {tsid} tsid tsid of the game object to unload
  * @param {string} logmsg short additional info for log messages
  * @private
  */
-function unload(obj, logmsg) {
-	log.debug('pers.unload: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
-	if (obj.tsid in cache) {
+function unload(tsid, logmsg) {
+	log.debug('pers.unload: %s%s', tsid, logmsg ? ' (' + logmsg + ')' : '');
+	if (tsid in cache) {
 		// suspend timers/intervals
-		obj.suspendGsTimers();
-		delete cache[obj.tsid];
+		cache[tsid].suspendGsTimers();
+		delete cache[tsid];
 	}
-	if (obj.tsid in proxyCache) {
-		delete proxyCache[obj.tsid];
+	if (tsid in proxyCache) {
+		delete proxyCache[tsid];
 	}
 }

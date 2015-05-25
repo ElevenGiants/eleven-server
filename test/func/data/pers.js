@@ -9,7 +9,7 @@ var Player = require('model/Player');
 var Item = require('model/Item');
 var pbeMock = require('../../mock/pbe');
 var RC = require('data/RequestContext');
-var orproxy = require('data/objrefProxy');
+var orProxy = require('data/objrefProxy');
 var wait = require('wait.for');
 
 
@@ -125,16 +125,42 @@ suite('pers', function () {
 		});
 
 		test('does not load objects scheduled for unloading', function (done) {
-			var p = orproxy.makeProxy({tsid: 'GNOTAVAILABLE', objref: true});
+			var p = orProxy.makeProxy({tsid: 'GNOTAVAILABLE', objref: true});
 			var rc = new RC();
 			rc.run(
 				function () {
 					rc.setUnload(p);
 				},
 				function cb(err, res) {
-					if (err) done(err);
+					if (err) return done(err);
 					assert.strictEqual(pbeMock.getCounts().read, 0);
-					done();
+					return done();
+				}
+			);
+		});
+
+		test('does not load non-loaded objects referenced within objects' +
+			' scheduled for unloading', function (done) {
+			var obj = {
+				tsid: 'P1',
+				items: {b1: {tsid: 'B1'}},
+			};
+			pbeMock.getDB().p1 = obj;
+			obj.location = orProxy.makeProxy({tsid: 'L1', objref: true});
+			obj.items.b1 = {tsid: 'B1', items: {}};
+			obj.items.b1.items.i1 = orProxy.makeProxy({tsid: 'I1', objref: true});
+			pbeMock.getDB().b1 = obj.items.b1;
+			var rc = new RC();
+			rc.run(function () {
+					pers.get('P1');
+					pers.get('B1');
+					assert.strictEqual(pbeMock.getCounts().read, 2);
+					rc.setUnload(obj);
+				},
+				function cb(err, res) {
+					if (err) return done(err);
+					assert.strictEqual(pbeMock.getCounts().read, 2);
+					return done();
 				}
 			);
 		});

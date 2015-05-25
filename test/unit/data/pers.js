@@ -1,6 +1,8 @@
 'use strict';
 
 var rewire = require('rewire');
+var fs = require('fs');
+var path = require('path');
 var pers = rewire('data/pers');
 var GameObject = require('model/GameObject');
 var Item = require('model/Item');
@@ -11,6 +13,14 @@ var rcMock = require('../../mock/RequestContext');
 
 
 suite('pers', function () {
+
+	var FIXTURES_PATH = path.resolve(path.join(__dirname, '../fixtures'));
+
+	function getSamplePlayerData() {
+		var data = fs.readFileSync(path.join(FIXTURES_PATH, 'PLI16FSFK2I91.json'));
+		return JSON.parse(data);
+	}
+
 
 	suiteSetup(function () {
 		var orProxy = rewire('data/objrefProxy');
@@ -242,6 +252,62 @@ suite('pers', function () {
 			pers.postRequestProc({}, {I1: o1, I2: o2});
 			assert.strictEqual(pbeMock.getCounts().del, 0,
 				'updating o1 failed, further operations (deletes) cancelled');
+		});
+	});
+
+
+	suite('getLoadedRefs', function () {
+
+		var getLoadedRefs = pers.__get__('getLoadedRefs');
+
+		test('works as expected', function () {
+			var obj = {
+				tsid: 'O',
+				p: {tsid: 'PX'},
+				por: {tsid: 'PY', __isORP: true},
+				b: {
+					tsid: 'B1', items: [
+						{tsid: 'I1'},
+						{tsid: 'I2', __isORP: true},
+					],
+					b2: {tsid: 'B2', __isORP: true, items: [
+						// not really valid but let's test this anyway
+						{tsid: 'I3'},
+					]},
+					z: 234,
+				},
+				q: {tsid: 'Q1'},
+				d: {tsid: 'D1'},
+				x: 1, y: 'test',
+			};
+			assert.sameMembers(getLoadedRefs(obj), ['O', 'B1', 'I1', 'Q1', 'D1']);
+		});
+
+		test('works as expected with player data', function () {
+			var data = getSamplePlayerData();
+			assert.sameMembers(getLoadedRefs(data), ['PLI16FSFK2I91',
+				'DLI16FSFK2I91_imagination', 'DLI16FSFK2I91_skills']);
+		});
+
+		test('does not break with objref cycles', function () {
+			var obj = {tsid: 'O'};
+			obj.b1 = {tsid: 'B1', items: [{tsid: 'I1', ref: obj}]};
+			obj.b2 = {tsid: 'B2', items: [{tsid: 'I2', ref: obj.b1}]};
+			obj.b2.items.push({tsid: 'I3', ref: obj.b2});
+			obj.b1.ref = obj.b2;
+			assert.sameMembers(getLoadedRefs(obj), ['O', 'B1', 'B2', 'I1', 'I2', 'I3']);
+		});
+
+		test('does not follow parent references', function () {
+			var obj = {
+				tsid: 'O',
+				location: {tsid: 'LOO'},
+				q: [{tsid: 'Q1', owner: {tsid: 'BAR'}}],
+				someloc: {tsid: 'LX', items: [{tsid: 'I1'}]},
+			};
+			obj.b1 = {tsid: 'B1', container: obj};
+			obj.b2 = {tsid: 'B2', container: {tsid: 'IX'}};
+			assert.sameMembers(getLoadedRefs(obj), ['O', 'Q1', 'B1', 'B2']);
 		});
 	});
 });

@@ -11,7 +11,6 @@ var Bag = require('model/Bag');
 var IdObjRefMap = require('model/IdObjRefMap');
 var OrderedHash = require('model/OrderedHash');
 var pers = require('data/pers');
-var RC = require('data/RequestContext');
 var rpc = require('data/rpc');
 var util = require('util');
 var utils = require('utils');
@@ -196,18 +195,12 @@ Location.prototype.checkUnload = function checkUnload() {
 
 
 /**
- * Schedules the location (including geometry) and all contained items
- * for removal from memory at the end of the current request.
+ * Schedules this location and its associated geometry object to be released
+ * from the live object cache after the current request.
  */
 Location.prototype.unload = function unload() {
-	log.info('%s.unload', this);
-	var rc = RC.getContext();
-	var items = this.getAllItems(false, false);
-	for (var k in items) {
-		rc.setUnload(items[k]);
-	}
-	rc.setUnload(this.geometry);
-	rc.setUnload(this);
+	Location.super_.prototype.unload.call(this);
+	this.geometry.unload();
 };
 
 

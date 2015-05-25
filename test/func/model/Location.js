@@ -172,7 +172,7 @@ suite('Location', function () {
 				function callback(err, res) {
 					if (err) return done(err);
 					assert.sameMembers(Object.keys(rc.unload),
-						[i1.tsid, i2.tsid, b.tsid, l.geometry.tsid, l.tsid]);
+						[l.geometry.tsid, l.tsid]);
 					done();
 				}
 			);
