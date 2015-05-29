@@ -122,7 +122,7 @@ function Player(data) {
 				}
 				for (var subkey in this[group][key]) {
 					var propGroup = this[group][key];
-					propGroup[subkey] = new Prop(key, propGroup[subkey]);
+					propGroup[subkey] = new Prop(subkey, propGroup[subkey]);
 				}
 			}
 		}

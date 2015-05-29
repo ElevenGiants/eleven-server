@@ -49,13 +49,24 @@ suite('Player', function () {
 			var p = new Player({tsid: 'P1', metabolics: {energy: 7000}});
 			assert.instanceOf(p.metabolics.energy, Property);
 			assert.strictEqual(p.metabolics.energy.value, 7000);
-			p = new Player({tsid: 'P1', metabolics: {
-				energy: {value: 50, bottom: 0, top: 800, label: 'energy'}},
+			p = new Player({tsid: 'P1',
+				metabolics: {
+					energy: {value: 50, bottom: 0, top: 800, label: 'energy'},
+				},
+				stats: {
+					recipe_xp_today: {
+						97: {value: 2, bottom: 0, top: 85447, label: '97'}
+					},
+				},
 			});
 			assert.instanceOf(p.metabolics.energy, Property);
 			assert.strictEqual(p.metabolics.energy.value, 50);
 			assert.strictEqual(p.metabolics.energy.bottom, 0);
 			assert.strictEqual(p.metabolics.energy.top, 800);
+			assert.deepEqual(Object.keys(p.stats.recipe_xp_today), ['97']);
+			assert.instanceOf(p.stats.recipe_xp_today['97'], Property);
+			assert.strictEqual(p.stats.recipe_xp_today['97'].value, 2);
+			assert.strictEqual(p.stats.recipe_xp_today['97'].top, 85447);
 		});
 
 		test('missing properties are created', function () {
