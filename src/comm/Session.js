@@ -57,6 +57,7 @@ function Session(id, socket) {
 	Session.super_.call(this);
 	this.id = id;
 	this.loggedIn = false;
+	this.preLoginBuffer = [];
 	this.socket = socket;
 	this.ts = new Date().getTime();
 	this.maxMsgSize = config.get('net:maxMsgSize');
@@ -324,18 +325,32 @@ Session.prototype.postRequestProc = function postRequestProc(req) {
 		case 'login_end':
 			// put player into location (same as regular move end)
 			this.pc.endMove();
+			this.flushPreLoginBuffer();
 			break;
 		case 'relogin_end':
 			// call Location.onPlayerReconnect event (necessary to make client
 			// hide hidden decos after reconnecting; relogin_start is too early
 			// for this)
 			this.pc.location.onPlayerReconnect(this.pc);
+			this.flushPreLoginBuffer();
 			break;
 	}
 	// make sure changes/announcements caused by this request are sent out
 	if (this.loggedIn) {
 		this.pc.location.flush();
 	}
+};
+
+
+Session.prototype.flushPreLoginBuffer = function flushPreLoginBuffer() {
+	if (!this.preLoginBuffer || !this.preLoginBuffer.length) return;
+	if (log.debug) {
+		log.debug({queue: this.preLoginBuffer.map(function getType(msg) {
+			return msg.type;
+		})}, '(re)login complete, flushing queued messages');
+	}
+	this.preLoginBuffer.forEach(this.send, this);
+	this.preLoginBuffer = [];
 };
 
 
@@ -376,7 +391,8 @@ Session.prototype.send = function send(msg) {
 		if (msg.type !== 'login_start' && msg.type !== 'login_end' &&
 			msg.type !== 'relogin_start' && msg.type !== 'relogin_end' &&
 			msg.type !== 'ping') {
-			log.debug('login incomplete, dropping %s message', msg.type);
+			log.debug('(re)login incomplete, postponing %s message', msg.type);
+			this.preLoginBuffer.push(msg);
 			return;
 		}
 		if (msg.type === 'login_end' || msg.type === 'relogin_end') {
