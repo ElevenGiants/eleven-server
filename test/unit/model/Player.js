@@ -201,25 +201,6 @@ suite('Player', function () {
 			assert.strictEqual(p.location, l);  // unchanged
 			assert.deepEqual(l.players, {P1: p}, 'player added to new loc');
 		});
-
-		test('calls onEnter callbacks', function () {
-			var itemOnPlayerEnterCalled = false;
-			var locOnPlayerEnterCalled = false;
-			var i = new Item({tsid: 'I'});
-			var l = new Location({tsid: 'L', items: [i]}, new Geo());
-			var p = new Player({tsid: 'P1', location: l});
-			i.onPlayerEnter = function (player) {
-				itemOnPlayerEnterCalled = true;
-				assert.strictEqual(player, p);
-			};
-			l.onPlayerEnter = function (player) {
-				locOnPlayerEnterCalled = true;
-				assert.strictEqual(player, p);
-			};
-			p.endMove();
-			assert.isTrue(itemOnPlayerEnterCalled);
-			assert.isTrue(locOnPlayerEnterCalled);
-		});
 	});
 
 

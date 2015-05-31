@@ -325,14 +325,22 @@ Session.prototype.postRequestProc = function postRequestProc(req) {
 		case 'login_end':
 			// put player into location (same as regular move end)
 			this.pc.endMove();
+			this.pc.location.gsOnPlayerEnter(this.pc);
 			this.flushPreLoginBuffer();
 			break;
 		case 'relogin_end':
+			this.pc.location.gsOnPlayerEnter(this.pc);
 			// call Location.onPlayerReconnect event (necessary to make client
 			// hide hidden decos after reconnecting; relogin_start is too early
 			// for this)
 			this.pc.location.onPlayerReconnect(this.pc);
 			this.flushPreLoginBuffer();
+			break;
+		case 'signpost_move_end':
+		case 'follow_move_end':
+		case 'door_move_end':
+		case 'teleport_move_end':
+			this.pc.location.gsOnPlayerEnter(this.pc);
 			break;
 	}
 	// make sure changes/announcements caused by this request are sent out
