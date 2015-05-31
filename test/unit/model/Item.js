@@ -6,7 +6,6 @@ var Bag = require('model/Bag');
 var Player = require('model/Player');
 var Geo = require('model/Geo');
 var Location = require('model/Location');
-var OrderedHash = require('model/OrderedHash');
 
 
 suite('Item', function () {
@@ -30,7 +29,6 @@ suite('Item', function () {
 
 		test('initializes message_queue as OrderedHash', function () {
 			var i = new Item({message_queue: {b: 'b', a: 'a'}});
-			assert.instanceOf(i.message_queue, OrderedHash);
 			assert.strictEqual(i.message_queue.first(), 'a');
 		});
 	});
