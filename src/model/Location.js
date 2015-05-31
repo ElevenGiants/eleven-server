@@ -129,13 +129,21 @@ Location.prototype.del = function del() {
 
 
 /**
- * Adds a player to the list of players in this location and calls
- * various GSJS "onEnter" event handlers.
+ * Adds a player to the list of players in this location
  *
  * @param {Player} player the player to add
  */
 Location.prototype.addPlayer = function addPlayer(player) {
 	this.players[player.tsid] = player;
+};
+
+
+/**
+ * Calls GSJS event handlers for a player entering a location.
+ *
+ * @param {Player} player the player that is entering the location
+ */
+Location.prototype.gsOnPlayerEnter = function gsOnPlayerEnter(player) {
 	if (this.onPlayerEnter) {
 		this.onPlayerEnter(player);
 	}
@@ -155,9 +163,7 @@ Location.prototype.addPlayer = function addPlayer(player) {
 
 /**
  * Removes a player from the list of players in this location and
- * calls various GSJS "onExit" event handlers. If after that the
- * location is empty (no other players remaining), it is unloaded
- * from memory (including everything in it).
+ * calls various GSJS "onExit" event handlers.
  *
  * @param {Player} player the player to remove
  * @param {Location} [newLoc] the location the player is moving to

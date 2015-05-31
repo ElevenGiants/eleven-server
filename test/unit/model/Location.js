@@ -344,4 +344,27 @@ suite('Location', function () {
 			assert.deepEqual(res, {tsid: 'I2', class_tsid: 'C2', x: 15, y: 1});
 		});
 	});
+
+
+	suite('gsOnPlayerEnter', function () {
+
+		test('calls onEnter callbacks', function () {
+			var itemOnPlayerEnterCalled = false;
+			var locOnPlayerEnterCalled = false;
+			var i = new Item({tsid: 'I'});
+			var l = new Location({tsid: 'L', items: [i]}, new Geo());
+			var p = new Player({tsid: 'P1', location: l});
+			i.onPlayerEnter = function (player) {
+				itemOnPlayerEnterCalled = true;
+				assert.strictEqual(player, p);
+			};
+			l.onPlayerEnter = function (player) {
+				locOnPlayerEnterCalled = true;
+				assert.strictEqual(player, p);
+			};
+			l.gsOnPlayerEnter(p);
+			assert.isTrue(itemOnPlayerEnterCalled);
+			assert.isTrue(locOnPlayerEnterCalled);
+		});
+	});
 });
