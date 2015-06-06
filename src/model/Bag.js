@@ -35,6 +35,7 @@ function Bag(data) {
 	if (this.hiddenItems instanceof Array) {
 		this.hiddenItems = utils.arrayToHash(this.hiddenItems);
 	}
+	this.patchFuncStatsUpdate('onInputBoxResponse');
 }
 
 utils.copyProps(require('model/BagApi').prototype, Bag.prototype);
