@@ -57,6 +57,7 @@ function main() {
 
 function runMaster() {
 	log.info('starting cluster master %s', config.getGsid());
+	cluster.schedulingPolicy = cluster.SCHED_NONE;
 	config.forEachLocalGS(startWorker);
 	policyServer.start();
 	process.on('SIGINT', shutdown);
