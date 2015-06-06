@@ -67,6 +67,8 @@ function Item(data) {
 	if (this.message_queue) {
 		this.message_queue = new OrderedHash(this.message_queue);
 	}
+	this.patchFuncStatsUpdate('use');
+	this.patchFuncStatsUpdate('updateState');
 }
 
 utils.copyProps(require('model/ItemApi').prototype, Item.prototype);
@@ -75,6 +77,25 @@ utils.copyProps(require('model/ItemApi').prototype, Item.prototype);
 Item.prototype.gsOnLoad = function gsOnLoad() {
 	this.updatePath();
 	Item.super_.prototype.gsOnLoad.call(this);
+};
+
+
+/**
+ * Patches a GSJS function to update client-side item state after being called.
+ * This is a hack and most probably not doing it the "right" way; see
+ * {@link https://trello.com/c/7JCrUaal}.
+ *
+ * @param {string} fname name of the function to patch
+ * @private
+ */
+Item.prototype.patchFuncStatsUpdate = function patchFuncStatsUpdate(fname) {
+	if (typeof this[fname] === 'function') {
+		var gsjsFunc = this[fname];
+		this[fname] = function patchedGsjsFunc() {
+			gsjsFunc.apply(this, arguments);
+			this.queueChanges();
+		};
+	}
 };
 
 
