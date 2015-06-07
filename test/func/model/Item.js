@@ -2,6 +2,7 @@
 
 var gsjsBridge = require('model/gsjsBridge');
 var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 var Item = require('model/Item');
 var Bag = require('model/Bag');
 var Player = require('model/Player');
@@ -18,11 +19,13 @@ suite('Item', function () {
 	setup(function () {
 		gsjsBridge.init(true);
 		pers.init(pbeMock);
+		RQ.init();
 	});
 
 	teardown(function () {
 		gsjsBridge.reset();
 		pers.init();  // disable mock back-end
+		RQ.init();
 	});
 
 

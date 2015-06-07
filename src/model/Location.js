@@ -45,7 +45,6 @@ function Location(data, geo) {
 		}
 	}
 	Location.super_.call(this, data);
-	utils.addNonEnumerable(this, 'rq', new RQ(this));
 	// initialize items and players, convert to IdObjRefMap
 	this.players = new IdObjRefMap(this.players);
 	this.items = new IdObjRefMap(this.items);
@@ -83,6 +82,9 @@ Object.defineProperty(Location.prototype, 'activePlayers', {
 
 Location.prototype.gsOnLoad = function gsOnLoad() {
 	Location.super_.prototype.gsOnLoad.call(this);
+	// initialize request queue (not strictly necessary b/c it would be created
+	// on demand, but this makes the logs easier to grok)
+	this.getRQ();
 	// periodically check whether location can be released from memory
 	var unloadInt = config.get('pers:locUnloadInt', null);
 	if (unloadInt) {
@@ -114,7 +116,7 @@ Location.create = function create(geo, data) {
  * @returns {RequestQueue} the request queue for this location
  */
 Location.prototype.getRQ = function getRQ() {
-	return this.rq;
+	return RQ.get(this);
 };
 
 
@@ -201,18 +203,28 @@ Location.prototype.checkUnload = function checkUnload() {
 	// trivial heuristic for now - may become more complex in the future
 	// (e.g. minimum empty period before unloading)
 	if (this.players.length === 0) {
-		this.unload();
+		var self = this;
+		this.unload(function cb(err) {
+			if (err) log.error(err, 'failed to unload %s', self);
+		});
 	}
 };
 
 
 /**
  * Schedules this location and its associated geometry object to be released
- * from the live object cache after the current request.
+ * from the live object cache after all pending requests for it have been
+ * handled. When this is called, the location's request queue will not accept
+ * any new requests.
+ *
+ * @param {function} [callback] for optional error handling
  */
-Location.prototype.unload = function unload() {
-	Location.super_.prototype.unload.call(this);
-	this.geometry.unload();
+Location.prototype.unload = function unload(callback) {
+	var self = this;
+	this.getRQ().push('unload', function unloadReq() {
+		Location.super_.prototype.unload.call(self);
+		self.geometry.unload();
+	}, true, undefined, callback);
 };
 
 

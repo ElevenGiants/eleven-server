@@ -6,9 +6,19 @@ var Bag = require('model/Bag');
 var Player = require('model/Player');
 var Geo = require('model/Geo');
 var Location = require('model/Location');
+var RQ = require('data/RequestQueue');
 
 
 suite('Item', function () {
+
+	setup(function () {
+		RQ.init();
+	});
+
+	teardown(function () {
+		RQ.init();
+	});
+
 
 	suite('ctor', function () {
 

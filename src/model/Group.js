@@ -9,7 +9,6 @@ var rpc = require('data/rpc');
 var RQ = require('data/RequestQueue');
 var slackChat = require('comm/slackChat');
 var util = require('util');
-var utils = require('utils');
 
 
 util.inherits(Group, GameObject);
@@ -29,7 +28,6 @@ function Group(data) {
 	data = data || {};
 	if (!data.tsid) data.tsid = rpc.makeLocalTsid(Group.prototype.TSID_INITIAL);
 	Group.super_.call(this, data);
-	utils.addNonEnumerable(this, 'rq', new RQ(this));
 	slackChat.patchGroup(this);
 }
 
@@ -59,5 +57,20 @@ Group.create = function create(classTsid, hubId) {
  * @returns {RequestQueue} the request queue for this group
  */
 Group.prototype.getRQ = function getRQ() {
-	return this.rq;
+	return RQ.get(this);
+};
+
+
+/**
+ * Schedules this group to be released from the live object cache after all
+ * pending requests for it have been handled. When this is called, the group's
+ * request queue will not accept any new requests.
+ *
+ * @param {function} [callback] for optional error handling
+ */
+Group.prototype.unload = function unload(callback) {
+	var self = this;
+	this.getRQ().push('unload', function unloadReq() {
+		Group.super_.prototype.unload.call(self);
+	}, true, undefined, callback);
 };

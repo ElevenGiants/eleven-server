@@ -2,6 +2,7 @@
 
 var pers = require('data/pers');
 var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 var pbeMock = require('../../mock/pbe');
 var Group = require('model/Group');
 var gsjsBridge = require('model/gsjsBridge');
@@ -10,18 +11,20 @@ var utils = require('utils');
 
 suite('Group', function () {
 
+	setup(function () {
+		gsjsBridge.reset();
+		pers.init(pbeMock);
+		RQ.init();
+	});
+
+	teardown(function () {
+		gsjsBridge.reset();
+		pers.init();  // disable mock back-end
+		RQ.init();
+	});
+
+
 	suite('create', function () {
-
-		setup(function () {
-			gsjsBridge.reset();
-			pers.init(pbeMock);
-		});
-
-		teardown(function () {
-			gsjsBridge.reset();
-			pers.init();  // disable mock back-end
-		});
-
 
 		test('does its job', function (done) {
 			new RC().run(
@@ -47,6 +50,34 @@ suite('Group', function () {
 				assert.notProperty(g, 'class_tsid');
 				assert.notProperty(g, 'hubid');
 			}, done);
+		});
+	});
+
+
+	suite('unload', function () {
+
+		test('works as intended', function (done) {
+			var g;
+			var rq;
+			new RC().run(
+				function () {
+					g = Group.create('group');
+					rq = g.getRQ();
+				},
+				function (err) {
+					if (err) return done(err);
+					g.unload(function (err2) {
+						if (err2) return done(err2);
+						assert.isTrue(rq.closing);
+						setTimeout(function checkRqShutown() {
+							// RQ is closed in rq.next, whch is scheduled
+							// *after* this callback (via setImmediate)
+							assert.isUndefined(RQ.get(g.tsid));
+							done();
+						}, 10);
+					});
+				}
+			);
 		});
 	});
 });

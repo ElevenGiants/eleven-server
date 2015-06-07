@@ -97,7 +97,6 @@ suite('RequestContext', function () {
 						IA: {tsid: 'IA'},
 						IB: {tsid: 'IB', deleted: true},
 					});
-					assert.isTrue(persMock.getUnloadList().IA.stale);
 				}
 			);
 			done();

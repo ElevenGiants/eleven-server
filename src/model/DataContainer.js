@@ -52,7 +52,7 @@ DataContainer.create = function create(owner) {
  */
 DataContainer.prototype.getRQ = function getRQ() {
 	if (this.owner) {
-		return this.owner.getRQ();
+		return RQ.get(this.owner);
 	}
 	else {
 		return RQ.getGlobal();

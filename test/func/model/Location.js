@@ -3,6 +3,7 @@
 var path = require('path');
 var pers = require('data/pers');
 var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 var pbeMock = require('../../mock/pbe');
 var Location = require('model/Location');
 var Geo = require('model/Geo');
@@ -19,12 +20,14 @@ suite('Location', function () {
 		// initialize gsjsBridge data structures (empty) without loading all the prototypes
 		gsjsBridge.init(true);
 		pers.init(pbeMock);
+		RQ.init();
 	});
 
 	teardown(function () {
 		// reset gsjsBridge so the cached prototypes don't influence other tests
 		gsjsBridge.reset();
 		pers.init();  // disable mock back-end
+		RQ.init();
 	});
 
 
@@ -156,26 +159,39 @@ suite('Location', function () {
 
 	suite('unload', function () {
 
+		this.slow(1000);
+
 		test('does its job', function (done) {
-			var i1, i2, b, l;
+			var i1, i2, b, l, g;
 			var rc = new RC();
+			var unloadCount = 0;
 			rc.run(
 				function () {
+					g = Geo.create();
+					l = Location.create(g);
 					i1 = Item.create('apple');
-					i2 = Item.create('banana');
-					b = new Bag({class_tsid: 'bag_bigger_green', items: [i2]});
-					l = Location.create(Geo.create());
 					l.addItem(i1, 12, 13);
+					i2 = Item.create('banana');
+					b = Bag.create('bag_bigger_green');
 					l.addItem(b, 12, 13);
-					l.unload();
-				},
-				function callback(err, res) {
-					if (err) return done(err);
-					assert.sameMembers(Object.keys(rc.unload),
-						[l.geometry.tsid, l.tsid]);
-					done();
+					b.addToSlot(i2, 0);
+					l.suspendGsTimers = g.suspendGsTimers = b.suspendGsTimers =
+						i1.suspendGsTimers = i2.suspendGsTimers = function check() {
+						unloadCount++;
+					};
+					var rq = l.getRQ();
+					l.unload(function (err) {
+						if (err) return done(err);
+						assert.isTrue(rq.closing);
+					});
 				}
 			);
+			// RQ is closed asynchronously in rq.next, so defer the rest of the test a bit
+			setTimeout(function checkRqShutown() {
+				assert.strictEqual(unloadCount, 5);
+				assert.isUndefined(RQ.get(l.tsid));
+				done();
+			}, 100);
 		});
 	});
 });

@@ -5,6 +5,7 @@ module.exports = Geo;
 
 var pers = require('data/pers');
 var rpc = require('data/rpc');
+var RQ = require('data/RequestQueue');
 var util = require('util');
 var utils = require('utils');
 var GameObject = require('model/GameObject');
@@ -52,7 +53,7 @@ Geo.create = function create(data) {
  * @returns {RequestQueue} the request queue for this `Geo`'s location
  */
 Geo.prototype.getRQ = function getRQ() {
-	return pers.get(this.getLocTsid()).getRQ();
+	return RQ.get(this.getLocTsid());
 };
 
 

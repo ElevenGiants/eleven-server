@@ -119,6 +119,7 @@ GameObject.prototype.toString = function toString() {
  */
 GameObject.prototype.unload = function unload() {
 	log.debug('%s.unload', this);
+	this.stale = true;
 	var rc = RC.getContext(true);
 	if (rc) rc.setUnload(this);
 };

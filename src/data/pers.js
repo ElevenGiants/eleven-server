@@ -46,6 +46,7 @@ var gsjsBridge = require('model/gsjsBridge');
 var orProxy = require('data/objrefProxy');
 var rpc = require('data/rpc');
 var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 var metrics = require('metrics');
 var DummyError = require('errors').DummyError;
 
@@ -163,6 +164,7 @@ function load(tsid) {
 			log.warn('%s already loaded, discarding redundant copy', tsid);
 			return cache[tsid];
 		}
+		RQ.create(tsid);
 		cache[tsid] = obj;
 		// post-construction operations (resume timers/intervals, GSJS onLoad etc.)
 		if (obj.gsOnLoad) {
@@ -247,6 +249,7 @@ function create(modelType, data) {
 	data = data || {};
 	var obj = gsjsBridge.create(data, modelType);
 	assert(!(obj.tsid in cache), 'object already exists: ' + obj.tsid);
+	RQ.create(obj.tsid);
 	cache[obj.tsid] = obj;
 	RC.getContext().setDirty(obj);
 	if (typeof obj.onCreate === 'function') {

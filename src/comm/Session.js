@@ -241,8 +241,8 @@ Session.prototype.enqueueMessage = function enqueueMessage(msg) {
 		this.processRequest(msg);
 	}
 	else {
-		this.getRQ().push(msg.type, this.processRequest.bind(this, msg), this,
-			this.handleAmfReqError.bind(this, msg));
+		this.getRQ().push(msg.type, this.processRequest.bind(this, msg), false,
+			this, this.handleAmfReqError.bind(this, msg));
 	}
 };
 

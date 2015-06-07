@@ -2,11 +2,10 @@
 
 var api = require('data/rpcApi');
 var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 var pers = require('data/pers');
 var pbeMock = require('../../mock/pbe');
 var gsjsBridge = require('model/gsjsBridge');
-var Geo = require('model/Geo');
-var Location = require('model/Location');
 
 
 suite('rpcApi', function () {
@@ -17,22 +16,22 @@ suite('rpcApi', function () {
 	setup(function () {
 		gsjsBridge.init(true);
 		pers.init(pbeMock);
+		RQ.init();
 	});
 
 	teardown(function () {
 		gsjsBridge.reset();
 		pers.init();  // disable mock back-end
+		RQ.init();
 	});
 
 
 	suite('createPlayer', function () {
 
 		test('works as expected', function (done) {
-			var g = new Geo({tsid: 'GLI32G3NUTD100I'});
-			var l = new Location({tsid: 'LLI32G3NUTD100I'}, g);
 			var db = pbeMock.getDB();
-			db[g.tsid] = g.serialize();
-			db[l.tsid] = l.serialize();
+			db.GLI32G3NUTD100I = {tsid: 'GLI32G3NUTD100I'};
+			db.LLI32G3NUTD100I = {tsid: 'LLI32G3NUTD100I'};
 			var tsid;
 			new RC().run(
 				function () {

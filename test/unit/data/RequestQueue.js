@@ -5,6 +5,32 @@ var RQ = require('data/RequestQueue');
 
 suite('RequestQueue', function () {
 
+	setup(function () {
+		RQ.init();
+	});
+
+	teardown(function () {
+		RQ.init();
+	});
+
+
+	suite('create', function () {
+
+		test('creates and registers RQs for locations and groups only', function () {
+			RQ.create('LXYZ');
+			RQ.create('RXYZ');
+			RQ.create('IXYZ');
+			RQ.create('PXYZ');
+			RQ.create('_special');
+			assert.instanceOf(RQ.get('LXYZ'), RQ);
+			assert.instanceOf(RQ.get('RXYZ'), RQ);
+			assert.instanceOf(RQ.get('_special'), RQ);
+			assert.isUndefined(RQ.get('IXYZ'));
+			assert.isUndefined(RQ.get('PXYZ'));
+		});
+	});
+
+
 	suite('push', function () {
 
 		test('adds requests to queue and triggers execution', function (done) {
@@ -15,6 +41,7 @@ suite('RequestQueue', function () {
 				function firstReq() {
 					firstReqProcessed = true;
 				},
+				false,
 				undefined,
 				function firstCb() {
 					firstCallbackCalled = true;
@@ -22,6 +49,7 @@ suite('RequestQueue', function () {
 			);
 			rq.push('tag2',
 				function secondReq() {},
+				false,
 				undefined,
 				function callback(err) {
 					assert.isTrue(firstReqProcessed);
@@ -29,6 +57,28 @@ suite('RequestQueue', function () {
 					return done(err);
 				}
 			);
+		});
+
+		test('handles close requests', function (done) {
+			var rq = RQ.create('LX');
+			var closeReqProcessed = false;
+			rq.push('close', function () {}, true, undefined, function (err) {
+				if (err) return done(err);
+				assert.isTrue(rq.closing, 'closing flag set');
+				closeReqProcessed = true;
+			});
+			rq.push('after', function () {
+				throw new Error('should not be reached');
+			}, false, undefined, function (err) {
+				assert.include(err.message, 'flagged for shutdown');
+				assert.lengthOf(rq.queue, 1, 'request not queued');
+				setTimeout(function () {
+					// wait for 'close' request to be processed (scheduled via setImmediate)
+					assert.isTrue(closeReqProcessed, 'close request callback called');
+					assert.isUndefined(RQ.get('LX'), 'RQ actually closed');
+					done();
+				}, 10);
+			});
 		});
 	});
 

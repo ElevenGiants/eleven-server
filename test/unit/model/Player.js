@@ -9,6 +9,7 @@ var Location = require('model/Location');
 var Geo = require('model/Geo');
 var Item = require('model/Item');
 var RC = rewire('data/RequestContext');
+var RQ = require('data/RequestQueue');
 var rpcMock = require('../../mock/rpc');
 var persMock = require('../../mock/pers');
 
@@ -18,11 +19,13 @@ suite('Player', function () {
 	setup(function () {
 		RC.__set__('pers', persMock);
 		persMock.reset();
+		RQ.init();
 	});
 
 	teardown(function () {
 		RC.__set__('pers', rewire('data/pers'));
 		persMock.reset();
+		RQ.init();
 	});
 
 
@@ -643,7 +646,7 @@ suite('Player', function () {
 				onPlayerCollision: function onPlayerCollision() {
 					i2collided = true;
 					// simulate start of location move
-					p.location = new Location({tsid: 'L'}, new Geo());
+					p.location = new Location({tsid: 'L2'}, new Geo());
 					p.active = false;
 				},
 			});
