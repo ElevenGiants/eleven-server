@@ -360,6 +360,30 @@ Location.prototype.addItem = function addItem(item, x, y, noMerge) {
 
 
 /**
+ * Put an item stack (or a part of it) into a bag in this location, using empty
+ * slots or merging with existing stacks.
+ *
+ * @param {Item} item item stack to add; may be deleted in the process
+ * @param {number} fromSlot distribution starts at this slot number
+ * @param {number} toSlot distribution ends at this slot number (inclusive;
+ *        must be >= `fromSlot`)
+ * @param {string} path path to target bag (must be a bag in this location)
+ * @param {number} [amount] amount of the item stack to add/distribute; if not
+ *        specified, the whole stack is processed
+ * @returns {number} amount of remaining items (i.e. that could not be
+ *          distributed)
+ */
+Location.prototype.addToBag = function addToBag(item, fromSlot, toSlot, path, amount) {
+	if (amount === undefined || amount > item.count) amount = item.count;
+	var bag = this.items[path.split('/').pop()];
+	for (var slot = fromSlot; slot <= toSlot && amount > 0; slot++) {
+		amount -= bag.addToSlot(item, slot, amount);
+	}
+	return amount;
+};
+
+
+/**
  * Recursively collects the items in this location, adding them to a
  * flat data structure with TSID "paths" as keys (see {@link
  * Bag#getAllItems} for an example).
