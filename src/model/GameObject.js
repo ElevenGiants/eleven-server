@@ -235,8 +235,8 @@ GameObject.prototype.setGsTimer = function setGsTimer(options) {
 
 /**
  * Helper function for {@link GameObject#setGsTimer|setGsTimer}.
- * Actually schedules the (timer driven) function call, wrapped in a
- * separate {@link RequestContext}.
+ * Schedules the (timer driven) function call in the object's request queue
+ * (which may be a different one than the current queue).
  *
  * @param {object} options timer call options (see {@link
  *        GameObject#setGsTimer|setGsTimer} for details)
@@ -251,45 +251,40 @@ GameObject.prototype.scheduleTimer = function scheduleTimer(options, key) {
 			options.delay);
 		options.delay = 2147483647;
 	}
-	var handle = setTimeout(
-		function execTimer() {
-			var rc = new RC(options.fname, self);
-			rc.run(
-				function timerCall() {
-					log.trace({options: options}, 'timer call');
-					if (self.stale) {
-						throw new Error('stale object');
-					}
-					if (!options.interval) {
-						delete self.gsTimers[key];
-					}
-					try {
-						self.gsTimerExec(options);
-					}
-					catch (e) {
-						delete self.gsTimers[key];  // clean up
-						log.error(e, 'error calling %s.%s (interval: %s)', self,
-							options.fname, !!options.interval);
-						// don't rethrow - we want to make sure the offending
-						// timer/interval is not called again upon unload/reload
-						return;
-					}
-					// schedule next interval iteration (unless it was canceled)
-					if (self.gsTimers[key] && options.interval) {
-						delete self.gsTimers[key];
-						self.setGsTimer(options);
-					}
-				},
-				function callback(e) {
-					if (e) {
-						log.error(e, 'error calling %s.%s (interval: %s)', self,
-							options.fname, !!options.interval);
-					}
-				}
-			);
-		}, options.delay
-	);
-	return handle;
+	var timerCall = function timerCall() {
+		log.trace({options: options}, 'timer call');
+		if (self.stale) {
+			throw new Error('stale object');
+		}
+		if (!options.interval) {
+			delete self.gsTimers[key];
+		}
+		try {
+			self.gsTimerExec(options);
+		}
+		catch (e) {
+			delete self.gsTimers[key];  // clean up
+			log.error(e, 'error calling %s.%s (interval: %s)', self,
+				options.fname, !!options.interval);
+			// don't rethrow - we want to make sure the offending
+			// timer/interval is not called again upon unload/reload
+			return;
+		}
+		// schedule next interval iteration (unless it was canceled)
+		if (self.gsTimers[key] && options.interval) {
+			delete self.gsTimers[key];
+			self.setGsTimer(options);
+		}
+	};
+	var execTimer = function execTimer() {
+		self.getRQ().push(options.fname, timerCall, function callback(e) {
+			if (e) {
+				log.error(e, 'error calling %s.%s (interval: %s)', self,
+					options.fname, !!options.interval);
+			}
+		});
+	};
+	return setTimeout(execTimer, options.delay);
 };
 
 

@@ -41,16 +41,12 @@ suite('RequestQueue', function () {
 				function firstReq() {
 					firstReqProcessed = true;
 				},
-				false,
-				undefined,
 				function firstCb() {
 					firstCallbackCalled = true;
 				}
 			);
 			rq.push('tag2',
 				function secondReq() {},
-				false,
-				undefined,
 				function callback(err) {
 					assert.isTrue(firstReqProcessed);
 					assert.isTrue(firstCallbackCalled);
@@ -62,23 +58,29 @@ suite('RequestQueue', function () {
 		test('handles close requests', function (done) {
 			var rq = RQ.create('LX');
 			var closeReqProcessed = false;
-			rq.push('close', function () {}, true, undefined, function (err) {
-				if (err) return done(err);
-				assert.isTrue(rq.closing, 'closing flag set');
-				closeReqProcessed = true;
-			});
-			rq.push('after', function () {
-				throw new Error('should not be reached');
-			}, false, undefined, function (err) {
-				assert.include(err.message, 'flagged for shutdown');
-				assert.lengthOf(rq.queue, 1, 'request not queued');
-				setTimeout(function () {
-					// wait for 'close' request to be processed (scheduled via setImmediate)
-					assert.isTrue(closeReqProcessed, 'close request callback called');
-					assert.isUndefined(RQ.get('LX'), 'RQ actually closed');
-					done();
-				}, 10);
-			});
+			rq.push('close',
+				function () {},
+				function (err) {
+					if (err) return done(err);
+					assert.isTrue(rq.closing, 'closing flag set');
+					closeReqProcessed = true;
+				}, {close: true}
+			);
+			rq.push('after',
+				function () {
+					throw new Error('should not be reached');
+				},
+				function (err) {
+					assert.include(err.message, 'flagged for shutdown');
+					assert.lengthOf(rq.queue, 1, 'request not queued');
+					setTimeout(function () {
+						// wait for 'close' request to be processed (scheduled via setImmediate)
+						assert.isTrue(closeReqProcessed, 'close request callback called');
+						assert.isUndefined(RQ.get('LX', true), 'RQ actually closed');
+						done();
+					}, 10);
+				}
+			);
 		});
 	});
 

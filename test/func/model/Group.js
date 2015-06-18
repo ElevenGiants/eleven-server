@@ -72,7 +72,7 @@ suite('Group', function () {
 						setTimeout(function checkRqShutown() {
 							// RQ is closed in rq.next, whch is scheduled
 							// *after* this callback (via setImmediate)
-							assert.isUndefined(RQ.get(g.tsid));
+							assert.isUndefined(RQ.get(g.tsid, true));
 							done();
 						}, 10);
 					});

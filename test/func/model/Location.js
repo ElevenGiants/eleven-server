@@ -189,7 +189,7 @@ suite('Location', function () {
 			// RQ is closed asynchronously in rq.next, so defer the rest of the test a bit
 			setTimeout(function checkRqShutown() {
 				assert.strictEqual(unloadCount, 5);
-				assert.isUndefined(RQ.get(l.tsid));
+				assert.isUndefined(RQ.get(l.tsid, true));
 				done();
 			}, 100);
 		});

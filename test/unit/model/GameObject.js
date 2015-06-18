@@ -140,7 +140,6 @@ suite('GameObject', function () {
 			var go = new GameObject();
 			go.foo = function foo() {
 				assert.isDefined(RC.getContext());
-				assert.strictEqual(RC.getContext().owner, go);
 				assert.strictEqual(RC.getContext().logtag, 'foo');
 				done();
 			};

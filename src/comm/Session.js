@@ -12,7 +12,6 @@ var events = require('events');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
 var util = require('util');
-var RC = require('data/RequestContext');
 var RQ = require('data/RequestQueue');
 var gsjsBridge = require('model/gsjsBridge');
 var metrics = require('metrics');
@@ -143,13 +142,14 @@ Session.prototype.close = function close(done) {
 	log.info({session: this}, 'session close');
 	if (this.pc && this.pc.isConnected()) {
 		var self = this;
-		new RC('sessionClose', this.pc, this).run(
+		this.pc.getRQ().push(this.pc.tsid + '.sessionClose',
 			this.pc.onDisconnect.bind(this.pc),
-			function cb(err) {
+			function cb(err, res) {
 				if (err) log.error(err, 'error while closing session');
 				if (self.socket) self.socket.destroy();
 				if (done) done();
-			}, true
+			},
+			{waitPers: true}
 		);
 	}
 };
@@ -241,14 +241,10 @@ Session.prototype.enqueueMessage = function enqueueMessage(msg) {
 		this.processRequest(msg);
 	}
 	else {
-		this.getRQ().push(msg.type, this.processRequest.bind(this, msg), false,
-			this, this.handleAmfReqError.bind(this, msg));
+		var rq = this.pc ? this.pc.getRQ() : RQ.getGlobal('prelogin');
+		rq.push(msg.type, this.processRequest.bind(this, msg),
+			this.handleAmfReqError.bind(this, msg), {session: this});
 	}
-};
-
-
-Session.prototype.getRQ = function getRQ() {
-	return this.pc ? this.pc.getRQ() : RQ.getGlobal();
 };
 
 
@@ -292,8 +288,11 @@ Session.prototype.preRequestProc = function preRequestProc(req) {
 			}
 			this.pc = pers.get(tsid, true);
 			assert(this.pc !== undefined, 'unable to load player: ' + tsid);
-			// prepare Player object for login (e.g. call GSJS events)
-			this.pc.onLoginStart(this, req.type === 'relogin_start');
+			this.pc.onLoginStart(this);
+			break;
+		case 'login_end':
+		case 'relogin_end':
+			this.pc.onLoginEnd(req.type === 'relogin_start');
 			break;
 		case 'logout':
 			if (this.pc) this.pc.onDisconnect();

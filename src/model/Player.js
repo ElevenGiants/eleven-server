@@ -214,16 +214,25 @@ Player.prototype.getRQ = function getRQ() {
 
 
 /**
- * Initializes the instance for an active player; called when a client
- * is actually logging in on this GS as this player.
+ * Initializes the instance for an active player; needs to be called first when
+ * a client is actually logging in on this GS, to enable sending messages back
+ * to the client.
  *
  * @param {Session} session the session for the connected client
+ */
+Player.prototype.onLoginStart = function onLoginStart(session) {
+	this.session = session;
+};
+
+
+/**
+ * Initializes an active player instance after logging in.
+ *
  * @param {boolean} isRelogin `true` if the client is already in-game
  *        (e.g. after an inter-GS move or short connection loss);
  *        otherwise, this is a "full" login after client startup
  */
-Player.prototype.onLoginStart = function onLoginStart(session, isRelogin) {
-	this.session = session;
+Player.prototype.onLoginEnd = function onLoginEnd(isRelogin) {
 	this.resumeGsTimers();
 	if (!this.gsTimerExists('onTimePlaying', true)) {
 		this.setGsTimer({fname: 'onTimePlaying', delay: 60000, interval: true,

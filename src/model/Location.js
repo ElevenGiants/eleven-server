@@ -224,7 +224,7 @@ Location.prototype.unload = function unload(callback) {
 	this.getRQ().push('unload', function unloadReq() {
 		Location.super_.prototype.unload.call(self);
 		self.geometry.unload();
-	}, true, undefined, callback);
+	}, callback, {close: true});
 };
 
 

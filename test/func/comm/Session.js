@@ -109,20 +109,15 @@ suite('Session', function () {
 		});
 
 		test('login_start', function (done) {
-			var onLoginCalled = false;
 			var s = new Session('TEST', helpers.getDummySocket());
 			s.gsjsProcessMessage = function (pc, req) {
 				assert.strictEqual(pc.tsid, 'P00000000000001');
 				assert.strictEqual(req.type, 'login_start');
-				assert.isTrue(onLoginCalled);
+				assert.strictEqual(pc.session, s);
 				done();
 			};
 			var rc = new RC('login_start TEST', undefined, s);
 			rc.run(function () {
-				var p = pers.get('P00000000000001');
-				p.onLogin = function () {
-					onLoginCalled = true;
-				};
 				s.processRequest({
 					msg_id: '1',
 					type: 'login_start',
@@ -131,10 +126,14 @@ suite('Session', function () {
 			});
 		});
 
-		test('login_end', function () {
+		test('login_end', function (done) {
+			var onLoginCalled = false;
 			var onPlayerEnterCalled = false;
 			var s = new Session('TEST', helpers.getDummySocket());
-			s.gsjsProcessMessage = function dummy() {};  // just a placeholder to prevent calling the "real" function
+			s.gsjsProcessMessage = function (pc, req) {
+				assert.isTrue(onLoginCalled);
+				done();
+			};
 			var rc = new RC('login_end TEST', undefined, s);
 			rc.run(function () {
 				var l = pers.get('LLI32G3NUTD100I');
@@ -144,6 +143,9 @@ suite('Session', function () {
 				var p = pers.get('P00000000000001');
 				s.pc = p;  // login_start must have already happened
 				assert.deepEqual(l.players, {});
+				p.onLogin = function () {
+					onLoginCalled = true;
+				};
 				s.processRequest({
 					msg_id: '2',
 					type: 'login_end',

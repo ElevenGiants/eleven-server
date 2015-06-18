@@ -21,7 +21,7 @@ module.exports = {
 var Slack = require('slack-client');
 var config = require('config');
 var pers = require('data/pers');
-var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 var rpc = require('data/rpc');
 var util = require('util');
 var utils = require('utils');
@@ -147,28 +147,34 @@ function onSlackMessage(msg) {
 			msg = msg.message;  // for edits, message prop seems to contain the actual payload
 			msg.text = '[EDIT] ' + msg.text;
 		}
-		// dispatch message to group in separate request context
+		// prepare message payload
 		var user = slack.getUserByID(msg.user);
-		var rc = new RC('slackMsg', groupTsid);
-		rc.run(
-			function dispatchMsg() {
-				var out = {
-					type: 'pc_groups_chat',
-					tsid: groupTsid,
-					pc: {
-						tsid: 'PSLACK' + user.id,  // unique pseudo TSID so client assigns different colors
-						label: user.name,
-					},
-					txt: processMsgText(msg.text),
-				};
-				utils.addNonEnumerable(out, 'fromSlack', true);
-				pers.get(groupTsid).chat_send_msg(out);
+		var out = {
+			type: 'pc_groups_chat',
+			tsid: groupTsid,
+			pc: {
+				tsid: 'PSLACK' + user.id,  // unique pseudo TSID so client assigns different colors
+				label: user.name,
 			},
-			function callback(e) {
-				if (e) {
-					log.error({err: e, data: msg},
-						'error dispatching group chat message from Slack');
+			txt: processMsgText(msg.text),
+		};
+		utils.addNonEnumerable(out, 'fromSlack', true);
+		// dispatch message to group in separate request context
+		RQ.getGlobal('persget').push('slackMsg.getGroup',
+			pers.get.bind(null, groupTsid),
+			function cb(err, group) {
+				if (err) {
+					return log.error(err, 'group not found');
 				}
+				group.getRQ().push('slackMsg.dispatch',
+					group.chat_send_msg.bind(null, out),
+					function cb(err, res) {
+						if (err) {
+							log.error({err: err, data: msg}, 'error ' +
+								'dispatching group chat message from Slack');
+						}
+					}
+				);
 			}
 		);
 	}

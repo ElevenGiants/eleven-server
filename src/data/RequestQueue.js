@@ -15,9 +15,6 @@ var RC = require('data/RequestContext');
 var util = require('util');
 var utils = require('utils');
 
-// a generic "global" request queue (e.g. for operations on new objects that are
-// not assigned to a group or location yet)
-var globalRQ;
 // container for "regular" request queues, each one assigned to a specific top
 // level game object (location or group), its TSID used as the key here
 var rqs = {};
@@ -76,36 +73,40 @@ RequestQueue.create = function create(id) {
 
 
 /**
- * Retrieves the request queue for a specific game object.
+ * Retrieves the request queue for a specific game object, creating/initializing
+ * it if necessary.
  *
  * @param {GameObject|string} objOrTsid the game object to get the request queue
  *        for, or its TSID; must be a "top level" object that has its own RQ
  *        assigned (i.e. a location or a group)
- * @returns {RequestQueue|undefined} the requested queue, if it exists
+ * @param {boolean} [dontCreate] if `true`, do **not** create the RQ on demand
+ * @returns {RequestQueue|undefined} the requested queue
  * @static
  */
-RequestQueue.get = function get(objOrTsid) {
+RequestQueue.get = function get(objOrTsid, dontCreate) {
 	var tsid = typeof objOrTsid === 'string' ? objOrTsid : objOrTsid.tsid;
+	if (!rqs[tsid] && !dontCreate) RequestQueue.create(tsid);
 	return rqs[tsid];
 };
 
 
 /**
- * Returns a generic request queue that can be used for operations where a more
- * "specific" queue is not available (e.g. new objects not assigned to a group
- * or location yet). Only one such global queue exists per GS instance.
+ * Returns a request queue for operations not tied to a specific game object.
  *
- * @returns {RequestQueue} the global request queue
+ * @param {string} [id] unique identifier (should indicate the intended purpose)
+ * @returns {RequestQueue} the request queue
  * @static
  */
-RequestQueue.getGlobal = function getGlobal() {
-	if (!globalRQ) globalRQ = new RequestQueue('_global');
-	return globalRQ;
+RequestQueue.getGlobal = function getGlobal(id) {
+	id = id || 'global';
+	id = '_' + id.toUpperCase();
+	if (!rqs[id]) RequestQueue.create(id);
+	return rqs[id];
 };
 
 
 RequestQueue.prototype.toString = function toString() {
-	return '[rq~' + this.id + ']';
+	return '[rq:' + this.id + ']';
 };
 
 
@@ -124,31 +125,34 @@ RequestQueue.prototype.getLength = function getLength() {
  *
  * @param {string} tag arbitrary brief text describing the request (for logging)
  * @param {function} func the request function to be executed
- * @param {boolean} close if `true`, the queue will immediately stop accepting
- *        new requests, and shut down after this request has been processed
- * @param {Session|undefined} session client session where the request
- *        originated (if applicable)
  * @param {function} [callback]
  * ```
  * callback(error, result)
  * ```
  * for getting back the request function result, or errors that occurred during
  * its execution (if not specified, errors and/or the result are lost)
+ * @param {object} [options] additional parameters for this request
+ * @param {Session} [options.session] client session where the request
+ *        originated (if applicable)
+ * @param {boolean} [options.close] if `true`, the queue will immediately stop
+ *        accepting new requests, and shut down after handling this request
+ * @param {boolean} [options.waitPers] if `true`, wait for persistence
+ *        operations to finish before invoking callback
  */
-RequestQueue.prototype.push = function push(tag, func, close, session, callback) {
+RequestQueue.prototype.push = function push(tag, func, callback, options) {
 	if (this.closing) {
 		log.warn('tried to push %s request, but %s is shutting down', tag, this);
 		return callback(new Error('RQ flagged for shutdown'));
 	}
-	var timer = metrics.createTimer('req.wait', 0.1);
-	this.queue.push({
+	var entry = {
 		tag: tag,
 		func: func,
-		session: session,
-		callback: callback,
-		waitTimer: timer,
-	});
-	if (close) {
+		waitTimer: metrics.createTimer('req.wait', 0.1),
+	};
+	if (callback) entry.callback = callback;
+	if (options) entry.options = options;
+	this.queue.push(entry);
+	if (options && options.close) {
 		this.closing = true;
 		log.info('request queue flagged for shutdown: %s', this);
 	}
@@ -184,11 +188,12 @@ RequestQueue.prototype.next = function next() {
  * @private
  */
 RequestQueue.prototype.handle = function handle(req) {
+	var options = req.options || {};
 	if (req.waitTimer) req.waitTimer.stop();
 	log.trace('handling %s request', req.tag);
 	this.busy = true;
 	var self = this;
-	var rc = new RC(req.tag, this.id, req.session);
+	var rc = new RC(req.tag, this.id, options.session);
 	rc.run(
 		req.func,
 		function callback(err, res) {
@@ -196,6 +201,7 @@ RequestQueue.prototype.handle = function handle(req) {
 			log.trace('finished %s request', req.tag);
 			setImmediate(self.next.bind(self));
 			if (req.callback) return req.callback(err, res);
-		}
+		},
+		options.waitPers
 	);
 };

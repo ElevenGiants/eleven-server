@@ -41,7 +41,7 @@ var jrpc = require('multitransport-jsonrpc');
 var metrics = require('metrics');
 var orProxy = require('data/objrefProxy');
 var pers = require('data/pers');
-var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 var rpcApi = require('data/rpcApi');
 var rpcProxy = require('data/rpcProxy');
 var utils = require('utils');
@@ -349,9 +349,7 @@ function sendRequest(gsid, rpcFunc, args, callback) {
  *
  * @param {string} callerId ID of the component requesting the function
  *        call (for logging)
- * @param {object|string} objOrTsid either an object whose function
- *        with the given name should be called, or the TSID of a game
- *        object
+ * @param {object} obj the object on which a function should be called
  * @param {string} fname name of the function to call on the object
  * @param {array} args function call arguments
  * @param {function} callback
@@ -361,43 +359,39 @@ function sendRequest(gsid, rpcFunc, args, callback) {
  * callback for the RPC library, returning the result (or errors) to
  * the remote caller
  */
-function handleRequest(callerId, objOrTsid, fname, args, callback) {
+function handleRequest(callerId, obj, fname, args, callback) {
 	metrics.increment('net.rpc.rx', 0.01);
+	if (!obj || typeof obj[fname] !== 'function') {
+		var msg = util.format('no such function: %s.%s', obj, fname);
+		return callback(new RpcError(msg));
+	}
 	orProxy.proxify(args);  // unmarshal arguments
-	var logmsg = util.format('RPC from %s: %s.%s', callerId, objOrTsid, fname);
-	log.debug('%s(%s)', logmsg, args instanceof Array ? args.join(', ') : args);
-	// process RPC in its own request context
-	var rc = new RC(objOrTsid + '.' + fname, 'rpc.' + callerId);
-	rc.run(
-		function rpcReq() {
-			var obj = objOrTsid;
-			if (typeof obj === 'string') {
-				obj = pers.get(obj);
-			}
-			if (!obj || typeof obj[fname] !== 'function') {
-				throw new RpcError(util.format('no such function: %s.%s',
-					objOrTsid, fname));
-			}
-			var ret = obj[fname].apply(obj, args);
-			// convert <undefined> result to <null> so RPC lib produces a valid
-			// response (it just omits the <result> property otherwise)
-			if (ret === undefined) ret = null;
-			return ret;
-		},
-		function rpcReqCallback(err, res) {
-			if (err) {
-				log.error(err, 'exception in %s', logmsg);
-			}
-			if (typeof callback !== 'function') {
-				log.error('%s called without a valid callback', logmsg);
-			}
-			else {
-				res = orProxy.refify(res);  // marshal return value
-				callback(err, res);
-			}
-		},
-		true  // make sure changes are persisted before returning RPC
-	);
+	var tag = util.format('rpc.%s.%s.%s', callerId, obj.tsid ? obj.tsid : obj, fname);
+	log.debug('%s(%s)', tag, args instanceof Array ? args.join(', ') : args);
+	var rpcReq = function rpcReq() {
+		var ret = obj[fname].apply(obj, args);
+		// convert <undefined> result to <null> so RPC lib produces a valid
+		// response (it just omits the <result> property otherwise)
+		if (ret === undefined) ret = null;
+		return ret;
+	};
+	var rpcCallback = function rpcCallback(err, res) {
+		if (err) {
+			log.error(err, 'exception in %s', tag);
+		}
+		if (typeof callback !== 'function') {
+			log.error('%s called without a valid callback', tag);
+		}
+		else {
+			res = orProxy.refify(res);  // marshal return value
+			return callback(err, res);
+		}
+	};
+	var rq = RQ.getGlobal('rpc');
+	if (obj.tsid && isLocal(obj) && typeof obj.getRQ === 'function') {
+		rq = obj.getRQ();
+	}
+	rq.push(tag, rpcReq, rpcCallback, {waitPers: true});
 }
 
 
@@ -413,7 +407,17 @@ function handleRequest(callerId, objOrTsid, fname, args, callback) {
  *        the result (or errors) to the remote caller
  */
 function objectRequest(callerId, tsid, fname, args, callback) {
-	handleRequest(callerId, tsid, fname, args, callback);
+	var tag = 'rpc.get.' + tsid;
+	RQ.getGlobal('persget').push(tag,
+		pers.get.bind(null, tsid),
+		function cb(err, obj) {
+			if (err) {
+				log.error(err, 'error loading %s for RPC', tsid);
+				return;
+			}
+			handleRequest(callerId, obj, fname, args, callback);
+		}
+	);
 }
 
 
