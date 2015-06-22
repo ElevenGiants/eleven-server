@@ -21,12 +21,24 @@ var rqs = {};
 
 
 /**
- * Initializes internal data structures.
+ * Initializes internal data structures and metrics.
  *
  * @static
  */
 RequestQueue.init = function init() {
 	rqs = {};
+	metrics.setupGaugeInterval('req.rq.count', function getCount() {
+		return rqs ? Object.keys(rqs).length : 0;
+	});
+	metrics.setupGaugeInterval('req.rq.avgLength', function getLength() {
+		var n = 0;
+		var i = 0;
+		for (var k in rqs) {
+			n += rqs[k].getLength();
+			i++;
+		}
+		return i === 0 ? 0 : n / i;
+	});
 };
 
 
