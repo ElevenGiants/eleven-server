@@ -303,6 +303,13 @@ LocationApi.prototype.apiGetItemsInTheRadius = function apiGetItemsInTheRadius(
 };
 
 
+LocationApi.prototype.apiGetNoPlayerScanItemsInTheRadius =
+	function apiGetNoPlayerScanItemsInTheRadius(x, y, radius) {
+	log.debug('%s.apiGetNoPlayerScanItemsInTheRadius(%s, %s, %s)', this, x, y, radius);
+	return this.getInRadius(x, y, radius);
+};
+
+
 /**
  * Finds active players within a given radius around a point.
  *

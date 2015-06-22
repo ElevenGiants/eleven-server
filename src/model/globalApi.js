@@ -198,6 +198,13 @@ exports.apiNewItem = function apiNewItem(classTsid) {
 };
 
 
+exports.apiNewItemFromSource = function apiNewItemFromSource(classTsid, sourceItem) {
+	log.trace('global.apiNewItemFromSource(%s, %s)', classTsid, sourceItem);
+	//TODO: animation announcements&docs
+	return getItemType(classTsid).create(classTsid);
+};
+
+
 /**
  * Creates a new stack of a specific item class.
  *
