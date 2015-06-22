@@ -399,7 +399,9 @@ Item.prototype.merge = function merge(that, n) {
 		log.warn('invalid merge amount: %s', n);
 		return 0;
 	}
-	n = Math.min(n, that.count);
+	this.count = parseInt(this.count, 10);
+	that.count = parseInt(that.count, 10);
+	n = Math.min(parseInt(n, 10), that.count);
 	// if items are non-stackable or incompatible, just return zero
 	if (!(this.stackmax > 1 && that.stackmax > 1)) return 0;
 	if (this.class_tsid !== that.class_tsid) return 0;

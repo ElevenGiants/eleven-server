@@ -322,6 +322,23 @@ suite('Item', function () {
 	});
 
 
+	suite('merge', function () {
+
+		test('works with string-type counts', function () {
+			var it1 = new Item({class_tsid: 'seed_corn', stackmax: 20, count: '1'});
+			var it2 = new Item({class_tsid: 'seed_corn', stackmax: 20, count: '2'});
+			it1.merge(it2, 2);
+			assert.strictEqual(it1.count, 3);
+			assert.typeOf(it1.count, 'number');
+			var it3 = new Item({class_tsid: 'seed_corn', stackmax: 20, count: 1});
+			var it4 = new Item({class_tsid: 'seed_corn', stackmax: 20, count: 10});
+			it3.merge(it4, '5');
+			assert.strictEqual(it3.count, 6);
+			assert.typeOf(it3.count, 'number');
+		});
+	});
+
+
 	suite('consume', function () {
 
 		test('works as expected', function () {
