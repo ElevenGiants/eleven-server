@@ -282,7 +282,7 @@ GameObject.prototype.scheduleTimer = function scheduleTimer(options, key) {
 				log.error(e, 'error calling %s.%s (interval: %s)', self,
 					options.fname, !!options.interval);
 			}
-		});
+		}, {obj: self});
 	};
 	return setTimeout(execTimer, options.delay);
 };

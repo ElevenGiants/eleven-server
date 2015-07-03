@@ -70,7 +70,8 @@ function Session(id, socket) {
 	this.dom.on('error', this.handleError.bind(this));
 	this.setupSocketEventHandlers();
 	this.gsjsProcessMessage = gsjsBridge.getMain().processMessage;
-	log.info({session: this}, 'new session created');
+	log.info({session: this, addr: socket.remoteAddress, port: socket.remotePort},
+		'new session created');
 }
 
 
@@ -96,14 +97,7 @@ Session.prototype.toString = function toString() {
  * @private
  */
 Session.logSerialize = function logSerialize(session) {
-	var ret = {id: session.id};
-	if (session.socket && session.socket.remoteAddress) {
-		ret.addr = session.socket.remoteAddress + ':' + session.socket.remotePort;
-	}
-	if (session.pc) {
-		ret.pc = session.pc.tsid;
-	}
-	return ret;
+	return session.id;
 };
 
 
@@ -142,14 +136,14 @@ Session.prototype.close = function close(done) {
 	log.info({session: this}, 'session close');
 	if (this.pc && this.pc.isConnected()) {
 		var self = this;
-		this.pc.getRQ().push(this.pc.tsid + '.sessionClose',
+		this.pc.getRQ().push('sessionClose',
 			this.pc.onDisconnect.bind(this.pc),
 			function cb(err, res) {
 				if (err) log.error(err, 'error while closing session');
 				if (self.socket) self.socket.destroy();
 				if (done) done();
 			},
-			{waitPers: true}
+			{waitPers: true, obj: this.pc}
 		);
 	}
 };
@@ -243,7 +237,8 @@ Session.prototype.enqueueMessage = function enqueueMessage(msg) {
 	else {
 		var rq = this.pc ? this.pc.getRQ() : RQ.getGlobal('prelogin');
 		rq.push(msg.type, this.processRequest.bind(this, msg),
-			this.handleAmfReqError.bind(this, msg), {session: this});
+			this.handleAmfReqError.bind(this, msg),
+			{session: this, obj: this.pc});
 	}
 };
 

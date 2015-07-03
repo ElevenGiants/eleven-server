@@ -72,5 +72,5 @@ Group.prototype.unload = function unload(callback) {
 	var self = this;
 	this.getRQ().push('unload', function unloadReq() {
 		Group.super_.prototype.unload.call(self);
-	}, callback, {close: true});
+	}, callback, {close: true, obj: this});
 };

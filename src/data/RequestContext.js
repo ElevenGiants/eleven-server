@@ -25,9 +25,9 @@ var pers = require('data/pers');
  *
  * @param {string} [logtag] short text describing the nature or type of
  *        the request (just for logging)
- * @param {GameObject|string} [owner] game object on whose behalf the
- *        request is executed (commonly a {@link Player}), or its TSID
- *        (just for logging)
+ * @param {GameObject|string} [owner] game object in whose queue the
+ *        request is executed (commonly a {@link Location} or {@link
+ *        Group}), respecively their TSID (just for logging)
  * @param {Session} [session] client session where the request
  *        originated (if applicable)
  *
@@ -75,7 +75,7 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 	//jscs:disable safeContextKeyword
 	var rc = this;
 	//jscs:enable safeContextKeyword
-	var tag = util.format('%s/%s/%s', func.name, rc.owner, rc.logtag);
+	var tag = util.format('%s/%s', rc.owner, rc.logtag);
 	wait.launchFiber(function rcFiber() {
 		var res = null;
 		try {
@@ -126,21 +126,6 @@ RequestContext.getContext = function getContext(relaxed) {
 		assert(Fiber.current !== undefined, 'no request context');
 	}
 	return Fiber.current ? Fiber.current.rc : undefined;
-};
-
-
-/**
- * Class method for serializing the `rc` field in bunyan log calls.
- *
- * @see {@link https://github.com/trentm/node-bunyan#serializers}
- * @static
- * @private
- */
-RequestContext.logSerialize = function logSerialize(rc) {
-	var ret = {};
-	if (rc.logtag) ret.logtag = rc.logtag;
-	if (rc.owner) ret.owner = '' + rc.owner;
-	return ret;
 };
 
 

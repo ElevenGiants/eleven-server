@@ -140,7 +140,7 @@ suite('GameObject', function () {
 			var go = new GameObject();
 			go.foo = function foo() {
 				assert.isDefined(RC.getContext());
-				assert.strictEqual(RC.getContext().logtag, 'foo');
+				assert.strictEqual(RC.getContext().logtag, go.tsid + '.foo');
 				done();
 			};
 			go.scheduleTimer({fname: 'foo'}, 'key');
@@ -239,7 +239,7 @@ suite('GameObject', function () {
 				if (calls++ > 0) {
 					assert.isTrue(go.gsTimers.foo.start > prevStart);
 					go.cancelGsTimer('foo', true);  // clean up
-					done();
+					return done();
 				}
 				prevStart = go.gsTimers.foo.start;
 			};
@@ -427,10 +427,12 @@ suite('GameObject', function () {
 				assert.isTrue(resumeFinished);
 				assert.strictEqual(count, 1, 'first regular interval call, ' +
 					'no catch-up calls');
+				go.cancelGsTimer('foo', true);  // clean up
 				done();
 			};
 			go.resumeGsTimers();
 			resumeFinished = true;
+			assert.strictEqual(count, 0);
 		});
 	});
 

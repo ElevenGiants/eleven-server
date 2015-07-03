@@ -150,6 +150,8 @@ RequestQueue.prototype.getLength = function getLength() {
  *        accepting new requests, and shut down after handling this request
  * @param {boolean} [options.waitPers] if `true`, wait for persistence
  *        operations to finish before invoking callback
+ * @param {GameObject} [options.obj] game object that is the subject of the
+ *        request (for logging)
  */
 RequestQueue.prototype.push = function push(tag, func, callback, options) {
 	if (this.closing) {
@@ -201,16 +203,17 @@ RequestQueue.prototype.next = function next() {
  */
 RequestQueue.prototype.handle = function handle(req) {
 	var options = req.options || {};
+	var tag = (options.obj ? options.obj.tsid + '.' : '') + req.tag;
 	if (req.waitTimer) req.waitTimer.stop();
-	log.trace('handling %s request', req.tag);
+	log.trace('handling %s request', tag);
 	this.busy = true;
 	var self = this;
-	var rc = new RC(req.tag, this.id, options.session);
+	var rc = new RC(tag, this.id, options.session);
 	rc.run(
 		req.func,
 		function callback(err, res) {
 			self.busy = false;
-			log.trace('finished %s request', req.tag);
+			log.trace('finished %s request', tag);
 			setImmediate(self.next.bind(self));
 			if (req.callback) return req.callback(err, res);
 		},

@@ -366,7 +366,7 @@ function handleRequest(callerId, obj, fname, args, callback) {
 		return callback(new RpcError(msg));
 	}
 	orProxy.proxify(args);  // unmarshal arguments
-	var tag = util.format('rpc.%s.%s.%s', callerId, obj.tsid ? obj.tsid : obj, fname);
+	var tag = util.format('%s.%s.%s', callerId, obj.tsid ? obj.tsid : obj, fname);
 	log.debug('%s(%s)', tag, args instanceof Array ? args.join(', ') : args);
 	var rpcReq = function rpcReq() {
 		var ret = obj[fname].apply(obj, args);
@@ -391,7 +391,7 @@ function handleRequest(callerId, obj, fname, args, callback) {
 	if (obj.tsid && isLocal(obj) && typeof obj.getRQ === 'function') {
 		rq = obj.getRQ();
 	}
-	rq.push(tag, rpcReq, rpcCallback, {waitPers: true});
+	rq.push(tag, rpcReq, rpcCallback, {waitPers: true, obj: obj.tsid ? obj : null});
 }
 
 
