@@ -150,6 +150,19 @@ RequestContext.logSerialize = function logSerialize(rc) {
 
 
 /**
+ * Flags the given (existing/not newly created) game object as dirty, causing it
+ * to be written to persistent storage at the end of the current request. Does
+ * nothing when called without an active request context.
+ *
+ * @param {GameObject} obj the modified game object
+ */
+RequestContext.setDirty = function setDirty(obj) {
+	var rc = RequestContext.getContext(true);
+	if (rc) rc.setDirty(obj);
+};
+
+
+/**
  * Flags the given game object as dirty, causing it to be written to
  * persistent storage at the end of the current request (if the request
  * finishes successfully). Can only be called from within a request
