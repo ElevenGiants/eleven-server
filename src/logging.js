@@ -172,7 +172,8 @@ function wrapLogEmitter(emitter, metric) {
 			metrics.increment(metric);
 		}
 		// add 'rc' and 'session' fields if available
-		if (typeof arguments[0] === 'object' && arguments[0] !== null) {
+		if (typeof arguments[0] === 'object' && arguments[0] !== null &&
+			!(arguments[0] instanceof Error)) {
 			arguments[0] = lodash.clone(arguments[0]);
 		}
 		var rc = RC.getContext(true);
