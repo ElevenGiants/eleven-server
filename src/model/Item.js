@@ -92,8 +92,9 @@ Item.prototype.patchFuncStatsUpdate = function patchFuncStatsUpdate(fname) {
 	if (typeof this[fname] === 'function') {
 		var gsjsFunc = this[fname];
 		this[fname] = function patchedGsjsFunc() {
-			gsjsFunc.apply(this, arguments);
+			var ret = gsjsFunc.apply(this, arguments);
 			this.queueChanges();
+			return ret;
 		};
 	}
 };
