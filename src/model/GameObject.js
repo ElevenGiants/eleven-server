@@ -209,6 +209,8 @@ GameObject.prototype.setGsTimer = function setGsTimer(options) {
 		start: new Date().getTime(),
 		options: options,
 	};
+	// make sure update timer setup is persisted (gsTimers is non-enumerable)
+	RC.setDirty(this);
 };
 
 
@@ -258,6 +260,8 @@ GameObject.prototype.scheduleTimer = function scheduleTimer(options, key) {
 						delete self.gsTimers[key];
 						self.setGsTimer(options);
 					}
+					// make sure update timer setup is persisted
+					rc.setDirty(self);
 				},
 				function callback(e) {
 					if (e) {
@@ -380,12 +384,12 @@ GameObject.prototype.resumeGsTimers = function resumeGsTimers() {
 /**
  * Cancels a scheduled timer call, resp. clears an interval call.
  *
- * @param {string} fname name of the method whose tiner/interval call
+ * @param {string} fname name of the method whose timer/interval call
  *        should be canceled
  * @param {boolean} [interval] if `true`, cancels an interval call for
  *        the given function, otherwise a timer
  * @returns {boolean} `true` if a scheduled timer/interval was actually
- *          cancelled
+ *          canceled
  */
 GameObject.prototype.cancelGsTimer = function cancelGsTimer(fname, interval) {
 	var ret = false;
@@ -398,6 +402,8 @@ GameObject.prototype.cancelGsTimer = function cancelGsTimer(fname, interval) {
 			ret = true;
 		}
 		delete this.gsTimers[fname];
+		// make sure update timer setup is persisted (gsTimers is non-enumerable)
+		RC.setDirty(this);
 	}
 	return ret;
 };
