@@ -156,7 +156,7 @@ RequestQueue.prototype.getLength = function getLength() {
 RequestQueue.prototype.push = function push(tag, func, callback, options) {
 	if (this.closing) {
 		log.warn('tried to push %s request, but %s is shutting down', tag, this);
-		return callback(new Error('RQ flagged for shutdown'));
+		return callback ? callback(new Error('RQ flagged for shutdown')) : undefined;
 	}
 	var entry = {
 		tag: tag,

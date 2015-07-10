@@ -58,7 +58,7 @@ utils.copyProps(require('model/GameObjectApi').prototype, GameObject.prototype);
  */
 GameObject.prototype.gsOnLoad = function gsOnLoad() {
 	if (this.onLoad) {
-		this.onLoad();
+		this.rqPush(this.onLoad);
 	}
 	this.resumeGsTimers();
 };
@@ -133,6 +133,21 @@ GameObject.prototype.unload = function unload() {
  */
 GameObject.prototype.getRQ = function getRQ() {
 	return RQ.getGlobal();
+};
+
+
+/**
+ * Convenience method: pushes the given function to the request queue this
+ * object is currently assigned to. The function will be called with `this`
+ * bound to the object.
+ *
+ * @param {function} func the function to enqueue
+ * @param {...*} [args] arbitrary arguments for the `func`
+ */
+GameObject.prototype.rqPush = function rqPush(func) {
+	var args = Array.prototype.slice.call(arguments, 1);
+	var f = func.bind.apply(func, [this].concat(args));
+	this.getRQ().push(func.name, f, undefined, {obj: this});
 };
 
 

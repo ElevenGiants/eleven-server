@@ -283,11 +283,8 @@ Session.prototype.preRequestProc = function preRequestProc(req) {
 			}
 			this.pc = pers.get(tsid, true);
 			assert(this.pc !== undefined, 'unable to load player: ' + tsid);
-			this.pc.onLoginStart(this);
-			break;
-		case 'login_end':
-		case 'relogin_end':
-			this.pc.onLoginEnd(req.type === 'relogin_start');
+			// prepare Player object for login (e.g. call GSJS events)
+			this.pc.onLoginStart(this, req.type === 'relogin_start');
 			break;
 		case 'logout':
 			if (this.pc) this.pc.onDisconnect();

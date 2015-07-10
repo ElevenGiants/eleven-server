@@ -274,12 +274,12 @@ Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
 	var k, it;
 	if (prev && prev !== cont) {
 		if (this.onContainerChanged) {
-			this.onContainerChanged(prev, cont);
+			this.rqPush(this.onContainerChanged, prev, cont);
 		}
 		for (k in prev.items) {
 			it = prev.items[k];
 			if (it && it.onContainerItemRemoved) {
-				it.onContainerItemRemoved(this, cont);
+				it.rqPush(it.onContainerItemRemoved, this, cont);
 			}
 		}
 	}
@@ -287,7 +287,7 @@ Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
 		for (k in cont.items) {
 			it = cont.items[k];
 			if (it && it.onContainerItemAdded) {
-				it.onContainerItemAdded(this, prev);
+				it.rqPush(it.onContainerItemAdded, this, prev);
 			}
 		}
 	}

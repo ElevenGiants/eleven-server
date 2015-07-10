@@ -204,7 +204,6 @@ function getProto(group, klass) {
 //jscs:disable jsDoc
 // (jsDoc rule can't detect return value type here)
 function create(data, modelType) {
-	/*jshint -W055 */  // ignore lowercase constructor names here
 	assert(typeof data === 'object', 'object data is required');
 	var tsidInitial;
 	if (modelType) {
@@ -218,6 +217,7 @@ function create(data, modelType) {
 		tsidInitial = data.tsid[0];
 	}
 	var groupOrClass = TSID_INITIALS_MAP[tsidInitial];
+	/*jshint -W055 */  // ignore lowercase constructor names here
 	if (typeof groupOrClass === 'string') {
 		var klass = data.class_tsid || groupOrClass.slice(0, -1);
 		var ctor = getProto(groupOrClass, klass).constructor;
@@ -226,6 +226,7 @@ function create(data, modelType) {
 	else {
 		return new groupOrClass(data);
 	}
+	/*jshint +W055 */
 }
 //jscs:enable jsDoc
 

@@ -1,5 +1,6 @@
 'use strict';
 
+var async = require('async');
 var rewire = require('rewire');
 var auth = require('comm/auth');
 var abePassthrough = require('comm/abe/passthrough');
@@ -157,7 +158,7 @@ suite('Player', function () {
 				'player is not added to new loc yet');
 		});
 
-		test('calls onExit callbacks', function () {
+		test('calls onExit callbacks', function (done) {
 			var itemOnPlayerExitCalled = false;
 			var locOnPlayerExitCalled = false;
 			var i = new Item({tsid: 'I'});
@@ -167,15 +168,15 @@ suite('Player', function () {
 			i.onPlayerExit = function (player) {
 				itemOnPlayerExitCalled = true;
 				assert.strictEqual(player, p);
+				if (locOnPlayerExitCalled) return done();
 			};
 			lold.onPlayerExit = function (player, newLoc) {
 				locOnPlayerExitCalled = true;
 				assert.strictEqual(player, p);
 				assert.strictEqual(newLoc, lnew);
+				if (itemOnPlayerExitCalled) return done();
 			};
 			p.startMove(lnew, 0, 0);
-			assert.isTrue(itemOnPlayerExitCalled);
-			assert.isTrue(locOnPlayerExitCalled);
 		});
 
 		test('does not change current location for logout call', function () {
@@ -221,6 +222,11 @@ suite('Player', function () {
 			p.onLogout = function () {
 				logoutCalled = true;
 			};
+			// make sure the player is eventually unloaded (separate request)
+			p.unload = function () {
+				assert.isTrue(logoutCalled, 'API event onLogout called');
+				done();
+			};
 			var l = new Location({tsid: 'L', players: [p]}, new Geo());
 			p.location = l;
 			rpcMock.reset(true);  // simulate logout/connection error
@@ -232,10 +238,7 @@ suite('Player', function () {
 					if (err) return done(err);
 					assert.isFalse('P1' in l.players,
 						'PC removed from location');
-					assert.isTrue(logoutCalled, 'API event onLogout called');
 					assert.isNull(p.session);
-					assert.deepEqual(persMock.getUnloadList(), {P1: p});
-					done();
 				}
 			);
 		});
@@ -245,6 +248,10 @@ suite('Player', function () {
 			var p = new Player({tsid: 'P1', session: 'foo'});
 			p.onLogout = function () {
 				logoutCalled = true;
+			};
+			// make sure the player is eventually unloaded (separate request)
+			p.unload = function () {
+				done();
 			};
 			var l = new Location({tsid: 'L', players: [p]}, new Geo());
 			p.location = l;
@@ -260,8 +267,6 @@ suite('Player', function () {
 					assert.isFalse(logoutCalled,
 						'API event onLogout is not called on loc change');
 					assert.isNull(p.session);
-					assert.deepEqual(persMock.getUnloadList(), {P1: p});
-					done();
 				}
 			);
 		});
@@ -660,57 +665,61 @@ suite('Player', function () {
 
 	suite('handleCollision', function () {
 
-		test('works as expected when entering a hitbox', function () {
-			var hitBoxCalled = false;
-			var onPlayerCollisionCalled = false;
+		test('works as expected when entering a hitbox', function (done) {
 			var p = getCDTestPlayer();
 			p['!colliders'] = {};
-			p.location.hitBox = function (hitBoxName, hit) {
-				hitBoxCalled = true;
-			};
-
 			var i = new Item({tsid: 'I', x: 0, y: 0, hitBox: {w: 100, h: 100}});
 			i['!colliders'] = {};
-			p.handleCollision(i, i.hitBox);
-			assert.isTrue(hitBoxCalled, 'called hitBox');
-			assert.property(p['!colliders'], 'undefined', 'kept track of hitBox');
-
-			i.onPlayerCollision = function (hitBoxName) {
-				onPlayerCollisionCalled = true;
-			};
-			p.handleCollision(i, i.hitBox, 'foo');
-			assert.isTrue(onPlayerCollisionCalled, 'called onPlayerCollision');
-
-			onPlayerCollisionCalled = false;
-			p.handleCollision(i, i.hitBox);
-			assert.isTrue(onPlayerCollisionCalled, 'called onPlayerCollision');
-			assert.property(i['!colliders'], p.tsid, 'kept track of player in hitBox');
+			async.series([
+				function callsHitBox(cb) {
+					p.location.hitBox = function (hitBoxName, hit) {
+						assert.property(p['!colliders'], 'undefined',
+							'kept track of hitBox');
+						return cb();
+					};
+					p.handleCollision(i, i.hitBox);
+				},
+				function callsOnPlayerCollision(cb) {
+					i.onPlayerCollision = function (hitBoxName) {
+						return cb();
+					};
+					p.handleCollision(i, i.hitBox, 'foo');
+				},
+				function callsOnPlayerCollisionDefaultHitbox(cb) {
+					i.onPlayerCollision = function (hitBoxName) {
+						assert.property(i['!colliders'], p.tsid,
+							'kept track of player in hitBox');
+						return cb();
+					};
+					p.handleCollision(i, i.hitBox);
+				},
+			], done);
 		});
 
-		test('works as expected when leaving a hitbox', function () {
-			var onLeavingHitBoxCalled = false;
-			var onPlayerLeavingCollisionAreaCalled = false;
+		test('works as expected when leaving a hitbox', function (done) {
 			var p = getCDTestPlayer();
 			p['!colliders'] = {foo: 1};
-			p.location.onLeavingHitBox = function (player, hitBoxName) {
-				onLeavingHitBoxCalled = true;
-			};
-
 			var i = new Item({tsid: 'I', x: 1000, y: 0, hitBox: {w: 100, h: 100}});
-
-			p.handleCollision(i, i.hitBox, 'foo');
-			assert.isTrue(onLeavingHitBoxCalled, 'called onLeavingHitBox');
-			assert.notProperty(p['!colliders'], 'foo', 'removed hitBox from !colliders');
-
-			i.onPlayerCollision = function () {};  // required to enable CD in the first place
-			i.onPlayerLeavingCollisionArea = function (i) {
-				onPlayerLeavingCollisionAreaCalled = true;
-			};
-
-			i['!colliders'] = {P: 1};
-			p.handleCollision(i, i.hitBox);
-			assert.isTrue(onPlayerLeavingCollisionAreaCalled, 'called collision handler');
-			assert.notProperty(i['!colliders'], p.tsid, 'removed hitBox from !colliders');
+			async.series([
+				function callsOnLeavingHitBox(cb) {
+					p.location.onLeavingHitBox = function (player, hitBoxName) {
+						assert.notProperty(p['!colliders'], 'foo',
+							'removed hitBox from !colliders');
+						return cb();
+					};
+					p.handleCollision(i, i.hitBox, 'foo');
+				},
+				function callsOnPlayerLeavingCollisionArea(cb) {
+					i.onPlayerCollision = function () {};  // needed to enable CD
+					i.onPlayerLeavingCollisionArea = function (i) {
+						assert.notProperty(i['!colliders'], p.tsid,
+							'removed hitBox from !colliders');
+						return cb();
+					};
+					i['!colliders'] = {P: 1};
+					p.handleCollision(i, i.hitBox);
+				},
+			], done);
 		});
 	});
 });

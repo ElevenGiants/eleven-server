@@ -363,7 +363,7 @@ suite('Location', function () {
 
 	suite('gsOnPlayerEnter', function () {
 
-		test('calls onEnter callbacks', function () {
+		test('calls onEnter callbacks', function (done) {
 			var itemOnPlayerEnterCalled = false;
 			var locOnPlayerEnterCalled = false;
 			var i = new Item({tsid: 'I'});
@@ -372,14 +372,14 @@ suite('Location', function () {
 			i.onPlayerEnter = function (player) {
 				itemOnPlayerEnterCalled = true;
 				assert.strictEqual(player, p);
+				if (locOnPlayerEnterCalled) return done();
 			};
 			l.onPlayerEnter = function (player) {
 				locOnPlayerEnterCalled = true;
 				assert.strictEqual(player, p);
+				if (itemOnPlayerEnterCalled) return done();
 			};
 			l.gsOnPlayerEnter(p);
-			assert.isTrue(itemOnPlayerEnterCalled);
-			assert.isTrue(locOnPlayerEnterCalled);
 		});
 	});
 });

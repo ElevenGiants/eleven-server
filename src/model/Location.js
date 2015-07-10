@@ -151,13 +151,13 @@ Location.prototype.addPlayer = function addPlayer(player) {
  */
 Location.prototype.gsOnPlayerEnter = function gsOnPlayerEnter(player) {
 	if (this.onPlayerEnter) {
-		this.onPlayerEnter(player);
+		this.rqPush(this.onPlayerEnter, player);
 	}
 	for (var k in this.items) {
 		var it = this.items[k];
 		if (it && it.onPlayerEnter) {
 			try {
-				it.onPlayerEnter(player);
+				it.rqPush(it.onPlayerEnter, player);
 			}
 			catch (e) {
 				log.error(e, 'error in %s.onPlayerEnter handler', it);
@@ -178,13 +178,13 @@ Location.prototype.gsOnPlayerEnter = function gsOnPlayerEnter(player) {
 Location.prototype.removePlayer = function removePlayer(player, newLoc) {
 	delete this.players[player.tsid];
 	if (this.onPlayerExit) {
-		this.onPlayerExit(player, newLoc);
+		this.rqPush(this.onPlayerExit, player, newLoc);
 	}
 	for (var k in this.items) {
 		var it = this.items[k];
 		if (it && it.onPlayerExit) {
 			try {
-				it.onPlayerExit(player);
+				it.rqPush(it.onPlayerExit, player);
 			}
 			catch (e) {
 				log.error(e, 'error in %s.onPlayerExit handler', it);
@@ -431,8 +431,9 @@ Location.prototype.getPath = function getPath(path) {
  */
 Location.prototype.sendItemStateChange = function sendItemStateChange(item) {
 	for (var k in this.items) {
-		if (this.items[k] !== item && this.items[k].onContainerItemStateChanged) {
-			this.items[k].onContainerItemStateChanged(item);
+		var it = this.items[k];
+		if (it !== item && it.onContainerItemStateChanged) {
+			it.rqPush(it.onContainerItemStateChanged, item);
 		}
 	}
 };

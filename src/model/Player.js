@@ -219,30 +219,22 @@ Player.prototype.getRQ = function getRQ() {
  * to the client.
  *
  * @param {Session} session the session for the connected client
- */
-Player.prototype.onLoginStart = function onLoginStart(session) {
-	this.session = session;
-};
-
-
-/**
- * Initializes an active player instance after logging in.
- *
  * @param {boolean} isRelogin `true` if the client is already in-game
  *        (e.g. after an inter-GS move or short connection loss);
  *        otherwise, this is a "full" login after client startup
  */
-Player.prototype.onLoginEnd = function onLoginEnd(isRelogin) {
+Player.prototype.onLoginStart = function onLoginStart(session, isRelogin) {
+	this.session = session;
 	this.resumeGsTimers();
 	if (!this.gsTimerExists('onTimePlaying', true)) {
 		this.setGsTimer({fname: 'onTimePlaying', delay: 60000, interval: true,
 			noCatchUp: true});
 	}
 	if (isRelogin) {
-		this.onRelogin();
+		this.rqPush(this.onRelogin);
 	}
 	else {
-		this.onLogin();
+		this.rqPush(this.onLogin);
 	}
 	if (auth.getTokenLifespan() > 0) {
 		this.setGsTimer({fname: 'refreshToken', interval: true, internal: true,
@@ -272,7 +264,7 @@ Player.prototype.onDisconnect = function onDisconnect() {
 		// remove from location, onExit callbacks etc.
 		this.startMove();
 		// GSJS logout event
-		this.onLogout();
+		this.rqPush(this.onLogout);
 		// let other clients in same location know we're gone
 		this.location.send({
 			type: 'pc_logout',
@@ -280,7 +272,7 @@ Player.prototype.onDisconnect = function onDisconnect() {
 		}, false, this);
 	}
 	// in any case, stop timers etc and unload from live object cache
-	this.unload();
+	this.rqPush(this.unload);
 	// unlink the session, so this function won't be accidentally called again
 	this.session = null;
 };
@@ -683,7 +675,7 @@ Player.prototype.handleCollision = function handleCollision(it, hitBox, hitBoxNa
 			if (!this['!colliders'][hitBoxName]) {
 				log.trace('%s entered location hitbox "%s"', this, hitBoxName);
 				// call the handler for this hitbox
-				this.location.hitBox(this, hitBoxName, hit);
+				this.location.rqPush(this.location.hitBox, this, hitBoxName, hit);
 				// "abuse" player's colliders list to keep track of location hitboxes we're in
 				this['!colliders'][hitBoxName] = t;
 			}
@@ -693,7 +685,7 @@ Player.prototype.handleCollision = function handleCollision(it, hitBox, hitBoxNa
 			if (hitBoxName || !it['!colliders'][this.tsid]) {
 				log.trace('%s entered/inside hitbox "%s" of %s', this, hitBoxName, it);
 				// call item's collision handler
-				it.onPlayerCollision(this, hitBoxName);
+				it.rqPush(it.onPlayerCollision, this, hitBoxName);
 				// keep track of player in the item's hitbox
 				if (!hitBoxName) {
 					it['!colliders'][this.tsid] = t;
@@ -710,7 +702,7 @@ Player.prototype.handleCollision = function handleCollision(it, hitBox, hitBoxNa
 				delete this['!colliders'][hitBoxName];
 				// call the handler for leaving the hitbox (if any)
 				if (this.location.onLeavingHitBox) {
-					this.location.onLeavingHitBox(this, hitBoxName);
+					this.location.rqPush(this.location.onLeavingHitBox, this, hitBoxName);
 				}
 			}
 		}
@@ -721,7 +713,7 @@ Player.prototype.handleCollision = function handleCollision(it, hitBox, hitBoxNa
 			delete it['!colliders'][this.tsid];
 			// call the handler for leaving the item's hitbox (if any)
 			if (it.onPlayerLeavingCollisionArea) {
-				it.onPlayerLeavingCollisionArea(this);
+				it.rqPush(it.onPlayerLeavingCollisionArea, this);
 			}
 		}
 	}
