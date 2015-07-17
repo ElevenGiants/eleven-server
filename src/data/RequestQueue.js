@@ -9,6 +9,7 @@
 module.exports = RequestQueue;
 
 var assert = require('assert');
+var async = require('async');
 var events = require('events');
 var metrics = require('metrics');
 var RC = require('data/RequestContext');
@@ -18,7 +19,8 @@ var utils = require('utils');
 // container for "regular" request queues, each one assigned to a specific top
 // level game object (location or group), its TSID used as the key here
 var rqs = {};
-
+// shutdown in progress flag
+var shuttingDown = false;
 
 /**
  * Initializes internal data structures and metrics.
@@ -27,6 +29,7 @@ var rqs = {};
  */
 RequestQueue.init = function init() {
 	rqs = {};
+	shuttingDown = false;
 	metrics.setupGaugeInterval('req.rq.count', function getCount() {
 		return rqs ? Object.keys(rqs).length : 0;
 	});
@@ -72,6 +75,7 @@ util.inherits(RequestQueue, events.EventEmitter);
  * @static
  */
 RequestQueue.create = function create(id) {
+	assert(!shuttingDown, 'request queue shutdown initiated');
 	assert(!rqs[id], 'RQ ' + id + ' already exists');
 	if (utils.isGameObject(id) && !(utils.isLoc(id) || utils.isGroup(id))) {
 		log.trace('%s is not worthy of its own RQ', id);
@@ -81,6 +85,19 @@ RequestQueue.create = function create(id) {
 	rqs[id] = rq;
 	log.info('new request queue registered: %s', rq);
 	return rq;
+};
+
+
+RequestQueue.shutdown = function shutdown(done) {
+	log.info('request queue shutdown initiated');
+	shuttingDown = true;
+	async.eachLimit(rqs, 5, function iter(k, cb) {
+		rqs[k].closing = true;
+		rqs[k].closeCallback = cb;
+	}, function callback() {
+		log.info('request queue shutdown complete');
+		done();
+	});
 };
 
 
@@ -190,6 +207,7 @@ RequestQueue.prototype.next = function next() {
 	else if (this.closing && rqs[this.id]) {
 		delete rqs[this.id];
 		log.info('request queue closed: %s', this);
+		if (this.closeCallback) this.closeCallback();
 	}
 };
 

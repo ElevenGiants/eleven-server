@@ -161,6 +161,8 @@ function shutdown() {
 	async.series([
 		// first, close and disconnect all client sessions
 		amfServer.close,
+		// then close all request queues
+		RQ.shutdown,
 		// then shut down RPC and persistence layer
 		rpc.shutdown,
 		pers.shutdown,
