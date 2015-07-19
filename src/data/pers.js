@@ -354,10 +354,11 @@ function postRequestRollback(dlist, alist, logmsg, callback) {
 	assert(!shuttingDown, 'persistence layer shutdown initiated');
 	var tag = 'rollback ' + logmsg;
 	log.info(tag);
-	for (let k in dlist) {
+	var k;
+	for (k in dlist) {
 		unload(dlist[k], tag);
 	}
-	for (let k in alist) {
+	for (k in alist) {
 		unload(alist[k], tag);
 	}
 	if (callback) callback();
