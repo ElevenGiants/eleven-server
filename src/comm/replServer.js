@@ -36,6 +36,7 @@ var rpc = require('data/rpc');
 var rpcApi = require('data/rpcApi');
 var slack = require('comm/slackChat');
 var logging = require('logging');
+var sessionMgr = require('comm/sessionMgr');
 
 var server;
 var connections = [];
@@ -92,6 +93,7 @@ function handleConnect(socket) {
 	r.context.config = config;
 	r.context.logging = logging;
 	r.context.bunyan = bunyan;
+	r.sessionMgr = sessionMgr;
 }
 
 
@@ -117,7 +119,7 @@ function getReplEval(addr, socket) {
 		rc.run(
 			function replEval() {
 				var res = script.runInContext(context, {displayErrors: false});
-				return util.inspect(res, false, 2, true);
+				return util.inspect(res, {showHidden: false, depth: 1, colors: true});
 			},
 			function cb(err, res) {
 				if (err) {

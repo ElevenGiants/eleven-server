@@ -78,8 +78,13 @@ function makeProxy(objref) {
 	return new Proxy(objref, {
 		// transparently handle on-access loading from persistence
 		get: function get(target, name, receiver) {
-			if (name === 'inspect' || name === 'valueOf' || name === 'toString') {
-				// node's util module uses 'inspect' (e.g. during console.log)
+			if (name === 'inspect') {
+				// node's util module uses this (e.g. during console.log)
+				return function inspect(depth) {
+					return '^O[' + target.tsid + '|' + target.label + ']';
+				};
+			}
+			if (name === 'valueOf' || name === 'toString') {
 				return function () {
 					return '^O[' + target.tsid + ']';
 				};
