@@ -26,12 +26,21 @@ suite('DataContainer', function () {
 
 
 		test('does its job', function (done) {
-			new RC().run(function () {
-				var group = Group.create();
-				var dc = DataContainer.create(group);
-				assert.isTrue(utils.isDC(dc));
-				assert.strictEqual(dc.owner, group);
-			}, done);
+			new RC().run(
+				function () {
+					var group = Group.create();
+					var dc = DataContainer.create(group);
+					assert.isTrue(utils.isDC(dc));
+					assert.strictEqual(dc.owner, group);
+				},
+				function cb(err, res) {
+					if (err) return done(err);
+					var db = pbeMock.getDB();
+					assert.strictEqual(pbeMock.getCounts().write, 2);
+					assert.strictEqual(Object.keys(db).length, 2);
+					done();
+				}
+			);
 		});
 
 		test('fails on invalid owner type', function () {

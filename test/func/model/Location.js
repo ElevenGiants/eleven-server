@@ -85,13 +85,22 @@ suite('Location', function () {
 	suite('create', function () {
 
 		test('does its job and creates "town" by default', function (done) {
-			new RC().run(function () {
-				var g = Geo.create();
-				var l = Location.create(g);
-				assert.isTrue(utils.isLoc(l));
-				assert.strictEqual(l.class_tsid, 'town');
-				assert.strictEqual(l.tsid.substr(1), g.tsid.substr(1));
-			}, done);
+			new RC().run(
+				function () {
+					var g = Geo.create();
+					var l = Location.create(g);
+					assert.isTrue(utils.isLoc(l));
+					assert.strictEqual(l.class_tsid, 'town');
+					assert.strictEqual(l.tsid.substr(1), g.tsid.substr(1));
+				},
+				function cb(err, res) {
+					if (err) return done(err);
+					var db = pbeMock.getDB();
+					assert.strictEqual(pbeMock.getCounts().write, 2);
+					assert.strictEqual(Object.keys(db).length, 2);
+					done();
+				}
+			);
 		});
 
 		test('fails if Geo object not available in persistence', function () {

@@ -172,12 +172,12 @@ suite('Session', function () {
 			process.nextTick(function () {
 				s.handleMessage({});
 			});
-			setImmediate(function () {
+			setTimeout(function () {
 				assert.isTrue(thrown);
 				// nothing else to assert - we're just testing that the error
 				// does not bubble up to the surface
 				done();
-			});
+			}, 20);
 		});
 	});
 });

@@ -247,6 +247,7 @@ function create(modelType, data) {
 	var obj = gsjsBridge.create(data, modelType);
 	assert(!(obj.tsid in cache), 'object already exists: ' + obj.tsid);
 	cache[obj.tsid] = obj;
+	RC.getContext().setDirty(obj);
 	if (typeof obj.onCreate === 'function') {
 		obj.onCreate();
 	}
@@ -256,22 +257,24 @@ function create(modelType, data) {
 
 
 /**
- * Called by {@link RequestContext#run} after processing a request has
- * finished; writes a list of game objects to persistence, and unloads
- * those objects from the live object cache.
+ * Called by {@link RequestContext#run} after processing a request has finished;
+ * saves changed game objects to persistence, and unloads objects from the live
+ * object cache.
  *
- * @param {object} ulist hash containing game objects to release from
- *        the live object cache
+ * @param {object} dlist hash containing game objects to persist
+ * @param {object} ulist hash containing game objects to persist and release
+ *        from the live object cache
  * @param {string} [logmsg] optional information for log messages
  * @param {function} [callback] function to be called after persistence
  *        operations have finished
  */
-function postRequestProc(ulist, logmsg, callback) {
+function postRequestProc(dlist, ulist, logmsg, callback) {
 	assert(!shuttingDown, 'persistence layer shutdown initiated');
 	// process persistence changes in a safe order (add/modify first, then
 	// delete); this may leave behind orphaned data, but should at least avoid
-	// avoid invalid object references
+	// invalid object references
 	async.series([
+		postRequestProcStep.bind(undefined, 'write', dlist, logmsg),
 		postRequestProcStep.bind(undefined, 'write', ulist, logmsg),
 		postRequestProcStep.bind(undefined, 'delete', ulist, logmsg),
 	], function cb(err) {
@@ -311,12 +314,12 @@ function postRequestProcStep(step, objects, logmsg, callback) {
 	async.each(Object.keys(objects),
 		function iter(k, cb) {
 			var o = objects[k];
-			// skip if not a "live" object the first place
+			// skip if not a "live" object in the first place
 			if (!(k in cache)) return cb();
 			try {
 				if (step === 'delete') {
 					// skip objects that are not actually deleted
-					if (!o.deleted) return cb(null);
+					if (!o.deleted) return cb();
 					return del(o, logmsg, function (e) {
 						if (e && !err) err = e;
 						return cb();
@@ -324,7 +327,7 @@ function postRequestProcStep(step, objects, logmsg, callback) {
 				}
 				else {
 					// skip objects that will be deleted later anyway
-					if (o.deleted) return cb(null);
+					if (o.deleted) return cb();
 					return write(o, logmsg, function (e) {
 						if (e && !err) err = e;
 						return cb();
@@ -338,7 +341,9 @@ function postRequestProcStep(step, objects, logmsg, callback) {
 			}
 		},
 		function (e, res) {
-			callback(err || e, res);
+			// invoke callback asynchronously, to ensure errors thrown there are
+			// not caught by the try...catch clause in the above async block
+			setImmediate(callback, err || e, res);
 		}
 	);
 }

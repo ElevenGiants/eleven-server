@@ -4,6 +4,8 @@
 module.exports = {
 	reset: reset,
 	getContext: getContext,
+	getDirtyList: getDirtyList,
+	setDirty: setDirty,
 	run: run,
 	setUnload: setUnload,
 	getUnloadList: getUnloadList,
@@ -14,11 +16,13 @@ var wait = require('wait.for');
 
 
 var cache = {};
+var dirty = {};
 var ulist = {};
 
 
 function reset() {
 	cache = {};
+	dirty = {};
 	ulist = {};
 }
 
@@ -26,7 +30,18 @@ function reset() {
 function getContext() {
 	return {
 		cache: cache,
+		setDirty: setDirty,
 	};
+}
+
+
+function getDirtyList() {
+	return Object.keys(dirty);
+}
+
+
+function setDirty(obj) {
+	dirty[obj.tsid] = obj;
 }
 
 

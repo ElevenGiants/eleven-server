@@ -38,13 +38,22 @@ suite('Quest', function () {
 	suite('create', function () {
 
 		test('does its job', function (done) {
-			new RC().run(function () {
-				var l = Location.create(Geo.create());
-				var q = Quest.create('beer_guzzle', l);
-				assert.isTrue(utils.isQuest(q));
-				assert.strictEqual(q.class_tsid, 'beer_guzzle');
-				assert.strictEqual(q.owner, l);
-			}, done);
+			new RC().run(
+				function () {
+					var l = Location.create(Geo.create());
+					var q = Quest.create('beer_guzzle', l);
+					assert.isTrue(utils.isQuest(q));
+					assert.strictEqual(q.class_tsid, 'beer_guzzle');
+					assert.strictEqual(q.owner, l);
+				},
+				function cb(err, res) {
+					if (err) return done(err);
+					var db = pbeMock.getDB();
+					assert.strictEqual(pbeMock.getCounts().write, 3);
+					assert.strictEqual(Object.keys(db).length, 3);
+					done();
+				}
+			);
 		});
 
 		test('fails on invalid owner type', function () {

@@ -40,6 +40,8 @@ function RequestContext(logtag, owner, session) {
 	this.session = session;
 	// request-local game object cache
 	this.cache = {};
+	// dirty object collector for persistence
+	this.dirty = {};
 	// objects scheduled for unloading after current request
 	this.unload = {};
 	// post-request-and-persistence callback (see setPostPersCallback)
@@ -49,8 +51,12 @@ function RequestContext(logtag, owner, session) {
 
 /**
  * Runs a request processing function in its own context, providing
- * request-local exception handling and Fibers-based functionality
- * (can be used anywhere within `func`).
+ * request-local persistence and exception handling. Fibers-based
+ * functionality can be used anywhere within `func`.
+ *
+ * If the function finishes successfully, modified game objects that were
+ * **explicitly** flagged as dirty are persisted (see
+ * {@link RequestContext#setDirty|setDirty}).
  *
  * @param {function} func function to run in request context
  * @param {function} [callback]
@@ -77,7 +83,7 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 			Fiber.current.rc = rc;
 			// call function in fiber context
 			res = func();
-			log.debug('finished %s', tag);
+			log.debug('finished %s (%s dirty)', tag, Object.keys(rc.dirty).length);
 		}
 		catch (err) {
 			/*jshint -W030 */  // trigger prepareStackTrace (parts of the trace might not be available outside the RC)
@@ -86,7 +92,7 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 			return callback(err);
 		}
 		// persist modified objects
-		pers.postRequestProc(rc.unload, tag, function done() {
+		pers.postRequestProc(rc.dirty, rc.unload, tag, function done() {
 			// invoke special post-persistence callback if there is one
 			if (typeof rc.postPersCallback === 'function') {
 				rc.postPersCallback();
@@ -136,6 +142,32 @@ RequestContext.logSerialize = function logSerialize(rc) {
 	if (rc.logtag) ret.logtag = rc.logtag;
 	if (rc.owner) ret.owner = '' + rc.owner;
 	return ret;
+};
+
+
+/**
+ * Flags the given (existing/not newly created) game object as dirty, causing it
+ * to be written to persistent storage at the end of the current request. Does
+ * nothing when called without an active request context.
+ *
+ * @param {GameObject} obj the modified game object
+ */
+RequestContext.setDirty = function setDirty(obj) {
+	var rc = RequestContext.getContext(true);
+	if (rc) rc.setDirty(obj);
+};
+
+
+/**
+ * Explicitly flags the given game object as dirty, causing it to be written to
+ * persistent storage at the end of the current request (if the request finishes
+ * successfully). Can only be called from within a request (see
+ * {@link RequestContext#run|run}).
+ *
+ * @param {GameObject} obj the new or updated object
+ */
+RequestContext.prototype.setDirty = function setDirty(obj) {
+	this.dirty[obj.tsid] = obj;
 };
 
 

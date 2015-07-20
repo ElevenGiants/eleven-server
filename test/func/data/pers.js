@@ -115,7 +115,8 @@ suite('pers', function () {
 					if (err) done(err);
 					assert.notProperty(gsTimers.go1.foo, 'handle');
 					assert.notProperty(gsTimers.go2.foo, 'handle');
-				}
+				},
+				true
 			);
 			setTimeout(function wait() {
 				assert.isFalse(timerFired);

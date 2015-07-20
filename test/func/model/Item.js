@@ -29,13 +29,23 @@ suite('Item', function () {
 	suite('create', function () {
 
 		test('does its job', function (done) {
-			new RC().run(function () {
-				var it = Item.create('pi', 7);
-				assert.isTrue(utils.isItem(it));
-				assert.strictEqual(it.class_tsid, 'pi');
-				assert.strictEqual(it.constructor.name, 'pi');
-				assert.strictEqual(it.count, 7);
-			}, done);
+			new RC().run(
+				function () {
+					var it = Item.create('pi', 7);
+					assert.isTrue(utils.isItem(it));
+					assert.strictEqual(it.class_tsid, 'pi');
+					assert.strictEqual(it.constructor.name, 'pi');
+					assert.strictEqual(it.count, 7);
+				},
+				function cb(err, res) {
+					if (err) return done(err);
+					var db = pbeMock.getDB();
+					assert.strictEqual(pbeMock.getCounts().write, 1);
+					assert.strictEqual(Object.keys(db).length, 1);
+					assert.strictEqual(db[Object.keys(db)[0]].class_tsid, 'pi');
+					done();
+				}
+			);
 		});
 
 		test('count defaults to 1', function (done) {
@@ -48,6 +58,37 @@ suite('Item', function () {
 			assert.throw(function () {
 				Item.create('bag_bigger_gray');
 			}, assert.AssertionError);
+		});
+	});
+
+
+	suite('delete', function () {
+
+		this.slow(400);
+
+		test('forces container to be persisted after the request', function (done) {
+			var rc = new RC();
+			var l;
+			rc.run(
+				function () {
+					l = Location.create(Geo.create());
+					rc.cache[l.tsid] = l;
+					var it = Item.create('meat', 7);
+					it.setContainer(l, 100, 100);
+					assert.deepEqual(Object.keys(l.items), [it.tsid]);
+					it.del();
+				},
+				function cb(err) {
+					if (err) return done(err);
+					var db = pbeMock.getDB();
+					assert.strictEqual(pbeMock.getCounts().write, 2);  // geo and loc
+					assert.strictEqual(pbeMock.getCounts().del, 1);
+					assert.sameMembers(Object.keys(db), [l.tsid, l.geometry.tsid]);
+					assert.deepEqual(Object.keys(l.items), []);
+					done();
+				},
+				true
+			);
 		});
 	});
 

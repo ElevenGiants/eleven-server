@@ -7,6 +7,7 @@ var assert = require('assert');
 var GameObject = require('model/GameObject');
 var OrderedHash = require('model/OrderedHash');
 var pers = require('data/pers');
+var RC = require('data/RequestContext');
 var util = require('util');
 var utils = require('utils');
 var ItemMovement = require('model/ItemMovement');
@@ -125,6 +126,7 @@ Item.prototype.del = function del() {
 	log.trace('del %s', this);
 	Item.super_.prototype.del.call(this);
 	if (this.container) {
+		RC.setDirty(this.container);
 		delete this.container.items[this.tsid];
 		delete this.container.hiddenItems[this.tsid];
 		delete this.container;
@@ -192,6 +194,7 @@ Item.prototype.setXY = function setXY(x, y) {
  * @param {boolean} [hidden] item will be hidden in the new container
  *        (`false` by default)
  */
+/*jshint -W071 */
 Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 	var tcont = cont.tcont ? cont.tcont : cont.tsid;
 	assert(utils.isPlayer(tcont) || utils.isLoc(tcont), util.format(
@@ -205,13 +208,16 @@ Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 		}
 	}
 	// change entries in old and new container (unless they are one and the same)
+	RC.setDirty(this);
 	var prev = this.container;
 	this.container = cont;
 	if (!prev || prev.tsid !== cont.tsid) {
 		if (prev) {
+			RC.setDirty(prev);
 			delete prev.items[this.tsid];
 			delete prev.hiddenItems[this.tsid];
 		}
+		RC.setDirty(cont);
 		cont[hidden ? 'hiddenItems' : 'items'][this.tsid] = this;
 	}
 	// queue removal change if top container changed
@@ -234,6 +240,7 @@ Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 	}
 	this.sendContChangeEvents(prev);
 };
+/*jshint +W071 */
 
 
 /**
@@ -372,6 +379,7 @@ Item.prototype.split = function split(n) {
 		return;
 	}
 	if (n >= this.count) return;
+	RC.setDirty(this);
 	this.count -= n;
 	var newItem = Item.create(this.class_tsid, n);
 	if (this.is_soulbound_item) {
@@ -407,6 +415,8 @@ Item.prototype.merge = function merge(that, n) {
 	if (this.class_tsid !== that.class_tsid) return 0;
 	if (this.soulbound_to !== that.soulbound_to) return 0;
 	var moved = Math.min(n, this.stackmax - this.count);
+	RC.setDirty(this);
+	RC.setDirty(that);
 	that.count -= moved;
 	this.count += moved;
 	if (that.count <= 0) that.del();
@@ -426,6 +436,7 @@ Item.prototype.merge = function merge(that, n) {
 Item.prototype.consume = function consume(n) {
 	assert(utils.isInt(n) && n >= 0, 'invalid consumption amount: ' + n);
 	n = Math.min(n, this.count);
+	RC.setDirty(this);
 	this.count -= n;
 	if (this.count <= 0) this.del();
 	else this.queueChanges();
