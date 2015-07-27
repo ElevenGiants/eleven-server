@@ -1,3 +1,39 @@
+/**
+ * Requires space before and/or after `?` or `:` in conditional expressions.
+ *
+ * Types: `Object` or `Boolean`
+ *
+ * Values: `"afterTest"`, `"beforeConsequent"`, `"afterConsequent"`, `"beforeAlternate"` as child properties,
+ * or `true` to set all properties to `true`. Child properties must be set to `true`.
+ *
+ * #### Example
+ *
+ * ```js
+ * "requireSpacesInConditionalExpression": {
+ *     "afterTest": true,
+ *     "beforeConsequent": true,
+ *     "afterConsequent": true,
+ *     "beforeAlternate": true
+ * }
+ * ```
+ *
+ * ##### Valid
+ *
+ * ```js
+ * var a = b ? c : d;
+ * var a= b ? c : d;
+ * ```
+ *
+ * ##### Invalid
+ *
+ * ```js
+ * var a = b? c : d;
+ * var a = b ?c : d;
+ * var a = b ? c: d;
+ * var a = b ? c :d;
+ * ```
+ */
+
 var assert = require('assert');
 
 module.exports = function() {};
@@ -23,7 +59,7 @@ module.exports.prototype = {
 
         assert(
             typeof options === 'object',
-            optionName + ' option must be an object or boolean true'
+            optionName + ' option requires a true value or an object'
         );
 
         var isProperlyConfigured = validProperties.some(function(key) {
@@ -54,53 +90,49 @@ module.exports.prototype = {
     },
 
     check: function(file, errors) {
-        var tokens = file.getTokens();
-
         file.iterateNodesByType(['ConditionalExpression'], function(node) {
-            var test = node.test;
             var consequent = node.consequent;
             var alternate = node.alternate;
-            var questionMark;
-            var colon;
+            var consequentToken = file.getFirstNodeToken(consequent);
+            var alternateToken = file.getFirstNodeToken(alternate);
+            var questionMarkToken = file.findPrevOperatorToken(consequentToken, '?');
+            var colonToken = file.findPrevOperatorToken(alternateToken, ':');
+            var token;
 
             if (this._afterTest) {
-                questionMark = tokens[file.getTokenPosByRangeStart(test.range[1])];
-                if (questionMark && questionMark.value === '?') {
-                    errors.add(
-                        'Missing space after test',
-                        test.loc.end
-                    );
-                }
+                token = file.getPrevToken(questionMarkToken);
+                errors.assert.whitespaceBetween({
+                    token: token,
+                    nextToken: questionMarkToken,
+                    message: 'Missing space after test'
+                });
             }
 
             if (this._beforeConsequent) {
-                questionMark = tokens[file.getTokenPosByRangeStart(consequent.range[0] - 1)];
-                if (questionMark && questionMark.value === '?') {
-                    errors.add(
-                        'Missing space before consequent',
-                        consequent.loc.start
-                    );
-                }
+                token = file.getNextToken(questionMarkToken);
+                errors.assert.whitespaceBetween({
+                    token: questionMarkToken,
+                    nextToken: token,
+                    message: 'Missing space before consequent'
+                });
             }
 
             if (this._afterConsequent) {
-                colon = tokens[file.getTokenPosByRangeStart(consequent.range[1])];
-                if (colon && colon.value === ':') {
-                    errors.add(
-                        'Missing space after consequent',
-                        consequent.loc.end
-                    );
-                }
+                token = file.getPrevToken(colonToken);
+                errors.assert.whitespaceBetween({
+                    token: token,
+                    nextToken: colonToken,
+                    message: 'Missing space after consequent'
+                });
             }
 
             if (this._beforeAlternate) {
-                colon = tokens[file.getTokenPosByRangeStart(alternate.range[0] - 1)];
-                if (colon && colon.value === ':') {
-                    errors.add(
-                        'Missing space before alternate',
-                        alternate.loc.start
-                    );
-                }
+                token = file.getNextToken(colonToken);
+                errors.assert.whitespaceBetween({
+                    token: colonToken,
+                    nextToken: token,
+                    message: 'Missing space before alternate'
+                });
             }
         }.bind(this));
     }

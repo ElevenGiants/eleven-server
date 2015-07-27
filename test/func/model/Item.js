@@ -1,7 +1,6 @@
 'use strict';
 
 var gsjsBridge = require('model/gsjsBridge');
-var orProxy = require('data/objrefProxy');
 var RC = require('data/RequestContext');
 var Item = require('model/Item');
 var Bag = require('model/Bag');
@@ -30,24 +29,13 @@ suite('Item', function () {
 	suite('create', function () {
 
 		test('does its job', function (done) {
-			new RC().run(
-				function () {
-					var it = Item.create('pi', 7);
-					assert.isTrue(it.__isPP);
-					assert.isTrue(utils.isItem(it));
-					assert.strictEqual(it.class_tsid, 'pi');
-					assert.strictEqual(it.constructor.name, 'pi');
-					assert.strictEqual(it.count, 7);
-				},
-				function cb(err, res) {
-					if (err) return done(err);
-					var db = pbeMock.getDB();
-					assert.strictEqual(pbeMock.getCounts().write, 1);
-					assert.strictEqual(Object.keys(db).length, 1);
-					assert.strictEqual(db[Object.keys(db)[0]].class_tsid, 'pi');
-					done();
-				}
-			);
+			new RC().run(function () {
+				var it = Item.create('pi', 7);
+				assert.isTrue(utils.isItem(it));
+				assert.strictEqual(it.class_tsid, 'pi');
+				assert.strictEqual(it.constructor.name, 'pi');
+				assert.strictEqual(it.count, 7);
+			}, done);
 		});
 
 		test('count defaults to 1', function (done) {
@@ -367,14 +355,14 @@ suite('Item', function () {
 				var b = new Bag({tcont: 'PX'});
 				rc.cache[p.tsid] = p;
 				rc.cache[b.tsid] = b;
-				it.setContainer(orProxy.wrap(b), 1);  // not interested in the changes for this
+				it.setContainer(b, 1);  // not interested in the changes for this
 				// aggregator for queued changes
 				var changes = [];
 				it.queueChanges = function queueChanges(removed) {
 					changes.push(removed);
 				};
 				// actual test starts here
-				it.setContainer(orProxy.wrap(b), 2);  // b wrapped in a new proxy
+				it.setContainer(b, 2);
 				assert.deepEqual(changes, [undefined]);
 			}, done);
 		});

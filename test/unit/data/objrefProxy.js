@@ -2,7 +2,6 @@
 
 var rewire = require('rewire');
 var GameObject = require('model/GameObject');
-var persProxy = require('data/persProxy');
 var orproxy = rewire('data/objrefProxy');
 var persMock = require('../../mock/pers');
 // workaround to make Proxy available in orproxy module after rewiring:
@@ -114,18 +113,6 @@ suite('objrefProxy', function () {
 			assert.isTrue(({}).hasOwnProperty.call(proxy, 'tsid'));
 			assert.isTrue(({}).hasOwnProperty.call(proxy, 'x'));
 			assert.isFalse(({}).hasOwnProperty.call(proxy, 'y'));
-		});
-
-		test('"enumerate" trap works with nested proxies', function () {
-			var o = {tsid: 'IX', a: 1, b: 2, c: 3};
-			o = persProxy.makeProxy(o);
-			persMock.add(o);
-			var proxy = orproxy.makeProxy({tsid: 'IX'});
-			var list = [];
-			for (var prop in proxy) {
-				list.push(prop);
-			}
-			assert.sameMembers(list, ['tsid', 'a', 'b', 'c']);
 		});
 
 		test('proxy supports game object serialization', function () {
@@ -279,32 +266,6 @@ suite('objrefProxy', function () {
 			var refd = orproxy.refify(p);  // would throw an ObjRefProxyError if it tried to resolve
 			assert.isFalse('label' in refd, 'resulting objref does not have ' +
 				'a "label" property');
-		});
-	});
-
-
-	suite('wrap', function () {
-
-		test('does its job', function () {
-			var go = new GameObject({left: 'right'});
-			persMock.add(go);
-			var wrapped = orproxy.wrap(go);
-			assert.isTrue(wrapped.__isORP);
-			assert.strictEqual(wrapped.left, 'right');
-			assert.strictEqual(wrapped.__proxyTarget, go);
-		});
-
-		test('handles invalid input data gracefully', function () {
-			assert.isNull(orproxy.wrap(null));
-			assert.isUndefined(orproxy.wrap(undefined));
-		});
-
-		test('label changes in wrapped objects are reflected in proxy', function () {
-			var go = new GameObject();
-			persMock.add(go);
-			var wrapped = orproxy.wrap(go);
-			wrapped.label = 'Lemmiwinks';
-			assert.strictEqual(wrapped.label, 'Lemmiwinks');
 		});
 	});
 });

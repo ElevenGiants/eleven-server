@@ -39,8 +39,7 @@ function Geo(data) {
  * Creates a new `Geo` instance and adds it to persistence.
  *
  * @param {object} [data] geometry data properties
- * @returns {object} a `Geo` instance wrapped in a {@link
- * module:data/persProxy|persistence proxy}
+ * @returns {object} a `Geo` object
  */
 Geo.create = function create(data) {
 	return pers.create(Geo, data);

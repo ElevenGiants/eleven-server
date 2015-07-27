@@ -102,8 +102,7 @@ Location.prototype.gsOnLoad = function gsOnLoad() {
  * Creates a new `Location` instance and adds it to persistence.
  *
  * @param {object} [data] additional properties
- * @returns {object} a `Location` instance wrapped in a {@link
- * module:data/persProxy|persistence proxy}
+ * @returns {object} a `Location` object
  */
 Location.create = function create(data) {
 	data = data || {};
@@ -203,7 +202,7 @@ Location.prototype.checkUnload = function checkUnload() {
 Location.prototype.unload = function unload() {
 	log.info('%s.unload', this);
 	var rc = RC.getContext();
-	var items = this.getAllItems();
+	var items = this.getAllItems(false, false);
 	for (var k in items) {
 		rc.setUnload(items[k]);
 	}
@@ -461,19 +460,25 @@ Location.prototype.copyLocation = function copyLocation(label, moteId, hubId,
 	var data = {};
 	var newGeo = Geo.create(data);
 	newGeo.copyGeometryData(this.geometry);
+	console.log("a");
 
 	data = {};
 	data.geo = newGeo;
 	if (!altClassTsid) altClassTsid = this.class_tsid;
 	data.class_tsid = altClassTsid;
+	console.log("1");
 	var newLoc = Location.create(data);
+	console.log("2");
 	newLoc.copyLocationData(this);
+	console.log("3");
 	delete newLoc.label;
 	newLoc.label = label;
 	newLoc.moteid = moteId;
 	newLoc.hubid = hubId;
 	newLoc.is_instance = isInstance;
+	console.log("4");
 	newLoc.updateGeo(newGeo);
+	console.log("b");
 
 	newLoc.items = new IdObjRefMap({});
 	for (var i in this.items) {
@@ -485,8 +490,11 @@ Location.prototype.copyLocation = function copyLocation(label, moteId, hubId,
 		newLoc.items[newItem.tsid] = newItem;
 	}
 
+	console.log("c");
+
+	api.apiEnableRPC();
 	newLoc.onCreateAsCopyOf(this);
-	return newLoc;
+	return api.apiFindObject(newLoc.tsid);
 };
 /*jshint +W072 */
 

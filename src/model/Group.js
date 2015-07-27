@@ -6,7 +6,7 @@ module.exports = Group;
 var GameObject = require('model/GameObject');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
-var slack = require('comm/slack');
+var slackChat = require('comm/slackChat');
 var util = require('util');
 
 
@@ -27,7 +27,7 @@ function Group(data) {
 	data = data || {};
 	if (!data.tsid) data.tsid = rpc.makeLocalTsid(Group.prototype.TSID_INITIAL);
 	Group.super_.call(this, data);
-	slack.patchGroup(this);
+	slackChat.patchGroup(this);
 }
 
 
@@ -36,8 +36,7 @@ function Group(data) {
  *
  * @param {string} [classTsid] specific class of the group
  * @param {string} [hubId] hub to attach the group to
- * @returns {object} a `Group` instance wrapped in a {@link
- * module:data/persProxy|persistence proxy}
+ * @returns {object} a `Group` object
  */
 Group.create = function create(classTsid, hubId) {
 	var data = {};

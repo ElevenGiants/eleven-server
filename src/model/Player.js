@@ -87,8 +87,7 @@ utils.copyProps(require('model/PlayerApi').prototype, Player.prototype);
  *
  * @param {object} [data] player data; must contain everything required
  *        for a new player
- * @returns {object} a `Player` instance wrapped in a {@link
- * module:data/persProxy|persistence proxy}
+ * @returns {object} a `Player` object
  */
 Player.create = function create(data) {
 	assert(typeof data === 'object', 'minimal player data set required');
@@ -255,7 +254,7 @@ Player.prototype.getConnectedObjects = function getConnectedObjects() {
 	// implicitly avoid duplicate entries
 	var ret = {};
 	// get all bags and items
-	var inventory = this.getAllItems(true);
+	var inventory = this.getAllItems(true, false);
 	for (var k in inventory) {
 		ret[inventory[k].tsid] = inventory[k];
 	}

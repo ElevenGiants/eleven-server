@@ -24,8 +24,9 @@ var orProxy = require('data/objrefProxy');
 var utils = require('utils');
 var logging = require('logging');
 var lodash = require('lodash');
-var slack = require('comm/slack');
+var slackChat = require('comm/slackChat');
 var crypto = require('crypto');
+var RC = require('data/RequestContext');
 
 
 function getItemType(classTsid) {
@@ -440,7 +441,7 @@ exports.apiSendToAll = function apiSendToAll(msg) {
  */
 exports.apiSendToGroup = function apiSendToGroup(msg, recipients) {
 	log.debug('global.apiSendToGroup(%s, %s)', msg, recipients);
-	slack.handleGroupMsg(msg);
+	slackChat.handleGroupMsg(msg);
 	var tsids = utils.playersArgToList(recipients);
 	tsids.forEach(function iter(tsid) {
 		if (isPlayerOnline(tsid)) {
@@ -510,4 +511,19 @@ exports.apiAdminCall = function apiAdminCall(methodName, args) {
 exports.apiReloadDataForGlobalPathFinding = function apiReloadDataForGlobalPathFinding() {
 	log.debug('global.apiReloadDataForGlobalPathFinding()');
 	log.warn('TODO global.apiReloadDataForGlobalPathFinding not implemented yet');
-} ;
+};
+
+exports.apiDisableRPC = function apiDisableRPC() {
+	console.log("disable RPC");
+	//RC.getContext().bypassRPC = true;
+};
+
+exports.apiEnableRPC = function apiEnableRPC() {
+	console.log("enable RPC");
+	//RC.getContext().bypassRPC = false;
+};
+
+exports.apiRPCEnabled = function apiRPCEnabled() {
+	console.log("checking RPC");
+	return RC.getContext().bypassRPC;
+}

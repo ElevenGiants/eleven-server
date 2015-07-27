@@ -34,7 +34,7 @@ var gsjsBridge = require('model/gsjsBridge');
 var globalApi = require('model/globalApi');
 var rpc = require('data/rpc');
 var rpcApi = require('data/rpcApi');
-var slack = require('comm/slack');
+var slack = require('comm/slackChat');
 var logging = require('logging');
 
 var server;

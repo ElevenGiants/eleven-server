@@ -121,6 +121,8 @@ GameObject.prototype.toString = function toString() {
  */
 GameObject.prototype.del = function del() {
 	this.deleted = true;
+	var rc = RC.getContext(true);
+	if (rc) rc.setUnload(this);
 };
 
 
@@ -392,7 +394,7 @@ GameObject.prototype.cancelGsTimer = function cancelGsTimer(fname, interval) {
 	var entry = this.gsTimers[fname];
 	/*jshint -W018 */
 	if (entry && !!entry.options.interval === !!interval) {
-	/*jshint +W018 */
+		/*jshint +W018 */
 		if (entry.handle) {
 			clearTimeout(entry.handle);
 			ret = true;
@@ -408,7 +410,10 @@ GameObject.prototype.cancelGsTimer = function cancelGsTimer(fname, interval) {
  * @param {object} from : The object to copy into this object
  * @param {array} skipList : The list of top level properties not to copy
  */
-GameObject.prototype.copyProps = function copyProps(from, skipList) {
+GameObject.prototype.copyProps = function copyProps(from, skipList, count) {
+	if(count == undefined)
+		count = 0;
+	count++;
 	for (var key in from) {
 		var value = from[key];
 		// Skip functions, as they're defined in Server/GSJS code and not to be persisted
@@ -424,13 +429,14 @@ GameObject.prototype.copyProps = function copyProps(from, skipList) {
 		else {
 			// Directly copy objref proxies without digging down
 			if (value.__isORP) {
-				this[key] = value;
+				console.log(key);
 			}
 			// Recurse down for complex objects/arrays
 			else {
 				this[key] = value instanceof Array ? [] : {};
+				console.log(key + " " + count);
 				// don't provide skiplist, only want to skip top level items
-				GameObject.prototype.copyProps.call(this[key], value);
+				GameObject.prototype.copyProps.call(this[key], value, count);
 			}
 		}
 	}

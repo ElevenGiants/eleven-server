@@ -34,8 +34,7 @@ function Quest(data) {
  * @param {string} classTsid specific class of the quest
  * @param {Location|Player} owner top-level game object this quest
  *        belongs to
- * @returns {object} a `Quest` instance wrapped in a {@link
- * module:data/persProxy|persistence proxy}
+ * @returns {object} a `Quest` object
  */
 Quest.create = function create(classTsid, owner) {
 	assert(utils.isLoc(owner) || utils.isPlayer(owner), util.format(
