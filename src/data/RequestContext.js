@@ -141,6 +141,38 @@ RequestContext.logSerialize = function logSerialize(rc) {
 
 
 /**
+ * Flags the given (existing/not newly created) game object as dirty, causing it
+ * to be written to persistent storage at the end of the current request. Does
+ * nothing when called without an active request context.
+ *
+ * @param {GameObject} obj the modified game object
+ */
+RequestContext.setDirty = function setDirty(obj) {
+	var rc = RequestContext.getContext(true);
+	if (rc) rc.setDirty(obj);
+};
+
+
+/**
+ * Flags the given game object as dirty, causing it to be written to
+ * persistent storage at the end of the current request (if the request
+ * finishes successfully). Can only be called from within a request
+ * (see {@link RequestContext#run|run}).
+ *
+ * @param {GameObject} obj the new or updated object
+ * @param {boolean} [added] `true` if `obj` is a newly created object
+ */
+RequestContext.prototype.setDirty = function setDirty(obj, added) {
+	if (added) {
+		this.added[obj.tsid] = obj;
+	}
+	else if (!(obj.tsid in this.added)) {
+		this.dirty[obj.tsid] = obj;
+	}
+};
+
+
+/**
  * Schedules a game object for unloading from the live object cache at
  * the end of the current request. Can only be called from within a
  * request (see {@link RequestContext#run|run}).

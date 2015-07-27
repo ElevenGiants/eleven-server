@@ -53,7 +53,7 @@ suite('gsjsBridge', function () {
 			});
 			pi = gsjsBridge.getProto('items', 'pi');
 			time = new Date().getTime() - time;
-			assert.isTrue(time < 1000, 'too slow: ' + time + ' ms');
+			assert.isTrue(time < 3000, 'too slow: ' + time + ' ms');
 		});
 	});
 

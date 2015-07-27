@@ -128,13 +128,21 @@ Location.prototype.del = function del() {
 
 
 /**
- * Adds a player to the list of players in this location and calls
- * various GSJS "onEnter" event handlers.
+ * Adds a player to the list of players in this location
  *
  * @param {Player} player the player to add
  */
 Location.prototype.addPlayer = function addPlayer(player) {
 	this.players[player.tsid] = player;
+};
+
+
+/**
+ * Calls GSJS event handlers for a player entering a location.
+ *
+ * @param {Player} player the player that is entering the location
+ */
+Location.prototype.gsOnPlayerEnter = function gsOnPlayerEnter(player) {
 	if (this.onPlayerEnter) {
 		this.onPlayerEnter(player);
 	}
@@ -154,9 +162,7 @@ Location.prototype.addPlayer = function addPlayer(player) {
 
 /**
  * Removes a player from the list of players in this location and
- * calls various GSJS "onExit" event handlers. If after that the
- * location is empty (no other players remaining), it is unloaded
- * from memory (including everything in it).
+ * calls various GSJS "onExit" event handlers.
  *
  * @param {Player} player the player to remove
  * @param {Location} [newLoc] the location the player is moving to
@@ -349,6 +355,30 @@ Location.prototype.flush = function flush() {
 Location.prototype.addItem = function addItem(item, x, y, noMerge) {
 	item.setContainer(this, x, y);
 	//TODO: merging
+};
+
+
+/**
+ * Put an item stack (or a part of it) into a bag in this location, using empty
+ * slots or merging with existing stacks.
+ *
+ * @param {Item} item item stack to add; may be deleted in the process
+ * @param {number} fromSlot distribution starts at this slot number
+ * @param {number} toSlot distribution ends at this slot number (inclusive;
+ *        must be >= `fromSlot`)
+ * @param {string} path path to target bag (must be a bag in this location)
+ * @param {number} [amount] amount of the item stack to add/distribute; if not
+ *        specified, the whole stack is processed
+ * @returns {number} amount of remaining items (i.e. that could not be
+ *          distributed)
+ */
+Location.prototype.addToBag = function addToBag(item, fromSlot, toSlot, path, amount) {
+	if (amount === undefined || amount > item.count) amount = item.count;
+	var bag = this.items[path.split('/').pop()];
+	for (var slot = fromSlot; slot <= toSlot && amount > 0; slot++) {
+		amount -= bag.addToSlot(item, slot, amount);
+	}
+	return amount;
 };
 
 

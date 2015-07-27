@@ -55,7 +55,7 @@ suite('Session', function () {
 		});
 
 		test('works with a number of concurrent connections', function (done) {
-			var numbers = Array.apply(null, {length: 1000}).map(Number.call, Number);
+			var numbers = Array.apply(null, {length: 100}).map(Number.call, Number);
 			async.eachLimit(numbers, 10,
 				function iterator(i, cb) {
 					net.connect(cfg.port, cfg.host)

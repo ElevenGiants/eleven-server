@@ -57,6 +57,7 @@ function Session(id, socket) {
 	Session.super_.call(this);
 	this.id = id;
 	this.loggedIn = false;
+	this.preLoginBuffer = [];
 	this.socket = socket;
 	this.ts = new Date().getTime();
 	this.maxMsgSize = config.get('net:maxMsgSize');
@@ -324,12 +325,22 @@ Session.prototype.postRequestProc = function postRequestProc(req) {
 		case 'login_end':
 			// put player into location (same as regular move end)
 			this.pc.endMove();
+			this.pc.location.gsOnPlayerEnter(this.pc);
+			this.flushPreLoginBuffer();
 			break;
 		case 'relogin_end':
+			this.pc.location.gsOnPlayerEnter(this.pc);
 			// call Location.onPlayerReconnect event (necessary to make client
 			// hide hidden decos after reconnecting; relogin_start is too early
 			// for this)
 			this.pc.location.onPlayerReconnect(this.pc);
+			this.flushPreLoginBuffer();
+			break;
+		case 'signpost_move_end':
+		case 'follow_move_end':
+		case 'door_move_end':
+		case 'teleport_move_end':
+			this.pc.location.gsOnPlayerEnter(this.pc);
 			break;
 	}
 	// make sure changes/announcements caused by this request are sent out
@@ -339,14 +350,21 @@ Session.prototype.postRequestProc = function postRequestProc(req) {
 };
 
 
+Session.prototype.flushPreLoginBuffer = function flushPreLoginBuffer() {
+	if (!this.preLoginBuffer || !this.preLoginBuffer.length) return;
+	if (log.debug) {
+		log.debug({queue: this.preLoginBuffer.map(function getType(msg) {
+			return msg.type;
+		})}, '(re)login complete, flushing queued messages');
+	}
+	this.preLoginBuffer.forEach(this.send, this);
+	this.preLoginBuffer = [];
+};
+
+
 Session.prototype.handleAmfReqError = function handleAmfReqError(err, req) {
 	if (!err) return;
 	if (typeof req !== 'object') req = {};
-	if (typeof err === 'object' && err.type === 'stack_overflow') {
-		// special treatment for stack overflow errors
-		// see https://github.com/trentm/node-bunyan/issues/127
-		err = new Error(err.message);
-	}
 	if (typeof err === 'string') {
 		// catch malcontents throwing strings instead of Errors, e.g.
 		// https://github.com/tvcutsem/harmony-reflect/issues/38
@@ -376,7 +394,8 @@ Session.prototype.send = function send(msg) {
 		if (msg.type !== 'login_start' && msg.type !== 'login_end' &&
 			msg.type !== 'relogin_start' && msg.type !== 'relogin_end' &&
 			msg.type !== 'ping') {
-			log.debug('login incomplete, dropping %s message', msg.type);
+			log.debug('(re)login incomplete, postponing %s message', msg.type);
+			this.preLoginBuffer.push(msg);
 			return;
 		}
 		if (msg.type === 'login_end' || msg.type === 'relogin_end') {
@@ -384,7 +403,11 @@ Session.prototype.send = function send(msg) {
 		}
 	}
 	// JSON roundtrip workaround because AMF serialization currently does not
-	// work for ES6 proxies - see e.g. https://github.com/joyent/node/issues/7526
+	// work correctly for arrays wrapped in ES6 proxies, i.e.
+	//     amf.serialize(new Proxy([1,2,3], {}))
+	// does not return the same data as:
+	//     amf.serialize([1,2,3])
+	//
 	//TODO: remove this when it's no longer necessary
 	msg = JSON.parse(JSON.stringify(msg));
 	if (log.trace()) {

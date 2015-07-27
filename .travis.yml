@@ -1,0 +1,24 @@
+language: node_js
+
+node_js:
+- node
+- iojs
+
+cache: false
+
+before_script:
+- cd ..
+- git clone https://github.com/ElevenGiants/eleven-gsjs.git
+- cd eleven-server
+- npm rebuild
+- npm run preproc
+
+script:
+- npm -s run test
+- npm -s run functest
+- npm -s run lint
+
+notifications:
+  email: false
+  slack:
+    secure: kVNLsevaDEQrNAZ64C4HdK9qd0aka73WoDzb1vWcaIBqZQ2H+V6U20l0m3tDsBf9kLfrit2+gDJuPdYW672l2m6mVCDBUk74UW99wraOeuE2hIbHGEBTe/eF6QjPUlBt8B6usOJ3grxjQIiitV81aDGnf5usEjLPQBM1Zcp6mqY=

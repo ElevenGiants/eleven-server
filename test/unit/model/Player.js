@@ -49,13 +49,24 @@ suite('Player', function () {
 			var p = new Player({tsid: 'P1', metabolics: {energy: 7000}});
 			assert.instanceOf(p.metabolics.energy, Property);
 			assert.strictEqual(p.metabolics.energy.value, 7000);
-			p = new Player({tsid: 'P1', metabolics: {
-				energy: {value: 50, bottom: 0, top: 800, label: 'energy'}},
+			p = new Player({tsid: 'P1',
+				metabolics: {
+					energy: {value: 50, bottom: 0, top: 800, label: 'energy'},
+				},
+				stats: {
+					recipe_xp_today: {
+						97: {value: 2, bottom: 0, top: 85447, label: '97'}
+					},
+				},
 			});
 			assert.instanceOf(p.metabolics.energy, Property);
 			assert.strictEqual(p.metabolics.energy.value, 50);
 			assert.strictEqual(p.metabolics.energy.bottom, 0);
 			assert.strictEqual(p.metabolics.energy.top, 800);
+			assert.deepEqual(Object.keys(p.stats.recipe_xp_today), ['97']);
+			assert.instanceOf(p.stats.recipe_xp_today['97'], Property);
+			assert.strictEqual(p.stats.recipe_xp_today['97'].value, 2);
+			assert.strictEqual(p.stats.recipe_xp_today['97'].top, 85447);
 		});
 
 		test('missing properties are created', function () {
@@ -100,6 +111,21 @@ suite('Player', function () {
 			assert.strictEqual(p.daily_favor.alph.top, 20);
 			assert.strictEqual(p.daily_favor.alph.value, 17);
 			assert.strictEqual(p.daily_favor.alph.label, 'alph');
+		});
+
+		test('serializes an object containing properties', function () {
+			var p = new Player({
+				tsid: 'P1',
+				stats: {
+					recipe_xp_today: {
+						14: new Property('14', 10),
+						20: new Property('20', 100)
+					}
+				}
+			});
+			var data = p.serialize();
+			var keys = Object.keys(data.stats.recipe_xp_today);
+			assert.sameMembers(keys, ['14', '20']);
 		});
 	});
 
@@ -174,25 +200,6 @@ suite('Player', function () {
 			p.endMove();
 			assert.strictEqual(p.location, l);  // unchanged
 			assert.deepEqual(l.players, {P1: p}, 'player added to new loc');
-		});
-
-		test('calls onEnter callbacks', function () {
-			var itemOnPlayerEnterCalled = false;
-			var locOnPlayerEnterCalled = false;
-			var i = new Item({tsid: 'I'});
-			var l = new Location({tsid: 'L', items: [i]}, new Geo());
-			var p = new Player({tsid: 'P1', location: l});
-			i.onPlayerEnter = function (player) {
-				itemOnPlayerEnterCalled = true;
-				assert.strictEqual(player, p);
-			};
-			l.onPlayerEnter = function (player) {
-				locOnPlayerEnterCalled = true;
-				assert.strictEqual(player, p);
-			};
-			p.endMove();
-			assert.isTrue(itemOnPlayerEnterCalled);
-			assert.isTrue(locOnPlayerEnterCalled);
 		});
 	});
 

@@ -67,6 +67,8 @@ function Item(data) {
 	if (this.message_queue) {
 		this.message_queue = new OrderedHash(this.message_queue);
 	}
+	this.patchFuncStatsUpdate('use');
+	this.patchFuncStatsUpdate('updateState');
 }
 
 utils.copyProps(require('model/ItemApi').prototype, Item.prototype);
@@ -75,6 +77,26 @@ utils.copyProps(require('model/ItemApi').prototype, Item.prototype);
 Item.prototype.gsOnLoad = function gsOnLoad() {
 	this.updatePath();
 	Item.super_.prototype.gsOnLoad.call(this);
+};
+
+
+/**
+ * Patches a GSJS function to update client-side item state after being called.
+ * This is a hack and most probably not doing it the "right" way; see
+ * {@link https://trello.com/c/7JCrUaal}.
+ *
+ * @param {string} fname name of the function to patch
+ * @private
+ */
+Item.prototype.patchFuncStatsUpdate = function patchFuncStatsUpdate(fname) {
+	if (typeof this[fname] === 'function') {
+		var gsjsFunc = this[fname];
+		this[fname] = function patchedGsjsFunc() {
+			var ret = gsjsFunc.apply(this, arguments);
+			this.queueChanges();
+			return ret;
+		};
+	}
 };
 
 
@@ -377,7 +399,9 @@ Item.prototype.merge = function merge(that, n) {
 		log.warn('invalid merge amount: %s', n);
 		return 0;
 	}
-	n = Math.min(n, that.count);
+	this.count = parseInt(this.count, 10);
+	that.count = parseInt(that.count, 10);
+	n = Math.min(parseInt(n, 10), that.count);
 	// if items are non-stackable or incompatible, just return zero
 	if (!(this.stackmax > 1 && that.stackmax > 1)) return 0;
 	if (this.class_tsid !== that.class_tsid) return 0;

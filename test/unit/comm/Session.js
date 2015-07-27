@@ -253,6 +253,26 @@ suite('Session', function () {
 			s.send({foo: 'bar', msg_id: '1'});
 		});
 
+		test('works with proxies', function (done) {
+			var p = persProxy.makeProxy({
+				a: [1, 2, 3],
+				b: {giant: 'humbaba'},
+			});
+			var socket = getDummySocket();
+			var s = getTestSession('test', socket);
+			s.loggedIn = true;
+			socket.write = function (data) {
+				data = data.slice(4);  // snip length header
+				var res = amf.deserialize(data.toString('binary')).value;
+				assert.deepEqual(res, {
+					a: [1, 2, 3],
+					b: {giant: 'humbaba'},
+				});
+				done();
+			};
+			s.send(p);
+		});
+
 		test('does not send non-login messages until login is complete',
 			function (done) {
 			var socket = getDummySocket();

@@ -257,7 +257,7 @@ suite('ItemMovement', function () {
 					}
 					else if (args.status !== STATUS.DIR_CHANGE) {
 						assert.strictEqual(args.status, STATUS.STOP_NEW_MOVE);
-						assert.strictEqual(this.x, 24);
+						assert.closeTo(this.x, 24, 3);
 						assert.strictEqual(this.y, plat2.start.y);
 						this.stage = 1;
 					}
@@ -268,7 +268,7 @@ suite('ItemMovement', function () {
 					}
 					else if (args.status !== STATUS.DIR_CHANGE) {
 						assert.strictEqual(args.status, STATUS.STOP);
-						assert.strictEqual(this.x, 12);
+						assert.closeTo(this.x, 12, 3);
 						assert.strictEqual(this.y, plat2.start.y);
 						done();
 					}
