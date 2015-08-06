@@ -24,6 +24,8 @@ GameObject.prototype.TSID_INITIAL = 'G';
  */
 function GameObject(data) {
 	if (!data) data = {};
+
+	//console.log("loading object: " + data.tsid);
 	// initialize TSID/class ID (use deprecated properties if necessary, and
 	// keep them as non-enumerable so they are available, but not persisted)
 	this.tsid = data.tsid || data.id || utils.makeTsid(this.TSID_INITIAL,
@@ -121,6 +123,8 @@ GameObject.prototype.toString = function toString() {
  */
 GameObject.prototype.del = function del() {
 	this.deleted = true;
+	var rc = RC.getContext(true);
+	if (rc) rc.setUnload(this);
 };
 
 
@@ -408,6 +412,39 @@ GameObject.prototype.cancelGsTimer = function cancelGsTimer(fname, interval) {
 	return ret;
 };
 
+/**
+ * Copies an entire object minus the exceptions from the skipList
+ *
+ * @param {object} from : The object to copy into this object
+ * @param {array} skipList : The list of top level properties not to copy
+ */
+GameObject.prototype.copyProps = function copyProps(from, skipList) {
+	for (var key in from) {
+		var value = from[key];
+		// Skip functions, as they're defined in Server/GSJS code and not to be persisted
+		if (typeof value === 'function') continue;
+		// Skip instance specific properties
+		if (!from.hasOwnProperty(key)) continue;
+		// Skip items specified to skip
+		if (skipList && skipList.indexOf(key) !== -1) continue;
+		// Directly copy primitive types
+		if (!(value instanceof Object)) {
+			this[key] = value;
+		}
+		else {
+			// Directly copy objref proxies without digging down
+			if (value.__isORP) {
+				this[key] = value;
+			}
+			// Recurse down for complex objects/arrays
+			else {
+				this[key] = value instanceof Array ? [] : {};
+				// don't provide skiplist, only want to skip top level items
+				GameObject.prototype.copyProps.call(this[key], value);
+			}
+		}
+	}
+};
 
 /**
  * Checks if there are any pending timers calls/active interval calls

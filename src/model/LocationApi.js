@@ -348,11 +348,27 @@ LocationApi.prototype.apiGetActivePlayersInTheRadiusX =
 	return this.getInRadius(x, y, radius, true, true);
 };
 
-
-LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId,
+/**
+ *	Copies creates a copy of this location
+ *
+ * @param {string} [label] name for new location
+ * @param {string} [moteId] mote Id for new location
+ * @param {string} [hubId] hub Id for new location
+ * @param {boolean} [isInstance] Is this new location an instance?
+ * @param {string} [altClassTsid] class of new location, defaults to source locations class
+ * @returns {Location} the copy of this location
+ */
+LocationApi.prototype.apiCopyLocation = function apiCopyLocation(tsid, label, moteId,
 	hubId, isInstance, altClassTsid) {
-	log.debug('%s.apiCopyLocation(%s, %s, %s, %s, %s)', this, label, moteId,
+	log.debug('%s.apiCopyLocation(%s, %s, %s, %s, %s, %s)', this, tsid, label, moteId,
 		hubId, isInstance, altClassTsid);
-	//TODO: implement&document me
-	log.warn('TODO Location.apiCopyLocation not implemented yet');
+	return this.copyLocation(tsid, label, moteId, hubId, isInstance, altClassTsid);
+};
+
+/**
+ *	Replaces the currently persisted geometry with the version in memory
+ */
+LocationApi.prototype.apiGeometryUpdated = function apiGeometryUpdated() {
+	log.debug('%s.apiGeometryUpdated()', this);
+	return this.processGeometryUpdate();
 };

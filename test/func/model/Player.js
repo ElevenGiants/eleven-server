@@ -35,7 +35,7 @@ suite('Player', function () {
 				function () {
 					var g = Geo.create();
 					rc.cache[g.tsid] = g;
-					var l = Location.create(g);
+					var l = Location.create({geo: g});
 					rc.cache[l.tsid] = l;
 					p = Player.create({
 						label: 'Edgar',
@@ -43,12 +43,12 @@ suite('Player', function () {
 						location: l,
 						skip_newux: true,  // just so we're not reliant on newux location data
 					});
-					assert.isTrue(p.__isPP);
 					assert.isTrue(utils.isPlayer(p));
 					assert.strictEqual(p.class_tsid, 'human');
 					assert.strictEqual(p.label, 'Edgar');
 					assert.isTrue(utils.isDC(p.skills));
 					assert.isTrue(utils.isDC(p.quests.todo));
+					p.unload();
 				},
 				function cb(err, res) {
 					if (err) return done(err);
@@ -218,7 +218,7 @@ suite('Player', function () {
 			rc.run(
 				function () {
 					var g = Geo.create();
-					var l = Location.create(g);
+					var l = Location.create({geo: g});
 					var p = new Player({tsid: 'PX', location: l});
 					l.players[p.tsid] = p;
 					rc.cache[g.tsid] = g;

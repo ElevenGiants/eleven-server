@@ -14,6 +14,7 @@ var RC = require('data/RequestContext');
 var util = require('util');
 var utils = require('utils');
 var lodash = require('lodash');
+var orProxy = require('data/objrefProxy');
 var DummyError = require('errors').DummyError;
 
 
@@ -137,8 +138,7 @@ utils.copyProps(require('model/PlayerApi').prototype, Player.prototype);
  *
  * @param {object} [data] player data; must contain everything required
  *        for a new player
- * @returns {object} a `Player` instance wrapped in a {@link
- * module:data/persProxy|persistence proxy}
+ * @returns {object} a `Player` object
  */
 Player.create = function create(data) {
 	assert(typeof data === 'object', 'minimal player data set required');
@@ -581,6 +581,7 @@ Player.prototype.send = function send(msg, skipChanges, flushOnly) {
 		this.anncs = [];
 	}
 	if (!flushOnly || msg.changes || msg.announcements) {
+		msg = orProxy.refify(msg);
 		this.session.send(msg);
 	}
 };

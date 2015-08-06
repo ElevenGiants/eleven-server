@@ -38,9 +38,10 @@ suite('Quest', function () {
 	suite('create', function () {
 
 		test('does its job', function (done) {
+<<<<<<< HEAD
 			new RC().run(
 				function () {
-					var l = Location.create(Geo.create());
+					var l = Location.create({geo: Geo.create()});
 					var q = Quest.create('beer_guzzle', l);
 					assert.isTrue(q.__isPP);
 					assert.isTrue(utils.isQuest(q));
@@ -55,6 +56,15 @@ suite('Quest', function () {
 					done();
 				}
 			);
+=======
+			new RC().run(function () {
+				var l = Location.create(Geo.create());
+				var q = Quest.create('beer_guzzle', l);
+				assert.isTrue(utils.isQuest(q));
+				assert.strictEqual(q.class_tsid, 'beer_guzzle');
+				assert.strictEqual(q.owner, l);
+			}, done);
+>>>>>>> aroha/WIP_less-proxying-pers-on-unload
 		});
 
 		test('fails on invalid owner type', function () {

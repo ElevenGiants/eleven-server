@@ -39,8 +39,7 @@ function Geo(data) {
  * Creates a new `Geo` instance and adds it to persistence.
  *
  * @param {object} [data] geometry data properties
- * @returns {object} a `Geo` instance wrapped in a {@link
- * module:data/persProxy|persistence proxy}
+ * @returns {object} a `Geo` object
  */
 Geo.create = function create(data) {
 	return pers.create(Geo, data);
@@ -61,7 +60,7 @@ Geo.prototype.prepConnects = function prepConnects() {
 		for (k in mg.signposts) {
 			var signpost = mg.signposts[k];
 			for (i in signpost.connects) {
-				signpost.connects[i] = prepConnect(signpost.connects[i]);
+				signpost.connects[i] = utils.prepConnect(signpost.connects[i]);
 				// remove links to unavailable locations:
 				if (!pers.exists(signpost.connects[i].street_tsid)) {
 					log.info('%s: removing unavailable signpost connect %s',
@@ -72,29 +71,18 @@ Geo.prototype.prepConnects = function prepConnects() {
 		}
 		for (k in mg.doors) {
 			var door = mg.doors[k];
-			door.connect = prepConnect(door.connect);
-			// remove links to unavailable locations:
-			if (!pers.exists(door.connect.street_tsid)) {
-				log.info('%s: removing unavailable door connect %s',
-					this, door.connect.street_tsid);
-				delete mg.doors[k];
+			if (door.connect.target) {
+				door.connect = utils.prepConnect(door.connect);
+				// remove links to unavailable locations:
+				if (!pers.exists(door.connect.street_tsid)) {
+					log.info('%s: removing unavailable door connect %s',
+						this, door.connect.street_tsid);
+					delete mg.doors[k];
+				}
 			}
 		}
 	}
 };
-
-
-function prepConnect(conn) {
-	var ret = utils.shallowCopy(conn);
-	if (conn.target) {
-		ret.target = conn.target;  // may be non-enumerable (when prepConnect used more than once)
-		ret.label = conn.target.label;
-		ret.street_tsid = conn.target.tsid;
-	}
-	// client does not need/want target, only GSJS:
-	utils.makeNonEnumerable(ret, 'target');
-	return ret;
-}
 
 
 /**
@@ -201,6 +189,14 @@ Geo.prototype.getLocTsid = function getLocTsid() {
 	return Location.prototype.TSID_INITIAL + this.tsid.slice(1);
 };
 
+/**
+ * Copies a provided Geo into this object
+ *
+ * @param {object} geometry : The Geo to copy
+ */
+Geo.prototype.copyGeometryData = function copyGeometryData(geometry) {
+	this.copyProps(geometry, ['tsid', 'id', 'label']);
+};
 
 /**
  * Gets the closest platform point directly above or below the given
@@ -273,4 +269,22 @@ Geo.prototype.getHitBoxes = function getHitBoxes() {
 		ret.push(this.layers.middleground.boxes[j]);
 	}
 	return ret;
+};
+
+/**
+ * Build up this Geo object from a json object
+ *
+ * @param {object} data : the json version of data to copy
+ */
+Geo.prototype.fromJson = function fromJson(data) {
+	var key;
+	for (key in data.dynamic) {
+		this[key] = data.dynamic[key];
+	}
+	for (key in data) {
+		if (key !== 'dynamic') {
+			this[key] = data[key];
+		}
+	}
+	//TODO: make (some of) these non-enumerable (those that the client doesn't need/want)? -> would need to make pers layer explicitly aware of those properties then, though
 };

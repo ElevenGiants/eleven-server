@@ -44,9 +44,8 @@ utils.copyProps(require('model/BagApi').prototype, Bag.prototype);
 /**
  * Creates a new `Bag` instance and adds it to persistence.
  *
- * @param {string} classTsid specific class of the item
- * @returns {object} a `Bag` instance wrapped in a {@link
- * module:data/persProxy|persistence proxy}
+ * @param {string} classTsid specific class of the bag
+ * @returns {object} a new `Bag` object
  */
 Bag.create = function create(classTsid) {
 	assert(classTsid.substr(0, 4) === 'bag_', util.format(

@@ -11,12 +11,12 @@ function getSampleObj() {
 		a: {
 			aa: {
 				objref: true,
-				tsid: 'AA',
+				tsid: 'IAA',
 				label: 'blah',
 			},
 			ab: {
 				objref: true,
-				tsid: 'AB',
+				tsid: 'IAB',
 				label: 'blah',
 			},
 		},
@@ -26,7 +26,7 @@ function getSampleObj() {
 			},
 			bb: {
 				objref: true,
-				tsid: 'BB',
+				tsid: 'IBB',
 				label: 'blah',
 			}
 		},

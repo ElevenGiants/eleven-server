@@ -2,7 +2,6 @@
 
 var path = require('path');
 var pers = require('data/pers');
-var persProxy = require('data/persProxy');
 var RC = require('data/RequestContext');
 var pbeMock = require('../../mock/pbe');
 var Location = require('model/Location');
@@ -48,30 +47,6 @@ suite('Location', function () {
 		});
 
 
-		test('Location initialization does not flag Location or Geo as dirty',
-			function (done) {
-			var rc = new RC();
-			rc.run(function () {
-				var g = persProxy.makeProxy(new Geo({tsid: 'GX'}));
-				persProxy.makeProxy(new Location({tsid: 'LX'}, g));
-				assert.strictEqual(Object.keys(rc.dirty).length, 0);
-			}, done);
-		});
-
-		test('geometry changes do not set dirty flag for Location', function (done) {
-			var g = persProxy.makeProxy(new Geo(
-				{tsid: 'GX', layers: {middleground: {doors: {}}}}));
-			var l = persProxy.makeProxy(new Location({tsid: 'LX'}, g));
-			var rc = new RC();
-			rc.run(function () {
-				l.geometry.layers.middleground.doors.d = {
-					connect: {target: {label: 'china', tsid: 'LABC'}},
-				};
-				l.updateGeo();
-				assert.deepEqual(Object.keys(rc.dirty), ['GX']);
-			}, done);
-		});
-
 		test('replacing the whole geometry with a plain object is handled right',
 			function (done) {
 			// GSJS does that (loc.geometry = {})
@@ -82,16 +57,10 @@ suite('Location', function () {
 				l.geometry = {something: 'foomp', tsid: 'GFOO'};
 				l.updateGeo();
 				// check that object was converted to Geo
-				assert.instanceOf(l.geometry.__proxyTarget, Geo);
+				assert.instanceOf(l.geometry, Geo);
 				assert.strictEqual(l.geometry.something, 'foomp');
 				assert.strictEqual(l.geometry.tsid, 'GX',
 					'TSID changed back according to Location TSID');
-				// check that it will be persisted
-				assert.deepEqual(Object.keys(rc.added), ['GX']);
-				var newG = rc.added.GX;
-				assert.instanceOf(newG.__proxyTarget, Geo);
-				assert.strictEqual(newG.tsid, 'GX');
-				assert.strictEqual(newG.something, 'foomp');
 			}, done);
 		});
 
@@ -116,10 +85,11 @@ suite('Location', function () {
 	suite('create', function () {
 
 		test('does its job and creates "town" by default', function (done) {
+<<<<<<< HEAD
 			new RC().run(
 				function () {
 					var g = Geo.create();
-					var l = Location.create(g);
+					var l = Location.create({geo: g});
 					assert.isTrue(l.__isPP);
 					assert.isTrue(utils.isLoc(l));
 					assert.strictEqual(l.class_tsid, 'town');
@@ -133,12 +103,21 @@ suite('Location', function () {
 					done();
 				}
 			);
+=======
+			new RC().run(function () {
+				var g = Geo.create();
+				var l = Location.create(g);
+				assert.isTrue(utils.isLoc(l));
+				assert.strictEqual(l.class_tsid, 'town');
+				assert.strictEqual(l.tsid.substr(1), g.tsid.substr(1));
+			}, done);
+>>>>>>> aroha/WIP_less-proxying-pers-on-unload
 		});
 
 		test('fails if Geo object not available in persistence', function () {
 			assert.throw(function () {
 				new RC().run(function () {
-					Location.create(new Geo());
+					Location.create({geo: new Geo()});
 				});
 			}, assert.AssertionError);
 		});
@@ -149,7 +128,7 @@ suite('Location', function () {
 
 		test('does its job', function (done) {
 			new RC().run(function () {
-				var l = Location.create(Geo.create());
+				var l = Location.create({geo: Geo.create()});
 				var i = Item.create('apple', 5);
 				l.addItem(i, 123, -456);
 				assert.strictEqual(l.items[i.tsid], i);
@@ -165,7 +144,7 @@ suite('Location', function () {
 			var rc = new RC();
 			rc.run(function () {
 				// setup (create/initialize loc, player, bag)
-				var l = Location.create(Geo.create());
+				var l = Location.create({geo: Geo.create()});
 				var p = helpers.getOnlinePlayer({tsid: 'PX', location: {tsid: l.tsid}});
 				l.players = {PX: p};  // put player in loc (so loc changes are queued for p)
 				rc.cache[p.tsid] = p;  // required so b.tcont can be "loaded" from persistence
@@ -196,7 +175,7 @@ suite('Location', function () {
 					i1 = Item.create('apple');
 					i2 = Item.create('banana');
 					b = new Bag({class_tsid: 'bag_bigger_green', items: [i2]});
-					l = Location.create(Geo.create());
+					l = Location.create({geo: Geo.create()});
 					l.addItem(i1, 12, 13);
 					l.addItem(b, 12, 13);
 					l.unload();
@@ -208,6 +187,72 @@ suite('Location', function () {
 					done();
 				}
 			);
+		});
+	});
+
+	suite('copyLocation', function () {
+
+		test('does its job', function (done) {
+			new RC().run(function () {
+				var src = new Location({}, new Geo({layers: {middleground: {}}}));
+				var copy = src.copyLocation('Test Label', 'Mote Test', 'Hub Test',
+								true, 'home');
+
+				assert.notEqual(copy.geometry.layers.middleground, undefined);
+				assert.strictEqual(copy.label, 'Test Label');
+				assert.strictEqual(copy.moteid, 'Mote Test');
+				assert.strictEqual(copy.hubid, 'Hub Test');
+				assert.isTrue(copy.is_instance);
+				assert.strictEqual(copy.class_tsid, 'home');
+			}, done);
+		});
+
+		test('copies items', function (done) {
+			new RC().run(function () {
+				var src = new Location({items: {BX: new Bag({tsid: 'BX',
+								class_tsid: 'bag_bigger'})}},
+							new Geo({layers: {middleground: {doors: {d: {connect:
+								{target: {label: 'uranus', tsid: 'LABC'}}}}}}}));
+				var copy = src.copyLocation('Test Label', 'Mote Test',
+								'Hub Test', true, 'home');
+
+				assert.doesNotThrow(function () {
+					var count = 0;
+					for (var i in copy.items) {
+						count++;
+						assert.strictEqual(copy.items[i].tsid[0], 'B');
+						assert.notStrictEqual(copy.items[i].tsid, 'BX');
+					}
+					assert.notStrictEqual(count, 0);
+				});
+			}, done);
+		});
+	});
+
+	suite('updateGeometry', function () {
+		test('does its job', function (done) {
+			new RC().run(function () {
+				var l = new Location({tsid: 'L1', class_tsid: 'town'}, new Geo());
+				l.updateGeometry({layers: {middleground: {}}});
+
+				assert.notEqual(l.geometry.layers.middleground, undefined);
+				assert.notEqual(l.clientGeometry.layers.middleground, undefined);
+			}, done);
+		});
+	});
+
+	suite('createGeo', function () {
+		test('does its job', function (done) {
+			new RC().run(function () {
+				var l = new Location({tsid: 'L1', class_tsid: 'town'},
+							new Geo({l: 1, r: 2, t: 3, b: 4,
+								layers: {middleground: {signposts: {}}}}));
+				l.createGeo();
+
+				assert.notEqual(l.geo.signposts, undefined);
+				assert.strictEqual(l.geo.l, 1);
+				assert.strictEqual(l.geo.r, 2);
+			}, done);
 		});
 	});
 });

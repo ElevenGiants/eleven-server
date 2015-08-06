@@ -31,6 +31,7 @@ var rpc = require('data/rpc');
  * @returns {Proxy} wrapped game object
  */
 function makeProxy(obj) {
+	//console.log("proxy made: " + obj.tsid);
 	assert(!obj.__isRP, 'object is already RPC-proxied: ' + obj);
 	return new Proxy(obj, {
 		get: proxyGet,
@@ -62,11 +63,13 @@ function proxyGet(target, name, receiver) {
 	}
 	// call functions inherited from Object locally (e.g. hasOwnProperty(), etc)
 	if (Object.prototype.hasOwnProperty(name)) {
+		//console.log("hasOwnProperty: " + name);
 		return target[name];
 	}
 	// anything else: call on remote host
 	return function rpcWrapper() {
 		// convert function arguments to a proper array
+		//console.log("calling rpc: " + name);
 		var args = Array.prototype.slice.call(arguments);
 		return rpc.sendObjRequest(target, name, args);
 	};

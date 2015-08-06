@@ -5,7 +5,6 @@ var config = require('config');
 var Session = require('comm/Session');
 var getDummySocket = require('../../helpers').getDummySocket;
 var gsjsBridge = require('model/gsjsBridge');
-var persProxy = require('data/persProxy');
 
 
 var TEST_AMF3_MSG = ('0a 0b 01 09 74 79 70 65 06 09 74 65 73 74 0d 6d 73 67 ' +

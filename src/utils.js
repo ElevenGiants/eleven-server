@@ -31,7 +31,8 @@ module.exports = {
 	gameObjArgToList: gameObjArgToList,
 	playersArgToList: playersArgToList,
 	pointOnPlat: pointOnPlat,
-	typeGuard: typeGuard,
+	prepConnect: prepConnect,
+	typeGuard: typeGuard
 };
 
 
@@ -456,6 +457,23 @@ function pointOnPlat(plat, x) {
 	return ret;
 }
 
+/**
+ * Sets up a connection for the client
+ *
+ * @param {object} [conn] connection to prepare
+ * @returns {object} client friendly connect
+ */
+function prepConnect(conn) {
+	var ret = shallowCopy(conn);
+	if (conn.target) {
+		ret.target = conn.target;  // may be non-enumerable (when prepConnect used more than once)
+		ret.label = conn.target.label;
+		ret.street_tsid = conn.target.tsid;
+	}
+	// client does not need/want target, only GSJS:
+	makeNonEnumerable(ret, 'target');
+	return ret;
+}
 
 /**
  * Recursively removes properties with "non JSON safe" values (`NaN`,

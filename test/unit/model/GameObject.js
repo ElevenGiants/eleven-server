@@ -50,6 +50,54 @@ suite('GameObject', function () {
 		});
 	});
 
+	suite('copyProps', function () {
+		test('skips functions', function () {
+			var src = new GameObject({
+				tsid: 'GXYZ',
+				class_tsid: 'something',
+				func: function () {
+					return true;
+				}
+			});
+			var copy = new GameObject();
+			copy.copyProps(src);
+
+			assert.notProperty(copy, 'func');
+			assert.strictEqual(copy.class_tsid, 'something');
+		});
+
+		test('skips from list', function () {
+
+			var src = new GameObject({
+				tsid: 'GXYZ',
+				class_tsid: 'something',
+				list_item: 'value'
+			});
+			var copy = new GameObject();
+			copy.copyProps(src, ['list_item']);
+
+			assert.notProperty(copy, 'list_item');
+			assert.strictEqual(copy.class_tsid, 'something');
+		});
+
+		test('deep copy', function () {
+			var src = new GameObject({
+				tsid: 'GXYZ',
+				class_tsid: 'something',
+				deep_item: {
+					level: 1,
+					deeper_item: {
+						level: 2
+					}
+				}
+			});
+			var copy = new GameObject();
+			copy.copyProps(src);
+
+			assert.deepEqual(copy.deep_item, {level: 1, deeper_item: {level: 2}});
+		});
+	});
+
 
 	suite('serialize', function () {
 
