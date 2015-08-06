@@ -358,11 +358,11 @@ LocationApi.prototype.apiGetActivePlayersInTheRadiusX =
  * @param {string} [altClassTsid] class of new location, defaults to source locations class
  * @returns {Location} the copy of this location
  */
-LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId,
+LocationApi.prototype.apiCopyLocation = function apiCopyLocation(tsid, label, moteId,
 	hubId, isInstance, altClassTsid) {
-	log.debug('%s.apiCopyLocation(%s, %s, %s, %s, %s)', this, label, moteId,
+	log.debug('%s.apiCopyLocation(%s, %s, %s, %s, %s, %s)', this, tsid, label, moteId,
 		hubId, isInstance, altClassTsid);
-	return this.copyLocation(label, moteId, hubId, isInstance, altClassTsid);
+	return this.copyLocation(tsid, label, moteId, hubId, isInstance, altClassTsid);
 };
 
 /**

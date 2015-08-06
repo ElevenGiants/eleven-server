@@ -15,6 +15,8 @@ var Quest = require('model/Quest');
 var Item = require('model/Item');
 var Bag = require('model/Bag');
 var Group = require('model/Group');
+var Location = require('model/Location');
+var Geo = require('model/Geo');
 var GameObject = require('model/GameObject');
 var config = require('config');
 var rpc = require('data/rpc');
@@ -27,6 +29,7 @@ var lodash = require('lodash');
 var slackChat = require('comm/slackChat');
 var crypto = require('crypto');
 var RC = require('data/RequestContext');
+var IdObjRefMap = require('model/IdObjRefMap');
 
 
 function getItemType(classTsid) {
@@ -226,9 +229,9 @@ exports.apiNewItemFromSource = function apiNewItemFromSource(classTsid, sourceIt
  * @param {number} count item stack amount (must be a positive integer)
  * @returns {Item} the new object
  */
-exports.apiNewItemStack = function apiNewItemStack(classTsid, count) {
+exports.apiNewItemStack = function apiNewItemStack(classTsid, count, data) {
 	log.trace('global.apiNewItemStack(%s, %s)', classTsid, count);
-	return getItemType(classTsid).create(classTsid, count);
+	return getItemType(classTsid).create(classTsid, count, data);
 };
 
 
@@ -520,17 +523,125 @@ exports.apiReloadDataForGlobalPathFinding = function apiReloadDataForGlobalPathF
 	log.warn('TODO global.apiReloadDataForGlobalPathFinding not implemented yet');
 };
 
+
+
+/**
+ *	Copies creates a copy of this location
+ *
+ * @param {string} [label] name for new location
+ * @param {string} [moteId] mote Id for new location
+ * @param {string} [hubId] hub Id for new location
+ * @param {boolean} [isInstance] Is this new location an instance?
+ * @param {string} [altClassTsid] class of new location, defaults to source locations class
+ * @returns {Location} the copy of this location
+ */
+/*jshint -W072 */  // suppress "too many parameters" warning (API function following the spec)
+exports.apiCopyLocation = function apiCopyLocation(sourceTsid, tsid, label, moteId, hubId,
+	isInstance, altClassTsid) {
+	this.apiEnableWriteNow();
+	var geoData = this.apiFindObjectJSON(Geo.prototype.TSID_INITIAL + sourceTsid.slice(1));
+	delete geoData.tsid;
+	delete geoData.id;
+	delete geoData.label;
+	geoData.label = label;
+	geoData.tsid = Geo.prototype.TSID_INITIAL + tsid.slice(1);
+
+	var data = this.apiFindObjectJSON(sourceTsid);
+	if (!altClassTsid) altClassTsid = this.class_tsid;
+	data.class_tsid = altClassTsid;
+	delete data.tsid;
+	delete data.id;
+	delete data.class_tsid;
+	delete data.class_id;
+	delete data.instances;
+	delete data.players;
+	delete data.activePlayers;
+	delete data.label;
+	var items = data.items;
+	delete data.items;
+	data.tsid = tsid;
+	data.class_tsid = altClassTsid;
+	data.label = label;
+	data.moteid = moteId;
+	data.hubid = hubId;
+	data.is_instance = isInstance;
+	var newLoc = Location.create(data, geoData);
+
+
+	//newLoc.items = new IdObjRefMap({});
+	//var items = new IdObjRefMap({});
+	for (var i in items) {
+		var srcItem = this.apiFindObjectJSON(items[i].tsid);
+		delete srcItem.tsid;
+		//delete srcItem.class_tsid;
+		//delete srcItem.count;
+		delete srcItem.tcont;
+		delete srcItem.pcont;
+		delete srcItem.container;
+		srcItem.tcont = newLoc.tsid;
+		var newItem = this.apiNewItemStack(srcItem.class_tsid, srcItem.count, srcItem);
+		//newItem.copyProps(srcItem, ['tsid', 'class_tsid', 'count', 'tcont',
+		//		'pcont', 'container']);
+		newItem.setContainer(newLoc, srcItem.x, srcItem.y, srcItem.is_hidden);
+		// tsid = newItem.tsid;
+		// RC.getContext().writeAndUnloadNow(newItem);
+		// newItem = api.apiFindObject(tsid);
+		console.log(newItem.tsid);
+		newLoc.items[newItem.tsid] = newItem;
+	}
+	this.apiDisableWriteNow();
+	newLoc.onCreateAsCopyOf(this);
+	return newLoc;
+};
+/*jshint +W072 */
+
 exports.apiDisableRPC = function apiDisableRPC() {
-	console.log("disable RPC");
+	//console.log("disable RPC");
 	//RC.getContext().bypassRPC = true;
 };
 
 exports.apiEnableRPC = function apiEnableRPC() {
-	console.log("enable RPC");
+	//console.log("enable RPC");
 	//RC.getContext().bypassRPC = false;
 };
 
+exports.apiDisableWriteNow = function apiDisableRPC() {
+	//console.log("disable RPC");
+	RC.getContext().writeNow = false;
+};
+
+exports.apiEnableWriteNow = function apiEnableRPC() {
+	//console.log("enable RPC");
+	RC.getContext().writeNow = true;
+};
+
 exports.apiRPCEnabled = function apiRPCEnabled() {
-	console.log("checking RPC");
+	//console.log("checking RPC");
 	return RC.getContext().bypassRPC;
+}
+
+exports.apiUnload = function apiUnload(tsid) {
+	//pers.unload(this.apiFindObject(tsid));
+}
+
+exports.apiFindObjectJSON = function apiFindObjectJSON(tsid) {
+	return pers.getJSON(tsid);
+}
+
+exports.apiWriteObjectJSON = function apiWriteObjectJSON(data) {
+	pers.writeJSON(data, "directly writing JSON object");
+}
+
+exports.apiGetCurrentGS = function apiGetCurrentGS() {
+	return config.getGsid();
+}
+
+exports.apiEnsureLocalObject = function apiEnsureLocalObject(obj) {
+	if(obj.objRef)
+		return apiFindObject(obj.tsid);
+	return obj;
+}
+
+exports.apiCreateLocTsid = function apiCreateLocTsid() {
+	return rpc.makeLocalTsid(Location.prototype.TSID_INITIAL);
 }

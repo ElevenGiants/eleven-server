@@ -45,6 +45,7 @@ function Location(data, geo) {
 			data.tsid = rpc.makeLocalTsid(Location.prototype.TSID_INITIAL);
 		}
 	}
+	//console.log("loading location: " + data.tsid);
 	Location.super_.call(this, data);
 	// initialize items and players, convert to IdObjRefMap
 	if (!this.players || this.players instanceof Array) {
@@ -104,10 +105,15 @@ Location.prototype.gsOnLoad = function gsOnLoad() {
  * @param {object} [data] additional properties
  * @returns {object} a `Location` object
  */
-Location.create = function create(data) {
+Location.create = function create(data, geo) {
 	data = data || {};
-	if (data.geo)
-		data.tsid = data.geo.getLocTsid();
+	if (geo)
+		if(!pers.exists(geo.tsid))
+			geo = Geo.create(geo);
+		geo = api.apiFindObject(geo.tsid);
+		// console.log("geo: " + geo);)
+		if(!data.tsid)
+			data.tsid = geo.getLocTsid();
 	data.class_tsid = data.class_tsid || 'town';
 	return pers.create(Location, data);
 };
@@ -252,6 +258,7 @@ Location.prototype.serialize = function serialize() {
 Location.prototype.updateGeo = function updateGeo(data) {
 	log.debug('%s.updateGeo', this);
 	// optional parameter handling
+	//console.log(data);
 	if (!data) data = this.geometry;
 	this.geometry = data;
 	// workaround for GSJS functions that replace the whole geometry property
@@ -485,46 +492,91 @@ Location.prototype.getInRadius = function getInRadius(x, y, r, players, sort) {
  * @returns {Location} the copy of this location
  */
 /*jshint -W072 */  // suppress "too many parameters" warning (API function following the spec)
-Location.prototype.copyLocation = function copyLocation(label, moteId, hubId,
+Location.prototype.copyLocation = function copyLocation(tsid, label, moteId, hubId,
 	isInstance, altClassTsid) {
-	var data = {};
-	var newGeo = Geo.create(data);
-	newGeo.copyGeometryData(this.geometry);
-	console.log("a");
+	api.apiEnableWriteNow();
+	//var geoData = api.apiCopyHash(this.geometry);
+	var geoData = api.apiFindObjectJSON(this.geometry.tsid);
+	delete geoData.tsid;
+	delete geoData.id;
+	delete geoData.label;
+	geoData.label = label;
+	geoData.tsid = Geo.prototype.TSID_INITIAL + tsid.slice(1)
+	//var newGeo = Geo.create(data);
+	//newGeo.copyGeometryData(this.geometry);
+	// var tsid = newGeo.tsid;
+	// RC.getContext().writeAndUnloadNow(newGeo);
+	// newGeo = api.apiFindObject(tsid);
+	// console.log("a");
 
-	data = {};
-	data.geo = newGeo;
+	//var data = api.apiCopyHash(this);
+	var data = api.apiFindObjectJSON(this.tsid);
+	//data.geo = newGeo;
 	if (!altClassTsid) altClassTsid = this.class_tsid;
 	data.class_tsid = altClassTsid;
-	console.log("1");
-	var newLoc = Location.create(data);
-	console.log("2");
-	newLoc.copyLocationData(this);
-	console.log("3");
-	delete newLoc.label;
-	newLoc.label = label;
-	newLoc.moteid = moteId;
-	newLoc.hubid = hubId;
-	newLoc.is_instance = isInstance;
-	console.log("4");
-	newLoc.updateGeo(newGeo);
-	console.log("b");
+	delete data.tsid;
+	delete data.id;
+	delete data.class_tsid;
+	delete data.class_id;
+	delete data.instances;
+	delete data.players;
+	delete data.activePlayers;
+	delete data.label;
+	delete data.items;
+	data.tsid = tsid;
+	data.class_tsid = altClassTsid;
+	data.label = label;
+	data.moteid = moteId;
+	data.hubid = hubId;
+	data.is_instance = isInstance;
+	// console.log("1");
+	var newLoc = Location.create(data, geoData);
+	//newLoc.class_tsid = altClassTsid;
+	// console.log("2");
+	//newLoc.copyLocationData(this);
+	// console.log("3");
+	//delete newLoc.label;
+	// data.label = label;
+	// data.moteid = moteId;
+	// data.hubid = hubId;
+	// data.is_instance = isInstance;
+	// console.log("4");
+	//newLoc.updateGeo(newGeo);
+	// console.log("b");
 
-	newLoc.items = new IdObjRefMap({});
-	for (var i in this.items) {
-		var srcItem = this.items[i];
-		var newItem = api.apiNewItemStack(srcItem.class_tsid, srcItem.count);
-		newItem.copyProps(srcItem, ['tsid', 'class_tsid', 'count', 'tcont',
-				'pcont', 'container']);
-		newItem.setContainer(newLoc, srcItem.x, srcItem.y, srcItem.is_hidden);
-		newLoc.items[newItem.tsid] = newItem;
-	}
 
-	console.log("c");
+	//newLoc.items = new IdObjRefMap({});
+	// var items = new IdObjRefMap({});
+	// for (var i in this.items) {
+	// 	var srcItem = this.items[i];
+	// 	var newItem = api.apiNewItemStack(srcItem.class_tsid, srcItem.count);
+	// 	newItem.copyProps(srcItem, ['tsid', 'class_tsid', 'count', 'tcont',
+	// 			'pcont', 'container']);
+	// 	newItem.setContainer(newLoc, srcItem.x, srcItem.y, srcItem.is_hidden);
+	// 	// tsid = newItem.tsid;
+	// 	// RC.getContext().writeAndUnloadNow(newItem);
+	// 	// newItem = api.apiFindObject(tsid);
+	// 	items[newItem.tsid] = newItem;
+	// }
 
-	api.apiEnableRPC();
+	//api.apiWriteObjectJSON(geoData);
+	//api.apiWriteObjectJSON(data);
+	//var newLoc = api.apiFindObject(data.tsid);
+	//console.log("gs: " + api.apiGetCurrentGS());
+	//console.log("instance: " + newLoc instanceof GameObject);
+
+	// console.log("c");
+
+	//api.apiEnableRPC();
+	api.apiDisableWriteNow();
 	newLoc.onCreateAsCopyOf(this);
-	return api.apiFindObject(newLoc.tsid);
+	console.log("is rpc: " + newLoc.__isRP);
+	console.log("is orp: " + newLoc.__isORP);
+	console.log("is go: " + newLoc.__isGO);
+	//var tsid = newLoc.tsid;
+	// RC.getContext().writeAndUnloadNow(newLoc);
+	//console.log("copyLocation: " + data.tsid);
+	return newLoc;
 };
 /*jshint +W072 */
 
@@ -535,7 +587,7 @@ Location.prototype.copyLocation = function copyLocation(label, moteId, hubId,
  */
 Location.prototype.copyLocationData = function copyLocationData(location) {
 	this.copyProps(location, ['tsid', 'id', 'class_tsid', 'class_id', 'instances',
-	 'playsers', 'activePlayers']);
+	 'players', 'activePlayers']);
 
 };
 

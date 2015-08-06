@@ -45,6 +45,7 @@ function RequestContext(logtag, owner, session) {
 	// post-request-and-persistence callback (see setPostPersCallback)
 	this.postPersCallback = null;
 	this.bypassRPC = false;
+	this.writeNow = false;
 }
 
 
@@ -141,6 +142,8 @@ RequestContext.logSerialize = function logSerialize(rc) {
 
 
 /**
+<<<<<<< HEAD
+=======
  * Flags the given (existing/not newly created) game object as dirty, causing it
  * to be written to persistent storage at the end of the current request. Does
  * nothing when called without an active request context.
@@ -163,6 +166,10 @@ RequestContext.setDirty = function setDirty(obj) {
  * @param {boolean} [added] `true` if `obj` is a newly created object
  */
 RequestContext.prototype.setDirty = function setDirty(obj, added) {
+	if(!this.added)
+		this.added = {};
+	if(!this.dirty)
+		this.dirty = {};
 	if (added) {
 		this.added[obj.tsid] = obj;
 	}
@@ -173,6 +180,7 @@ RequestContext.prototype.setDirty = function setDirty(obj, added) {
 
 
 /**
+>>>>>>> master
  * Schedules a game object for unloading from the live object cache at
  * the end of the current request. Can only be called from within a
  * request (see {@link RequestContext#run|run}).
@@ -196,4 +204,8 @@ RequestContext.prototype.setUnload = function setUnload(obj) {
  */
 RequestContext.prototype.setPostPersCallback = function setPostPersCallback(callback) {
 	this.postPersCallback = callback;
+};
+
+RequestContext.prototype.writeAndUnloadNow = function writeAndUnloadNow(obj) {
+	pers.writeAndUnload(obj);
 };

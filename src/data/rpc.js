@@ -277,6 +277,8 @@ function sendObjRequest(objOrTsid, fname, args, callback) {
 			gsid, objOrTsid), e);
 	}
 	var tsid = typeof objOrTsid === 'string' ? objOrTsid : objOrTsid.tsid;
+	// if(fname == "setProp")
+		// console.log("found it: " + tsid);
 	return sendRequest(gsid, 'obj', [tsid, fname, args], callback);
 }
 
@@ -485,8 +487,10 @@ function isLocal(objOrTsid) {
  * @returns {string} ID of the server managing the object
  */
 function getGsid(objOrTsid) {
+	//console.log("getGsid tsid:" + (typeof objOrTsid === "string" ? objOrTsid : objOrTsid.tsid));
 	// locations, geos and groups mapped by their own tsid
 	if (utils.isLoc(objOrTsid) || utils.isGroup(objOrTsid) || utils.isGeo(objOrTsid)) {
+		//console.log("getGsid gs: " + config.mapToGS(objOrTsid).gsid);
 		return config.mapToGS(objOrTsid).gsid;
 	}
 	// for all other classes, we need the actual game object

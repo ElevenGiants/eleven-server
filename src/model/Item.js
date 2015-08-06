@@ -107,10 +107,12 @@ Item.prototype.patchFuncStatsUpdate = function patchFuncStatsUpdate(fname) {
  * @param {number} [count] item stack size (1 by default)
  * @returns {object} an `Item` object
  */
-Item.create = function create(classTsid, count) {
+Item.create = function create(classTsid, count, data) {
+	data = data || {};
 	assert(classTsid.substr(0, 4) !== 'bag_', util.format(
 		'invalid class TSID for Item: %s', classTsid));
-	var data = {class_tsid: classTsid};
+	//var data = {class_tsid: classTsid};
+	data.class_tsid = classTsid;
 	if (utils.isInt(count)) {
 		data.count = count;
 	}

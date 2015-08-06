@@ -33,9 +33,12 @@ module.exports = {
 	shutdown: shutdown,
 	exists: exists,
 	get: get,
+	getJSON: getJSON,
+	writeJSON: writeJSON,
 	create: create,
 	registerProxy: registerProxy,
 	postRequestProc: postRequestProc,
+	unload: unload
 };
 
 
@@ -146,13 +149,19 @@ function load(tsid) {
 	assert(pbe, 'persistence back-end not set');
 	log.debug('pers.load: %s', tsid);
 	var data = pbe.read(tsid);
+	if(tsid[0] == "L")
+	{
+		// console.log("loading tsid: " + tsid);
+		// console.log("loading data: " + data);
+	}
 	if (typeof data !== 'object' || data === null) {
 		log.info(new DummyError(), 'no or invalid data for %s', tsid);
 		return null;
 	}
 	orProxy.proxify(data);
 	var obj = gsjsBridge.create(data);
-	if (!rpc.isLocal(obj) && !RC.getContext().bypassRPC) {
+	// console.log("loading %s local: %s", tsid, rpc.isLocal(obj));
+	if (!rpc.isLocal(obj)) {
 		// wrap object in RPC proxy and add it to request cache
 		obj = rpc.makeProxy(obj);
 		RC.getContext().cache[tsid] = obj;
@@ -173,6 +182,17 @@ function load(tsid) {
 	}
 	metrics.increment('pers.load');
 	return obj;
+}
+
+function loadJSON(tsid) {
+	assert(pbe, 'persistence back-end not set');
+	log.debug('pers.loadJSON: %s', tsid);
+	var data = pbe.read(tsid);
+	if (typeof data !== 'object' || data === null) {
+		log.info(new DummyError(), 'no or invalid data for %s', tsid);
+		return null;
+	}
+	return data;
 }
 
 
@@ -222,14 +242,23 @@ function get(tsid, noProxy) {
 		// otherwise, see if we already have it in the request context cache
 		var rc = RC.getContext();
 		if (tsid in rc.cache) {
+		//if(tsid[0] == "L")
+		// console.log("in rcCache: %s", tsid);
 			ret = rc.cache[tsid];
 		}
 		else {
 			// if not, actually load the object
+		// if(tsid[0] == "L")
+		// console.log("not in cache: %s", tsid);
 			ret = load(tsid);
 		}
 	}
 	return ret;
+}
+
+function getJSON(tsid) {
+	assert(gsjsBridge.isTsid(tsid), 'not a valid TSID: "' + tsid + '"');
+	return loadJSON(tsid);
 }
 
 
@@ -248,11 +277,18 @@ function create(modelType, data) {
 	data = data || {};
 	var obj = gsjsBridge.create(data, modelType);
 	assert(!(obj.tsid in cache), 'object already exists: ' + obj.tsid);
+	if(RC.getContext().writeNow)
+	{
+		write(obj);
+		obj = get(obj.tsid);
+	}
 	cache[obj.tsid] = obj;
 	if (typeof obj.onCreate === 'function') {
 		obj.onCreate();
 	}
 	metrics.increment('pers.create');
+	// console.log("created tsid: " + obj.tsid);
+	// console.log("created data: " + obj);
 	return obj;
 }
 
@@ -394,6 +430,15 @@ function write(obj, logmsg, callback) {
 	});
 }
 
+function writeJSON(data, logmsg) {
+	log.debug('pers.writeJSON: %s%s', data.tsid, logmsg ? ' (' + logmsg + ')' : '');
+	pbe.write(data, function cb(err, res) {
+		if (err) {
+			log.error(err, 'could not write: %s', obj.tsid);
+		}
+	});
+}
+
 
 /**
  * Permanently deletes a game object from persistent storage. Also
@@ -424,7 +469,7 @@ function del(obj, logmsg, callback) {
 	});
 }
 
-
+ 
 /**
  * Removes a game object from the live object cache. This can not check
  * whether there are still references to the object elsewhere (e.g.
@@ -445,4 +490,10 @@ function unload(obj, logmsg) {
 	if (obj.tsid in proxyCache) {
 		delete proxyCache[obj.tsid];
 	}
+}
+
+function writeAndUnload(obj){
+	write(obj, "manual write before unload", function(){
+		unload(obj.tsid, "manual unload");
+	});
 }
