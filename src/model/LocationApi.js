@@ -30,6 +30,47 @@ LocationApi.prototype.apiPutItemIntoPosition =
 
 
 /**
+ * Add (part of) an item stack into a specific slot of a bag in the location,
+ * merging with an existing item in that slot if necessary.
+ *
+ * @param {Item} item item stack to add; may be deleted in the process
+ * @param {number} slot slot index in the bag to add to
+ * @param {string} path path to target bag
+ * @param {number} [amount] amount of the item stack to add/distribute; if not
+ *        specified, the whole stack is processed
+ * @param {Player} [pc] player adding the item (for animation announcements)
+ * @returns {number} amount of remaining items
+ */
+LocationApi.prototype.apiAddStack = function apiAddStack(item, slot, path, amount, pc) {
+	log.debug('%s.apiAddStack(%s, %s, %s, %s, %s)', this, item, slot, path,
+		amount, pc);
+	return this.addToBag(item, slot, slot, path, amount);
+	//TODO: item animation announcements from pc
+};
+
+
+/**
+ * Distribute (part of) an item stack into a range of inventory slots of one of
+ * the bags in the location, using empty slots or merging with existing items.
+ *
+ * @param {Item} item item stack to add; may be deleted in the process
+ * @param {number} maxSlot only slots up to this index are considered
+ * @param {string} path path to target bag
+ * @param {number} [amount] amount of the item stack to add/distribute; if not
+ *        specified, the whole stack is processed
+ * @param {Player} [pc] player adding the item (for animation announcements)
+ * @returns {number} amount of remaining items
+ */
+LocationApi.prototype.apiAddStackAnywhere =
+	function apiAddStackAnywhere(item, maxSlot, path, amount, pc) {
+	log.debug('%s.apiAddStackAnywhere(%s, %s, %s, %s, %s)', this, item, maxSlot,
+		path, amount, pc);
+	return this.addToBag(item, 0, maxSlot, path, amount);
+	//TODO: item animation announcements from pc
+};
+
+
+/**
  * Find the point on the closest platform below the given point.
  *
  * @param {number} x x coordinate of the requested point
@@ -258,6 +299,13 @@ LocationApi.prototype.apiNotifyItemStateChanged =
 LocationApi.prototype.apiGetItemsInTheRadius = function apiGetItemsInTheRadius(
 	x, y, radius) {
 	log.debug('%s.apiGetItemsInTheRadius(%s, %s, %s)', this, x, y, radius);
+	return this.getInRadius(x, y, radius);
+};
+
+
+LocationApi.prototype.apiGetNoPlayerScanItemsInTheRadius =
+	function apiGetNoPlayerScanItemsInTheRadius(x, y, radius) {
+	log.debug('%s.apiGetNoPlayerScanItemsInTheRadius(%s, %s, %s)', this, x, y, radius);
 	return this.getInRadius(x, y, radius);
 };
 

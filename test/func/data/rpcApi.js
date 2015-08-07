@@ -11,7 +11,8 @@ var Location = require('model/Location');
 
 suite('rpcApi', function () {
 
-	this.slow(1000);  // player prototype loading takes some time
+	this.timeout(5000);  // player prototype loading takes some time
+	this.slow(1000);
 
 	setup(function () {
 		gsjsBridge.init(true);

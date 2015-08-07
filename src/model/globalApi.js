@@ -24,7 +24,7 @@ var orProxy = require('data/objrefProxy');
 var utils = require('utils');
 var logging = require('logging');
 var lodash = require('lodash');
-var slack = require('comm/slack');
+var slackChat = require('comm/slackChat');
 var crypto = require('crypto');
 
 
@@ -207,6 +207,13 @@ exports.apiNewGroupForHub = function apiNewGroupForHub(classTsid, hubId) {
  */
 exports.apiNewItem = function apiNewItem(classTsid) {
 	log.trace('global.apiNewItem(%s)', classTsid);
+	return getItemType(classTsid).create(classTsid);
+};
+
+
+exports.apiNewItemFromSource = function apiNewItemFromSource(classTsid, sourceItem) {
+	log.trace('global.apiNewItemFromSource(%s, %s)', classTsid, sourceItem);
+	//TODO: animation announcements&docs
 	return getItemType(classTsid).create(classTsid);
 };
 
@@ -440,7 +447,7 @@ exports.apiSendToAll = function apiSendToAll(msg) {
  */
 exports.apiSendToGroup = function apiSendToGroup(msg, recipients) {
 	log.debug('global.apiSendToGroup(%s, %s)', msg, recipients);
-	slack.handleGroupMsg(msg);
+	slackChat.handleGroupMsg(msg);
 	var tsids = utils.playersArgToList(recipients);
 	tsids.forEach(function iter(tsid) {
 		if (isPlayerOnline(tsid)) {

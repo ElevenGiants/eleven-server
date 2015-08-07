@@ -69,7 +69,7 @@ function RequestContext(logtag, owner, session) {
  * @param {boolean} [waitPers] if `true`, wait for persistence
  *        operations to finish before invoking callback
  */
-RequestContext.prototype.run = function run(func, callback, waitPers) {
+RequestContext.prototype.run = function run(func, callback, waitPers, msg) {
 	callback = callback || function defaultCallback(err, res) {
 		if (err) throw err;
 	};
@@ -81,8 +81,10 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 		var res = null;
 		try {
 			Fiber.current.rc = rc;
+			//Fiber.current.test = msg;
 			// call function in fiber context
 			res = func();
+			//console.log("finished rc");
 			log.debug('finished %s (%s dirty, %s added)', tag,
 				Object.keys(rc.dirty).length, Object.keys(rc.added).length);
 		}
@@ -90,12 +92,21 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 			/*jshint -W030 */  // trigger prepareStackTrace (parts of the trace might not be available outside the RC)
 			err.stack;
 			/*jshint +W030 */
+			//if(msg)
+				//console.log("error " + msg);
 			pers.postRequestRollback(rc.dirty, rc.added, tag, function done() {
 				callback(err);
 			});
 			return;
 		}
 		// persist modified objects
+		//console.log(rc.added);
+		//if(msg)
+		//{
+		//	console.log("finishing " + Fiber.current.test);
+		//	for(var key in rc.added)
+		//		console.log("final added: " + key);
+		//}
 		pers.postRequestProc(rc.dirty, rc.added, rc.unload, tag, function done() {
 			// invoke special post-persistence callback if there is one
 			if (typeof rc.postPersCallback === 'function') {
@@ -150,6 +161,19 @@ RequestContext.logSerialize = function logSerialize(rc) {
 
 
 /**
+ * Flags the given (existing/not newly created) game object as dirty, causing it
+ * to be written to persistent storage at the end of the current request. Does
+ * nothing when called without an active request context.
+ *
+ * @param {GameObject} obj the modified game object
+ */
+RequestContext.setDirty = function setDirty(obj) {
+	var rc = RequestContext.getContext(true);
+	if (rc) rc.setDirty(obj);
+};
+
+
+/**
  * Flags the given game object as dirty, causing it to be written to
  * persistent storage at the end of the current request (if the request
  * finishes successfully). Can only be called from within a request
@@ -159,7 +183,8 @@ RequestContext.logSerialize = function logSerialize(rc) {
  * @param {boolean} [added] `true` if `obj` is a newly created object
  */
 RequestContext.prototype.setDirty = function setDirty(obj, added) {
-	if (added) {
+	if(added) {
+		//console.log("added: " + obj.tsid + " " + Fiber.current.test);
 		this.added[obj.tsid] = obj;
 	}
 	else if (!(obj.tsid in this.added)) {

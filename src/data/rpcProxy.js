@@ -55,7 +55,7 @@ function proxyGet(target, name, receiver) {
 	if (typeof target[name] !== 'function') {
 		return target[name];
 	}
-	if (name === 'valueOf' || name === 'toString') {
+	if (name === 'inspect' || name === 'valueOf' || name === 'toString') {
 		return function () {
 			return '^R' + target.toString();
 		};

@@ -38,6 +38,7 @@ var assert = require('assert');
 var async = require('async');
 var config = require('config');
 var jrpc = require('multitransport-jsonrpc');
+var metrics = require('metrics');
 var orProxy = require('data/objrefProxy');
 var pers = require('data/pers');
 var RC = require('data/RequestContext');
@@ -85,6 +86,8 @@ var shuttingDown = false;
  * Initializes the RPC subsystem (server for this GS instance, and
  * client connections to all other GS instances).
  *
+ * @param {boolean} [startServer] start an RPC server on this GS
+ *        instance (`true` by default)
  * @param {function} [callback]
  * ```
  * callback(err)
@@ -93,12 +96,25 @@ var shuttingDown = false;
  * (`err` argument is `null`), or when an error occurred (`err`
  * contains the error object or message)
  */
-function init(callback) {
+function init(startServer, callback) {
 	shuttingDown = false;
 	clients = {};
-	initServer(function cb() {
+	if (arguments.length < 2) {
+		if (typeof startServer === 'function') {
+			callback = startServer;
+		}
+		if (typeof startServer !== 'boolean') {
+			startServer = true;
+		}
+	}
+	if (startServer) {
+		initServer(function cb() {
+			config.forEachGS(initClient, callback);
+		});
+	}
+	else {
 		config.forEachGS(initClient, callback);
-	});
+	}
 }
 
 
@@ -297,12 +313,15 @@ function sendRequest(gsid, rpcFunc, args, callback) {
 	}
 	var client = clients[gsid];
 	if (!client) {
-		throw new RpcError(util.format('no RPC client found for "%s"', gsid));
+		var err = new RpcError(util.format('no RPC client found for "%s"', gsid));
+		if (callback) return callback(err);
+		else throw err;
 	}
 	// argument marshalling (replace objref proxies with actual objrefs)
 	args = orProxy.refify(args);
 	var logmsg = util.format('%s(%s) @%s', rpcFunc, args.join(', '), gsid);
 	log.debug('calling %s', logmsg);
+	metrics.increment('net.rpc.tx', 0.01);
 	var rpcArgs = [config.getGsid()].concat(args);
 	if (callback) {
 		client.request(rpcFunc, rpcArgs, function cb(err, res) {
@@ -343,9 +362,10 @@ function sendRequest(gsid, rpcFunc, args, callback) {
  * the remote caller
  */
 function handleRequest(callerId, objOrTsid, fname, args, callback) {
+	metrics.increment('net.rpc.rx', 0.01);
 	orProxy.proxify(args);  // unmarshal arguments
 	var logmsg = util.format('RPC from %s: %s.%s', callerId, objOrTsid, fname);
-	log.debug('%s(%s)', logmsg, args instanceof Array ? args.join(', ') : args);
+	//console.log('%s(%s)', logmsg, args instanceof Array ? args.join(', ') : args);
 	// process RPC in its own request context
 	var rc = new RC(objOrTsid + '.' + fname, 'rpc.' + callerId);
 	rc.run(
@@ -353,12 +373,15 @@ function handleRequest(callerId, objOrTsid, fname, args, callback) {
 			var obj = objOrTsid;
 			if (typeof obj === 'string') {
 				obj = pers.get(obj);
+				//if(fname == "setProp")
+				//	console.log("attempting to setProc on object: " + obj.tsid);
 			}
 			if (!obj || typeof obj[fname] !== 'function') {
 				throw new RpcError(util.format('no such function: %s.%s',
 					objOrTsid, fname));
 			}
 			var ret = obj[fname].apply(obj, args);
+			//console.log('performed function %s(%s)', logmsg, args instanceof Array ? args.join(', ') : args);	
 			// convert <undefined> result to <null> so RPC lib produces a valid
 			// response (it just omits the <result> property otherwise)
 			if (ret === undefined) ret = null;
@@ -368,6 +391,8 @@ function handleRequest(callerId, objOrTsid, fname, args, callback) {
 			if (err) {
 				log.error(err, 'exception in %s', logmsg);
 			}
+
+			//console.log('callback function %s(%s)', logmsg, args instanceof Array ? args.join(', ') : args);	
 			if (typeof callback !== 'function') {
 				log.error('%s called without a valid callback', logmsg);
 			}
@@ -376,7 +401,8 @@ function handleRequest(callerId, objOrTsid, fname, args, callback) {
 				callback(err, res);
 			}
 		},
-		true  // make sure changes are persisted before returning RPC
+		true,  // make sure changes are persisted before returning RPC
+		logmsg
 	);
 }
 

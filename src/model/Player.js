@@ -25,20 +25,61 @@ Player.prototype.TSID_INITIAL = 'P';
 // the JSON data in persistence does not contain specific class information for
 // object-type values, so we need a list of things that are of type 'Property'
 var PROPS = {
-	metabolics: ['energy', 'mood'],
-	stats: [
-		'xp', 'currants', 'donation_xp_today', 'imagination', 'credits',
-		'quoins_today', 'meditation_today', 'rube_trades', 'rube_lure_disabled',
-		'recipe_xp_today'],
-	daily_favor: [
-		'alph', 'cosma', 'friendly', 'grendaline', 'humbaba', 'lem', 'mab',
-		'pot', 'spriggan', 'ti', 'zille'],
-	favor_points: [
-		'alph', 'cosma', 'friendly', 'grendaline', 'humbaba', 'lem', 'mab',
-		'pot', 'spriggan', 'ti', 'zille'],
-	giant_emblems: [
-		'alph', 'cosma', 'friendly', 'grendaline', 'humbaba', 'lem', 'mab',
-		'pot', 'spriggan', 'ti', 'zille'],
+	metabolics: {
+		energy: 'property',
+		mood: 'property',
+	},
+	stats: {
+		xp: 'property',
+		currants: 'property',
+		donation_xp_today: 'property',
+		imagination: 'property',
+		credits: 'property',
+		quoins_today: 'property',
+		meditation_today: 'property',
+		rube_trades: 'property',
+		rube_lure_disabled: 'property',
+		recipe_xp_today: 'object'
+	},
+	daily_favor: {
+		alph: 'property',
+		cosma: 'property',
+		friendly: 'property',
+		grendaline: 'property',
+		humbaba: 'property',
+		lem: 'property',
+		mab: 'property',
+		pot: 'property',
+		spriggan: 'property',
+		ti: 'property',
+		zille: 'property'
+	},
+	favor_points: {
+		alph: 'property',
+		cosma: 'property',
+		friendly: 'property',
+		grendaline: 'property',
+		humbaba: 'property',
+		lem: 'property',
+		mab: 'property',
+		pot: 'property',
+		spriggan: 'property',
+		ti: 'property',
+		zille: 'property'
+	},
+	giant_emblems: {
+		alph: 'property',
+		cosma: 'property',
+		friendly: 'property',
+		grendaline: 'property',
+		humbaba: 'property',
+		lem: 'property',
+		mab: 'property',
+		pot: 'property',
+		spriggan: 'property',
+		ti: 'property',
+		zille: 'property'
+	},
 };
 // indicates which of the above PROPS will be included in the 'changes' segment
 // of outgoing messages (i.e. value updates sent to the client)
@@ -72,9 +113,19 @@ function Player(data) {
 	// int values as well as serialized Property instances)
 	for (var group in PROPS) {
 		if (!this[group]) this[group] = {};
-		for (var i = 0; i < PROPS[group].length; i++) {
-			var key = PROPS[group][i];
-			this[group][key] = new Prop(key, this[group][key]);
+		for (var key in PROPS[group]) {
+			if (PROPS[group][key] === 'property') {
+				this[group][key] = new Prop(key, this[group][key]);
+			}
+			else if (PROPS[group][key] === 'object') {
+				if (!this[group][key]) {
+					this[group][key] = {};
+				}
+				for (var subkey in this[group][key]) {
+					var propGroup = this[group][key];
+					propGroup[subkey] = new Prop(subkey, propGroup[subkey]);
+				}
+			}
 		}
 	}
 }
@@ -119,20 +170,28 @@ Player.prototype.del = function del() {
 Player.prototype.serialize = function serialize() {
 	var ret = Player.super_.prototype.serialize.call(this);
 	for (var group in PROPS) {
-		if (this[group]) {
-			ret[group] = {};  // ret is just a shallow copy
-			var key;
-			for (var i = 0; i < PROPS[group].length; i++) {
-				key = PROPS[group][i];
-				if (this[group][key]) {
-					ret[group][key] = this[group][key].serialize();
+		if (!this[group]) {
+			continue;
+		}
+		ret[group] = {};  // ret is just a shallow copy
+		for (var key in PROPS[group]) {
+			if (!this[group][key]) {
+				continue;
+			}
+			else if (this[group][key] instanceof Prop) {
+				ret[group][key] = this[group][key].serialize();
+			}
+			else if (typeof this[group][key] === 'object') {
+				ret[group][key] = {};
+				for (var subkey in this[group][key]) {
+					ret[group][key][subkey] = this[group][key][subkey];
 				}
 			}
-			// property groups have non-property members (e.g.
-			// metabolics.tank), add those too
-			for (key in this[group]) {
-				if (!(key in ret[group])) ret[group][key] = this[group][key];
-			}
+		}
+		// property groups have non-property members (e.g.
+		// metabolics.tank), add those too
+		for (key in this[group]) {
+			if (!(key in ret[group])) ret[group][key] = this[group][key];
 		}
 	}
 	return ret;
@@ -255,7 +314,7 @@ Player.prototype.getConnectedObjects = function getConnectedObjects() {
 	// implicitly avoid duplicate entries
 	var ret = {};
 	// get all bags and items
-	var inventory = this.getAllItems(true);
+	var inventory = this.getAllItems(true, false);
 	for (var k in inventory) {
 		ret[inventory[k].tsid] = inventory[k];
 	}
@@ -581,8 +640,7 @@ Player.prototype.getPropChanges = function getPropChanges() {
 	var ret;
 	for (var group in PROPS) {
 		if (!this[group] || !PROPS_CHANGES[group]) continue;
-		for (var i = 0; i < PROPS[group].length; i++) {
-			var key = PROPS[group][i];
+		for (var key in PROPS[group]) {
 			var send = PROPS_CHANGES[group] === true || PROPS_CHANGES[group][key];
 			var prop = this[group][key];
 			if (send && prop && prop.changed) {

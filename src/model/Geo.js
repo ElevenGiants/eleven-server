@@ -125,9 +125,17 @@ Geo.prototype.serialize = function serialize() {
 
 function revertConnect(conn) {
 	var ret = utils.shallowCopy(conn);
+	// build an objref from street_tsid (GSJS may have modified the connect
+	// without adjusting the 'target' property)
+	if (conn.street_tsid) {
+		ret.target = {
+			tsid: conn.street_tsid,
+			objref: true,
+		};
+		if (conn.label) ret.target.label = conn.label;
+	}
 	delete ret.label;
 	delete ret.street_tsid;
-	ret.target = conn.target;  // was not copied by shallowCopy (non-enumerable)
 	return ret;
 }
 

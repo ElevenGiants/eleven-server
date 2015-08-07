@@ -319,10 +319,12 @@ function postRequestProcStep(step, objects, logmsg, callback) {
 				else {
 					// skip dirty objects that will be deleted later anyway
 					if (o.deleted) return cb(null);
+					//if(step == "add")
+					//	console.log("adding to pers:" + o.tsid);
 					return write(o, logmsg, function (e) {
 						if (e && !err) err = e;
 						return cb();
-					});
+					}, true);
 				}
 			}
 			catch (e) {
@@ -354,10 +356,11 @@ function postRequestRollback(dlist, alist, logmsg, callback) {
 	assert(!shuttingDown, 'persistence layer shutdown initiated');
 	var tag = 'rollback ' + logmsg;
 	log.info(tag);
-	for (let k in dlist) {
+	var k;
+	for (k in dlist) {
 		unload(dlist[k], tag);
 	}
-	for (let k in alist) {
+	for (k in alist) {
 		unload(alist[k], tag);
 	}
 	if (callback) callback();
@@ -373,7 +376,7 @@ function postRequestRollback(dlist, alist, logmsg, callback) {
  *        or in case of errors
  * @private
  */
-function write(obj, logmsg, callback) {
+function write(obj, logmsg, callback, bLog) {
 	log.debug('pers.write: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	metrics.increment('pers.write');
 	pbe.write(orProxy.refify(obj.serialize()), function cb(err, res) {
@@ -381,6 +384,8 @@ function write(obj, logmsg, callback) {
 			log.error(err, 'could not write: %s', obj.tsid);
 			metrics.increment('pers.write.fail');
 		}
+		//if(bLog)
+		//	console.log("done writing: " + obj.tsid);
 		if (callback) return callback(err, res);
 	});
 }

@@ -50,8 +50,8 @@ suite('Bag', function () {
 					label: 'Private Furniture Storage',
 					objref: true,
 					tsid:  'B1',
-					},
-					x: 0, y: 0,
+				},
+				x: 0, y: 0,
 			};
 			new RC().run(function () {
 				Location.create({geo: Geo.create({tsid: 'GX'})});

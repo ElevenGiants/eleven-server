@@ -258,6 +258,17 @@ ItemApi.prototype.apiKickTheChicken = function apiKickTheChicken(vx, vy) {
 
 
 /**
+ * Start flocking behavior (e.g. for bird or fish NPCs).
+ *
+ * @returns {boolean} `true` if the item can start moving
+ */
+ItemApi.prototype.apiMakeBird = function apiMakeBird() {
+	log.debug('%s.apiMakeBird()', this);
+	return this.gsStartMoving('flock');
+};
+
+
+/**
  * Starts direct motion of the item to a point.
  *
  * @param {number} x x coordinate of the destination

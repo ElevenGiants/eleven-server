@@ -18,6 +18,7 @@ module.exports = {
 
 
 require('harmony-reflect');
+var util = require('util');
 var RC = require('data/RequestContext');
 
 
@@ -45,6 +46,11 @@ function makeProxy(obj, prop) {
 				// workaround for builtin Array.prototype.sort (calling it on a
 				// proxied array throws "illegal access" string otherwise)
 				return target.sort.bind(target);
+			}
+			if (name === 'inspect') {
+				return function inspect(depth) {
+					return '^P' + util.inspect(target, false, depth, true);
+				};
 			}
 			if (name === 'valueOf' || name === 'toString') {
 				return function () {

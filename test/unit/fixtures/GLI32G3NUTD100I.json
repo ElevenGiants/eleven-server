@@ -2440,7 +2440,6 @@
 						"mote_id": "9", 
 						"swf_file_versioned": "http://c2.glitch.bz/locations/subway1/1339190565.swf", 
 						"target": {
-							"id": "target", 
 							"label": "Gregarious Grange Subway Station", 
 							"objref": true, 
 							"tsid": "LCR177QO65T1EON"
@@ -2473,7 +2472,6 @@
 						"mote_id": "10", 
 						"swf_file_versioned": "http://c2.glitch.bz/locations/bldg_int_bhall/1340157084.swf", 
 						"target": {
-							"id": "target", 
 							"label": "Bureaucratic Hall", 
 							"objref": true, 
 							"tsid": "LIF101O8CDQ1AMU"
@@ -2506,7 +2504,6 @@
 						"mote_id": "9", 
 						"swf_file_versioned": "http://c2.glitch.bz/locations/groddle_apt/1316203455.swf,http://c2.glitch.bz/locations/groddle1/1340317052.swf,http://c2.glitch.bz/locations/subway1/1339190565.swf,http://c2.glitch.bz/locations/abbasid1/1339547664.swf,http://c2.glitch.bz/locations/firebog/1331248191.swf,http://c2.glitch.bz/locations/bldg_int_apt/1338428575.swf,http://c2.glitch.bz/locations/home_groddle/1338587390.swf", 
 						"target": {
-							"id": "target", 
 							"label": "Gregarious Towers", 
 							"objref": true, 
 							"tsid": "LA5134UPLRU29OH"
@@ -2871,7 +2868,6 @@
 							"mote_id": "9", 
 							"swf_file_versioned": "http://c2.glitch.bz/locations/groddle1/1340317052.swf", 
 							"target": {
-								"id": "target", 
 								"label": "Ritzrock Rise", 
 								"objref": true, 
 								"tsid": "LLI32IDPUTD1F2R"
@@ -2884,7 +2880,6 @@
 							"mote_id": "9", 
 							"swf_file_versioned": "http://c2.glitch.bz/locations/groddle1/1340317052.swf", 
 							"target": {
-								"id": "target", 
 								"label": "Marrakesh Meadow", 
 								"objref": true, 
 								"tsid": "LLIERMJ93DE1H25"
@@ -2897,7 +2892,6 @@
 							"mote_id": "9", 
 							"swf_file_versioned": "http://c2.glitch.bz/locations/groddle1/1340317052.swf", 
 							"target": {
-								"id": "target", 
 								"label": "Estevan Hummock", 
 								"objref": true, 
 								"tsid": "LLI32KHF0UD1AOK"
@@ -2918,7 +2912,6 @@
 							"mote_id": "9", 
 							"swf_file_versioned": "http://c2.glitch.bz/locations/groddle1/1340317052.swf", 
 							"target": {
-								"id": "target", 
 								"label": "Elysian Slope", 
 								"objref": true, 
 								"tsid": "LLI33CQJ3UD1G5J"
@@ -2939,7 +2932,6 @@
 							"mote_id": "9", 
 							"swf_file_versioned": "http://c2.glitch.bz/locations/groddle1/1340317052.swf", 
 							"target": {
-								"id": "target", 
 								"label": "Briarset Croft", 
 								"objref": true, 
 								"tsid": "LCR11DNA3EL10TD"
@@ -2952,7 +2944,6 @@
 							"mote_id": "9", 
 							"swf_file_versioned": "http://c2.glitch.bz/locations/groddle1/1340317052.swf", 
 							"target": {
-								"id": "target", 
 								"label": "Tillymurry Hurry", 
 								"objref": true, 
 								"tsid": "LCR1985LIRK12N4"
@@ -2965,7 +2956,6 @@
 							"mote_id": "9", 
 							"swf_file_versioned": "http://c2.glitch.bz/locations/groddle1/1340317052.swf", 
 							"target": {
-								"id": "target", 
 								"label": "Eglesgown Wanks", 
 								"objref": true, 
 								"tsid": "LCR14062REM1QIR"

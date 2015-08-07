@@ -213,7 +213,7 @@ function isLocal(address) {
 
 
 /**
- * Retrives a configuration value (or block) from the {@link
+ * Retrieves a configuration value (or block) from the {@link
  * https://github.com/flatiron/nconf|nconf} back-end. There are
  * multiple ways to get the same setting, i.e.:
  * ```

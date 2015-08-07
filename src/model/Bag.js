@@ -35,6 +35,7 @@ function Bag(data) {
 	if (this.hiddenItems instanceof Array) {
 		this.hiddenItems = utils.arrayToHash(this.hiddenItems);
 	}
+	this.patchFuncStatsUpdate('onInputBoxResponse');
 }
 
 utils.copyProps(require('model/BagApi').prototype, Bag.prototype);
@@ -142,32 +143,31 @@ Bag.prototype.getChangeData = function getChangeData(pc, removed) {
  * ```
  *
  * @param {boolean} [includeHidden] if `true`, includes hidden items
+ * @param {boolean} [sort] sort items by slot number (`true` by default)
  * @param {object} [aggregate] for internal use (recursion)
  * @param {object} [pathPrefix] for internal use (recursion)
  * @returns {object} a hash with all contained items, as decribed above
  *          (NB: does not contain the root bag itself!)
  */
-Bag.prototype.getAllItems = function getAllItems(includeHidden, aggregate, pathPrefix) {
+Bag.prototype.getAllItems = function getAllItems(includeHidden, sort, aggregate,
+	pathPrefix) {
+	if (sort === undefined) sort = true;
 	var ret = aggregate || {};
-	var lookIn = [];
-	var items = this.items;
-	var sortedItems = {};
-	Object.keys(items).sort(function sort(a, b) {
-		return items[a].x - items[b].x;
-	}).forEach(function add(item) {
-		sortedItems[item] = items[item];
-	});
-	lookIn.push(sortedItems);
+	var lookIn = [this.items];
 	if (includeHidden) {
 		lookIn.push(this.hiddenItems);
 	}
 	pathPrefix = pathPrefix || '';
 	lookIn.forEach(function collect(itemHash) {
-		for (var k in itemHash) {
-			var it = itemHash[k];
+		var keys = Object.keys(itemHash);
+		if (sort) keys.sort(function sort(a, b) {
+			return itemHash[a].x - itemHash[b].x;
+		});
+		for (var i = 0; i < keys.length; i++) {
+			var it = itemHash[keys[i]];
 			ret[pathPrefix + it.tsid] = it;
 			if (utils.isBag(it)) {
-				it.getAllItems(includeHidden, ret, pathPrefix + it.tsid + '/');
+				it.getAllItems(includeHidden, sort, ret, pathPrefix + it.tsid + '/');
 			}
 		}
 	});
