@@ -16,7 +16,6 @@ var rpc = require('data/rpc');
 var util = require('util');
 var utils = require('utils');
 var api = require('model/globalApi');
-var orProxy = require('data/objrefProxy');
 
 
 util.inherits(Location, GameObject);

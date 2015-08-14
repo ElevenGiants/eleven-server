@@ -489,7 +489,7 @@ function isLocal(objOrTsid) {
 function getGsid(objOrTsid) {
 	// locations, geos and groups mapped by their own tsid
 	if (utils.isLoc(objOrTsid) || utils.isGroup(objOrTsid) || utils.isGeo(objOrTsid)) {
-		if(RC.getContext().isCopying)
+		if (RC.getContext().isCopying)
 			return config.getGsid();
 		return config.mapToGS(objOrTsid).gsid;
 	}

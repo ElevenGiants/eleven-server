@@ -518,8 +518,14 @@ exports.apiAdminCall = function apiAdminCall(methodName, args) {
 exports.apiReloadDataForGlobalPathFinding = function apiReloadDataForGlobalPathFinding() {
 	log.debug('global.apiReloadDataForGlobalPathFinding()');
 	log.warn('TODO global.apiReloadDataForGlobalPathFinding not implemented yet');
-} ;
- 
+};
+
+/**
+ * Sets value for current request to force pers to load
+ * objects locally instead of through RPC
+ *
+ * @param {bool} val : True for on, false for off
+ */
 exports.apiSetIsCopying = function apiSetIsCopying(val) {
 	RC.getContext().isCopying = val;
 };

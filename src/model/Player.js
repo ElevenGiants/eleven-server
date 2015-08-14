@@ -508,9 +508,8 @@ Player.prototype.queueChanges = function queueChanges(item, removed, compact) {
 	if (!this.session) return;  // don't queue changes for offline players
 	log.trace('generating changes for %s%s', item, removed ? ' (removed)' : '');
 	var itemTsid = item.tsid;
-	item = api.apiFindObject(itemTsid);  //ensure local/proxy wrapped item where needed
-	if(!item) //should only be hit when creating housing
-	{
+	item = api.apiFindObject(itemTsid);  // ensure local/proxy wrapped item where needed
+	if (!item) { // should only be hit when creating housing
 		log.trace('%s not available currently for %s, skipping', itemTsid, this);
 		return;
 	}

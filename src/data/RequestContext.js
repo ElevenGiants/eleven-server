@@ -172,7 +172,7 @@ RequestContext.setDirty = function setDirty(obj) {
  * @param {boolean} [added] `true` if `obj` is a newly created object
  */
 RequestContext.prototype.setDirty = function setDirty(obj, added) {
-	if(added) {
+	if (added) {
 		this.added[obj.tsid] = obj;
 	}
 	else if (!(obj.tsid in this.added)) {
