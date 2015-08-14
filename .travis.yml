@@ -2,7 +2,7 @@ language: node_js
 
 node_js:
 - node
-- iojs
+- iojs-2
 
 cache: false
 
@@ -17,6 +17,9 @@ script:
 - npm -s run test
 - npm -s run functest
 - npm -s run lint
+
+after_script:
+- npm -s run coveralls
 
 notifications:
   email: false
