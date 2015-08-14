@@ -1,6 +1,7 @@
 /config_local.js
 /log
-docs
+/docs
+/coverage
 /src/gsjs
 /node_modules/**/out
 /node_modules/**/build
@@ -8,3 +9,4 @@ docs
 !/node_modules/**/fibers/bin/.npmignore
 npm-debug.log
 builderror.log
+.coveralls.yml

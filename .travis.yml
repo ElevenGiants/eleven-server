@@ -18,6 +18,9 @@ script:
 - npm -s run functest
 - npm -s run lint
 
+after_script:
+- npm -s run coveralls
+
 notifications:
   email: false
   slack:
