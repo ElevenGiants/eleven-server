@@ -44,7 +44,7 @@ GLOBAL_API = [
     'ExecuteInParallel', 'AdminCall', 'FindGlobalPath', 'FindGlobalPathX',
     'FindShortestGlobalPath', 'ReloadDataForGlobalPathFinding', 'MD5',
     'GetNLocalOnlinePlayers', 'CopyHash', 'ResetThreadCPUClock',
-    'ResetCPUTimes', 'GetCPUTimes', 'ResetObjectCreationCounter']
+    'ResetCPUTimes', 'GetCPUTimes', 'ResetObjectCreationCounter', 'SetIsCopying']
 
 
 def process_includes(module, lines):
