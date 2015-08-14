@@ -61,6 +61,7 @@
   "devDependencies": {
     "benchmark": "https://github.com/bestiejs/benchmark.js/tarball/master",
     "chai": "^1.9.1",
+    "coveralls": "^2.11.4",
     "jscs": "^1.12.0",
     "jscs-jsdoc": "^0.4.6",
     "jsdoc": "^3.3.0-alpha9",
