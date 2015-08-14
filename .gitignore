@@ -1,6 +1,7 @@
 /config_local.js
 /log
-docs
+/docs
+/coverage
 /src/gsjs
 /node_modules/**/out
 /node_modules/**/build
