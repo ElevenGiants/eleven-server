@@ -26,6 +26,7 @@ var logging = require('logging');
 var lodash = require('lodash');
 var slackChat = require('comm/slackChat');
 var crypto = require('crypto');
+var RC = require('data/RequestContext');
 
 
 function getItemType(classTsid) {
@@ -518,3 +519,7 @@ exports.apiReloadDataForGlobalPathFinding = function apiReloadDataForGlobalPathF
 	log.debug('global.apiReloadDataForGlobalPathFinding()');
 	log.warn('TODO global.apiReloadDataForGlobalPathFinding not implemented yet');
 } ;
+ 
+exports.apiSetIsCopying = function apiSetIsCopying(val) {
+	RC.getContext().isCopying = val;
+};

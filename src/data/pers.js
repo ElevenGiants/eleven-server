@@ -319,8 +319,6 @@ function postRequestProcStep(step, objects, logmsg, callback) {
 				else {
 					// skip dirty objects that will be deleted later anyway
 					if (o.deleted) return cb(null);
-					//if(step == "add")
-					//	console.log("adding to pers:" + o.tsid);
 					return write(o, logmsg, function (e) {
 						if (e && !err) err = e;
 						return cb();
@@ -376,7 +374,7 @@ function postRequestRollback(dlist, alist, logmsg, callback) {
  *        or in case of errors
  * @private
  */
-function write(obj, logmsg, callback, bLog) {
+function write(obj, logmsg, callback) {
 	log.debug('pers.write: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	metrics.increment('pers.write');
 	pbe.write(orProxy.refify(obj.serialize()), function cb(err, res) {
@@ -384,8 +382,6 @@ function write(obj, logmsg, callback, bLog) {
 			log.error(err, 'could not write: %s', obj.tsid);
 			metrics.increment('pers.write.fail');
 		}
-		//if(bLog)
-		//	console.log("done writing: " + obj.tsid);
 		if (callback) return callback(err, res);
 	});
 }

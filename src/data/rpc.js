@@ -365,7 +365,7 @@ function handleRequest(callerId, objOrTsid, fname, args, callback) {
 	metrics.increment('net.rpc.rx', 0.01);
 	orProxy.proxify(args);  // unmarshal arguments
 	var logmsg = util.format('RPC from %s: %s.%s', callerId, objOrTsid, fname);
-	//console.log('%s(%s)', logmsg, args instanceof Array ? args.join(', ') : args);
+	log.debug('%s(%s)', logmsg, args instanceof Array ? args.join(', ') : args);
 	// process RPC in its own request context
 	var rc = new RC(objOrTsid + '.' + fname, 'rpc.' + callerId);
 	rc.run(
@@ -373,15 +373,12 @@ function handleRequest(callerId, objOrTsid, fname, args, callback) {
 			var obj = objOrTsid;
 			if (typeof obj === 'string') {
 				obj = pers.get(obj);
-				//if(fname == "setProp")
-				//	console.log("attempting to setProc on object: " + obj.tsid);
 			}
 			if (!obj || typeof obj[fname] !== 'function') {
 				throw new RpcError(util.format('no such function: %s.%s',
 					objOrTsid, fname));
 			}
 			var ret = obj[fname].apply(obj, args);
-			//console.log('performed function %s(%s)', logmsg, args instanceof Array ? args.join(', ') : args);	
 			// convert <undefined> result to <null> so RPC lib produces a valid
 			// response (it just omits the <result> property otherwise)
 			if (ret === undefined) ret = null;
@@ -392,7 +389,6 @@ function handleRequest(callerId, objOrTsid, fname, args, callback) {
 				log.error(err, 'exception in %s', logmsg);
 			}
 
-			//console.log('callback function %s(%s)', logmsg, args instanceof Array ? args.join(', ') : args);	
 			if (typeof callback !== 'function') {
 				log.error('%s called without a valid callback', logmsg);
 			}
@@ -493,6 +489,8 @@ function isLocal(objOrTsid) {
 function getGsid(objOrTsid) {
 	// locations, geos and groups mapped by their own tsid
 	if (utils.isLoc(objOrTsid) || utils.isGroup(objOrTsid) || utils.isGeo(objOrTsid)) {
+		if(RC.getContext().isCopying)
+			return config.getGsid();
 		return config.mapToGS(objOrTsid).gsid;
 	}
 	// for all other classes, we need the actual game object

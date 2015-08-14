@@ -81,10 +81,8 @@ RequestContext.prototype.run = function run(func, callback, waitPers, msg) {
 		var res = null;
 		try {
 			Fiber.current.rc = rc;
-			//Fiber.current.test = msg;
 			// call function in fiber context
 			res = func();
-			//console.log("finished rc");
 			log.debug('finished %s (%s dirty, %s added)', tag,
 				Object.keys(rc.dirty).length, Object.keys(rc.added).length);
 		}
@@ -92,21 +90,12 @@ RequestContext.prototype.run = function run(func, callback, waitPers, msg) {
 			/*jshint -W030 */  // trigger prepareStackTrace (parts of the trace might not be available outside the RC)
 			err.stack;
 			/*jshint +W030 */
-			//if(msg)
-				//console.log("error " + msg);
 			pers.postRequestRollback(rc.dirty, rc.added, tag, function done() {
 				callback(err);
 			});
 			return;
 		}
 		// persist modified objects
-		//console.log(rc.added);
-		//if(msg)
-		//{
-		//	console.log("finishing " + Fiber.current.test);
-		//	for(var key in rc.added)
-		//		console.log("final added: " + key);
-		//}
 		pers.postRequestProc(rc.dirty, rc.added, rc.unload, tag, function done() {
 			// invoke special post-persistence callback if there is one
 			if (typeof rc.postPersCallback === 'function') {
@@ -184,7 +173,6 @@ RequestContext.setDirty = function setDirty(obj) {
  */
 RequestContext.prototype.setDirty = function setDirty(obj, added) {
 	if(added) {
-		//console.log("added: " + obj.tsid + " " + Fiber.current.test);
 		this.added[obj.tsid] = obj;
 	}
 	else if (!(obj.tsid in this.added)) {
