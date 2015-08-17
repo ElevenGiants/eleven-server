@@ -349,10 +349,30 @@ LocationApi.prototype.apiGetActivePlayersInTheRadiusX =
 };
 
 
+/**
+ * Creates a copy of the location.
+ *
+ * @param {string} label label for new location
+ * @param {string} moteId mote ID for new location
+ * @param {string} hubId hub ID for new location
+ * @param {boolean} isInstance is the new location an instance
+ * @param {string} [altClassTsid] alternate class of new location (source
+          location class by default)
+ * @returns {Location} the copied location
+ */
 LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId,
 	hubId, isInstance, altClassTsid) {
 	log.debug('%s.apiCopyLocation(%s, %s, %s, %s, %s)', this, label, moteId,
 		hubId, isInstance, altClassTsid);
-	//TODO: implement&document me
-	log.warn('TODO Location.apiCopyLocation not implemented yet');
+	return this.copyLocation(label, moteId, hubId, isInstance, altClassTsid);
+};
+
+
+/**
+ * Reinitializes the location geometry, updating the `clientGeometry` and `geo`
+ * properties. Should be called after any geometry change.
+ */
+LocationApi.prototype.apiGeometryUpdated = function apiGeometryUpdated() {
+	log.debug('%s.apiGeometryUpdated()', this);
+	return this.updateGeo();
 };

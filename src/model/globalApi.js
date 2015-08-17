@@ -440,9 +440,22 @@ exports.apiSendToGroup = function apiSendToGroup(msg, recipients) {
 };
 
 
+exports.apiSendToHub = function apiSendToHub(msg, hubId) {
+	log.debug('global.apiSendToHub(%s)', msg);
+	log.warn('TODO global.apiSendToHub not implemented yet');
+};
+
+
 exports.apiMD5 = function apiMD5(string) {
 	log.debug('global.apiMD5(%s)', string);
 	return crypto.createHash('md5').update(string).digest('hex');
+};
+
+
+exports.apiAdminCall = function apiAdminCall(methodName, args) {
+	log.debug('global.apiAdminCall(%s, %s)', methodName, args);
+	//TODO: forwarding to other game servers
+	gsjsBridge.getAdmin()[methodName](args);
 };
 
 
@@ -460,6 +473,12 @@ exports.apiFindShortestGlobalPath = function apiFindShortestGlobalPath(from, tos
 	//TODO: implement&document me
 	log.warn('TODO global.apiFindShortestGlobalPath not implemented yet');
 	return [];
+};
+
+
+exports.apiReloadDataForGlobalPathFinding = function apiReloadDataForGlobalPathFinding() {
+	log.debug('global.apiReloadDataForGlobalPathFinding()');
+	log.warn('TODO global.apiReloadDataForGlobalPathFinding not implemented yet');
 };
 
 

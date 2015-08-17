@@ -194,4 +194,44 @@ suite('Location', function () {
 			}, 100);
 		});
 	});
+
+
+	suite('copyLocation', function () {
+
+		test('does its job', function (done) {
+			new RC().run(function () {
+				var src = new Location({}, new Geo({layers: {middleground: {}}}));
+				var copy = src.copyLocation('Test Label', 'Mote Test',
+					'Hub Test', true, 'home');
+				assert.notEqual(copy.geometry.layers.middleground, undefined);
+				assert.strictEqual(copy.label, 'Test Label');
+				assert.strictEqual(copy.moteid, 'Mote Test');
+				assert.strictEqual(copy.hubid, 'Hub Test');
+				assert.isTrue(copy.is_instance);
+				assert.strictEqual(copy.class_tsid, 'home');
+			}, done);
+		});
+
+		test('copies items', function (done) {
+			new RC().run(function () {
+				var geo = new Geo({layers: {middleground: {doors: {d: {connect:
+					{target: {label: 'uranus', tsid: 'LABC'}}}}}}});
+				var data = {items: [
+					{tsid: 'BX', class_tsid: 'bag_bigger', tcont: 'LABC', x: 100, y: 100},
+				]};
+				var src = new Location(data, geo);
+				var copy = src.copyLocation('Test Label', 'Mote Test',
+					'Hub Test', true, 'home');
+				assert.doesNotThrow(function () {
+					var count = 0;
+					for (var i in copy.items) {
+						count++;
+						assert.strictEqual(copy.items[i].tsid[0], 'B');
+						assert.notStrictEqual(copy.items[i].tsid, 'BX');
+					}
+					assert.notStrictEqual(count, 0);
+				});
+			}, done);
+		});
+	});
 });

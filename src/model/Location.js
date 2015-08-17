@@ -15,6 +15,7 @@ var RQ = require('data/RequestQueue');
 var rpc = require('data/rpc');
 var util = require('util');
 var utils = require('utils');
+var api = require('model/globalApi');
 
 
 util.inherits(Location, GameObject);
@@ -523,4 +524,41 @@ Location.prototype.getClosestItem = function getClosestItem(x, y, filter,
 		}
 	}
 	return found;
+};
+
+
+/**
+ * Creates a copy of this location.
+ *
+ * @param {string} label label for new location
+ * @param {string} moteId mote ID for new location
+ * @param {string} hubId hub ID for new location
+ * @param {boolean} isInstance is the copied location an instance
+ * @param {string} [altClassTsid] alternate class of new location (source
+          location class by default)
+ * @returns {Location} the copied location
+ */
+Location.prototype.copyLocation = function copyLocation(label, moteId, hubId,
+	isInstance, altClassTsid) {
+	// copy geometry
+	var newGeo = Geo.create();
+	newGeo.copyProps(this.geometry, ['tsid', 'label']);
+	newGeo.label = label;
+	// copy location
+	var data = {class_tsid: altClassTsid || this.class_tsid};
+	var newLoc = Location.create(newGeo, data);
+	newLoc.copyProps(this, ['tsid', 'class_tsid', 'instances', 'players', 'items']);
+	newLoc.label = label;
+	newLoc.moteid = moteId;
+	newLoc.hubid = hubId;
+	newLoc.is_instance = isInstance;
+	for (var i in this.items) {
+		var srcItem = this.items[i];
+		var newItem = api.apiNewItemStack(srcItem.class_tsid, srcItem.count);
+		newItem.copyProps(srcItem, ['tsid', 'class_tsid', 'count', 'tcont',
+			'pcont', 'container']);
+		newItem.setContainer(newLoc, srcItem.x, srcItem.y);
+	}
+	newLoc.onCreateAsCopyOf(this);
+	return newLoc;
 };
