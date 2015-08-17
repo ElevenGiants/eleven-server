@@ -249,10 +249,6 @@ suite('Player', function () {
 			p.onLogout = function () {
 				logoutCalled = true;
 			};
-			// make sure the player is eventually unloaded (separate request)
-			p.unload = function () {
-				done();
-			};
 			var l = new Location({tsid: 'L', players: [p]}, new Geo());
 			p.location = l;
 			rpcMock.reset(false);  // simulate inter-GS move
@@ -267,6 +263,7 @@ suite('Player', function () {
 					assert.isFalse(logoutCalled,
 						'API event onLogout is not called on loc change');
 					assert.isNull(p.session);
+					done();
 				}
 			);
 		});
@@ -344,7 +341,6 @@ suite('Player', function () {
 			rc.run(function () {
 				var res = p.gsMoveCheck('LLOCAL');
 				assert.isUndefined(res);
-				assert.isNull(rc.postPersCallback);
 				done();
 			});
 		});
@@ -361,36 +357,42 @@ suite('Player', function () {
 			});
 		});
 
-		test('sends/schedules server messages required for GS reconnect',
-			function (done) {
+		test('sends/schedules server messages required for GS reconnect and ' +
+			'unloads player', function (done) {
 			rpcMock.reset(false);
 			var p = new Player({tsid: 'P1', onGSLogout: function dummy() {}});
+			var unloaded = false;
+			p.unload = function () {
+				unloaded = true;
+			};
 			var msgs = [];
 			p.session = {send: function send(msg) {
-				msgs.push(msg);
-			}};
-			var rc = new RC();
-			rc.run(
-				function () {
-					p.gsMoveCheck('LREMOTE');
-				},
-				function callback(err, res) {
-					assert.deepEqual(msgs, [
-						{
+				switch (msgs.length) {
+					case 0:
+						assert.deepEqual(msg, {
 							type: 'server_message',
 							action: 'PREPARE_TO_RECONNECT',
 							hostport: '12.34.56.78:1445',
 							token: 'P1',
-						},
-						{
+						});
+						break;
+					case 1:
+						assert.isTrue(unloaded);
+						assert.deepEqual(msg, {
 							type: 'server_message',
 							action: 'CLOSE',
 							msg: 'CONNECT_TO_ANOTHER_SERVER',
-						},
-					]);
-					done(err);
+						});
+						break;
+					default:
+						throw new Error('unexpected message: ' + JSON.stringify(msg));
 				}
-			);
+				msgs.push(msg);
+				if (msgs.length > 1) return done();
+			}};
+			new RC().run(function () {
+				p.gsMoveCheck('LREMOTE');
+			});
 		});
 	});
 

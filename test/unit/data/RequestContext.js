@@ -29,7 +29,7 @@ suite('RequestContext', function () {
 			new RC('testlogtag').run(function () {
 				var ctx = RC.getContext();
 				assert.isDefined(ctx);
-				assert.strictEqual(ctx.logtag, 'testlogtag');
+				assert.strictEqual(ctx.tag, 'testlogtag');
 				done();
 			});
 		});
@@ -73,13 +73,6 @@ suite('RequestContext', function () {
 				true
 			);
 			// RC.pers is restored in suite teardown
-		});
-
-		test('calls post-persistence callback', function (done) {
-			var rc = new RC();
-			rc.run(function () {
-				rc.setPostPersCallback(done);
-			});
 		});
 
 		test('unloads objects scheduled for unloading', function (done) {

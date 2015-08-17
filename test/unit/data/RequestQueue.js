@@ -90,7 +90,7 @@ suite('RequestQueue', function () {
 		test('dequeues requests one by one', function () {
 			var rq = new RQ();
 			var checkBusy = function checkBusy(req) {
-				assert.isTrue(rq.busy);
+				assert.isNotNull(rq.inProgress);
 			};
 			rq.queue = [
 				{func: checkBusy},
@@ -100,7 +100,7 @@ suite('RequestQueue', function () {
 			assert.lengthOf(rq.queue, 1);
 			rq.next();
 			assert.lengthOf(rq.queue, 0);
-			assert.isFalse(rq.busy);
+			assert.isNull(rq.inProgress);
 		});
 
 		test('does nothing when called with empty queue', function () {
@@ -118,7 +118,7 @@ suite('RequestQueue', function () {
 					throw new Error('should not happen');
 				},
 			}];
-			rq.busy = true;
+			rq.inProgress = {foo: 'fake'};
 			rq.next();
 		});
 	});
@@ -136,7 +136,7 @@ suite('RequestQueue', function () {
 				callback: function cb(err) {
 					if (err) return done(err);
 					assert.isTrue(called);
-					assert.isFalse(rq.busy);
+					assert.isNull(rq.inProgress);
 					return done();
 				},
 			});
@@ -150,7 +150,7 @@ suite('RequestQueue', function () {
 				},
 				callback: function cb(err) {
 					assert.strictEqual(err.message, 'something went wrong');
-					assert.isFalse(rq.busy);
+					assert.isNull(rq.inProgress);
 					return done();
 				},
 			});

@@ -23,8 +23,8 @@ var pers = require('data/pers');
  * Fibers-based features like {@link
  * https://github.com/luciotato/waitfor|wait.for}.
  *
- * @param {string} [logtag] short text describing the nature or type of
- *        the request (just for logging)
+ * @param {string} [tag] short text describing the nature or type of the request
+ *        (should uniquely identify the request within a client session)
  * @param {GameObject|string} [owner] game object in whose queue the
  *        request is executed (commonly a {@link Location} or {@link
  *        Group}), respecively their TSID (just for logging)
@@ -33,8 +33,8 @@ var pers = require('data/pers');
  *
  * @constructor
  */
-function RequestContext(logtag, owner, session) {
-	this.logtag = logtag;
+function RequestContext(tag, owner, session) {
+	this.tag = tag;
 	this.owner = owner;
 	this.session = session;
 	// request-local game object cache
@@ -43,8 +43,6 @@ function RequestContext(logtag, owner, session) {
 	this.dirty = {};
 	// objects scheduled for unloading after current request
 	this.unload = {};
-	// post-request-and-persistence callback (see setPostPersCallback)
-	this.postPersCallback = null;
 }
 
 
@@ -75,14 +73,14 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 	//jscs:disable safeContextKeyword
 	var rc = this;
 	//jscs:enable safeContextKeyword
-	var tag = util.format('%s/%s', rc.owner, rc.logtag);
+	var logtag = util.format('%s/%s', rc.owner, rc.tag);
 	wait.launchFiber(function rcFiber() {
 		var res = null;
 		try {
 			Fiber.current.rc = rc;
 			// call function in fiber context
 			res = func();
-			log.debug('finished %s (%s dirty)', tag, Object.keys(rc.dirty).length);
+			log.debug('finished %s (%s dirty)', logtag, Object.keys(rc.dirty).length);
 		}
 		catch (err) {
 			/*jshint -W030 */  // trigger prepareStackTrace (parts of the trace might not be available outside the RC)
@@ -91,12 +89,7 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 			return callback(err);
 		}
 		// persist modified objects
-		pers.postRequestProc(rc.dirty, rc.unload, tag, function done() {
-			// invoke special post-persistence callback if there is one
-			if (typeof rc.postPersCallback === 'function') {
-				rc.postPersCallback();
-			}
-			// continue with "regular" request context callback
+		pers.postRequestProc(rc.dirty, rc.unload, logtag, function done() {
 			if (waitPers) {
 				return callback(null, res);
 			}
@@ -164,18 +157,4 @@ RequestContext.prototype.setDirty = function setDirty(obj) {
  */
 RequestContext.prototype.setUnload = function setUnload(obj) {
 	this.unload[obj.tsid] = obj;
-};
-
-
-/**
- * Schedules a function to be called after a request has been processed
- * successfully, **and** the resulting changes have been written to
- * persistence. If request processing fails, the function will not be
- * called.
- *
- * @param {function} callback called after request processing and the
- *        resulting persistence; no arguments
- */
-RequestContext.prototype.setPostPersCallback = function setPostPersCallback(callback) {
-	this.postPersCallback = callback;
 };

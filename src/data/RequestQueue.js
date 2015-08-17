@@ -58,7 +58,7 @@ RequestQueue.init = function init() {
 function RequestQueue(id) {
 	RequestQueue.super_.call(this);
 	this.queue = [];
-	this.busy = false;
+	this.inProgress = null;
 	this.closing = false;
 	this.id = id;
 }
@@ -152,7 +152,8 @@ RequestQueue.prototype.getLength = function getLength() {
 /**
  * Adds a new request to the queue.
  *
- * @param {string} tag arbitrary brief text describing the request (for logging)
+ * @param {string} tag brief text uniquely identifying the request within a
+ *        client session (e.g. a function name); used for RPC synchronization
  * @param {function} func the request function to be executed
  * @param {function} [callback]
  * ```
@@ -175,6 +176,7 @@ RequestQueue.prototype.push = function push(tag, func, callback, options) {
 		log.warn('tried to push %s request, but %s is shutting down', tag, this);
 		return callback ? callback(new Error('RQ flagged for shutdown')) : undefined;
 	}
+	if (options && options.obj) tag = options.obj.tsid + '.' + tag;
 	var entry = {
 		tag: tag,
 		func: func,
@@ -182,7 +184,15 @@ RequestQueue.prototype.push = function push(tag, func, callback, options) {
 	};
 	if (callback) entry.callback = callback;
 	if (options) entry.options = options;
-	this.queue.push(entry);
+	// handle requests belonging to the same context as the currently active
+	// request (typically nested RPCs) directly, to avoid deadlocks
+	if (this.inProgress && tag && tag.startsWith(this.inProgress.tag)) {
+		entry.nested = true;
+		setImmediate(this.handle.bind(this, entry, true));
+	}
+	else {
+		this.queue.push(entry);
+	}
 	if (options && options.close) {
 		this.closing = true;
 		log.info('request queue flagged for shutdown: %s', this);
@@ -200,7 +210,7 @@ RequestQueue.prototype.push = function push(tag, func, callback, options) {
  */
 RequestQueue.prototype.next = function next() {
 	log.trace({len: this.queue.length}, 'checking for next request');
-	if (this.busy) return;
+	if (this.inProgress) return;
 	if (this.queue.length) {
 		this.handle(this.queue.shift());
 	}
@@ -221,18 +231,19 @@ RequestQueue.prototype.next = function next() {
  */
 RequestQueue.prototype.handle = function handle(req) {
 	var options = req.options || {};
-	var tag = (options.obj ? options.obj.tsid + '.' : '') + req.tag;
 	if (req.waitTimer) req.waitTimer.stop();
-	log.trace('handling %s request', tag);
-	this.busy = true;
+	log.trace('handling %s request', req.tag);
+	if (!req.nested) this.inProgress = req;
 	var self = this;
-	var rc = new RC(tag, this.id, options.session);
+	var rc = new RC(req.tag, this.id, options.session);
 	rc.run(
 		req.func,
 		function callback(err, res) {
-			self.busy = false;
-			log.trace('finished %s request', tag);
-			setImmediate(self.next.bind(self));
+			log.trace('finished %s request', req.tag);
+			if (!req.nested) {
+				self.inProgress = null;
+				setImmediate(self.next.bind(self));
+			}
 			if (req.callback) return req.callback(err, res);
 		},
 		options.waitPers

@@ -10,7 +10,6 @@ var Prop = require('model/Property');
 var Bag = require('model/Bag');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
-var RC = require('data/RequestContext');
 var RQ = require('data/RequestQueue');
 var util = require('util');
 var utils = require('utils');
@@ -270,9 +269,9 @@ Player.prototype.onDisconnect = function onDisconnect() {
 			type: 'pc_logout',
 			pc: {tsid: this.tsid, label: this.label},
 		}, false, this);
+		// stop timers etc and unload from live object cache
+		this.rqPush(this.unload);
 	}
-	// in any case, stop timers etc and unload from live object cache
-	this.rqPush(this.unload);
 	// unlink the session, so this function won't be accidentally called again
 	this.session = null;
 };
@@ -387,14 +386,15 @@ Player.prototype.gsMoveCheck = function gsMoveCheck(newLocId) {
 		hostport: gsConf.hostPort,
 		token: token,
 	});
-	// set up callback that will tell the client to reconnect to the new GS
-	// once the current request is finished
+	// set up next request that will tell the client to reconnect to the new GS
 	var self = this;
-	RC.getContext().setPostPersCallback(function triggerReconnect() {
-		if (self.isConnected()) {
-			self.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
-		}
-	});
+	this.getRQ().push('unload', this.unload.bind(this),
+		function triggerReconnect() {
+			if (self.isConnected()) {
+				self.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
+				self.session = null;  // cut the cord
+			}
+		}, {waitPers: true, obj: this, session: this.session});
 	var ret = utils.shallowCopy(gsConf);
 	ret.token = token;
 	return ret;

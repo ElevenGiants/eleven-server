@@ -177,7 +177,7 @@ function wrapLogEmitter(emitter, metric) {
 		}
 		var rc = RC.getContext(true);
 		if (rc) {
-			addField(arguments, 'rc', rc.logtag);
+			addField(arguments, 'rc', rc.tag);
 			if (rc.owner) addField(arguments, 'rq', rc.owner);
 			if (rc.session) addField(arguments, 'session', rc.session);
 		}

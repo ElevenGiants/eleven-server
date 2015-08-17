@@ -140,7 +140,7 @@ suite('GameObject', function () {
 			var go = new GameObject();
 			go.foo = function foo() {
 				assert.isDefined(RC.getContext());
-				assert.strictEqual(RC.getContext().logtag, go.tsid + '.foo');
+				assert.strictEqual(RC.getContext().tag, go.tsid + '.foo');
 				done();
 			};
 			go.scheduleTimer({fname: 'foo'}, 'key');
