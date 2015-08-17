@@ -69,7 +69,7 @@ function RequestContext(logtag, owner, session) {
  * @param {boolean} [waitPers] if `true`, wait for persistence
  *        operations to finish before invoking callback
  */
-RequestContext.prototype.run = function run(func, callback, waitPers, msg) {
+RequestContext.prototype.run = function run(func, callback, waitPers) {
 	callback = callback || function defaultCallback(err, res) {
 		if (err) throw err;
 	};

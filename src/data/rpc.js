@@ -388,7 +388,6 @@ function handleRequest(callerId, objOrTsid, fname, args, callback) {
 			if (err) {
 				log.error(err, 'exception in %s', logmsg);
 			}
-
 			if (typeof callback !== 'function') {
 				log.error('%s called without a valid callback', logmsg);
 			}
@@ -397,8 +396,7 @@ function handleRequest(callerId, objOrTsid, fname, args, callback) {
 				callback(err, res);
 			}
 		},
-		true,  // make sure changes are persisted before returning RPC
-		logmsg
+		true  // make sure changes are persisted before returning RPC
 	);
 }
 

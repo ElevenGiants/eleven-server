@@ -322,7 +322,7 @@ function postRequestProcStep(step, objects, logmsg, callback) {
 					return write(o, logmsg, function (e) {
 						if (e && !err) err = e;
 						return cb();
-					}, true);
+					};
 				}
 			}
 			catch (e) {
