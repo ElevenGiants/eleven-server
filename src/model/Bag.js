@@ -35,6 +35,7 @@ function Bag(data) {
 	if (this.hiddenItems instanceof Array) {
 		this.hiddenItems = utils.arrayToHash(this.hiddenItems);
 	}
+	this.patchFuncStatsUpdate('onInputBoxResponse');
 }
 
 utils.copyProps(require('model/BagApi').prototype, Bag.prototype);
@@ -82,8 +83,46 @@ Bag.prototype.serialize = function serialize() {
 };
 
 
-Bag.prototype.getChangeData = function getChangeData(pc) {
-	var ret = Bag.super_.prototype.getChangeData.call(this, pc);
+/**
+ * Assigns the bag to a container. This overrides {@link
+ * Item#setContainer} to recursively perform the operation on the
+ * objects contained in the bag.
+ *
+ * @param {Location|Player|Bag} cont new container for the bag
+ * @param {number} x x coordinate in the new location, or slot number
+ *        if the container is a player or bag (irrelevant when adding
+ *        as hidden item)
+ * @param {number} y y coordinate in the new location (irrelevant when
+ *        adding to player/bag)
+ * @param {boolean} [hidden] item will be hidden in the new container
+ *        (`false` by default)
+ */
+Bag.prototype.setContainer = function setContainer(cont, x, y, hidden) {
+	var ptcont = this.tcont;  // previous top container
+	Bag.super_.prototype.setContainer.call(this, cont, x, y, hidden);
+	if (this.tcont !== ptcont) {
+		for (var k in this.items) {
+			var it = this.items[k];
+			it.setContainer(this, it.x, it.y, it.isHidden);
+		}
+	}
+};
+
+
+/**
+ * Overrides {@link Item#getChangeData} to add bag-specific extra
+ * properties.
+ *
+ * @param {Player} pc player whose client this data will be sent to
+ *        (required because some of the fields are "personalized")
+ * @param {boolean} [removed] if `true`, this record will mark the
+ *        item as deleted (used when items change containers, in which
+ *        case they are marked deleted in the changes for the previous
+ *        container)
+ * @returns {object} changes data set
+ */
+Bag.prototype.getChangeData = function getChangeData(pc, removed) {
+	var ret = Bag.super_.prototype.getChangeData.call(this, pc, removed);
 	if (this.hasTag && !this.hasTag('not_openable')) ret.slots = this.capacity;
 	return ret;
 };
@@ -103,20 +142,32 @@ Bag.prototype.getChangeData = function getChangeData(pc) {
  * }
  * ```
  *
+ * @param {boolean} [includeHidden] if `true`, includes hidden items
+ * @param {boolean} [sort] sort items by slot number (`true` by default)
  * @param {object} [aggregate] for internal use (recursion)
  * @param {object} [pathPrefix] for internal use (recursion)
  * @returns {object} a hash with all contained items, as decribed above
  *          (NB: does not contain the root bag itself!)
  */
-Bag.prototype.getAllItems = function getAllItems(aggregate, pathPrefix) {
+Bag.prototype.getAllItems = function getAllItems(includeHidden, sort, aggregate,
+	pathPrefix) {
+	if (sort === undefined) sort = true;
 	var ret = aggregate || {};
+	var lookIn = [this.items];
+	if (includeHidden) {
+		lookIn.push(this.hiddenItems);
+	}
 	pathPrefix = pathPrefix || '';
-	[this.items, this.hiddenItems].forEach(function collect(itemHash) {
-		for (var k in itemHash) {
-			var it = itemHash[k];
+	lookIn.forEach(function collect(itemHash) {
+		var keys = Object.keys(itemHash);
+		if (sort) keys.sort(function sort(a, b) {
+			return itemHash[a].x - itemHash[b].x;
+		});
+		for (var i = 0; i < keys.length; i++) {
+			var it = itemHash[keys[i]];
 			ret[pathPrefix + it.tsid] = it;
 			if (utils.isBag(it)) {
-				it.getAllItems(ret, pathPrefix + it.tsid + '/');
+				it.getAllItems(includeHidden, sort, ret, pathPrefix + it.tsid + '/');
 			}
 		}
 	});
@@ -155,6 +206,7 @@ Bag.prototype.getClassItems = function getClassItems(classTsid, max) {
  *          is empty
  */
 Bag.prototype.getSlot = function getSlot(slot) {
+	slot = utils.intVal(slot);
 	for (var k in this.items) {
 		if (this.items[k].x === slot) {
 			return this.items[k];
@@ -178,7 +230,7 @@ Bag.prototype.getSlotOrPath = function getSlotOrPath(slotOrPath) {
 			ret = this.getSlot(slotOrPath) || null;
 		}
 		else {
-			ret = this.getAllItems()[slotOrPath] || null;
+			ret = this.getAllItems(true)[slotOrPath] || null;
 		}
 	}
 	return ret;

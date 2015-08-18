@@ -20,12 +20,12 @@
 	"disallowSpacesInCallExpression": true,
 	"requireBlocksOnNewline": true,
 	"disallowEmptyBlocks": true,
+	"disallowSpacesInsideBrackets": true,
 	"disallowSpacesInsideObjectBrackets": true,
-	"disallowSpacesInsideArrayBrackets": true,
 	"disallowSpacesInsideParentheses": true,
 	"disallowQuotedKeysInObjects": "allButReserved",
 	"disallowDanglingUnderscores": {
-		"allExcept": ["__get__", "__set__", "__isGO", "__isPP", "__isORP", "__isRP"]
+		"allExcept": ["__get__", "__set__", "__isGO", "__isPP", "__isORP", "__isRP", "__proxyTarget"]
 	},
 	"disallowSpaceAfterObjectKeys": true,
 	"requireSpaceBeforeObjectValues": true,
@@ -35,6 +35,7 @@
 	"disallowSpaceBeforePostfixUnaryOperators": true,
 	"requireSpaceBeforeBinaryOperators": true,
 	"requireSpaceAfterBinaryOperators": true,
+	"requireSpaceBetweenArguments": true,
 	"requireCamelCaseOrUpperCaseIdentifiers": "ignoreProperties",
 	"disallowKeywords": ["with"],
 	"disallowMixedSpacesAndTabs": "smart",
@@ -48,6 +49,7 @@
 		"allowRegex": true
 	},
 	"requireDotNotation": true,
+	"requireSemicolons": true,
 	"requireSpaceAfterLineComment": {
 		"allExcept": ["TODO:", "TODO", "jscs:disable", "jscs:enable"]
 	},

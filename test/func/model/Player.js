@@ -10,6 +10,7 @@ var Bag = require('model/Bag');
 var pers = require('data/pers');
 var utils = require('utils');
 var pbeMock = require('../../mock/pbe');
+var helpers = require('../../helpers');
 
 
 suite('Player', function () {
@@ -34,7 +35,7 @@ suite('Player', function () {
 				function () {
 					var g = Geo.create();
 					rc.cache[g.tsid] = g;
-					var l = Location.create(g);
+					var l = Location.create({geo: g});
 					rc.cache[l.tsid] = l;
 					p = Player.create({
 						label: 'Edgar',
@@ -153,7 +154,8 @@ suite('Player', function () {
 
 		test('works as expected (basic changeset)', function (done) {
 			new RC().run(function () {
-				var p = new Player({tsid: 'PX', location: {tsid: 'LDUMMY'}});
+				var p = helpers.getOnlinePlayer(
+					{tsid: 'PX', location: {tsid: 'LDUMMY'}});
 				var it = new Item(
 					{tsid: 'IX', class_tsid: 'meat', count: 3, tcont: 'PX'});
 				p.queueChanges(it);
@@ -171,7 +173,8 @@ suite('Player', function () {
 
 		test('works as expected (basic removal changeset)', function (done) {
 			new RC().run(function () {
-				var p = new Player({tsid: 'PX', location: {tsid: 'LDUMMY'}});
+				var p = helpers.getOnlinePlayer(
+					{tsid: 'PX', location: {tsid: 'LDUMMY'}});
 				var it = new Item(
 					{tsid: 'IX', class_tsid: 'meat', count: 3, tcont: 'PX'});
 				p.queueChanges(it, true);
@@ -184,7 +187,7 @@ suite('Player', function () {
 
 		test('works as expected (location changesets)', function (done) {
 			new RC().run(function () {
-				var p = new Player({tsid: 'PX', location: {tsid: 'LX'}});
+				var p = helpers.getOnlinePlayer({tsid: 'PX', location: {tsid: 'LX'}});
 				var it = new Item({tsid: 'IX', class_tsid: 'apple', tcont: 'LX'});
 				p.queueChanges(it);  // added to location
 				p.queueChanges(it, true);  // removed from location again
@@ -193,6 +196,16 @@ suite('Player', function () {
 					p.changes[0].itemstack_values.location[it.tsid].count, 1);
 				assert.strictEqual(
 					p.changes[1].itemstack_values.location[it.tsid].count, 0);
+			}, done);
+		});
+
+		test('skips items not visible for the player', function (done) {
+			new RC().run(function () {
+				var p = new Player({tsid: 'PX', location: {tsid: 'LX'}});
+				var it = new Item({tsid: 'IX', class_tsid: 'quoin', tcont: 'LX',
+					only_visible_to: 'POTHER'});
+				p.queueChanges(it);
+				assert.lengthOf(p.changes, 0);
 			}, done);
 		});
 	});
@@ -205,7 +218,7 @@ suite('Player', function () {
 			rc.run(
 				function () {
 					var g = Geo.create();
-					var l = Location.create(g);
+					var l = Location.create({geo: g});
 					var p = new Player({tsid: 'PX', location: l});
 					l.players[p.tsid] = p;
 					rc.cache[g.tsid] = g;
@@ -213,7 +226,6 @@ suite('Player', function () {
 					rc.cache[p.tsid] = p;
 					var it = new Item({tsid: 'IX', class_tsid: 'pi',
 						tcont: l.tsid, container: l});
-					p.addToSlot(it, 5);
 					p.session = {
 						send: function send(msg) {
 							assert.strictEqual(msg.changes.location_tsid, l.tsid);
@@ -226,6 +238,7 @@ suite('Player', function () {
 							done();
 						},
 					};
+					p.addToSlot(it, 5);
 					p.send({});
 				},
 				function (err, res) {
@@ -238,8 +251,6 @@ suite('Player', function () {
 			new RC().run(
 				function () {
 					var p = new Player();
-					p.queueAnnc({id: 'someAnnc', data: 5});
-					p.queueAnnc({mo1: 'money', mo2: 'problems'});
 					p.session = {
 						send: function send(msg) {
 							var anncs = msg.announcements;
@@ -247,10 +258,15 @@ suite('Player', function () {
 							assert.deepEqual(p.anncs, []);
 							assert.strictEqual(anncs[0].id, 'someAnnc');
 							assert.strictEqual(anncs[1].mo2, 'problems');
+							assert.deepEqual(origMsg, {}, 'announcements ' +
+								'not added to original message parameter');
 							done();
 						},
 					};
-					p.send({});
+					p.queueAnnc({id: 'someAnnc', data: 5});
+					p.queueAnnc({mo1: 'money', mo2: 'problems'});
+					var origMsg = {};
+					p.send(origMsg);
 				},
 				function (err, res) {
 					if (err) return done(err);
@@ -268,10 +284,13 @@ suite('Player', function () {
 						send: function send(msg) {
 							assert.deepEqual(msg.changes.stat_values, {xp: 555});
 							assert.strictEqual(msg.moo, 'far');
+							assert.deepEqual(origMsg, {moo: 'far'}, 'changes ' +
+								'not added to original message parameter');
 							done();
 						},
 					};
-					p.send({moo: 'far'});
+					var origMsg = {moo: 'far'};
+					p.send(origMsg);
 				},
 				function (err, res) {
 					if (err) return done(err);

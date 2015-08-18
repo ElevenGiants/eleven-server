@@ -14,6 +14,7 @@ var rpc = require('data/rpc');
 var util = require('util');
 var RC = require('data/RequestContext');
 var gsjsBridge = require('model/gsjsBridge');
+var metrics = require('metrics');
 
 
 util.inherits(Session, events.EventEmitter);
@@ -55,6 +56,8 @@ util.inherits(Session, events.EventEmitter);
 function Session(id, socket) {
 	Session.super_.call(this);
 	this.id = id;
+	this.loggedIn = false;
+	this.preLoginBuffer = [];
 	this.socket = socket;
 	this.ts = new Date().getTime();
 	this.maxMsgSize = config.get('net:maxMsgSize');
@@ -123,15 +126,31 @@ Session.prototype.onSocketTimeout = function onSocketTimeout() {
 
 Session.prototype.onSocketClose = function onSocketClose(hadError) {
 	log.info({session: this}, 'socket close (hadError: %s)', hadError);
-	if (this.pc && this.pc.session) {
+	if (this.pc && this.pc.isConnected()) {
 		// if pc is still linked to session, socket has been closed without a
 		// "logout" request; could be an error/unexpected connection loss or a
 		// move to another GS (Player#onDisconnect will act accordingly)
-		new RC('socketClose', this.pc, this).run(
-			this.pc.onDisconnect.bind(this.pc),
-			this.handleAmfReqError.bind(this));
+		this.close(this.emit.bind(this, 'close', this));
 	}
-	this.emit('close', this);
+	else {
+		this.emit('close', this);
+	}
+};
+
+
+Session.prototype.close = function close(done) {
+	log.info({session: this}, 'session close');
+	if (this.pc && this.pc.isConnected()) {
+		var self = this;
+		new RC('sessionClose', this.pc, this).run(
+			this.pc.onDisconnect.bind(this.pc),
+			function cb(err) {
+				if (err) log.error(err, 'error while closing session');
+				if (self.socket) self.socket.destroy();
+				if (done) done();
+			}, true
+		);
+	}
 };
 
 
@@ -201,7 +220,8 @@ Session.prototype.checkForMessages = function checkForMessages() {
 			break;
 		}
 		// still here? then schedule message handling
-		setImmediate(this.handleMessage.bind(this), msg);
+		var timer = metrics.createTimer('req.wait', 0.1);
+		setImmediate(this.handleMessage.bind(this), msg, timer);
 	}
 	if (bufstr.length === 0) {
 		delete this.buffer;  // buffer fully processed
@@ -214,14 +234,19 @@ Session.prototype.checkForMessages = function checkForMessages() {
 };
 
 
-Session.prototype.handleMessage = function handleMessage(msg) {
+Session.prototype.handleMessage = function handleMessage(msg, waitTimer) {
+	if (waitTimer) waitTimer.stop();
 	log.trace({data: msg}, 'got %s request', msg.type);
+	metrics.increment('net.amf.rx', 0.01);
 	var self = this;
 	var rc = new RC(msg.type, this.pc, this);
 	this.dom.run(function domWrapper() {
 		rc.run(
 			function clientReq() {
+				var procTimer = metrics.createTimer('req.proc.' + msg.type,
+					(msg.type === 'move_xy') ? 0.1 : undefined);
 				self.processRequest.call(self, msg);
+				if (procTimer) procTimer.stop();
 			},
 			function callback(err) {
 				if (err) self.handleAmfReqError.call(self, err, msg);
@@ -262,14 +287,22 @@ Session.prototype.preRequestProc = function preRequestProc(req) {
 				this.socket.end();
 				return true;
 			}
-			this.pc = pers.get(tsid);
+			this.pc = pers.get(tsid, true);
 			assert(this.pc !== undefined, 'unable to load player: ' + tsid);
 			// prepare Player object for login (e.g. call GSJS events)
 			this.pc.onLoginStart(this, req.type === 'relogin_start');
 			break;
 		case 'logout':
-			this.pc.onDisconnect();
+			if (this.pc) this.pc.onDisconnect();
 			this.socket.end();
+			return true;
+		case 'ping':
+			this.send({
+				msg_id: req.msg_id,
+				type: req.type,
+				success: true,
+				ts: Math.round(new Date().getTime() / 1000),
+			});
 			return true;
 		default:
 			if (!this.pc) {
@@ -292,53 +325,60 @@ Session.prototype.postRequestProc = function postRequestProc(req) {
 		case 'login_end':
 			// put player into location (same as regular move end)
 			this.pc.endMove();
+			this.pc.location.gsOnPlayerEnter(this.pc);
+			this.flushPreLoginBuffer();
 			break;
 		case 'relogin_end':
+			this.pc.location.gsOnPlayerEnter(this.pc);
 			// call Location.onPlayerReconnect event (necessary to make client
 			// hide hidden decos after reconnecting; relogin_start is too early
 			// for this)
 			this.pc.location.onPlayerReconnect(this.pc);
+			this.flushPreLoginBuffer();
+			break;
+		case 'signpost_move_end':
+		case 'follow_move_end':
+		case 'door_move_end':
+		case 'teleport_move_end':
+			this.pc.location.gsOnPlayerEnter(this.pc);
 			break;
 	}
+	// make sure changes/announcements caused by this request are sent out
+	if (this.loggedIn) {
+		this.pc.location.flush();
+	}
+};
+
+
+Session.prototype.flushPreLoginBuffer = function flushPreLoginBuffer() {
+	if (!this.preLoginBuffer || !this.preLoginBuffer.length) return;
+	if (log.debug) {
+		log.debug({queue: this.preLoginBuffer.map(function getType(msg) {
+			return msg.type;
+		})}, '(re)login complete, flushing queued messages');
+	}
+	this.preLoginBuffer.forEach(this.send, this);
+	this.preLoginBuffer = [];
 };
 
 
 Session.prototype.handleAmfReqError = function handleAmfReqError(err, req) {
 	if (!err) return;
 	if (typeof req !== 'object') req = {};
-	if (typeof err === 'object' && err.type === 'stack_overflow') {
-		// special treatment for stack overflow errors
-		// see https://github.com/trentm/node-bunyan/issues/127
-		err = new Error(err.message);
-	}
 	if (typeof err === 'string') {
 		// catch malcontents throwing strings instead of Errors, e.g.
 		// https://github.com/tvcutsem/harmony-reflect/issues/38
 		err = new Error(err);
 	}
 	log.error(err, 'error processing %s request for %s', req.type, this.pc);
-	if (this.pc && req.msg_id) {
-		// send error response back to client
-		var rsp = {
-			msg_id: req.msg_id,
-			type: req.type,
-			success: false,
-			msg: err.message,
-		};
-		log.info({data: rsp}, 'sending error response');
-		try {
-			this.send(rsp);
+	if (this.socket) {
+		if (this.pc && this.pc.isConnected()) {
+			this.pc.sendServerMsg('CLOSE',
+				{msg: util.format('error processing %s request', req.type)});
 		}
-		catch (e) {
-			log.error(e, 'could not send error response to client');
-		}
-	}
-	if (err instanceof auth.AuthError) {
-		log.info({session: this}, 'closing session after authentication error');
+		log.info({session: this}, 'closing session after error');
 		this.socket.destroy();
 	}
-	// TODO: better error handling (disconnect on other errors too? roll back
-	// modified objects (invalidate/reload dirty objects in persistence layer)?)
 };
 
 
@@ -350,15 +390,35 @@ Session.prototype.handleAmfReqError = function handleAmfReqError(err, req) {
  *        that cannot be encoded in AMF3 (e.g. circular references)
  */
 Session.prototype.send = function send(msg) {
+	if (!this.loggedIn) {
+		if (msg.type !== 'login_start' && msg.type !== 'login_end' &&
+			msg.type !== 'relogin_start' && msg.type !== 'relogin_end' &&
+			msg.type !== 'ping') {
+			log.debug('(re)login incomplete, postponing %s message', msg.type);
+			this.preLoginBuffer.push(msg);
+			return;
+		}
+		if (msg.type === 'login_end' || msg.type === 'relogin_end') {
+			this.loggedIn = true;
+		}
+	}
 	// JSON roundtrip workaround because AMF serialization currently does not
-	// work for ES6 proxies - see e.g. https://github.com/joyent/node/issues/7526
+	// work correctly for arrays wrapped in ES6 proxies, i.e.
+	//     amf.serialize(new Proxy([1,2,3], {}))
+	// does not return the same data as:
+	//     amf.serialize([1,2,3])
+	//
 	//TODO: remove this when it's no longer necessary
 	msg = JSON.parse(JSON.stringify(msg));
-	log.trace({data: msg}, 'sending %s message', msg.type);
+	if (log.trace()) {
+		log.trace({data: msg, to: this.pc ? this.pc.tsid : undefined},
+			'sending %s message', msg.type);
+	}
 	var data = amf.serialize(msg);
 	var size = Buffer.byteLength(data, 'binary');
 	var buf = new Buffer(4 + size);
 	buf.writeUInt32BE(size, 0);
 	buf.write(data, 4, size, 'binary');
 	this.socket.write(buf);
+	metrics.increment('net.amf.tx', 0.01);
 };

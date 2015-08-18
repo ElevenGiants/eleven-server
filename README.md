@@ -2,10 +2,10 @@
 This is the game server for [Eleven Giants](http://elevengiants.com/).
 
 **Work in progress disclaimer:**
-*The server is currently far, far from being able to run the game. At this
-point, it does not make much sense to follow the instructions below unless you
-are actually planning to get involved in the development process. If you are:
-[let us know!](http://elevengiants.com/contact.php)*
+*The server is currently only able to run a very limited portion of the game. To
+actually start up the client with it, additional components are required, which
+are not publicly available at this time. If you want to get involved in the
+development process, please [let us know!](http://elevengiants.com/contact.php)*
 
 
 ## Prerequisites ##
@@ -21,6 +21,10 @@ preprocessor script.
 
 
 ## Setup ##
+**Note:** *The following setup steps are **not** necessary if you are using the
+Vagrant box and created the VM with the `eleven-server` and `eleven-gsjs` repos
+already present.*
+
 Clone this repository and [`eleven-gsjs`](https://github.com/ElevenGiants/eleven-gsjs)
 in the same parent directory. Directory names are assumed to equal the Git
 repository names. Call
@@ -29,6 +33,18 @@ npm -s run preproc
 ```
 to run the preprocessor script that prepares the GSJS code for embedding in the
 game server.
+
+Once that has finished successfully, compile the required non-JS npm packages:
+```bash
+npm rebuild
+```
+If you are running the Vagrant VM on Windows, add `--no-bin-links` as an
+argument (necessary because symlinks cannot be created in folders shared between
+the VM and the Windows host).
+
+The server expects environment specific parts of the configuration in a file
+called `config_local.js` in its root directory. Copy one of the
+`config_local.js.SAMPLE_*` files and adjust it according to your needs.
 
 
 ## Operation ##
@@ -66,6 +82,9 @@ Help is always welcome! If you are interested, please [get in touch]
 (http://elevengiants.com/contact.php) to get access to our [Slack]
 (http://slack.com/) instance, internal documentation, guidelines and other
 resources.
+
+(If you are in fact already signed up and ready to go, have a look
+[here](https://github.com/ElevenGiants/eleven-server/blob/master/CONTRIBUTING.md)).
 
 
 ## License ##

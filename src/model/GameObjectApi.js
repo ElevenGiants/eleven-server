@@ -12,6 +12,15 @@ var GameObjectApi = module.exports = function GameObjectApi() {};
 
 
 /**
+ * Schedules this object for deletion after the current request.
+ */
+GameObjectApi.prototype.apiDelete = function apiDelete() {
+	log.debug('%s.apiDelete()', this);
+	this.del();
+};
+
+
+/**
  * Schedules a function of the game object to be called after a given
  * delay. Only one timer can be defined per function; if there already
  * is one, subsequent requests are ignored until that timer has been
@@ -25,7 +34,7 @@ var GameObjectApi = module.exports = function GameObjectApi() {};
 GameObjectApi.prototype.apiSetTimer = function apiSetTimer(fname, delay) {
 	log.debug('%s.apiSetTimer(%s)', this,
 		Array.prototype.slice.call(arguments).join(', '));
-	var args = Array.prototype.slice.call(arguments, 2);
+	var args = Array.prototype.slice.call(arguments, apiSetTimer.length);
 	this.setGsTimer({fname: fname, delay: delay, args: args});
 };
 
@@ -52,7 +61,7 @@ GameObjectApi.prototype.apiSetTimerX = function apiSetTimerX() {
 GameObjectApi.prototype.apiSetTimerMulti = function apiSetTimerMulti(fname, delay) {
 	log.debug('%s.apiSetTimerMulti(%s)', this,
 		Array.prototype.slice.call(arguments).join(', '));
-	var args = Array.prototype.slice.call(arguments, 2);
+	var args = Array.prototype.slice.call(arguments, apiSetTimerMulti.length);
 	this.setGsTimer({fname: fname, delay: delay, args: args, multi: true});
 };
 
@@ -95,7 +104,7 @@ GameObjectApi.prototype.apiTimerExists = function apiTimerExists(fname) {
  */
 GameObjectApi.prototype.apiSetInterval = function apiSetInterval(fname, period) {
 	log.debug('%s.apiSetInterval(%s, %s)', this, fname, period);
-	this.setGsTimer({fname: fname, delay: period * 60000});
+	this.setGsTimer({fname: fname, interval: true, delay: period * 60000});
 };
 
 

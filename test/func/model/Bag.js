@@ -10,6 +10,7 @@ var Geo = require('model/Geo');
 var pers = require('data/pers');
 var utils = require('utils');
 var pbeMock = require('../../mock/pbe');
+var helpers = require('../../helpers');
 
 
 suite('Bag', function () {
@@ -49,13 +50,21 @@ suite('Bag', function () {
 					label: 'Private Furniture Storage',
 					objref: true,
 					tsid:  'B1',
-					},
-					x: 0, y: 0,
+				},
+				x: 0, y: 0,
 			};
 			new RC().run(function () {
-				Location.create(Geo.create({tsid: 'GX'}));
+				Location.create({geo: Geo.create({tsid: 'GX'})});
 				pers.get('B1');
 			}, done);
+		});
+
+		test('preserves non-default capacity', function () {
+			/*jshint -W055 */  // deliberate lowercase constructor name here
+			var ctor = gsjsBridge.getProto('items', 'bag_generic_gray').constructor;
+			var b = new ctor({capacity: 10, class_tsid: 'bag_generic_gray'});
+			assert.strictEqual(b.capacity, 10);
+			/*jshint +W055 */
 		});
 	});
 
@@ -170,11 +179,11 @@ suite('Bag', function () {
 			'inventory bag to a location bag (e.g. furniture)', function (done) {
 			var rc = new RC();
 			rc.run(function () {
-				var l = Location.create(Geo.create());
-				var p = new Player({tsid: 'PX', location: l});
+				var l = Location.create({geo: Geo.create()});
+				var p = helpers.getOnlinePlayer({tsid: 'PX', location: l});
 				l.players[p.tsid] = rc.cache[p.tsid] = p;
 				var fbag = Bag.create('bag_bigger_green');
-				fbag.setContainer(l);
+				fbag.setContainer(l, 1, 2);
 				var i = Item.create('pi');
 				var bag = Bag.create('bag_bigger_gray');
 				bag.setContainer(p, 1);
@@ -205,6 +214,71 @@ suite('Bag', function () {
 				assert.strictEqual(cd.count, 1);
 				assert.strictEqual(cd.path_tsid, b.tsid);
 				assert.strictEqual(cd.slots, 16);
+			}, done);
+		});
+	});
+
+
+	suite('getAllItems', function () {
+
+		test('makes sure GSJS does not fill hidden bags when purchasing from vendors',
+			function (done) {
+			new RC().run(function () {
+				var p = pers.create(Player,
+							{location: Location.create({geo: Geo.create()})});
+				var remaining = p.createItemFromSource('watering_can', 99, p, true);
+				assert.strictEqual(remaining, 83, '99 cans created, 16 player' +
+					' inventory slots filled, 83 remaining');
+				// check that inventory was filled
+				assert.strictEqual(Object.keys(p.items).length, p.capacity);
+				Object.keys(p.items).forEach(function isCan(tsid) {
+					assert.strictEqual(p.items[tsid].class_tsid, 'watering_can');
+					assert.strictEqual(p.items[tsid].count, 1);
+				});
+				// make sure nothing was added to SDB in furniture bag
+				var fbag = p.hiddenItems[p.furniture.storage_tsid];
+				Object.keys(fbag.items).forEach(function check(tsid) {
+					var it = fbag.items[tsid];
+					if (it.class_tsid === 'bag_furniture_sdb') {
+						assert.strictEqual(Object.keys(it.items).length, 0,
+							'nothing added to SDB in furniture bag');
+					}
+				});
+			}, done);
+		});
+
+		test('adds items to bags by slot order',
+			function (done) {
+			new RC().run(function () {
+				var p = pers.create(Player,
+							{location: Location.create({geo: Geo.create()})});
+				p.capacity = 2;
+				var b1 = Bag.create('bag_generic');
+				b1.setContainer(p, 0);
+				var b2 = Bag.create('bag_generic');
+				b2.setContainer(p, 1);
+				var i = Item.create('moon');
+				b1.setContainer(p, 1);
+				b2.setContainer(p, 0);
+				p.addItemStack(i);
+				assert.strictEqual(Object.keys(b2.items).length, 1);
+			}, done);
+		});
+
+		test('adds items to existing stacks by slot order',
+			function (done) {
+			new RC().run(function () {
+				var p = pers.create(Player,
+							{location: Location.create({geo: Geo.create()})});
+				var i1 = Item.create('tomato');
+				i1.setContainer(p, 0);
+				var i2 = Item.create('tomato');
+				i2.setContainer(p, 1);
+				var i3 = Item.create('tomato');
+				i1.setContainer(p, 1);
+				i2.setContainer(p, 0);
+				p.addItemStack(i3);
+				assert.strictEqual(i2.count, 2);
 			}, done);
 		});
 	});

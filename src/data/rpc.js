@@ -24,6 +24,7 @@ module.exports = {
 	RpcError: RpcError,
 	init: init,
 	shutdown: shutdown,
+	preShutdown: preShutdown,
 	makeProxy: makeProxy,
 	sendRequest: sendRequest,
 	sendObjRequest: sendObjRequest,
@@ -37,6 +38,7 @@ var assert = require('assert');
 var async = require('async');
 var config = require('config');
 var jrpc = require('multitransport-jsonrpc');
+var metrics = require('metrics');
 var orProxy = require('data/objrefProxy');
 var pers = require('data/pers');
 var RC = require('data/RequestContext');
@@ -76,12 +78,16 @@ RpcError.prototype.name = 'RpcError';
 var clients = {};
 // RPC server (for other GSs to connect to):
 var server;
+// flag to activate special shutdown behavior:
+var shuttingDown = false;
 
 
 /**
  * Initializes the RPC subsystem (server for this GS instance, and
  * client connections to all other GS instances).
  *
+ * @param {boolean} [startServer] start an RPC server on this GS
+ *        instance (`true` by default)
  * @param {function} [callback]
  * ```
  * callback(err)
@@ -90,11 +96,25 @@ var server;
  * (`err` argument is `null`), or when an error occurred (`err`
  * contains the error object or message)
  */
-function init(callback) {
+function init(startServer, callback) {
+	shuttingDown = false;
 	clients = {};
-	initServer(function cb() {
+	if (arguments.length < 2) {
+		if (typeof startServer === 'function') {
+			callback = startServer;
+		}
+		if (typeof startServer !== 'boolean') {
+			startServer = true;
+		}
+	}
+	if (startServer) {
+		initServer(function cb() {
+			config.forEachGS(initClient, callback);
+		});
+	}
+	else {
 		config.forEachGS(initClient, callback);
-	});
+	}
 }
 
 
@@ -144,6 +164,7 @@ function initClient(gsconf, callback) {
 	var client = new jrpc.client(
 		new jrpc.transports.client.tcp(gsconf.host, port, {
 			logger: getJrpcLogger('client-' + gsid),
+			timeout: config.get('net:rpc:timeout'),
 		}), {},
 		function onConnected(connectedClient) {
 			log.info('RPC client for %s connected', gsid);
@@ -159,6 +180,22 @@ function initClient(gsconf, callback) {
 
 
 /**
+ * Prepares RPC layer for graceful shutdown.
+ */
+function preShutdown() {
+	// TODO: This is a hack that currently just drops all RPC requests during
+	// the shutdown, so players are at least cleanly removed from locations.
+	// Eventually, we probably want a two-phase shutdown that disconnects all
+	// clients first, and *then* starts taking apart the RPC connections.
+	shuttingDown = true;
+	for (var k in clients) {
+		clients[k].transport.retries = 0;
+		clients[k].transport.reconnects = 0;
+	}
+}
+
+
+/**
  * Shuts down all RPC client connections and the RPC server for this
  * GS.
  *
@@ -166,18 +203,28 @@ function initClient(gsconf, callback) {
  *        been terminated
  */
 function shutdown(callback) {
+	log.info('RPC subsystem shutdown');
 	// first shut down the clients...
 	async.each(Object.keys(clients), function iterator(gsid, cb) {
-		if (clients[gsid]) clients[gsid].shutdown(cb);
+		log.debug('shutting down RPC client for %s', gsid);
+		clients[gsid].shutdown(function () {
+			log.debug('RPC client for %s shut down', gsid);
+			cb();
+		});
 	},
 	function clientsDone(err) {
-		if (err) log.error(err, 'error shutting down RPC clients');
 		// ...then the server (regardless of client shutdown errors)
-		server.shutdown(function cleanup() {
+		if (err) log.error(err, 'error shutting down RPC clients');
+		clients = {};
+		log.debug('shutting down RPC server');
+		server.shutdown(function () {
+			log.debug('RPC server shut down');
 			server = undefined;
-			clients = {};
-			if (callback) callback();
 		});
+		// TODO: this should really be in the server.shutdown callback above,
+		// but for unknown reasons that one is not called reliably, so we'll
+		// just return right away here:
+		if (callback) return callback();
 	});
 }
 
@@ -259,17 +306,26 @@ function sendObjRequest(objOrTsid, fname, args, callback) {
  */
 function sendRequest(gsid, rpcFunc, args, callback) {
 	assert(gsid !== config.getGsid(), 'RPC to self');
+	if (shuttingDown) {
+		// hack - see above (preShutdown)
+		log.info('shutdown in progress, dropping %s RPC request', rpcFunc);
+		return;
+	}
 	var client = clients[gsid];
 	if (!client) {
-		throw new RpcError(util.format('no RPC client found for "%s"', gsid));
+		var err = new RpcError(util.format('no RPC client found for "%s"', gsid));
+		if (callback) return callback(err);
+		else throw err;
 	}
 	// argument marshalling (replace objref proxies with actual objrefs)
 	args = orProxy.refify(args);
 	var logmsg = util.format('%s(%s) @%s', rpcFunc, args.join(', '), gsid);
 	log.debug('calling %s', logmsg);
+	metrics.increment('net.rpc.tx', 0.01);
 	var rpcArgs = [config.getGsid()].concat(args);
 	if (callback) {
 		client.request(rpcFunc, rpcArgs, function cb(err, res) {
+			orProxy.proxify(ret);
 			callback(err, res);
 		});
 	}
@@ -306,6 +362,7 @@ function sendRequest(gsid, rpcFunc, args, callback) {
  * the remote caller
  */
 function handleRequest(callerId, objOrTsid, fname, args, callback) {
+	metrics.increment('net.rpc.rx', 0.01);
 	orProxy.proxify(args);  // unmarshal arguments
 	var logmsg = util.format('RPC from %s: %s.%s', callerId, objOrTsid, fname);
 	log.debug('%s(%s)', logmsg, args instanceof Array ? args.join(', ') : args);
@@ -430,11 +487,14 @@ function isLocal(objOrTsid) {
 function getGsid(objOrTsid) {
 	// locations, geos and groups mapped by their own tsid
 	if (utils.isLoc(objOrTsid) || utils.isGroup(objOrTsid) || utils.isGeo(objOrTsid)) {
+		if (RC.isOnRC() && RC.getContext() !== undefined && RC.getContext().isCopying)
+			return config.getGsid();
 		return config.mapToGS(objOrTsid).gsid;
 	}
 	// for all other classes, we need the actual game object
 	var obj = typeof objOrTsid === 'string' ? pers.get(objOrTsid) : objOrTsid;
-	assert(obj !== undefined, 'cannot map nonexistent game object: ' + objOrTsid);
+	assert(typeof obj === 'object' && obj !== null,
+		'cannot map nonexistent game object: ' + objOrTsid);
 	// player mapped by current location
 	if (utils.isPlayer(obj)) {
 		assert(utils.isLoc(obj.location),
@@ -531,7 +591,7 @@ function getOnClientRetryHandler(gsid) {
 
 function getOnClientEndHandler(gsid) {
 	return function onClientEnd() {
-		log.warn('[jrpc client for %s] connection ended (failed to reconnect)', gsid);
+		log.info('[jrpc client for %s] connection ended', gsid);
 	};
 }
 

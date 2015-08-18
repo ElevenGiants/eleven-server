@@ -6,7 +6,6 @@ var Bag = require('model/Bag');
 var Player = require('model/Player');
 var Geo = require('model/Geo');
 var Location = require('model/Location');
-var OrderedHash = require('model/OrderedHash');
 
 
 suite('Item', function () {
@@ -30,7 +29,6 @@ suite('Item', function () {
 
 		test('initializes message_queue as OrderedHash', function () {
 			var i = new Item({message_queue: {b: 'b', a: 'a'}});
-			assert.instanceOf(i.message_queue, OrderedHash);
 			assert.strictEqual(i.message_queue.first(), 'a');
 		});
 	});
@@ -106,9 +104,14 @@ suite('Item', function () {
 
 	suite('setContainer', function () {
 
-		test('does its job', function () {
-			var it = new Item({tsid: 'IT'});
+		function getTestItem(tsid) {
+			var it = new Item({tsid: tsid});
 			it.queueChanges = function noop() {};  // this part is not tested here
+			return it;
+		}
+
+		test('does its job', function () {
+			var it = getTestItem('IT');
 			var b = new Bag({tsid: 'BX', tcont: 'LDUMMY'});
 			it.setContainer(b, 3, 7);
 			assert.strictEqual(it.container, b);
@@ -121,8 +124,7 @@ suite('Item', function () {
 		});
 
 		test('adds to hidden items list if specified', function () {
-			var it = new Item({tsid: 'IT'});
-			it.queueChanges = function noop() {};
+			var it = getTestItem('IT');
 			var b = new Bag({tcont: 'LFOO'});
 			it.setContainer(b, 3, undefined, true);
 			assert.notProperty(b.items, 'IT');
@@ -132,8 +134,7 @@ suite('Item', function () {
 		});
 
 		test('removes item from previous container', function () {
-			var it = new Item({tsid: 'IT'});
-			it.queueChanges = function noop() {};
+			var it = getTestItem('IT');
 			var b1 = new Bag({tcont: 'PCHEECH'});
 			var b2 = new Bag({tcont: 'PCHONG'});
 			it.setContainer(b1, 0);
@@ -144,8 +145,7 @@ suite('Item', function () {
 		});
 
 		test('can be used to move item to another slot', function () {
-			var it = new Item({tsid: 'IT'});
-			it.queueChanges = function noop() {};
+			var it = getTestItem('IT');
 			var b = new Bag({tcont: 'PXYZ'});
 			it.setContainer(b, 1);
 			assert.deepEqual(b.items, {IT: it});
@@ -163,10 +163,9 @@ suite('Item', function () {
 		});
 
 		test('ignores slot property when adding to a location', function () {
-			var it = new Item({tsid: 'IT'});
-			it.queueChanges = function noop() {};
+			var it = getTestItem('IT');
 			var l = new Location({}, new Geo());
-			it.setContainer(l);
+			it.setContainer(l, 123, 456);
 			assert.isUndefined(it.slot);
 			it.container = undefined;  // just so we can try again
 			it.setContainer(l, 13, 29);
@@ -176,8 +175,7 @@ suite('Item', function () {
 		});
 
 		test('fails if item is already in that container', function () {
-			var it = new Item();
-			it.queueChanges = function noop() {};
+			var it = getTestItem('IT');
 			var b = new Bag({tcont: 'LFOO'});
 			it.setContainer(b, 7);
 			assert.throw(function () {
@@ -205,6 +203,58 @@ suite('Item', function () {
 			assert.throw(function () {
 				it.setContainer(b, 10);
 			}, assert.AssertionError);
+		});
+
+		test('sends appropriate onContainerChanged events', function (done) {
+			var it = getTestItem('IT');
+			it.onContainerChanged = function onContainerChanged(prev, curr) {
+				assert.strictEqual(prev.tsid, 'LX');
+				assert.strictEqual(curr.tsid, 'BX');
+				done();
+			};
+			it.setContainer(new Location({tsid: 'LX'}, new Geo()), 0, 0);  // does not trigger onContainerChanged (no previous container)
+			it.setContainer(new Bag({tsid: 'BX', tcont: 'LDUMMY'}), 3, 7);
+		});
+
+		test('sends appropriate onContainerItemAdded events', function (done) {
+			var l = new Location({tsid: 'LX'}, new Geo());
+			var l2 = new Location({tsid: 'LY'}, new Geo());
+			var it1 = getTestItem('IT1');
+			it1.setContainer(l, 123, 456);
+			var it2 = getTestItem('IT2');
+			it2.setContainer(l2, 123, 456);
+			it1.onContainerItemAdded = function (it, prevCont) {
+				assert.strictEqual(it.tsid, 'IT2');
+				assert.strictEqual(prevCont.tsid, 'LY');
+				done();
+			};
+			it2.setContainer(l, 123, 456);
+		});
+
+		test('sends appropriate onContainerItemRemoved events', function (done) {
+			var b = new Bag({tsid: 'BX', tcont: 'LDUMMY'});
+			var it1 = getTestItem('IT1');
+			it1.setContainer(b, 1, 0);
+			var it2 = getTestItem('IT2');
+			it2.setContainer(b, 2, 0);
+			it2.onContainerItemRemoved = function (it, newCont) {
+				assert.strictEqual(it.tsid, 'IT1');
+				assert.strictEqual(newCont.tsid, 'BY');
+				done();
+			};
+			it1.setContainer(new Bag({tsid: 'BY', tcont: 'LDUMMY'}), 1, 0);
+		});
+
+		test('does not send change events for moves within a container',
+			function () {
+			var it = getTestItem('IT');
+			var b = new Bag({tsid: 'BX', tcont: 'LDUMMY'});
+			it.setContainer(b, 3, 7);
+			it.onContainerChanged = it.onContainerItemRemoved =
+				it.onContainerItemAdded = function () {
+				throw new Error('should not be called');
+			};
+			it.setContainer(b, 6, 7);  // move to different slot
 		});
 	});
 
@@ -272,6 +322,23 @@ suite('Item', function () {
 	});
 
 
+	suite('merge', function () {
+
+		test('works with string-type counts', function () {
+			var it1 = new Item({class_tsid: 'seed_corn', stackmax: 20, count: '1'});
+			var it2 = new Item({class_tsid: 'seed_corn', stackmax: 20, count: '2'});
+			it1.merge(it2, 2);
+			assert.strictEqual(it1.count, 3);
+			assert.typeOf(it1.count, 'number');
+			var it3 = new Item({class_tsid: 'seed_corn', stackmax: 20, count: 1});
+			var it4 = new Item({class_tsid: 'seed_corn', stackmax: 20, count: 10});
+			it3.merge(it4, '5');
+			assert.strictEqual(it3.count, 6);
+			assert.typeOf(it3.count, 'number');
+		});
+	});
+
+
 	suite('consume', function () {
 
 		test('works as expected', function () {
@@ -294,6 +361,88 @@ suite('Item', function () {
 			assert.throw(function () {
 				it.consume('moo');
 			}, assert.AssertionError);
+		});
+	});
+
+
+	suite('setXY', function () {
+
+		test('rounds coordinates to integer numbers', function () {
+			var it = new Item();
+			it.setXY(1.1, -3.8);
+			assert.strictEqual(it.x, 1);
+			assert.strictEqual(it.y, -4);
+		});
+
+		test('returns whether the position actually changed', function () {
+			var it = new Item({x: 1, y: 2});
+			var res = it.setXY(1.1, -3.8);
+			assert.isTrue(res);
+			res = it.setXY(1.2, -3.9);
+			assert.isFalse(res, 'still the same position after rounding');
+			res = it.setXY(it.x, 5);
+			assert.isTrue(res, 'only one coordinate changing is still a change');
+		});
+	});
+
+
+	suite('addHitBox', function () {
+
+		test('adds/updates default hitbox', function () {
+			var it = new Item();
+			it.addHitBox(23, 23);
+			assert.deepEqual(it.hitBox, {w: 23, h: 23}, 'added default hitbox');
+
+			it.addHitBox(42, 42);
+			assert.deepEqual(it.hitBox, {w: 42, h: 42}, 'changed default hitbox');
+		});
+
+		test('adds/updates named hitbox', function () {
+			var it = new Item();
+			it.addHitBox(23, 23, 'foo');
+			assert.property(it, 'hitBoxes', 'created hitBoxes');
+			assert.deepEqual(it.hitBoxes, {foo: {w: 23, h: 23}}, 'added hitbox');
+
+			it.addHitBox(42, 42, 'bar');
+			assert.lengthOf(Object.keys(it.hitBoxes), 2, 'added second hitbox');
+
+			it.addHitBox(12, 13, 'bar');
+			assert.deepEqual(it.hitBoxes.bar, {w: 12, h: 13}, 'changed named hitbox');
+		});
+	});
+
+
+	suite('removeHitBox', function () {
+
+		test('does its job', function () {
+			var it = new Item();
+
+			it.addHitBox(23, 23, 'foo');
+			it.addHitBox(42, 42, 'bar');
+			assert.lengthOf(Object.keys(it.hitBoxes), 2, 'added two hitboxes');
+
+			var res = it.removeHitBox('foo');
+			assert.lengthOf(Object.keys(it.hitBoxes), 1, 'removed one hitbox');
+			assert.deepEqual(res, true, 'result was true as a hitbox was removed');
+
+			res = it.removeHitBox('does_not_exist');
+			assert.lengthOf(Object.keys(it.hitBoxes), 1, 'one hitbox left');
+			assert.deepEqual(res, false, 'result was false as no hitbox was removed');
+
+			res = it.removeHitBox('bar');
+			assert.notProperty(it, 'hitBoxes', 'property hitBoxes was removed');
+			assert.deepEqual(res, true, 'result was true as a hitbox was removed');
+		});
+	});
+
+
+	suite('getClosestItem', function () {
+
+		test('does not return itself', function () {
+			var l = new Location({}, new Geo());
+			l.items.I1 = new Item({tsid: 'I1', x: -10, y: -10, container: l});
+			l.items.I2 = new Item({tsid: 'I2', x: 15, y: 1, container: l});
+			assert.strictEqual(l.items.I1.getClosestItem().tsid, 'I2');
 		});
 	});
 });

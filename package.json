@@ -1,6 +1,6 @@
 {
   "name": "eleven-server",
-  "version": "0.0.1-snapshot",
+  "version": "0.1.13",
   "description": "Eleven game server",
   "homepage": "http://elevengiants.com/",
   "license": "MIT",
@@ -9,6 +9,26 @@
       "name": "Markus Dolic",
       "email": "aroha@elevengiants.com",
       "url": "https://twitter.com/ElevenAroha"
+    },
+    {
+      "name": "Joey Thomas",
+      "email": "josephthomas619@msn.com"
+    },
+    {
+      "name": "Aric Stewart",
+      "email": "aricstewart@gmail.com"
+    },
+    {
+      "name": "scheijan",
+      "email": "scheijan@gmail.com"
+    },
+    {
+      "name": "Justin Patrin",
+      "email": "papercrane@reversefold.com"
+    },
+    {
+      "name": "Kyle Phelps",
+      "email": "kphelps@projectdecibel.com"
     }
   ],
   "author": "Markus Dolic <aroha@elevengiants.com> (https://twitter.com/ElevenAroha)",
@@ -23,35 +43,44 @@
   "dependencies": {
     "async": "^0.9.0",
     "bunyan": "^1.0.1",
-    "harmony-reflect": "^1.1.1",
+    "gc-stats": "^0.0.5",
+    "harmony-reflect": "^1.3.0",
     "lodash": "^2.4.1",
+    "lynx": "^0.2.0",
     "multitransport-jsonrpc": "^0.7.2",
     "murmurhash-js": "^1.0.0",
     "nconf": "^0.6.9",
-    "node_amf_cc": "^1.1.1",
+    "node_amf_cc": "^1.2.3",
     "rethinkdb": "^1.15.0-0",
+    "segfault-handler": "^0.2.4",
+    "slack-client": "^1.2.2",
+    "slack-node": "^0.1.3",
     "token": "0.0.0",
     "wait.for": "^0.6.4"
   },
   "devDependencies": {
     "benchmark": "https://github.com/bestiejs/benchmark.js/tarball/master",
     "chai": "^1.9.1",
-    "jscs": "^1.8.1",
-    "jscs-jsdoc": "^0.3.2",
+    "coveralls": "^2.11.4",
+    "jscs": "^1.12.0",
+    "jscs-jsdoc": "^0.4.6",
     "jsdoc": "^3.3.0-alpha9",
     "jshint": "^2.5.5",
-    "mocha": "^1.20.1",
+    "mocha": "^2.2.5",
     "rewire": "^2.1.0"
   },
   "scripts": {
     "preproc": "python tools/gsjs-preproc.py",
-    "start": "NODE_PATH=src node --harmony ./src/server.js | node_modules/bunyan/bin/bunyan -o short",
-    "test": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/unit",
-    "functest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/func",
-    "inttest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony test/int",
+    "start": "NODE_PATH=src node --harmony_proxies --expose-gc ./src/server.js | node_modules/bunyan/bin/bunyan -o short",
+    "test": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony_proxies test/unit",
+    "functest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony_proxies test/func",
+    "inttest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony_proxies test/int",
     "alltests": "NODE_PATH=src sh -c 'npm run lint && npm run test -- -R progress && npm run functest -- -R progress && npm run inttest -- -R progress'",
-    "bench": "NODE_PATH=src node --harmony bench/runner.js",
-    "lint": "node_modules/jshint/bin/jshint --verbose --exclude src/gsjs src test && node_modules/jscs/bin/jscs --verbose --reporter inline src test",
-    "docs": "node node_modules/jsdoc/jsdoc.js --destination docs --configure jsdoc-conf.json src"
+    "coverage": "NODE_PATH=src node --harmony_proxies node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- --harmony_proxies -R progress test/unit test/func",
+    "coveralls": "NODE_PATH=src node --harmony_proxies node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha --report lcovonly -- --harmony_proxies -R progress test/unit test/func && cat coverage/lcov.info | node_modules/coveralls/bin/coveralls.js",
+    "bench": "NODE_PATH=src node --harmony_proxies bench/runner.js",
+    "lint": "node_modules/jshint/bin/jshint --verbose --exclude src/gsjs src test tools && node_modules/jscs/bin/jscs --verbose --reporter inline src test tools",
+    "docs": "node node_modules/jsdoc/jsdoc.js --destination docs --configure jsdoc-conf.json src",
+    "repl": "node tools/repl-client.js 7201"
   }
 }

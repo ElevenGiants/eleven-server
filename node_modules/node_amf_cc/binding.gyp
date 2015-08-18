@@ -9,7 +9,10 @@
         "src/serializer.cc",
         "src/write_buffer.cc", 
         "src/utils.cc",
-      ]
+      ],
+      "include_dirs" : [
+        "<!(node -e \"require('nan')\")"
+      ],
     }
   ]
 }

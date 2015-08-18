@@ -47,7 +47,8 @@ module.exports = {
 			module: 'hmac',
 			config: {
 				hmac: {
-					// secret used for auth token HMAC calculation:
+					// secret used for auth token HMAC calculation (set this
+					// to a random string):
 					secret: 'CHANGE-ME-OR-ELSE',
 					// minimum token lifetime in seconds:
 					timeStep: 600,
@@ -61,6 +62,37 @@ module.exports = {
 			file: 'info',
 			stdout: 'fatal',
 		},
+		// enabling this has a significant performance impact:
 		includeLoc: false,
+	},
+	mon: {
+		statsd: {
+			prefix: 'prod',
+		},
+	},
+	debug: {
+		// consider security and stability implications before enabling the
+		// REPL server in a PROD environment
+		repl: {
+			enable: false,
+		},
+	},
+	slack: {
+		// the in-game chat group integration requires a "bot user" to be set
+		// up in Slack, and the resulting API token needs to be set here
+		chat: {
+			token: 'xoxo-1234567890-T0keNfr0mSL4cK',
+			groups: {
+				RA512UITCLA22AD: 'livehelp',
+				RA9118JTCLA204I: 'global',
+			},
+		},
+		// server notifications/alerts need an "incoming WebHook" configured
+		// in Slack, and its URL added here
+		notify: {
+			webhookUrl: 'https://hooks.slack.com/services/XYZ/asdfghjkl',
+			channel: 'server-admins',
+			botName: 'gameserver PROD',
+		},
 	},
 };

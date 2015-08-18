@@ -6,13 +6,13 @@ var abePassthrough = require('comm/abe/passthrough');
 var net = require('net');
 var path = require('path');
 var config = require('config');
-var helpers = require('../../helpers');
 var RC = require('data/RequestContext');
 var Session = require('comm/Session');
 var sessionMgr = require('comm/sessionMgr');
 var pers = require('data/pers');
 var pbeMock = require('../../mock/pbe');
 var gsjsBridge = require('model/gsjsBridge');
+var helpers = require('../../helpers');
 
 
 suite('Session', function () {
@@ -55,7 +55,7 @@ suite('Session', function () {
 		});
 
 		test('works with a number of concurrent connections', function (done) {
-			var numbers = Array.apply(null, {length: 1000}).map(Number.call, Number);
+			var numbers = Array.apply(null, {length: 100}).map(Number.call, Number);
 			async.eachLimit(numbers, 10,
 				function iterator(i, cb) {
 					net.connect(cfg.port, cfg.host)
@@ -95,7 +95,12 @@ suite('Session', function () {
 		});
 
 		setup(function (done) {
-			pers.init(pbeMock, path.resolve(path.join(__dirname, '../fixtures')), done);
+			pers.init(pbeMock, {backEnd: {
+				module: 'pbeMock',
+				config: {pbeMock: {
+					fixturesPath: path.resolve(path.join(__dirname, '../fixtures')),
+				}}
+			}}, done);
 		});
 
 		teardown(function () {

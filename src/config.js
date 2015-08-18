@@ -15,6 +15,7 @@ module.exports = {
 	init: init,
 	get: get,
 	getGsid: getGsid,
+	getMasterGsid: getMasterGsid,
 	getGSConf: getGSConf,
 	forEachGS: forEachGS,
 	forEachLocalGS: forEachLocalGS,
@@ -182,6 +183,17 @@ function getGsid() {
 
 
 /**
+ * Returns the ID of the master GS this process "belongs to".
+ *
+ * @returns {string} ID of the master GS for this process
+ */
+function getMasterGsid() {
+	if (gsid.indexOf('-') === -1) return gsid;  // master process itself
+	return gsid.substr(0, gsid.lastIndexOf('-'));
+}
+
+
+/**
  * Checks whether a given IP network address is assigned to this host.
  *
  * @param {string} address an IP address to check
@@ -201,7 +213,7 @@ function isLocal(address) {
 
 
 /**
- * Retrives a configuration value (or block) from the {@link
+ * Retrieves a configuration value (or block) from the {@link
  * https://github.com/flatiron/nconf|nconf} back-end. There are
  * multiple ways to get the same setting, i.e.:
  * ```
@@ -215,12 +227,15 @@ function isLocal(address) {
  *
  * @param {string} [key] key of the desired setting (if `undefined`,
  *        the complete configuration object is returned)
+ * @param {*} [def] when specified, the value of this parameter will be
+ *        returned if the given key is not defined in the configuration
  * @returns {*} the requested configuration setting or (sub-)tree
  * @throws {ConfigError} if the specified key is not defined in the
- *         current configuration
+ *         current configuration (and no `def` argument was specified)
  */
-function get(key) {
+function get(key, def) {
 	var ret = nconf.get(key);
+	if (ret === undefined) ret = def;
 	if (ret === undefined) {
 		throw new ConfigError(util.format('not found: "%s"', key));
 	}
@@ -259,29 +274,42 @@ function getGSConf(gsid) {
  * func(gsconf, callback)
  * ```
  * function to call for each GS, where `gsconf` is a server network
- * configuration object (as returned by {@link module:config~mapToGS|
- * config.mapToGS}), and `callback(err)` must be called once the
+ * configuration object (as returned by {@link module:config~getGSConf|
+ * getGSConf}), and `callback(err, res)` must be called once the
  * function has completed or an error has occurred
  * @param {function} [callback]
  * ```
- * callback(err)
+ * callback(err, res)
  * ```
  * called when all function calls have finished, or when an error
- * occurs in any of them; `err` is an `Error` object or `null`
+ * occurs in any of them; `err` is an `Error` object or `null`, `res`
+ * is an object containing the collected return values (with GSIDs as
+ * keys)
  * @param {boolean} [noLocal] if `true`, do not call function for
  *        instances on the local host
  * @param {boolean} [noRemote] if `true`, do not call function for
  *        instances on remote hosts
  */
 function forEachGS(func, callback, noLocal, noRemote) {
-	// see <https://github.com/caolan/async#eacharr-iterator-callback>
-	async.each(gsids, function iterator(gsid, cb) {
-		var gsconf = gameServers[gsid];
-		if ((gsconf.local && !noLocal) || (!gsconf.local && !noRemote)) {
-			func(gsconf, cb);
+	async.map(gsids,
+		function iterator(gsid, cb) {
+			var gsconf = gameServers[gsid];
+			if ((gsconf.local && !noLocal) || (!gsconf.local && !noRemote)) {
+				func(gsconf, cb);
+			}
+			else cb(null);
+		},
+		function transformResults(err, res) {
+			if (callback) {
+				if (err) return callback(err);
+				var ret = {};
+				for (var i = 0; i < res.length; i++) {
+					ret[gsids[i]] = res[i];
+				}
+				return callback(null, ret);
+			}
 		}
-		else cb(null);
-	}, callback);
+	);
 }
 
 
@@ -348,14 +376,18 @@ function mapToGS(objOrTsid) {
  * on the same host, each server process is using a specific, unique
  * port, derived from a configurable base port.
  *
- * @param {number} basePort base port of the network service
+ * @param {number|string} basePort base port of the network service,
+ *        or path of the configuration option that contains it
  * @param {string} [gsid] ID of the game server instance to determine
- *        the port for; if `undefined` (or an unknown ID), the base
- *        port itself is returned (to be used for the cluster master)
+ *        the port for; if `undefined` (or an unknown ID), the service
+ *        port for this instance is returned
  * @returns {number} TCP port number for the service in question on
  *          the specified server instance
  */
 function getServicePort(basePort, gsid) {
+	if (typeof basePort === 'string') {
+		basePort = get(basePort);
+	}
 	if (!gsid) gsid = getGsid();
 	var add = gsids.indexOf(gsid) + 1;  // master is not in gsids list -> 0
 	return basePort + add;
@@ -368,8 +400,8 @@ function getServicePort(basePort, gsid) {
  * module:config~getServicePort|getServicePort}).
  *
  * @param {string} [gsid] ID of the game server instance to determine
- *        the port for; if `undefined` (or an unknown ID), the base
- *        port itself is returned (to be used for the cluster master)
+ *        the port for; if `undefined` (or an unknown ID), the service
+ *        port for this instance is returned
  * @returns {number} TCP port number for the RPC service on the
  *          specified server instance
  */

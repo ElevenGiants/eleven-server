@@ -10,7 +10,6 @@ suite('OrderedHash', function () {
 		test('creates OrderedHash', function () {
 			var o = {x: 'x', y: 'y', z: 'z'};
 			var oh = new OrderedHash(o);
-			assert.instanceOf(oh, OrderedHash);
 			assert.strictEqual(oh.x, 'x');
 			oh.q = 'q';
 			assert.notProperty(o, 'q', 'new properties not added to source data object');
@@ -25,6 +24,25 @@ suite('OrderedHash', function () {
 			var oh = new OrderedHash({x: 'x', yz: {y: 'y', z: 'z'}});
 			assert.strictEqual(JSON.stringify(oh),
 				'{"x":"x","yz":{"y":"y","z":"z"}}');
+		});
+
+		test('makes property enumeration iterate over keys in natural order',
+			function () {
+			var oh = new OrderedHash({z: 'z', a: 'a'});
+			var keys = [];
+			for (var k in oh) {
+				keys.push(k);
+			}
+			assert.deepEqual(keys, ['a', 'z']);
+			assert.deepEqual(Object.keys(oh), ['a', 'z']);
+			oh.burp = 'b';
+			oh['234'] = '123';
+			keys = [];
+			for (var j in oh) {
+				keys.push(j);
+			}
+			assert.deepEqual(keys, ['234', 'a', 'burp', 'z']);
+			assert.deepEqual(Object.keys(oh), ['234', 'a', 'burp', 'z']);
 		});
 	});
 

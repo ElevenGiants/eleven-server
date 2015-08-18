@@ -29,23 +29,116 @@ LocationApi.prototype.apiPutItemIntoPosition =
 };
 
 
-LocationApi.prototype.apiGetPointOnTheClosestPlatformLineBelow =
-	function apiGetPointOnTheClosestPlatformLineBelow(x, y) {
-	log.debug('%s.apiGetPointOnTheClosestPlatformLineBelow(%s, %s)', this, x, y);
-	//TODO implement&document me
-	log.warn('TODO Location.apiGetPointOnTheClosestPlatformLineBelow not ' +
-		'implemented yet');
-	return {x: 1, y: 1};
+/**
+ * Add (part of) an item stack into a specific slot of a bag in the location,
+ * merging with an existing item in that slot if necessary.
+ *
+ * @param {Item} item item stack to add; may be deleted in the process
+ * @param {number} slot slot index in the bag to add to
+ * @param {string} path path to target bag
+ * @param {number} [amount] amount of the item stack to add/distribute; if not
+ *        specified, the whole stack is processed
+ * @param {Player} [pc] player adding the item (for animation announcements)
+ * @returns {number} amount of remaining items
+ */
+LocationApi.prototype.apiAddStack = function apiAddStack(item, slot, path, amount, pc) {
+	log.debug('%s.apiAddStack(%s, %s, %s, %s, %s)', this, item, slot, path,
+		amount, pc);
+	return this.addToBag(item, slot, slot, path, amount);
+	//TODO: item animation announcements from pc
 };
 
 
+/**
+ * Distribute (part of) an item stack into a range of inventory slots of one of
+ * the bags in the location, using empty slots or merging with existing items.
+ *
+ * @param {Item} item item stack to add; may be deleted in the process
+ * @param {number} maxSlot only slots up to this index are considered
+ * @param {string} path path to target bag
+ * @param {number} [amount] amount of the item stack to add/distribute; if not
+ *        specified, the whole stack is processed
+ * @param {Player} [pc] player adding the item (for animation announcements)
+ * @returns {number} amount of remaining items
+ */
+LocationApi.prototype.apiAddStackAnywhere =
+	function apiAddStackAnywhere(item, maxSlot, path, amount, pc) {
+	log.debug('%s.apiAddStackAnywhere(%s, %s, %s, %s, %s)', this, item, maxSlot,
+		path, amount, pc);
+	return this.addToBag(item, 0, maxSlot, path, amount);
+	//TODO: item animation announcements from pc
+};
+
+
+/**
+ * Find the point on the closest platform below the given point.
+ *
+ * @param {number} x x coordinate of the requested point
+ * @param {number} y y coordinate of the requested point
+ * @returns {object|undefined} the resulting point, or `undefined` if
+ *          no platform could be found.
+ */
+LocationApi.prototype.apiGetPointOnTheClosestPlatformLineBelow =
+	function apiGetPointOnTheClosestPlatformLineBelow(x, y) {
+	log.debug('%s.apiGetPointOnTheClosestPlatformLineBelow(%s, %s)', this, x, y);
+	var ret = this.geometry.getClosestPlatPoint(x, y, -1);
+	if (ret) {
+		return ret.point;
+	}
+};
+
+
+/**
+ * Find the point on the closest platform above the given point.
+ *
+ * @param {number} x x coordinate of the requested point
+ * @param {number} y y coordinate of the requested point
+ * @returns {object|undefined} the resulting point, or `undefined` if
+ *          no platform could be found.
+ */
 LocationApi.prototype.apiGetPointOnTheClosestPlatformLineAbove =
 	function apiGetPointOnTheClosestPlatformLineAbove(x, y) {
 	log.debug('%s.apiGetPointOnTheClosestPlatformLineAbove(%s, %s)', this, x, y);
-	//TODO implement&document me
-	log.warn('TODO Location.apiGetPointOnTheClosestPlatformLineAbove not ' +
-		'implemented yet');
-	return {x: 1, y: 1};
+	var ret = this.geometry.getClosestPlatPoint(x, y, 1);
+	if (ret) {
+		return ret.point;
+	}
+};
+
+
+/**
+ * Find the closest platform below the given point.
+ *
+ * @param {number} x x coordinate of the requested point
+ * @param {number} y y coordinate of the requested point
+ * @returns {object|undefined} the resulting platform, or `undefined`
+ *          if no platform could be found.
+ */
+LocationApi.prototype.apiGetClosestPlatformLineBelow =
+	function apiGetClosestPlatformLineBelow(x, y) {
+	log.debug('%s.apiGetClosestPlatformLineBelow(%s, %s)', this, x, y);
+	var ret = this.geometry.getClosestPlatPoint(x, y, -1);
+	if (ret) {
+		return ret.plat;
+	}
+};
+
+
+/**
+ * Find the closest platform above the given point.
+ *
+ * @param {number} x x coordinate of the requested point
+ * @param {number} y y coordinate of the requested point
+ * @returns {object|undefined} the resulting platform, or `undefined`
+ *          if no platform could be found.
+ */
+LocationApi.prototype.apiGetClosestPlatformLineAbove =
+	function apiGetClosestPlatformLineAbove(x, y) {
+	log.debug('%s.apiGetClosestPlatformLineAbove(%s, %s)', this, x, y);
+	var ret = this.geometry.getClosestPlatPoint(x, y, 1);
+	if (ret) {
+		return ret.plat;
+	}
 };
 
 
@@ -142,6 +235,11 @@ LocationApi.prototype.apiSendAnnouncementX = function
 LocationApi.prototype.apiMoveOutX = function apiMoveOutX(pc, newLoc, x, y) {
 	log.debug('%s.apiMoveOutX(%s, %s, %s, %s)', this, pc, newLoc, x, y);
 	pc.startMove(newLoc, x, y);
+	// notify other clients (for unknown reasons, GSJS doesn't do that in this case)
+	this.send({
+		type: 'pc_signpost_move',
+		pc: pc.make_hash_with_location(),
+	}, false, pc);
 };
 
 
@@ -178,9 +276,99 @@ LocationApi.prototype.apiLockStack = function apiLockStack(path) {
 };
 
 
+/**
+ * Notifies other items in the location about an item state change.
+ *
+ * @param {Item} item the item whose state has changed
+ */
 LocationApi.prototype.apiNotifyItemStateChanged =
 	function apiNotifyItemStateChanged(item) {
 	log.debug('%s.apiNotifyItemStateChanged(%s)', this, item);
-	//TODO implement&document me
-	log.warn('TODO Location.apiNotifyItemStateChanged not implemented yet');
+	this.sendItemStateChange(item);
+};
+
+
+/**
+ * Finds items within a given radius around a point.
+ *
+ * @param {number} x x coordinate to search around
+ * @param {number} y y coordinate to search around
+ * @param {number} radius radius to consider (in px)
+ * @returns {object} hash of the found items
+ */
+LocationApi.prototype.apiGetItemsInTheRadius = function apiGetItemsInTheRadius(
+	x, y, radius) {
+	log.debug('%s.apiGetItemsInTheRadius(%s, %s, %s)', this, x, y, radius);
+	return this.getInRadius(x, y, radius);
+};
+
+
+LocationApi.prototype.apiGetNoPlayerScanItemsInTheRadius =
+	function apiGetNoPlayerScanItemsInTheRadius(x, y, radius) {
+	log.debug('%s.apiGetNoPlayerScanItemsInTheRadius(%s, %s, %s)', this, x, y, radius);
+	return this.getInRadius(x, y, radius);
+};
+
+
+/**
+ * Finds active players within a given radius around a point.
+ *
+ * @param {number} x x coordinate to search around
+ * @param {number} y y coordinate to search around
+ * @param {number} radius radius to consider (in px)
+ * @returns {object} hash of the found players
+ */
+LocationApi.prototype.apiGetActivePlayersInTheRadius =
+	function apiGetActivePlayersInTheRadius(x, y, radius) {
+	log.debug('%s.apiGetActivePlayersTheRadius(%s, %s, %s)', this, x, y, radius);
+	return this.getInRadius(x, y, radius, true);
+};
+
+
+/**
+ * Finds active players within a given radius around a point,
+ * and returns them as a sorted list including their distance.
+ *
+ * @param {number} x x coordinate to search around
+ * @param {number} y y coordinate to search around
+ * @param {number} radius radius to consider (in px)
+ * @returns {array} an array containing information about all active
+ *          players within the given radius, ordered by distance,
+ *          closest players first, e.g.
+ * ```
+ * [
+ *     {pc: [human#PA9S7UKB6ND2IKB], dist: 126.06, x: 780, y: -97},
+ *     {pc: [human#P1KUXVLVASKLUJ8], dist: 234.7, x: 951, y: -12},
+ *     ...
+ * ]```
+ */
+LocationApi.prototype.apiGetActivePlayersInTheRadiusX =
+	function apiGetActivePlayersInTheRadiusX(x, y, radius) {
+	log.debug('%s.apiGetActivePlayersTheRadiusX(%s, %s, %s)', this, x, y, radius);
+	return this.getInRadius(x, y, radius, true, true);
+};
+
+/**
+ *	Copies creates a copy of this location
+ *
+ * @param {string} [label] name for new location
+ * @param {string} [moteId] mote Id for new location
+ * @param {string} [hubId] hub Id for new location
+ * @param {boolean} [isInstance] Is this new location an instance?
+ * @param {string} [altClassTsid] class of new location, defaults to source locations class
+ * @returns {Location} the copy of this location
+ */
+LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId,
+	hubId, isInstance, altClassTsid) {
+	log.debug('%s.apiCopyLocation(%s, %s, %s, %s, %s)', this, label, moteId,
+		hubId, isInstance, altClassTsid);
+	return this.copyLocation(label, moteId, hubId, isInstance, altClassTsid);
+};
+
+/**
+ *	Replaces the currently persisted geometry with the version in memory
+ */
+LocationApi.prototype.apiGeometryUpdated = function apiGeometryUpdated() {
+	log.debug('%s.apiGeometryUpdated()', this);
+	return this.processGeometryUpdate();
 };

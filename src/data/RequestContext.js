@@ -8,6 +8,7 @@ var util = require('util');
 var wait = require('wait.for');
 var Fiber = require('wait.for/node_modules/fibers');
 var pers = require('data/pers');
+var utils = require('utils');
 
 
 /**
@@ -39,7 +40,8 @@ function RequestContext(logtag, owner, session) {
 	this.session = session;
 	// request-local game object cache
 	this.cache = {};
-	// dirty object collector for persistence
+	// dirty object collectors for persistence
+	this.added = {};
 	this.dirty = {};
 	// objects scheduled for unloading after current request
 	this.unload = {};
@@ -78,23 +80,23 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 	wait.launchFiber(function rcFiber() {
 		var res = null;
 		try {
-			rc.fiber = Fiber.current;
-			rc.fiber.rc = rc;
+			Fiber.current.rc = rc;
 			// call function in fiber context
 			res = func();
-			log.debug('finished %s (%s dirty)', tag, Object.keys(rc.dirty).length);
+			log.debug('finished %s (%s dirty, %s added)', tag,
+				Object.keys(rc.dirty).length, Object.keys(rc.added).length);
 		}
 		catch (err) {
-			// TODO: nothing is rolled back, so the modified objects might
-			// still be persisted eventually through other calls; i.e. we could
-			// just as well persist them here? Or should we rather roll back
-			// any changes on failure? If so, when doing that by removing the
-			// affected objects from the persistence live object cache, remember
-			// to stop their timers&intervals.
-			return callback(err);
+			/*jshint -W030 */  // trigger prepareStackTrace (parts of the trace might not be available outside the RC)
+			err.stack;
+			/*jshint +W030 */
+			pers.postRequestRollback(rc.dirty, rc.added, tag, function done() {
+				callback(err);
+			});
+			return;
 		}
 		// persist modified objects
-		pers.postRequestProc(rc.dirty, rc.unload, tag, function done() {
+		pers.postRequestProc(rc.dirty, rc.added, rc.unload, tag, function done() {
 			// invoke special post-persistence callback if there is one
 			if (typeof rc.postPersCallback === 'function') {
 				rc.postPersCallback();
@@ -148,15 +150,34 @@ RequestContext.logSerialize = function logSerialize(rc) {
 
 
 /**
+ * Flags the given (existing/not newly created) game object as dirty, causing it
+ * to be written to persistent storage at the end of the current request. Does
+ * nothing when called without an active request context.
+ *
+ * @param {GameObject} obj the modified game object
+ */
+RequestContext.setDirty = function setDirty(obj) {
+	var rc = RequestContext.getContext(true);
+	if (rc) rc.setDirty(obj);
+};
+
+
+/**
  * Flags the given game object as dirty, causing it to be written to
  * persistent storage at the end of the current request (if the request
  * finishes successfully). Can only be called from within a request
  * (see {@link RequestContext#run|run}).
  *
- * @param {GameObject} obj
+ * @param {GameObject} obj the new or updated object
+ * @param {boolean} [added] `true` if `obj` is a newly created object
  */
-RequestContext.prototype.setDirty = function setDirty(obj) {
-	this.dirty[obj.tsid] = obj;
+RequestContext.prototype.setDirty = function setDirty(obj, added) {
+	if (added) {
+		this.added[obj.tsid] = obj;
+	}
+	else if (!(obj.tsid in this.added)) {
+		this.dirty[obj.tsid] = obj;
+	}
 };
 
 
@@ -169,6 +190,7 @@ RequestContext.prototype.setDirty = function setDirty(obj) {
  * @param {GameObject} obj
  */
 RequestContext.prototype.setUnload = function setUnload(obj) {
+	utils.addNonEnumerable(obj, 'stale', true);
 	this.unload[obj.tsid] = obj;
 };
 
@@ -184,4 +206,11 @@ RequestContext.prototype.setUnload = function setUnload(obj) {
  */
 RequestContext.prototype.setPostPersCallback = function setPostPersCallback(callback) {
 	this.postPersCallback = callback;
+};
+
+/**
+ * Used to avoid errors testing without a request context running.
+ */
+RequestContext.isOnRC = function isOnRC() {
+	return Fiber.current !== undefined;
 };

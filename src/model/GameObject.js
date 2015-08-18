@@ -5,6 +5,7 @@ module.exports = GameObject;
 
 var assert = require('assert');
 var config = require('config');
+var errors = require('errors');
 var util = require('util');
 var utils = require('utils');
 var RC = require('data/RequestContext');
@@ -35,26 +36,35 @@ function GameObject(data) {
 	// add non-enumerable internal properties
 	utils.addNonEnumerable(this, '__isGO', true);
 	utils.addNonEnumerable(this, 'deleted', false);
-	utils.addNonEnumerable(this, 'gsTimers', {timer: {}, interval: {}});
+	utils.addNonEnumerable(this, 'stale', false);
 	// copy supplied data
-	// TODO: remove 'dynamic' partition in fixture data, and get rid of special handling here
 	var key;
-	for (key in data.dynamic) {
-		if (!(key in this)) {
-			this[key] = data.dynamic[key];
-		}
-	}
 	for (key in data) {
-		if (key !== 'dynamic' && !(key in this)) {
-			this[key] = data[key];
-		}
+		this[key] = data[key];
 	}
 	if (!this.ts) {
 		this.ts = new Date().getTime();
 	}
+	if (!this.gsTimers) this.gsTimers = {};
+	utils.makeNonEnumerable(this, 'gsTimers');
 }
 
 utils.copyProps(require('model/GameObjectApi').prototype, GameObject.prototype);
+
+
+/**
+ * Called by the persistence layer when the object is loaded, right
+ * after construction and proxification.
+ * **Caution**: Operations in this function (including anything added
+ * by subclasses) must not allow yielding before the object is fully
+ * loaded, initialized and "ready to use".
+ */
+GameObject.prototype.gsOnLoad = function gsOnLoad() {
+	if (this.onLoad) {
+		this.onLoad();
+	}
+	this.resumeGsTimers();
+};
 
 
 /**
@@ -86,20 +96,13 @@ GameObject.prototype.serialize = function serialize() {
 	}
 	// add timers&intervals (only if there are any)
 	var timers;
-	Object.keys(this.gsTimers).forEach(function iter(type) {
-		for (var key in this.gsTimers[type]) {
-			var entry = this.gsTimers[type][key];
-			if (entry.options.internal) continue;  // internal timers are not persisted
-			if (!timers) {
-				timers = {};
-			}
-			if (!timers[type]) {
-				timers[type] = {};
-			}
-			timers[type][key] = utils.shallowCopy(entry);
-			delete timers[type][key].handle;  // no point persisting the handles
-		}
-	}, this);
+	for (var key in this.gsTimers) {
+		var entry = this.gsTimers[key];
+		if (entry.options.internal) continue;  // internal timers are not persisted
+		if (!timers) timers = {};
+		timers[key] = utils.shallowCopy(entry);
+		delete timers[key].handle;  // no point persisting the handles
+	}
 	if (timers) ret.gsTimers = timers;
 	return ret;
 };
@@ -177,17 +180,16 @@ GameObject.prototype.setProps = function setProps(props) {
  * @param {boolean} [options.internal] schedules an "internal" timer if
  *        `true` (for internal use in the GS, not persistent; `false`
  *        by default)
- * @return {object} timeout handle as returned by {@link
- *         http://nodejs.org/api/timers.html#timers_settimeout_callback_delay_arg|setTimeout}
+ * @param {boolean} [options.noCatchUp] if `true`, missed calls are not
+ *        executed upon interval resumption (`false` by default; only
+ *        relevant for intervals)
  */
 GameObject.prototype.setGsTimer = function setGsTimer(options) {
 	log.trace('%s.setGsTimer(%s)', this, util.inspect(options, {depth: 1}));
 	var logtag = util.format('%s.%s', this, options.fname);
-	var type = options.interval ? 'interval' : 'timer';
 	assert(!(options.multi && options.interval), 'multi intervals not supported');
-	assert(!(options.multi && options.internal), 'internal multi timers not supported');
-	assert(typeof this[options.fname] === 'function', 'no such function: %s', logtag);
-	if (!options.multi && this.gsTimerExists(options.fname, options.interval)) {
+	assert(typeof this[options.fname] === 'function', 'no such function: ' + logtag);
+	if (!options.multi && this.gsTimerExists(options.fname, options.interval, true)) {
 		log.trace('timer/interval already set: %s', logtag);
 		return;
 	}
@@ -197,17 +199,18 @@ GameObject.prototype.setGsTimer = function setGsTimer(options) {
 		do {
 			key = options.fname + '_' + new Date().getTime();
 		}
-		while (key in this.gsTimers[type]);
+		while (key in this.gsTimers);
 	}
 	// schedule timer in a separate request context
-	var handle = this.scheduleTimer(options, type, key, this);
+	var handle = this.scheduleTimer(options, key, this);
 	// store data for API functions and saving/restoring timers to/from persistence
-	this.gsTimers[type][key] = {
+	this.gsTimers[key] = {
 		handle: handle,
 		start: new Date().getTime(),
 		options: options,
 	};
-	return handle;
+	// make sure update timer setup is persisted (gsTimers is non-enumerable)
+	RC.setDirty(this);
 };
 
 
@@ -218,28 +221,52 @@ GameObject.prototype.setGsTimer = function setGsTimer(options) {
  *
  * @param {object} options timer call options (see {@link
  *        GameObject#setGsTimer|setGsTimer} for details)
- * @param {string} type timer type (must be "timer" or "interval")
  * @param {string} key unique key for storing/persisting the timer data
  * @private
  */
-GameObject.prototype.scheduleTimer = function scheduleTimer(options, type, key) {
+GameObject.prototype.scheduleTimer = function scheduleTimer(options, key) {
 	var self = this;
-	var session = RC.getContext(true) ? RC.getContext().session : null;
-	var handle = (options.interval ? setInterval : setTimeout)(
+	if (options.delay > 2147483647) {
+		// see https://github.com/joyent/node/issues/3605
+		log.error(new errors.DummyError(), 'timer/interval delay too long: %s',
+			options.delay);
+		options.delay = 2147483647;
+	}
+	var handle = setTimeout(
 		function execTimer() {
-			var rc = new RC(options.fname, self, session);
+			var rc = new RC(options.fname, self);
 			rc.run(
 				function timerCall() {
-					log.trace({options: options}, '%s call', type);
-					if (!options.interval) {
-						delete self.gsTimers[type][key];
+					log.trace({options: options}, 'timer call');
+					if (self.stale) {
+						throw new Error('stale object');
 					}
-					self[options.fname].apply(self, options.args);
+					if (!options.interval) {
+						delete self.gsTimers[key];
+					}
+					try {
+						self.gsTimerExec(options);
+					}
+					catch (e) {
+						delete self.gsTimers[key];  // clean up
+						log.error(e, 'error calling %s.%s (interval: %s)', self,
+							options.fname, !!options.interval);
+						// don't rethrow - we want to make sure the offending
+						// timer/interval is not called again upon unload/reload
+						return;
+					}
+					// schedule next interval iteration (unless it was canceled)
+					if (self.gsTimers[key] && options.interval) {
+						delete self.gsTimers[key];
+						self.setGsTimer(options);
+					}
+					// make sure update timer setup is persisted
+					rc.setDirty(self);
 				},
 				function callback(e) {
 					if (e) {
-						log.error(e, 'error calling %s.%s via %s', self,
-							options.fname, type);
+						log.error(e, 'error calling %s.%s (interval: %s)', self,
+							options.fname, !!options.interval);
 					}
 				}
 			);
@@ -250,16 +277,36 @@ GameObject.prototype.scheduleTimer = function scheduleTimer(options, type, key) 
 
 
 /**
+ * Actually performs a scheduled function call according to a
+ * timer/interval options record.
+ *
+ * @param {object} options timer call options (see {@link
+ *        GameObject#setGsTimer|setGsTimer} for details)
+ * @private
+ */
+GameObject.prototype.gsTimerExec = function gsTimerExec(options) {
+	this[options.fname].apply(this, options.args);
+};
+
+
+/**
  * Checks if a timer/interval is currently defined for a given method.
  *
  * @param {string} fname name of the method to check
  * @param {boolean} [interval] if `true`, checks if an interval call is
  *        defined for the given function (otherwise checks for a timer)
- * @returns {boolean} `true` if an interval/timer cal is scheduled
+ * @param {boolean} [active] if `true`, don't just check if the timer
+ *        is configured, but also if it has actually been started
+ * @returns {boolean} `true` if an interval/timer call is scheduled
  */
-GameObject.prototype.gsTimerExists = function gsTimerExists(fname, interval) {
-	var list = interval ? this.gsTimers.interval : this.gsTimers.timer;
-	return fname in list && 'handle' in list[fname];  // exists and not fired yet
+GameObject.prototype.gsTimerExists = function gsTimerExists(fname, interval, active) {
+	var entry = this.gsTimers[fname];
+	if (entry) {
+		if (entry.options.interval && interval || !entry.options.interval && !interval) {
+			return !active || ('handle' in entry);
+		}
+	}
+	return false;
 };
 
 
@@ -268,65 +315,142 @@ GameObject.prototype.gsTimerExists = function gsTimerExists(fname, interval) {
  * This must be called before unloading an object.
  */
 GameObject.prototype.suspendGsTimers = function suspendGsTimers() {
-	Object.keys(this.gsTimers).forEach(function iter(type) {
-		for (var key in this.gsTimers[type]) {
-			var entry = this.gsTimers[type][key];
-			if (entry.handle) {
-				log.debug('suspending %s %s.%s', type, this, key);
-				(type === 'timer' ? clearTimeout : clearInterval)(entry.handle);
-				delete entry.handle;
-			}
+	for (var key in this.gsTimers) {
+		var entry = this.gsTimers[key];
+		if (entry.handle) {
+			log.debug('suspending %s.%s', this, key);
+			clearTimeout(entry.handle);
+			delete entry.handle;
 		}
-	}, this);
+	}
 };
 
 
 /**
- * Resumes timers/intervals (should be called after loading the object
- * from persistence). Intervals are resumed in any case, whereas timers
- * are only resumed if their "firing time" is in the future (otherwise
- * the timer configuration is silently removed).
+ * Resumes timers/intervals, catching up on missed calls (should be
+ * called after loading the object from persistence).
  */
 GameObject.prototype.resumeGsTimers = function resumeGsTimers() {
-	Object.keys(this.gsTimers).forEach(function iter(type) {
-		for (var key in this.gsTimers[type]) {
-			var entry = this.gsTimers[type][key];
-			if (type === 'timer') {
-				// remove timers that already are in the past
-				entry.options.delay -= (new Date().getTime() - entry.start);
-				if (entry.options.delay < 0) {
-					log.debug('%s.%s past due, cleaning up', this, key);
-					delete this.gsTimers[type][key];
-					continue;
-				}
-			}
-			log.debug('resuming %s %s.%s', type, this, key);
+	var now = new Date().getTime();
+	for (var key in this.gsTimers) {
+		var entry = this.gsTimers[key];
+		if (entry.handle) {
+			// skip internal stuff that's already running (e.g. started in constructor)
+			log.debug('%s.%s already running', this, key);
+			continue;
+		}
+		log.debug('resuming %s.%s', this, key);
+		var age = now - entry.start;
+		if (!entry.options.interval) {
+			// reschedule with adjusted delay
+			entry.options.delay = Math.max(entry.options.delay - age, 1);
 			this.setGsTimer(entry.options);
 		}
-	}, this);
+		else {
+			// perform catch-up calls
+			var num = Math.floor(age / entry.options.delay);
+			if (num > 0 && !entry.options.noCatchUp) {
+				log.debug('interval catching up (%s call(s))', num);
+				for (var i = 0; i < num && !this.deleted; i++) {
+					this.gsTimerExec(entry.options, num);
+				}
+			}
+			// if not deleted while catching up (e.g. trant death), actually resume interval
+			if (!this.deleted) {
+				// schedule next call with shortened interval
+				var nextDelay = entry.options.delay - age % entry.options.delay;
+				this.setGsTimer({
+					fname: entry.options.fname,
+					delay: nextDelay,
+					args: entry.options.args,
+					multi: true,
+					internal: true,
+				});
+				// schedule postponed start of the regular interval, inception-style
+				var intStartOpts = {
+					fname: 'setGsTimer',
+					delay: nextDelay,
+					args: [entry.options],
+					multi: true,
+					internal: true,
+				};
+				this.setGsTimer(intStartOpts);
+			}
+		}
+	}
 };
 
 
 /**
  * Cancels a scheduled timer call, resp. clears an interval call.
  *
- * @param {string} fname name of the method whose tiner/interval call
+ * @param {string} fname name of the method whose timer/interval call
  *        should be canceled
  * @param {boolean} [interval] if `true`, cancels an interval call for
  *        the given function, otherwise a timer
  * @returns {boolean} `true` if a scheduled timer/interval was actually
- *          cancelled
+ *          canceled
  */
 GameObject.prototype.cancelGsTimer = function cancelGsTimer(fname, interval) {
 	var ret = false;
-	var type = interval ? 'interval' : 'timer';
-	var entry = this.gsTimers[type][fname];
-	if (entry) {
+	var entry = this.gsTimers[fname];
+	/*jshint -W018 */
+	if (entry && !!entry.options.interval === !!interval) {
+		/*jshint +W018 */
 		if (entry.handle) {
-			(interval ? clearInterval : clearTimeout)(entry.handle);
+			clearTimeout(entry.handle);
 			ret = true;
 		}
-		delete this.gsTimers[type][fname];
+		delete this.gsTimers[fname];
+		// make sure update timer setup is persisted (gsTimers is non-enumerable)
+		RC.setDirty(this);
 	}
 	return ret;
+};
+
+/**
+ * Copies an entire object minus the exceptions from the skipList
+ *
+ * @param {object} from : The object to copy into this object
+ * @param {array} skipList : The list of top level properties not to copy
+ */
+GameObject.prototype.copyProps = function copyProps(from, skipList) {
+	for (var key in from) {
+		var value = from[key];
+		// Skip functions, as they're defined in Server/GSJS code and not to be persisted
+		if (typeof value === 'function') continue;
+		// Skip instance specific properties
+		if (!from.hasOwnProperty(key)) continue;
+		// Skip items specified to skip
+		if (skipList && skipList.indexOf(key) !== -1) continue;
+		// Directly copy primitive types
+		if (!(value instanceof Object)) {
+			this[key] = value;
+		}
+		else {
+			// Directly copy objref proxies without digging down
+			if (value.__isORP) {
+				this[key] = value;
+			}
+			// Recurse down for complex objects/arrays
+			else {
+				this[key] = value instanceof Array ? [] : {};
+				// don't provide skiplist, only want to skip top level items
+				GameObject.prototype.copyProps.call(this[key], value);
+			}
+		}
+	}
+};
+
+/**
+ * Checks if there are any pending timers calls/active interval calls
+ * on this object.
+ *
+ * @returns {boolean} `true` if there are active timers/intervals
+ */
+GameObject.prototype.hasActiveGsTimers = function hasActiveGsTimers() {
+	for (var key in this.gsTimers) {
+		if (this.gsTimers[key].handle) return true;
+	}
+	return false;
 };

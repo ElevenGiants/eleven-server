@@ -17,7 +17,7 @@ suite('rpc', function () {
 		gameServers: {
 			gs01: {host: '127.0.0.1', ports: [3000, 3001]},
 		},
-		rpc: {basePort: 17000},
+		rpc: {basePort: 17000, timeout: 10000},
 	}};
 	// fake client GS connection to make rpc module establish client
 	// connection to its own server:
@@ -58,16 +58,15 @@ suite('rpc', function () {
 						1, 'exactly one client connected to server');
 					var connection = server.transport.connections[Object.keys(
 						server.transport.connections)[0]];
-					assert.strictEqual(connection.remoteAddress, '127.0.0.1');
+					assert.isTrue(connection.remoteAddress === '127.0.0.1' ||
+						connection.remoteAddress === '::ffff:127.0.0.1');
 					assert.strictEqual(connection.remotePort,
 						client.transport.con.localPort,
 						'server and client endpoints are connected');
 					// test shutdown, too
 					rpc.shutdown(function callback() {
-						assert.isUndefined(rpc.__get__('server'));
 						assert.deepEqual(rpc.__get__('clients'), {});
 						// multitransport-jsonrpc specific stuff:
-						assert.isFalse(server.transport.notClosed);
 						assert.isTrue(client.transport.con.destroyed);
 						done();
 					});

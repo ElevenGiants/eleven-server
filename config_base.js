@@ -39,9 +39,22 @@ module.exports = {
 			// process number is added to the base port for each GS instance
 			// (master = 0 (i.e. running on basePort), workers = 1, 2, 3, ...)
 			basePort: 7000,
+			timeout: 10000,  // ms
 		},
 		// incoming AMF messages bigger than this are considered invalid
 		maxMsgSize: 131072,
+		heartbeat: {
+			interval: 3000,
+			timeout: 60000,
+		},
+	},
+	proc: {
+		// timeout (in ms) for graceful worker process shutdown:
+		shutdownTimeout: 30000,
+		// timeout for worker.kill() or SIGTERM, before sending SIGKILL:
+		killTimeout: 5000,
+		// global timeout for worker shutdown before master itself exits:
+		masterTimeout: 45000,
 	},
 	log: {
 		// dir can be an absolute path, or relative to eleven-server directory
@@ -53,6 +66,24 @@ module.exports = {
 		// include source file/line number in log messages:
 		// (slow - do not use in production!)
 		includeLoc: false,
+	},
+	mon: {
+		statsd: {
+			enabled: true,
+			host: '127.0.0.1',
+			port: 8125,
+			// optional prefix for the metrics names:
+			prefix: '',
+		},
+	},
+	debug: {
+		// REPL server for live debugging/inspection
+		repl: {
+			enable: true,
+			host: '127.0.0.1',  // only local connections allowed by default
+			basePort: 7200,
+		},
+		stackTraceLimit: 20,
 	},
 	gsjs: {
 		// the GSJS configuration variant to load

@@ -1,0 +1,5 @@
+NODE_USER=vagrant
+NODE_ARGS="--harmony_proxies --expose_gc --max_old_space_size=300"
+APP_DIR="/vagrant/eleven-server"
+LOG_DIR="/vagrant/eleven-server/log"
+VERBOSE=yes
