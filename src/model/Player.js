@@ -786,3 +786,21 @@ Player.prototype.isHit = function isHit(it, hitBox) {
 	// return true if the two hitboxes overlap
 	return xDist < (hitBox.w + pcWidth) / 2 && yDist < (hitBox.h + pcHeight) / 2;
 };
+
+Player.prototype.inventoryGetItems = function(class_id, maxCount) {
+	var rval = {};
+	var remainingCount = maxCount;
+	var allItems = this.getAllItems();
+	for (var key in allItems) {
+		var val = allItems[key];
+		if (val.class_id == class_id) {
+			rval[key] = val;
+			remainingCount -= val.count;
+			if (remainingCount <= 0) {
+				// Due to JS semantics, this catches maxCount == undefined.
+				break;
+			}
+		}
+	}
+	return rval;
+};

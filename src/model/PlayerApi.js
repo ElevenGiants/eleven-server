@@ -245,3 +245,8 @@ PlayerApi.prototype.apiPlayerCanReach = function apiPlayerCanReach(x, y) {
 	log.warn('TODO Player.apiPlayerCanReach not implemented yet');
 	return true;
 };
+
+PlayerApi.prototype.apiInventoryGetItems = function(class_id, maxCount) {
+	log.debug('%s.apiInventoryGetItems(%s, %s)', this, class_id, maxCount);
+	return this.inventoryGetItems(class_id, maxCount);
+};
