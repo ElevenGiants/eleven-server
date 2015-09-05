@@ -211,7 +211,7 @@ suite('ItemMovement', function () {
 				else {
 					assert.strictEqual(this.check, 3);
 					assert.strictEqual(args.status, STATUS.ARRIVED);
-					assert.deepEqual(this.movement.platform, plat2);
+					assert.deepEqual(this.gsMovement.platform, plat2);
 					assert.strictEqual(this.x, pt3.x);
 					assert.strictEqual(this.y, plat2.start.y);
 					done();

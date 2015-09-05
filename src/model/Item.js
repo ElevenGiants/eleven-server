@@ -54,7 +54,7 @@ function Item(data) {
 	if (this.x === undefined) this.x = 0;
 	if (this.y === undefined) this.y = 0;
 	// for NPC Movement
-	utils.addNonEnumerable(this, 'movement', null);
+	utils.addNonEnumerable(this, 'gsMovement', null);
 	if (!utils.isInt(this.count)) this.count = 1;
 	// add some non-enumerable properties (used internally or by GSJS)
 	utils.addNonEnumerable(this, 'collDet', false);
@@ -442,7 +442,7 @@ Item.prototype.consume = function consume(n) {
  * @private
  */
 Item.prototype.movementTimer = function movementTimer() {
-	if (this.movement) this.movement.moveStep();
+	if (this.gsMovement) this.gsMovement.moveStep();
 };
 
 
@@ -457,8 +457,8 @@ Item.prototype.movementTimer = function movementTimer() {
  * @returns {boolean} true if movement is possible and started
  */
 Item.prototype.gsStartMoving = function gsStartMoving(transport, dest, options) {
-	if (!this.movement) this.movement = new ItemMovement(this);
-	return this.movement.startMove(transport, dest, options);
+	if (!this.gsMovement) this.gsMovement = new ItemMovement(this);
+	return this.gsMovement.startMove(transport, dest, options);
 };
 
 
@@ -466,7 +466,7 @@ Item.prototype.gsStartMoving = function gsStartMoving(transport, dest, options) 
  * Stops item movement.
  */
 Item.prototype.gsStopMoving = function gsStopMoving() {
-	if (this.movement) this.movement.stopMove();
+	if (this.gsMovement) this.gsMovement.stopMove();
 };
 
 

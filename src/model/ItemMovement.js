@@ -535,10 +535,10 @@ ItemMovement.prototype.flockAlign = function flockAlign(nextPath, neighbours) {
 		var dy = this.item.y - n.y;
 		var dd = dx * dx + dy * dy;
 		if (dd > 0 && dd < FLOCK_RADIUS_SQUARED) {
-			if (n.movement && n.movement.path &&
-				n.movement.path.length > 0 && 'vx' in n.movement.path[0]) {
-				alignVx += n.movement.path[0].vx;
-				alignVy += n.movement.path[0].vy;
+			if (n.gsMovement && n.gsMovement.path &&
+				n.gsMovement.path.length > 0 && 'vx' in n.gsMovement.path[0]) {
+				alignVx += n.gsMovement.path[0].vx;
+				alignVy += n.gsMovement.path[0].vy;
 				alignCount++;
 			}
 		}
