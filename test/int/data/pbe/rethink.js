@@ -9,6 +9,8 @@ var Player = require('model/Player');
 
 suite('rethink', function () {
 
+	this.timeout(5000);
+
 	var cfg = config.get('pers:backEnd:config:rethink');
 	var TABLE = 'dummy';
 
