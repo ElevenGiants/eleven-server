@@ -207,3 +207,10 @@ RequestContext.prototype.setUnload = function setUnload(obj) {
 RequestContext.prototype.setPostPersCallback = function setPostPersCallback(callback) {
 	this.postPersCallback = callback;
 };
+
+/**
+ * Used to avoid errors testing without a request context running.
+ */
+RequestContext.isOnRC = function isOnRC() {
+	return Fiber.current !== undefined;
+};

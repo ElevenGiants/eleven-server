@@ -54,7 +54,7 @@ suite('Bag', function () {
 				x: 0, y: 0,
 			};
 			new RC().run(function () {
-				Location.create(Geo.create({tsid: 'GX'}));
+				Location.create({geo: Geo.create({tsid: 'GX'})});
 				pers.get('B1');
 			}, done);
 		});
@@ -179,7 +179,7 @@ suite('Bag', function () {
 			'inventory bag to a location bag (e.g. furniture)', function (done) {
 			var rc = new RC();
 			rc.run(function () {
-				var l = Location.create(Geo.create());
+				var l = Location.create({geo: Geo.create()});
 				var p = helpers.getOnlinePlayer({tsid: 'PX', location: l});
 				l.players[p.tsid] = rc.cache[p.tsid] = p;
 				var fbag = Bag.create('bag_bigger_green');
@@ -224,7 +224,8 @@ suite('Bag', function () {
 		test('makes sure GSJS does not fill hidden bags when purchasing from vendors',
 			function (done) {
 			new RC().run(function () {
-				var p = pers.create(Player, {location: Location.create(Geo.create())});
+				var p = pers.create(Player,
+							{location: Location.create({geo: Geo.create()})});
 				var remaining = p.createItemFromSource('watering_can', 99, p, true);
 				assert.strictEqual(remaining, 83, '99 cans created, 16 player' +
 					' inventory slots filled, 83 remaining');
@@ -249,7 +250,8 @@ suite('Bag', function () {
 		test('adds items to bags by slot order',
 			function (done) {
 			new RC().run(function () {
-				var p = pers.create(Player, {location: Location.create(Geo.create())});
+				var p = pers.create(Player,
+							{location: Location.create({geo: Geo.create()})});
 				p.capacity = 2;
 				var b1 = Bag.create('bag_generic');
 				b1.setContainer(p, 0);
@@ -266,7 +268,8 @@ suite('Bag', function () {
 		test('adds items to existing stacks by slot order',
 			function (done) {
 			new RC().run(function () {
-				var p = pers.create(Player, {location: Location.create(Geo.create())});
+				var p = pers.create(Player,
+							{location: Location.create({geo: Geo.create()})});
 				var i1 = Item.create('tomato');
 				i1.setContainer(p, 0);
 				var i2 = Item.create('tomato');

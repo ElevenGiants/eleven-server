@@ -119,7 +119,7 @@ suite('Location', function () {
 			new RC().run(
 				function () {
 					var g = Geo.create();
-					var l = Location.create(g);
+					var l = Location.create({geo: g});
 					assert.isTrue(l.__isPP);
 					assert.isTrue(utils.isLoc(l));
 					assert.strictEqual(l.class_tsid, 'town');
@@ -138,7 +138,7 @@ suite('Location', function () {
 		test('fails if Geo object not available in persistence', function () {
 			assert.throw(function () {
 				new RC().run(function () {
-					Location.create(new Geo());
+					Location.create({geo: new Geo()});
 				});
 			}, assert.AssertionError);
 		});
@@ -149,7 +149,7 @@ suite('Location', function () {
 
 		test('does its job', function (done) {
 			new RC().run(function () {
-				var l = Location.create(Geo.create());
+				var l = Location.create({geo: Geo.create()});
 				var i = Item.create('apple', 5);
 				l.addItem(i, 123, -456);
 				assert.strictEqual(l.items[i.tsid], i);
@@ -165,7 +165,7 @@ suite('Location', function () {
 			var rc = new RC();
 			rc.run(function () {
 				// setup (create/initialize loc, player, bag)
-				var l = Location.create(Geo.create());
+				var l = Location.create({geo: Geo.create()});
 				var p = helpers.getOnlinePlayer({tsid: 'PX', location: {tsid: l.tsid}});
 				l.players = {PX: p};  // put player in loc (so loc changes are queued for p)
 				rc.cache[p.tsid] = p;  // required so b.tcont can be "loaded" from persistence
@@ -196,7 +196,7 @@ suite('Location', function () {
 					i1 = Item.create('apple');
 					i2 = Item.create('banana');
 					b = new Bag({class_tsid: 'bag_bigger_green', items: [i2]});
-					l = Location.create(Geo.create());
+					l = Location.create({geo: Geo.create()});
 					l.addItem(i1, 12, 13);
 					l.addItem(b, 12, 13);
 					l.unload();
@@ -208,6 +208,72 @@ suite('Location', function () {
 					done();
 				}
 			);
+		});
+	});
+
+	suite('copyLocation', function () {
+
+		test('does its job', function (done) {
+			new RC().run(function () {
+				var src = new Location({}, new Geo({layers: {middleground: {}}}));
+				var copy = src.copyLocation('Test Label', 'Mote Test', 'Hub Test',
+								true, 'home');
+
+				assert.notEqual(copy.geometry.layers.middleground, undefined);
+				assert.strictEqual(copy.label, 'Test Label');
+				assert.strictEqual(copy.moteid, 'Mote Test');
+				assert.strictEqual(copy.hubid, 'Hub Test');
+				assert.isTrue(copy.is_instance);
+				assert.strictEqual(copy.class_tsid, 'home');
+			}, done);
+		});
+
+		test('copies items', function (done) {
+			new RC().run(function () {
+				var src = new Location({items: {BX: new Bag({tsid: 'BX',
+								class_tsid: 'bag_bigger'})}},
+							new Geo({layers: {middleground: {doors: {d: {connect:
+								{target: {label: 'uranus', tsid: 'LABC'}}}}}}}));
+				var copy = src.copyLocation('Test Label', 'Mote Test',
+								'Hub Test', true, 'home');
+
+				assert.doesNotThrow(function () {
+					var count = 0;
+					for (var i in copy.items) {
+						count++;
+						assert.strictEqual(copy.items[i].tsid[0], 'B');
+						assert.notStrictEqual(copy.items[i].tsid, 'BX');
+					}
+					assert.notStrictEqual(count, 0);
+				});
+			}, done);
+		});
+	});
+
+	suite('updateGeometry', function () {
+		test('does its job', function (done) {
+			new RC().run(function () {
+				var l = new Location({tsid: 'L1', class_tsid: 'town'}, new Geo());
+				l.updateGeometry({layers: {middleground: {}}});
+
+				assert.notEqual(l.geometry.layers.middleground, undefined);
+				assert.notEqual(l.clientGeometry.layers.middleground, undefined);
+			}, done);
+		});
+	});
+
+	suite('createGeo', function () {
+		test('does its job', function (done) {
+			new RC().run(function () {
+				var l = new Location({tsid: 'L1', class_tsid: 'town'},
+							new Geo({l: 1, r: 2, t: 3, b: 4,
+								layers: {middleground: {signposts: {}}}}));
+				l.createGeo();
+
+				assert.notEqual(l.geo.signposts, undefined);
+				assert.strictEqual(l.geo.l, 1);
+				assert.strictEqual(l.geo.r, 2);
+			}, done);
 		});
 	});
 });

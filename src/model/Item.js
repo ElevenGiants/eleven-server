@@ -159,7 +159,7 @@ Item.prototype.updatePath = function updatePath() {
  * @returns {boolean} `true` if the item's coordinates actually changed
  */
 Item.prototype.setXY = function setXY(x, y) {
-	assert(!isNaN(x) && !isNaN(y), 'invalid coordinates');
+	assert(!isNaN(x) && !isNaN(y), 'invalid coordinates: x=' + x + ', y=' + y);
 	if (this.itemDef && this.itemDef.obey_physics && utils.isLoc(this.container)) {
 		var pp = this.container.geometry.getClosestPlatPoint(x, y, -1, true);
 		if (pp && pp.point) {

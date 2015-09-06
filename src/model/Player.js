@@ -14,6 +14,7 @@ var RC = require('data/RequestContext');
 var util = require('util');
 var utils = require('utils');
 var lodash = require('lodash');
+var orProxy = require('data/objrefProxy');
 var DummyError = require('errors').DummyError;
 
 
@@ -581,6 +582,7 @@ Player.prototype.send = function send(msg, skipChanges, flushOnly) {
 		this.anncs = [];
 	}
 	if (!flushOnly || msg.changes || msg.announcements) {
+		msg = orProxy.refify(msg);
 		this.session.send(msg);
 	}
 };

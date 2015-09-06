@@ -487,6 +487,8 @@ function isLocal(objOrTsid) {
 function getGsid(objOrTsid) {
 	// locations, geos and groups mapped by their own tsid
 	if (utils.isLoc(objOrTsid) || utils.isGroup(objOrTsid) || utils.isGeo(objOrTsid)) {
+		if (RC.isOnRC() && RC.getContext() !== undefined && RC.getContext().isCopying)
+			return config.getGsid();
 		return config.mapToGS(objOrTsid).gsid;
 	}
 	// for all other classes, we need the actual game object

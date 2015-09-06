@@ -15,6 +15,7 @@ var Quest = require('model/Quest');
 var Item = require('model/Item');
 var Bag = require('model/Bag');
 var Group = require('model/Group');
+var GameObject = require('model/GameObject');
 var config = require('config');
 var rpc = require('data/rpc');
 var sessionMgr = require('comm/sessionMgr');
@@ -25,6 +26,7 @@ var logging = require('logging');
 var lodash = require('lodash');
 var slackChat = require('comm/slackChat');
 var crypto = require('crypto');
+var RC = require('data/RequestContext');
 
 
 function getItemType(classTsid) {
@@ -52,6 +54,18 @@ function safeClone(obj) {
 		}
 	});
 	orProxy.proxify(ret);
+	return ret;
+}
+
+/**
+ * Creates a copy of a Geo object
+ *
+ * @param {object} obj Geo to copy
+ * @returns {object} copy of the given object
+ */
+function geoCopy(obj) {
+	var ret = {};
+	GameObject.prototype.copyProps.call(ret, obj);
 	return ret;
 }
 
@@ -396,7 +410,11 @@ exports.apiCopyHash = function apiCopyHash(obj) {
  */
 exports.apiGetObjectContent = function apiGetObjectContent(tsid) {
 	log.debug('global.apiGetObjectContent(%s)', tsid);
-	return safeClone(pers.get(tsid));
+	var obj = pers.get(tsid);
+	if (utils.isGeo(obj))
+		return geoCopy(obj);
+	else
+		return safeClone(obj);
 };
 
 
@@ -439,6 +457,11 @@ exports.apiSendToGroup = function apiSendToGroup(msg, recipients) {
 	});
 };
 
+exports.apiSendToHub = function apiSendToHub(msg, hubId) {
+	log.debug('global.apiSendToHub(%s)', msg);
+	log.warn('TODO global.apiSendToHub not implemented yet');
+};
+
 
 exports.apiMD5 = function apiMD5(string) {
 	log.debug('global.apiMD5(%s)', string);
@@ -474,4 +497,35 @@ exports.apiAsyncHttpCall = function apiAsyncHttpCall(url, header, postParams, ts
 //TODO: remove calls from GSJS code
 exports.apiResetThreadCPUClock = function apiResetThreadCPUClock(statName) {
 	log.trace('global.apiResetThreadCPUClock(%s)', statName);
+};
+
+/**
+ * Create a new Group object
+ *
+ * @param {string} classTsid : class of the group
+ */
+exports.apiNewGroup = function apiNewGroup(classTsid) {
+	log.debug('global.apiNewGroup(%s)', classTsid);
+	return Group.create(classTsid);
+};
+
+exports.apiAdminCall = function apiAdminCall(methodName, args) {
+	log.debug('global.apiAdminCall(%s, %s)', methodName, args);
+	//TODO: forward to other game servers
+	gsjsBridge.getAdmin()[methodName](args);
+};
+
+exports.apiReloadDataForGlobalPathFinding = function apiReloadDataForGlobalPathFinding() {
+	log.debug('global.apiReloadDataForGlobalPathFinding()');
+	log.warn('TODO global.apiReloadDataForGlobalPathFinding not implemented yet');
+};
+
+/**
+ * Sets value for current request to force pers to load
+ * objects locally instead of through RPC
+ *
+ * @param {bool} val : True for on, false for off
+ */
+exports.apiSetIsCopying = function apiSetIsCopying(val) {
+	RC.getContext().isCopying = val;
 };

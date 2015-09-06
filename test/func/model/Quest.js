@@ -40,7 +40,7 @@ suite('Quest', function () {
 		test('does its job', function (done) {
 			new RC().run(
 				function () {
-					var l = Location.create(Geo.create());
+					var l = Location.create({geo: Geo.create()});
 					var q = Quest.create('beer_guzzle', l);
 					assert.isTrue(q.__isPP);
 					assert.isTrue(utils.isQuest(q));
