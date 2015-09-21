@@ -356,9 +356,7 @@ function postRequestProcStep(step, tsids, logmsg, callback) {
 			}
 		},
 		function (e, res) {
-			// invoke callback asynchronously, to ensure errors thrown there are
-			// not caught by the try...catch clause in the above async block
-			setImmediate(callback, err || e, res);
+			callback(err || e, res);
 		}
 	);
 }
