@@ -421,13 +421,22 @@ function getLoadedRefs(obj, root, ret) {
 function write(obj, logmsg, callback) {
 	log.debug('pers.write: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	metrics.increment('pers.write');
-	pbe.write(orProxy.refify(obj.serialize()), function cb(err, res) {
+	var cb = function cb(err, res) {
 		if (err) {
 			log.error(err, 'could not write: %s', obj.tsid);
 			metrics.increment('pers.write.fail');
 		}
-		if (callback) return callback(err, res);
-	});
+		if (callback) return callback(err, err ? null : res);
+	};
+	var ser;
+	try {
+		ser = obj.serialize();
+	}
+	catch (e) {
+		return cb(e);
+
+	}
+	pbe.write(orProxy.refify(ser), cb);
 }
 
 
