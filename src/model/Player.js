@@ -233,7 +233,10 @@ Player.prototype.onLoginStart = function onLoginStart(session, isRelogin) {
 		this.rqPush(this.onRelogin);
 	}
 	else {
-		this.rqPush(this.onLogin);
+		// not in RQ since GSJS code processing the login_start request relies
+		// on the player being fully initialized, which may not always be the
+		// case (e.g. players in fixtures not having their DCs etc. yet)
+		this.onLogin();
 	}
 	if (auth.getTokenLifespan() > 0) {
 		this.setGsTimer({fname: 'refreshToken', interval: true, internal: true,

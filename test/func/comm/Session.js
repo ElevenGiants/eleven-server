@@ -109,20 +109,15 @@ suite('Session', function () {
 		});
 
 		test('login_start', function (done) {
-			var onLoginCalled = false;
 			var s = new Session('TEST', helpers.getDummySocket());
 			s.gsjsProcessMessage = function (pc, req) {
 				assert.strictEqual(pc.tsid, 'P00000000000001');
 				assert.strictEqual(req.type, 'login_start');
 				assert.strictEqual(pc.session, s);
-				assert.isFalse(onLoginCalled);
+				done();
 			};
 			var rc = new RC('login_start TEST', undefined, s);
 			rc.run(function () {
-				pers.get('P00000000000001').onLogin = function () {
-					onLoginCalled = true;
-					return done();
-				};
 				s.processRequest({
 					msg_id: '1',
 					type: 'login_start',
@@ -159,6 +154,9 @@ suite('Session', function () {
 
 
 	suite('FIFO request processing', function () {
+
+		this.timeout(2000);
+		this.slow(1000);
 
 		test('processes regular requests in FIFO order', function (done) {
 			var s = helpers.getTestSession();
