@@ -273,14 +273,16 @@ Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
 	var cont = this.container;
 	var k, it;
-	if (prev && prev !== cont) {
+	if (prev !== cont) {
 		if (this.onContainerChanged) {
-			this.rqPush(this.onContainerChanged, prev, cont);
+			this.onContainerChanged(prev, cont);
 		}
-		for (k in prev.items) {
-			it = prev.items[k];
-			if (it && it.onContainerItemRemoved) {
-				it.rqPush(it.onContainerItemRemoved, this, cont);
+		if (prev) {
+			for (k in prev.items) {
+				it = prev.items[k];
+				if (it && it.onContainerItemRemoved) {
+					it.rqPush(it.onContainerItemRemoved, this, cont);
+				}
 			}
 		}
 	}
