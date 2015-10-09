@@ -23,10 +23,6 @@
  *
  * Once loaded, game objects are kept in a cache data structure here,
  * to avoid having to reload them from the back-end for each access.
- * Game logic functions do not need to take care of saving modified
- * objects explicitly; this happens automatically at the end of each
- * request processed through {@link RequestContext#run}, with help of
- * the {@link module:data/persProxy|persProxy} wrapper.
  *
  * @module
  */
@@ -38,24 +34,29 @@ module.exports = {
 	exists: exists,
 	get: get,
 	create: create,
+	registerProxy: registerProxy,
 	postRequestProc: postRequestProc,
-	postRequestRollback: postRequestRollback,
 };
 
 
 var assert = require('assert');
 var async = require('async');
+var lodash = require('lodash');
 var gsjsBridge = require('model/gsjsBridge');
 var orProxy = require('data/objrefProxy');
-var persProxy = require('data/persProxy');
 var rpc = require('data/rpc');
 var RC = require('data/RequestContext');
 var metrics = require('metrics');
 var DummyError = require('errors').DummyError;
 
 
-var cache = {};  // live game object cache
-var pbe = null;  // persistence back-end
+// live game object cache
+var cache = {};
+// game object proxy cache
+var proxyCache = {};
+// persistence back-end
+var pbe = null;
+// shutdown in progress flag
 var shuttingDown = false;
 
 
@@ -71,11 +72,14 @@ var shuttingDown = false;
  */
 function init(backEnd, config, callback) {
 	cache = {};
+	proxyCache = {};
 	pbe = backEnd;
 	shuttingDown = false;
 	metrics.setupGaugeInterval('pers.loc.size', function getLocSize() {
-		if (!cache) return 0;
-		return Object.keys(cache).length;
+		return cache ? Object.keys(cache).length : 0;
+	});
+	metrics.setupGaugeInterval('pers.poc.size', function getPocSize() {
+		return proxyCache ? Object.keys(proxyCache).length : 0;
 	});
 	if (pbe && typeof pbe.init === 'function') {
 		var pbeConfig;
@@ -93,16 +97,14 @@ function init(backEnd, config, callback) {
 function shutdown(done) {
 	log.info('persistence layer shutdown initiated');
 	shuttingDown = true;
-	// first, suspend all timers (so they don't interfere with unloading)
+	// first, suspend all timers to avoid interference
 	for (var k in cache) {
 		cache[k].suspendGsTimers();
 	}
-	// then actually unload the objects
+	// then actually write the objects
 	var num = Object.keys(cache).length;
 	async.eachLimit(Object.keys(cache), 5, function iter(k, cb) {
-		var obj = cache[k];
-		delete cache[k];
-		write(obj, 'shutdown', cb);
+		write(cache[k], 'shutdown', cb);
 		if (--num % 50 === 0 && num > 0) {
 			log.info('persistence layer shutdown: %s objects remaining', num);
 		}
@@ -133,8 +135,7 @@ function exists(tsid) {
 /**
  * Loads the game object with the given TSID from persistence.
  * Depending on whether the GS is "responsible" for this object, it
- * will be wrapped either in a {@link module:data/persProxy|persProxy}
- * or {@link module:data/rpcProxy|rpcProxy}.
+ * may be wrapped in an {@link module:data/rpcProxy|rpcProxy}.
  *
  * @param {string} tsid TSID of the object to load
  * @returns {GameObject|null} the requested object, or `null` if no
@@ -162,8 +163,6 @@ function load(tsid) {
 			log.warn('%s already loaded, discarding redundant copy', tsid);
 			return cache[tsid];
 		}
-		// make sure any changes to the object are persisted
-		obj = persProxy.makeProxy(obj);
 		cache[tsid] = obj;
 		// post-construction operations (resume timers/intervals, GSJS onLoad etc.)
 		if (obj.gsOnLoad) {
@@ -177,25 +176,46 @@ function load(tsid) {
 
 
 /**
- * Retrieves the game object with the given TSID, either from the live
- * object cache or request context cache if available there, or from
- * the persistence back-end.
+ * Creates and caches a proxy wrapper for a game object reference,
+ * which can subsequently be returned in {@link module:data/pers~get|
+ * get} in order to only load the referenced object when actually
+ * necessary.
+ *
+ * @param {object} objref a game object reference (see {@link
+ *        module:data/objrefProxy|objrefProxy})
+ */
+function registerProxy(objref) {
+	if (!(objref.tsid in cache || objref.tsid in proxyCache)) {
+		proxyCache[objref.tsid] = orProxy.makeProxy(objref);
+	}
+}
+
+
+/**
+ * Retrieves the game object with the given TSID. If this is the
+ * authoritative GS instance for the object, returns the object itself
+ * (loading it from the persistence back-end if necessary), or an
+ * objref proxy wrapper (depending on the `noProxy` argument).
+ * Otherwise, an RPC proxy is returned.
  *
  * @param {string} tsid TSID of the object to retrieve
- * @param {boolean} [dontWrap] by default, returned objects are wrapped
- *        in a proxy to ensure any access to them is routed through the
- *        persistence layer (to prevent stale objects after rollbacks);
- *        in specific cases where this is not desirable, set this
- *        parameter to `true` to prevent applying the wrapper proxy
+ * @param {boolean} [noProxy] if `true`, the returned object **must**
+ *        be the actual `GameObject` instance; otherwise, an objref
+ *        proxy wrapper may be returned if that object has not been
+ *        loaded yet (irrelevant if this is not the authoritative GS)
  * @returns {GameObject} the requested object
  * @throws {AssertionError} if no object with the given TSID was found
  */
-function get(tsid, dontWrap) {
+function get(tsid, noProxy) {
 	assert(gsjsBridge.isTsid(tsid), 'not a valid TSID: "' + tsid + '"');
 	var ret;
 	// get "live" objects from server memory
 	if (tsid in cache) {
 		ret = cache[tsid];
+	}
+	// or just a proxy if that's enough
+	else if (!noProxy && tsid in proxyCache) {
+		ret = proxyCache[tsid];
 	}
 	else {
 		// otherwise, see if we already have it in the request context cache
@@ -208,20 +228,13 @@ function get(tsid, dontWrap) {
 			ret = load(tsid);
 		}
 	}
-	// wrap in objref proxy unless specifically asked not to
-	if (!dontWrap) {
-		ret = orProxy.wrap(ret);
-	}
 	return ret;
 }
 
 
 /**
- * Creates a new game object of the given type and adds it to
- * persistence. The returned object is wrapped in a ({@link
- * module:data/persProxy|persProxy}) to make sure all future changes
- * to the object are automatically persisted.
- * Also calls the object's GSJS `onCreate` handler, if there is one.
+ * Creates a new game object of the given type. Also calls the object's
+ * GSJS `onCreate` handler, if there is one.
  *
  * @param {function} modelType the desired game object model type (i.e.
  *        a constructor like `Player` or `Geo`)
@@ -234,10 +247,8 @@ function create(modelType, data) {
 	data = data || {};
 	var obj = gsjsBridge.create(data, modelType);
 	assert(!(obj.tsid in cache), 'object already exists: ' + obj.tsid);
-	obj = persProxy.makeProxy(obj);
 	cache[obj.tsid] = obj;
-	obj = orProxy.wrap(obj);
-	RC.getContext().setDirty(obj, true);
+	RC.getContext().setDirty(obj);
 	if (typeof obj.onCreate === 'function') {
 		obj.onCreate();
 	}
@@ -247,36 +258,50 @@ function create(modelType, data) {
 
 
 /**
- * Called by {@link RequestContext#run} after processing a request has
- * finished, writes all resulting game object changes to persistence.
+ * Called by {@link RequestContext#run} after processing a request has finished;
+ * writes object additions and deletions to persistence, and persists and
+ * unloads game objects and connected "child" objects that this GS worker is
+ * not managing anymore after the request (e.g. in case of player movement to
+ * another server).
  *
- * @param {object} dlist hash containing modified game objects
- *        (TSIDs as keys, objects as values)
- * @param {object} alist hash containing newly added game objects
- * @param {object} ulist hash containing game objects to release from
- *        the live object cache
+ * @param {object} dlist hash with added or deleted game objects to persist
+ * @param {object} ulist hash containing game objects to persist and release
+ *        from the live object cache
  * @param {string} [logmsg] optional information for log messages
  * @param {function} [callback] function to be called after persistence
  *        operations have finished
  */
-function postRequestProc(dlist, alist, ulist, logmsg, callback) {
+function postRequestProc(dlist, ulist, logmsg, callback) {
 	assert(!shuttingDown, 'persistence layer shutdown initiated');
-	// process persistence changes in a safe order (add new, then modify
-	// existing, then remove deleted objects); this may leave behind orphaned
-	// data, but it should at least avoid invalid object references
+	var dtsids = Object.keys(dlist);
+	var utsids = [];
+	for (var k in ulist) {
+		if (k in cache) {
+			utsids = utsids.concat(getLoadedRefs(cache[k]));
+		}
+	}
+	if (!dtsids.length && !utsids.length) {
+		return callback ? callback(null) : undefined;
+	}
+	utsids = lodash.uniq(utsids);
+	log.trace('objects to release after %s request: %s', logmsg, utsids);
+	// process persistence changes in a safe order (add/modify first, then
+	// delete); this may leave behind orphaned data, but should at least avoid
+	// invalid object references
 	async.series([
-		postRequestProcStep.bind(undefined, 'add', alist, logmsg),
-		postRequestProcStep.bind(undefined, 'upd', dlist, logmsg),
-		postRequestProcStep.bind(undefined, 'del', dlist, logmsg),
+		postRequestProcStep.bind(undefined, 'write', dtsids, logmsg),
+		postRequestProcStep.bind(undefined, 'write', utsids, logmsg),
+		postRequestProcStep.bind(undefined, 'delete', utsids, logmsg),
+		postRequestProcStep.bind(undefined, 'delete', dtsids, logmsg),
 	], function cb(err) {
 		// unload objects scheduled to be released from cache (take care not
 		// to load objects here if they are not loaded in the first place)
-		for (var k in ulist) {
+		for (var i = 0; i < utsids.length; i++) {
 			try {
-				unload(ulist[k]);
+				unload(utsids[i]);
 			}
 			catch (e) {
-				log.error(e, 'failed to unload %s', k);
+				log.error(e, 'failed to unload %s', utsids[i]);
 			}
 		}
 		if (callback) callback(err);
@@ -285,40 +310,39 @@ function postRequestProc(dlist, alist, ulist, logmsg, callback) {
 
 
 /**
- * Helper for `postRequestProc` to process individual operations (add/
- * update/delete objects) separately. This will always try to execute
+ * Helper for `postRequestProc` to process individual operations
+ * write/delete objects) separately. This will always try to execute
  * the operation on all given objects, even if some of those operations
  * fail. In case of errors, only the **first** encountered error is
  * passed to the callback.
  *
- * @param {string} step persistence operation (must be `add`, `upd` or
- *         `del`)
- * @param {object} objects hash containing game objects to process
- *        (TSIDs as keys, objects as values)
+ * @param {string} step persistence operation (must be `write` or
+ *         `delete`)
+ * @param {array} tsids list of tsids of game objects to process
  * @param {string} logmsg information for log messages
  * @param {function} callback function to be called after persistence
  *        operations have finished
  * @private
  */
-function postRequestProcStep(step, objects, logmsg, callback) {
+function postRequestProcStep(step, tsids, logmsg, callback) {
 	var err = null;
-	async.each(Object.keys(objects),
-		function iter(k, cb) {
-			var o = objects[k];
+	async.each(tsids,
+		function iter(tsid, cb) {
+			// skip if not a "live" object in the first place
+			if (!(tsid in cache)) return cb();
+			var o = cache[tsid];
 			try {
-				if (step === 'del') {
-					// skip dirty objects that are not actually deleted
-					if (!o.deleted) return cb(null);
-					// stop timers/intervals for deleted objects
-					if (o.suspendGsTimers) o.suspendGsTimers();
+				if (step === 'delete') {
+					// skip objects that are not actually deleted
+					if (!o.deleted) return cb();
 					return del(o, logmsg, function (e) {
 						if (e && !err) err = e;
 						return cb();
 					});
 				}
 				else {
-					// skip dirty objects that will be deleted later anyway
-					if (o.deleted) return cb(null);
+					// skip objects that will be deleted later anyway
+					if (o.deleted) return cb();
 					return write(o, logmsg, function (e) {
 						if (e && !err) err = e;
 						return cb();
@@ -339,29 +363,49 @@ function postRequestProcStep(step, objects, logmsg, callback) {
 
 
 /**
- * Called by {@link RequestContext#run} when an error occured while
- * processing the request. Discards all modifications caused by the
- * request by dropping all tainted objects from the live object cache.
+ * Recursively collects references to dependent objects (items/bags, data
+ * containers, quests) within a "parent" game object (location, group, player).
  *
- * @param {object} dlist hash containing modified game objects
- *        (TSIDs as keys, objects as values)
- * @param {object} alist hash containing added game objects
- * @param {string} [logmsg] optional information for log messages
- * @param {function} [callback] function to be called after rollback
- *        has finished
+ * @param {GameObject} obj object to retrieve referenced "child" objects for
+ * @param {GameObject} [root] for internal use
+ * @param {array} [ret] for internal use
+ * @returns {array} the list of game objects referenced in `obj` (i.e. a
+ *          "self-contained object graph" that should be safe to release
+ *          from the live object cache when the root object is unloaded)
  */
-function postRequestRollback(dlist, alist, logmsg, callback) {
-	assert(!shuttingDown, 'persistence layer shutdown initiated');
-	var tag = 'rollback ' + logmsg;
-	log.info(tag);
-	var k;
-	for (k in dlist) {
-		unload(dlist[k], tag);
+function getLoadedRefs(obj, root, ret) {
+	root = root || obj;
+	ret = ret || [obj.tsid];
+	for (var k in obj) {
+		// optimization: don't follow well-known "parent" references
+		if (k === 'owner' || k === 'container' || k === 'location') continue;
+		var v = obj[k];
+		// skip non-object properties
+		if (typeof v !== 'object' || v === null) continue;
+		// skip references to game objects that are not currently loaded
+		if (v.__isORP) continue;
+		// skip if this is not one of the game object types we need to pick up
+		var isGO = v.tsid && typeof v.tsid === 'string' && v.tsid.length;
+		var type = isGO ? v.tsid[0] : null;
+		if (isGO && type !== 'B' && type !== 'I' && type !== 'D' && type !== 'Q') {
+			continue;
+		}
+		// otherwise, pick up (if it's a game object)
+		if (isGO) {
+			if (ret.indexOf(v.tsid) !== -1) {
+				log.warn('unexpected objref cycle detected: %s in %s',
+					v.tsid, root.tsid);
+				continue;
+			}
+			ret.push(v.tsid);
+		}
+		// and follow the reference
+		getLoadedRefs(v, root, ret);
 	}
-	for (k in alist) {
-		unload(alist[k], tag);
+	if (obj === root) {
+		log.trace('loaded referenced objects for %s: %s', root.tsid, ret);
 	}
-	if (callback) callback();
+	return ret;
 }
 
 
@@ -377,13 +421,22 @@ function postRequestRollback(dlist, alist, logmsg, callback) {
 function write(obj, logmsg, callback) {
 	log.debug('pers.write: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	metrics.increment('pers.write');
-	pbe.write(orProxy.refify(obj.serialize()), function cb(err, res) {
+	var cb = function cb(err, res) {
 		if (err) {
 			log.error(err, 'could not write: %s', obj.tsid);
 			metrics.increment('pers.write.fail');
 		}
-		if (callback) return callback(err, res);
-	});
+		if (callback) return callback(err, err ? null : res);
+	};
+	var ser;
+	try {
+		ser = obj.serialize();
+	}
+	catch (e) {
+		return cb(e);
+
+	}
+	pbe.write(orProxy.refify(ser), cb);
 }
 
 
@@ -400,8 +453,13 @@ function write(obj, logmsg, callback) {
 function del(obj, logmsg, callback) {
 	log.debug('pers.del: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	metrics.increment('pers.del');
-	obj.suspendGsTimers();
-	delete cache[obj.tsid];
+	if (obj.tsid in cache) {
+		obj.suspendGsTimers();
+		delete cache[obj.tsid];
+	}
+	if (obj.tsid in proxyCache) {
+		delete proxyCache[obj.tsid];
+	}
 	pbe.del(obj, function db(err, res) {
 		if (err) {
 			log.error(err, 'could not delete: %s', obj.tsid);
@@ -418,15 +476,18 @@ function del(obj, logmsg, callback) {
  * pending timers), i.e. it cannot guarantee that memory is eventually
  * freed through garbage collection.
  *
- * @param {GameObject} obj game object to unload
+ * @param {tsid} tsid tsid of the game object to unload
  * @param {string} logmsg short additional info for log messages
  * @private
  */
-function unload(obj, logmsg) {
-	log.debug('pers.unload: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
-	if (obj.tsid in cache) {
+function unload(tsid, logmsg) {
+	log.debug('pers.unload: %s%s', tsid, logmsg ? ' (' + logmsg + ')' : '');
+	if (tsid in cache) {
 		// suspend timers/intervals
-		obj.suspendGsTimers();
-		delete cache[obj.tsid];
+		cache[tsid].suspendGsTimers();
+		delete cache[tsid];
+	}
+	if (tsid in proxyCache) {
+		delete proxyCache[tsid];
 	}
 }

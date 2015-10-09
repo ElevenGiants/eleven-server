@@ -1,17 +1,16 @@
 'use strict';
 
+var async = require('async');
 var rewire = require('rewire');
 var auth = require('comm/auth');
 var abePassthrough = require('comm/abe/passthrough');
 var Property = require('model/Property');
 var Player = rewire('model/Player');
-var Quest = require('model/Quest');
 var Location = require('model/Location');
-var DataContainer = require('model/DataContainer');
 var Geo = require('model/Geo');
 var Item = require('model/Item');
 var RC = rewire('data/RequestContext');
-var utils = require('utils');
+var RQ = require('data/RequestQueue');
 var rpcMock = require('../../mock/rpc');
 var persMock = require('../../mock/pers');
 
@@ -21,11 +20,13 @@ suite('Player', function () {
 	setup(function () {
 		RC.__set__('pers', persMock);
 		persMock.reset();
+		RQ.init();
 	});
 
 	teardown(function () {
 		RC.__set__('pers', rewire('data/pers'));
 		persMock.reset();
+		RQ.init();
 	});
 
 
@@ -157,7 +158,7 @@ suite('Player', function () {
 				'player is not added to new loc yet');
 		});
 
-		test('calls onExit callbacks', function () {
+		test('calls onExit callbacks', function (done) {
 			var itemOnPlayerExitCalled = false;
 			var locOnPlayerExitCalled = false;
 			var i = new Item({tsid: 'I'});
@@ -167,15 +168,15 @@ suite('Player', function () {
 			i.onPlayerExit = function (player) {
 				itemOnPlayerExitCalled = true;
 				assert.strictEqual(player, p);
+				if (locOnPlayerExitCalled) return done();
 			};
 			lold.onPlayerExit = function (player, newLoc) {
 				locOnPlayerExitCalled = true;
 				assert.strictEqual(player, p);
 				assert.strictEqual(newLoc, lnew);
+				if (itemOnPlayerExitCalled) return done();
 			};
 			p.startMove(lnew, 0, 0);
-			assert.isTrue(itemOnPlayerExitCalled);
-			assert.isTrue(locOnPlayerExitCalled);
 		});
 
 		test('does not change current location for logout call', function () {
@@ -221,6 +222,11 @@ suite('Player', function () {
 			p.onLogout = function () {
 				logoutCalled = true;
 			};
+			// make sure the player is eventually unloaded (separate request)
+			p.unload = function () {
+				assert.isTrue(logoutCalled, 'API event onLogout called');
+				done();
+			};
 			var l = new Location({tsid: 'L', players: [p]}, new Geo());
 			p.location = l;
 			rpcMock.reset(true);  // simulate logout/connection error
@@ -232,10 +238,7 @@ suite('Player', function () {
 					if (err) return done(err);
 					assert.isFalse('P1' in l.players,
 						'PC removed from location');
-					assert.isTrue(logoutCalled, 'API event onLogout called');
 					assert.isNull(p.session);
-					assert.deepEqual(persMock.getUnloadList(), {P1: p});
-					done();
 				}
 			);
 		});
@@ -260,7 +263,6 @@ suite('Player', function () {
 					assert.isFalse(logoutCalled,
 						'API event onLogout is not called on loc change');
 					assert.isNull(p.session);
-					assert.deepEqual(persMock.getUnloadList(), {P1: p});
 					done();
 				}
 			);
@@ -339,7 +341,6 @@ suite('Player', function () {
 			rc.run(function () {
 				var res = p.gsMoveCheck('LLOCAL');
 				assert.isUndefined(res);
-				assert.isNull(rc.postPersCallback);
 				done();
 			});
 		});
@@ -356,102 +357,42 @@ suite('Player', function () {
 			});
 		});
 
-		test('sends/schedules server messages required for GS reconnect',
-			function (done) {
+		test('sends/schedules server messages required for GS reconnect and ' +
+			'unloads player', function (done) {
 			rpcMock.reset(false);
 			var p = new Player({tsid: 'P1', onGSLogout: function dummy() {}});
+			var unloaded = false;
+			p.unload = function () {
+				unloaded = true;
+			};
 			var msgs = [];
 			p.session = {send: function send(msg) {
-				msgs.push(msg);
-			}};
-			var rc = new RC();
-			rc.run(
-				function () {
-					p.gsMoveCheck('LREMOTE');
-				},
-				function callback(err, res) {
-					assert.deepEqual(msgs, [
-						{
+				switch (msgs.length) {
+					case 0:
+						assert.deepEqual(msg, {
 							type: 'server_message',
 							action: 'PREPARE_TO_RECONNECT',
 							hostport: '12.34.56.78:1445',
 							token: 'P1',
-						},
-						{
+						});
+						break;
+					case 1:
+						assert.isTrue(unloaded);
+						assert.deepEqual(msg, {
 							type: 'server_message',
 							action: 'CLOSE',
 							msg: 'CONNECT_TO_ANOTHER_SERVER',
-						},
-					]);
-					done(err);
+						});
+						break;
+					default:
+						throw new Error('unexpected message: ' + JSON.stringify(msg));
 				}
-			);
-		});
-	});
-
-
-	suite('getConnectedObjects', function () {
-
-		test('does its job', function () {
-			var p = new Player({tsid: 'P1',
-				buffs: new DataContainer({label: 'Buffs'}),
-				achievements: new DataContainer({label: 'Achievements'}),
-				jobs: {
-					todo: new DataContainer({label: 'To Do'}),
-					done: new DataContainer({label: 'Done'}),
-				},
-				friends: {
-					group1: new DataContainer({label: 'Buddies'}),
-					reverse: new DataContainer({label: 'Reverse Contacts'}),
-				},
-				quests: {
-					todo: new DataContainer({label: 'To Do', quests: {
-						lightgreenthumb_1: new Quest(),
-						soilappreciation_1: new Quest(),
-					}}),
-					done: new DataContainer({label: 'Done'}),
-					// fail_repeat and misc missing on purpose
-				},
+				msgs.push(msg);
+				if (msgs.length > 1) return done();
+			}};
+			new RC().run(function () {
+				p.gsMoveCheck('LREMOTE');
 			});
-			var objects = p.getConnectedObjects();
-			var keys = Object.keys(objects);
-			assert.strictEqual(keys.filter(utils.isPlayer).length, 1);
-			assert.strictEqual(keys.filter(utils.isDC).length, 8);
-			assert.strictEqual(keys.filter(utils.isQuest).length, 2);
-			assert.strictEqual(keys.length, 11,
-				'does not contain any other objects');
-		});
-	});
-
-
-	suite('unload', function () {
-
-		test('does its job', function (done) {
-			var p = new Player({tsid: 'P1',
-				buffs: new DataContainer({tsid: 'DC1'}),
-				jobs: {
-					todo: new DataContainer({tsid: 'DC2'}),
-				},
-				quests: {
-					todo: new DataContainer({tsid: 'DC3', quests: {
-						lightgreenthumb_1: new Quest({tsid: 'Q1'}),
-					}}),
-				},
-			});
-			var rc = new RC();
-			rc.run(
-				function () {
-					p.unload();
-				},
-				function callback(err, res) {
-					if (err) return done(err);
-					assert.deepEqual(Object.keys(persMock.getDirtyList()),
-						[], 'unloaded objects are *not* implicitly flagged dirty');
-					assert.sameMembers(Object.keys(persMock.getUnloadList()),
-						['P1', 'DC1', 'DC2', 'DC3', 'Q1']);
-					done();
-				}
-			);
 		});
 	});
 
@@ -712,7 +653,7 @@ suite('Player', function () {
 				onPlayerCollision: function onPlayerCollision() {
 					i2collided = true;
 					// simulate start of location move
-					p.location = new Location({tsid: 'L'}, new Geo());
+					p.location = new Location({tsid: 'L2'}, new Geo());
 					p.active = false;
 				},
 			});
@@ -726,57 +667,61 @@ suite('Player', function () {
 
 	suite('handleCollision', function () {
 
-		test('works as expected when entering a hitbox', function () {
-			var hitBoxCalled = false;
-			var onPlayerCollisionCalled = false;
+		test('works as expected when entering a hitbox', function (done) {
 			var p = getCDTestPlayer();
 			p['!colliders'] = {};
-			p.location.hitBox = function (hitBoxName, hit) {
-				hitBoxCalled = true;
-			};
-
 			var i = new Item({tsid: 'I', x: 0, y: 0, hitBox: {w: 100, h: 100}});
 			i['!colliders'] = {};
-			p.handleCollision(i, i.hitBox);
-			assert.isTrue(hitBoxCalled, 'called hitBox');
-			assert.property(p['!colliders'], 'undefined', 'kept track of hitBox');
-
-			i.onPlayerCollision = function (hitBoxName) {
-				onPlayerCollisionCalled = true;
-			};
-			p.handleCollision(i, i.hitBox, 'foo');
-			assert.isTrue(onPlayerCollisionCalled, 'called onPlayerCollision');
-
-			onPlayerCollisionCalled = false;
-			p.handleCollision(i, i.hitBox);
-			assert.isTrue(onPlayerCollisionCalled, 'called onPlayerCollision');
-			assert.property(i['!colliders'], p.tsid, 'kept track of player in hitBox');
+			async.series([
+				function callsHitBox(cb) {
+					p.location.hitBox = function (hitBoxName, hit) {
+						assert.property(p['!colliders'], 'undefined',
+							'kept track of hitBox');
+						return cb();
+					};
+					p.handleCollision(i, i.hitBox);
+				},
+				function callsOnPlayerCollision(cb) {
+					i.onPlayerCollision = function (hitBoxName) {
+						return cb();
+					};
+					p.handleCollision(i, i.hitBox, 'foo');
+				},
+				function callsOnPlayerCollisionDefaultHitbox(cb) {
+					i.onPlayerCollision = function (hitBoxName) {
+						assert.property(i['!colliders'], p.tsid,
+							'kept track of player in hitBox');
+						return cb();
+					};
+					p.handleCollision(i, i.hitBox);
+				},
+			], done);
 		});
 
-		test('works as expected when leaving a hitbox', function () {
-			var onLeavingHitBoxCalled = false;
-			var onPlayerLeavingCollisionAreaCalled = false;
+		test('works as expected when leaving a hitbox', function (done) {
 			var p = getCDTestPlayer();
 			p['!colliders'] = {foo: 1};
-			p.location.onLeavingHitBox = function (player, hitBoxName) {
-				onLeavingHitBoxCalled = true;
-			};
-
 			var i = new Item({tsid: 'I', x: 1000, y: 0, hitBox: {w: 100, h: 100}});
-
-			p.handleCollision(i, i.hitBox, 'foo');
-			assert.isTrue(onLeavingHitBoxCalled, 'called onLeavingHitBox');
-			assert.notProperty(p['!colliders'], 'foo', 'removed hitBox from !colliders');
-
-			i.onPlayerCollision = function () {};  // required to enable CD in the first place
-			i.onPlayerLeavingCollisionArea = function (i) {
-				onPlayerLeavingCollisionAreaCalled = true;
-			};
-
-			i['!colliders'] = {P: 1};
-			p.handleCollision(i, i.hitBox);
-			assert.isTrue(onPlayerLeavingCollisionAreaCalled, 'called collision handler');
-			assert.notProperty(i['!colliders'], p.tsid, 'removed hitBox from !colliders');
+			async.series([
+				function callsOnLeavingHitBox(cb) {
+					p.location.onLeavingHitBox = function (player, hitBoxName) {
+						assert.notProperty(p['!colliders'], 'foo',
+							'removed hitBox from !colliders');
+						return cb();
+					};
+					p.handleCollision(i, i.hitBox, 'foo');
+				},
+				function callsOnPlayerLeavingCollisionArea(cb) {
+					i.onPlayerCollision = function () {};  // needed to enable CD
+					i.onPlayerLeavingCollisionArea = function (i) {
+						assert.notProperty(i['!colliders'], p.tsid,
+							'removed hitBox from !colliders');
+						return cb();
+					};
+					i['!colliders'] = {P: 1};
+					p.handleCollision(i, i.hitBox);
+				},
+			], done);
 		});
 	});
 });

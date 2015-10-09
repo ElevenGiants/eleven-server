@@ -42,7 +42,6 @@ suite('Quest', function () {
 				function () {
 					var l = Location.create(Geo.create());
 					var q = Quest.create('beer_guzzle', l);
-					assert.isTrue(q.__isPP);
 					assert.isTrue(utils.isQuest(q));
 					assert.strictEqual(q.class_tsid, 'beer_guzzle');
 					assert.strictEqual(q.owner, l);

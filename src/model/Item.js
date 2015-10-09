@@ -7,6 +7,9 @@ var assert = require('assert');
 var GameObject = require('model/GameObject');
 var OrderedHash = require('model/OrderedHash');
 var pers = require('data/pers');
+var RC = require('data/RequestContext');
+var rpc = require('data/rpc');
+var RQ = require('data/RequestQueue');
 var util = require('util');
 var utils = require('utils');
 var ItemMovement = require('model/ItemMovement');
@@ -105,8 +108,7 @@ Item.prototype.patchFuncStatsUpdate = function patchFuncStatsUpdate(fname) {
  *
  * @param {string} classTsid specific class of the item
  * @param {number} [count] item stack size (1 by default)
- * @returns {object} an `Item` instance wrapped in a {@link
- * module:data/persProxy|persistence proxy}
+ * @returns {object} an `Item` object
  */
 Item.create = function create(classTsid, count) {
 	assert(classTsid.substr(0, 4) !== 'bag_', util.format(
@@ -120,12 +122,29 @@ Item.create = function create(classTsid, count) {
 
 
 /**
+ * Retrieves the request queue for this item (typically, the queue of the
+ * location the item is currently in).
+ *
+ * @returns {RequestQueue} the request queue for this item
+ */
+Item.prototype.getRQ = function getRQ() {
+	if (this.container && rpc.isLocal(this.container)) {
+		return this.container.getRQ();
+	}
+	else {
+		return RQ.getGlobal();
+	}
+};
+
+
+/**
  * Schedules this item for deletion after the current request.
  */
 Item.prototype.del = function del() {
 	log.trace('del %s', this);
 	Item.super_.prototype.del.call(this);
 	if (this.container) {
+		RC.setDirty(this.container);
 		delete this.container.items[this.tsid];
 		delete this.container.hiddenItems[this.tsid];
 		delete this.container;
@@ -193,6 +212,7 @@ Item.prototype.setXY = function setXY(x, y) {
  * @param {boolean} [hidden] item will be hidden in the new container
  *        (`false` by default)
  */
+/*jshint -W071 */
 Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 	var tcont = cont.tcont ? cont.tcont : cont.tsid;
 	assert(utils.isPlayer(tcont) || utils.isLoc(tcont), util.format(
@@ -206,13 +226,16 @@ Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 		}
 	}
 	// change entries in old and new container (unless they are one and the same)
+	RC.setDirty(this);
 	var prev = this.container;
 	this.container = cont;
 	if (!prev || prev.tsid !== cont.tsid) {
 		if (prev) {
+			RC.setDirty(prev);
 			delete prev.items[this.tsid];
 			delete prev.hiddenItems[this.tsid];
 		}
+		RC.setDirty(cont);
 		cont[hidden ? 'hiddenItems' : 'items'][this.tsid] = this;
 	}
 	// queue removal change if top container changed
@@ -235,6 +258,7 @@ Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 	}
 	this.sendContChangeEvents(prev);
 };
+/*jshint +W071 */
 
 
 /**
@@ -250,12 +274,12 @@ Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
 	var k, it;
 	if (prev && prev !== cont) {
 		if (this.onContainerChanged) {
-			this.onContainerChanged(prev, cont);
+			this.rqPush(this.onContainerChanged, prev, cont);
 		}
 		for (k in prev.items) {
 			it = prev.items[k];
 			if (it && it.onContainerItemRemoved) {
-				it.onContainerItemRemoved(this, cont);
+				it.rqPush(it.onContainerItemRemoved, this, cont);
 			}
 		}
 	}
@@ -263,7 +287,7 @@ Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
 		for (k in cont.items) {
 			it = cont.items[k];
 			if (it && it.onContainerItemAdded) {
-				it.onContainerItemAdded(this, prev);
+				it.rqPush(it.onContainerItemAdded, this, prev);
 			}
 		}
 	}
@@ -373,6 +397,7 @@ Item.prototype.split = function split(n) {
 		return;
 	}
 	if (n >= this.count) return;
+	RC.setDirty(this);
 	this.count -= n;
 	var newItem = Item.create(this.class_tsid, n);
 	if (this.is_soulbound_item) {
@@ -408,6 +433,8 @@ Item.prototype.merge = function merge(that, n) {
 	if (this.class_tsid !== that.class_tsid) return 0;
 	if (this.soulbound_to !== that.soulbound_to) return 0;
 	var moved = Math.min(n, this.stackmax - this.count);
+	RC.setDirty(this);
+	RC.setDirty(that);
 	that.count -= moved;
 	this.count += moved;
 	if (that.count <= 0) that.del();
@@ -427,6 +454,7 @@ Item.prototype.merge = function merge(that, n) {
 Item.prototype.consume = function consume(n) {
 	assert(utils.isInt(n) && n >= 0, 'invalid consumption amount: ' + n);
 	n = Math.min(n, this.count);
+	RC.setDirty(this);
 	this.count -= n;
 	if (this.count <= 0) this.del();
 	else this.queueChanges();

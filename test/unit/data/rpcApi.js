@@ -5,6 +5,7 @@ var auth = require('comm/auth');
 var abePassthrough = require('comm/abe/passthrough');
 var rpc = rewire('data/rpc');
 var rpcApi = rewire('data/rpcApi');
+var RQ = require('data/RequestQueue');
 var pers = require('data/pers');
 var persMock = require('../../mock/pers');
 var Player = require('model/Player');
@@ -21,12 +22,14 @@ suite('rpcApi', function () {
 		rpc.__set__('pers', persMock);
 		rpcApi.__set__('pers', persMock);
 		persMock.reset();
+		RQ.init();
 	});
 
 	teardown(function () {
 		persMock.reset();
 		rpcApi.__set__('pers', pers);
 		rpc.__set__('pers', pers);
+		RQ.init();
 	});
 
 

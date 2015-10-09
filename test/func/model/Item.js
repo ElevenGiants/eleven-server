@@ -1,8 +1,8 @@
 'use strict';
 
 var gsjsBridge = require('model/gsjsBridge');
-var orProxy = require('data/objrefProxy');
 var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 var Item = require('model/Item');
 var Bag = require('model/Bag');
 var Player = require('model/Player');
@@ -19,11 +19,13 @@ suite('Item', function () {
 	setup(function () {
 		gsjsBridge.init(true);
 		pers.init(pbeMock);
+		RQ.init();
 	});
 
 	teardown(function () {
 		gsjsBridge.reset();
 		pers.init();  // disable mock back-end
+		RQ.init();
 	});
 
 
@@ -33,7 +35,6 @@ suite('Item', function () {
 			new RC().run(
 				function () {
 					var it = Item.create('pi', 7);
-					assert.isTrue(it.__isPP);
 					assert.isTrue(utils.isItem(it));
 					assert.strictEqual(it.class_tsid, 'pi');
 					assert.strictEqual(it.constructor.name, 'pi');
@@ -60,6 +61,37 @@ suite('Item', function () {
 			assert.throw(function () {
 				Item.create('bag_bigger_gray');
 			}, assert.AssertionError);
+		});
+	});
+
+
+	suite('delete', function () {
+
+		this.slow(400);
+
+		test('forces container to be persisted after the request', function (done) {
+			var rc = new RC();
+			var l;
+			rc.run(
+				function () {
+					l = Location.create(Geo.create());
+					rc.cache[l.tsid] = l;
+					var it = Item.create('meat', 7);
+					it.setContainer(l, 100, 100);
+					assert.deepEqual(Object.keys(l.items), [it.tsid]);
+					it.del();
+				},
+				function cb(err) {
+					if (err) return done(err);
+					var db = pbeMock.getDB();
+					assert.strictEqual(pbeMock.getCounts().write, 2);  // geo and loc
+					assert.strictEqual(pbeMock.getCounts().del, 1);
+					assert.sameMembers(Object.keys(db), [l.tsid, l.geometry.tsid]);
+					assert.deepEqual(Object.keys(l.items), []);
+					done();
+				},
+				true
+			);
 		});
 	});
 
@@ -367,14 +399,14 @@ suite('Item', function () {
 				var b = new Bag({tcont: 'PX'});
 				rc.cache[p.tsid] = p;
 				rc.cache[b.tsid] = b;
-				it.setContainer(orProxy.wrap(b), 1);  // not interested in the changes for this
+				it.setContainer(b, 1);  // not interested in the changes for this
 				// aggregator for queued changes
 				var changes = [];
 				it.queueChanges = function queueChanges(removed) {
 					changes.push(removed);
 				};
 				// actual test starts here
-				it.setContainer(orProxy.wrap(b), 2);  // b wrapped in a new proxy
+				it.setContainer(b, 2);
 				assert.deepEqual(changes, [undefined]);
 			}, done);
 		});

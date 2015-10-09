@@ -169,7 +169,7 @@ suite('rpc', function () {
 					done();
 				});
 				var msg = JSON.stringify({method: 'obj',
-					params: ['foo', 'LXYZ', 'func', []], id: 123});
+					params: ['foo', 'LXYZ', null, 'func', []], id: 123});
 				var length = Buffer.byteLength(msg);
 				var buf = new Buffer(4 + length);
 				buf.writeUInt32BE(length, 0);
@@ -187,7 +187,7 @@ suite('rpc', function () {
 				},
 			}));
 			rcMock.run(function () {
-				rpc.__get__('handleRequest')('caller', 'LX', 'func', null,
+				rpc.__get__('objectRequest')('caller', 'LX', null, 'func', null,
 					function cb(err, res) {
 					if (err) return done(err);
 					assert.strictEqual(res, 'foo');

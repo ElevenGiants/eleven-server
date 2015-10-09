@@ -53,7 +53,7 @@ function newSession(socket) {
 
 
 function onSessionClose(session) {
-	log.info('unlink %s', session);
+	log.info({session: session}, 'session unlink');
 	delete sessions[session.id];
 }
 

@@ -4,6 +4,7 @@ var Item = require('model/Item');
 var Geo = require('model/Geo');
 var Location = require('model/Location');
 var NpcMovementError = require('errors').NpcMovementError;
+var RQ = require('data/RequestQueue');
 
 
 var STATUS = {
@@ -75,6 +76,15 @@ suite('ItemMovement', function () {
 
 	this.timeout(10000);
 	this.slow(10000);
+
+	setup(function () {
+		RQ.init();
+	});
+
+	teardown(function () {
+		RQ.init();
+	});
+
 
 	suite('platform walking movement', function () {
 

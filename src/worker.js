@@ -19,6 +19,7 @@ var config = require('config');
 var gsjsBridge = require('model/gsjsBridge');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
+var RQ = require('data/RequestQueue');
 var amfServer = require('comm/amfServer');
 var metrics = require('metrics');
 var replServer = require('comm/replServer');
@@ -38,6 +39,7 @@ var shuttingDown = false;
 function run() {
 	log.info('starting cluster worker %s', config.getGsid());
 	segfaultHandler.registerHandler();
+	RQ.init();
 	// initialize and wait for modules required for GS operation
 	async.series([
 			persInit,
@@ -159,6 +161,8 @@ function shutdown() {
 	async.series([
 		// first, close and disconnect all client sessions
 		amfServer.close,
+		// then close all request queues
+		RQ.shutdown,
 		// then shut down RPC and persistence layer
 		rpc.shutdown,
 		pers.shutdown,

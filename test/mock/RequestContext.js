@@ -7,6 +7,8 @@ module.exports = {
 	getDirtyList: getDirtyList,
 	setDirty: setDirty,
 	run: run,
+	setUnload: setUnload,
+	getUnloadList: getUnloadList,
 };
 
 
@@ -15,11 +17,13 @@ var wait = require('wait.for');
 
 var cache = {};
 var dirty = {};
+var ulist = {};
 
 
 function reset() {
 	cache = {};
 	dirty = {};
+	ulist = {};
 }
 
 
@@ -52,4 +56,14 @@ function run(func, logtag, owner, callback) {
 			else throw e;
 		}
 	});
+}
+
+
+function setUnload(obj) {
+	ulist[obj.tsid] = obj;
+}
+
+
+function getUnloadList() {
+	return ulist;
 }

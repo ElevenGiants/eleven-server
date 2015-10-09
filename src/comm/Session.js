@@ -12,7 +12,7 @@ var events = require('events');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
 var util = require('util');
-var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 var gsjsBridge = require('model/gsjsBridge');
 var metrics = require('metrics');
 
@@ -70,7 +70,8 @@ function Session(id, socket) {
 	this.dom.on('error', this.handleError.bind(this));
 	this.setupSocketEventHandlers();
 	this.gsjsProcessMessage = gsjsBridge.getMain().processMessage;
-	log.info({session: this}, 'new session created');
+	log.info({session: this, addr: socket.remoteAddress, port: socket.remotePort},
+		'new session created');
 }
 
 
@@ -96,14 +97,7 @@ Session.prototype.toString = function toString() {
  * @private
  */
 Session.logSerialize = function logSerialize(session) {
-	var ret = {id: session.id};
-	if (session.socket && session.socket.remoteAddress) {
-		ret.addr = session.socket.remoteAddress + ':' + session.socket.remotePort;
-	}
-	if (session.pc) {
-		ret.pc = session.pc.tsid;
-	}
-	return ret;
+	return session.id;
 };
 
 
@@ -142,13 +136,14 @@ Session.prototype.close = function close(done) {
 	log.info({session: this}, 'session close');
 	if (this.pc && this.pc.isConnected()) {
 		var self = this;
-		new RC('sessionClose', this.pc, this).run(
+		this.pc.getRQ().push('sessionClose',
 			this.pc.onDisconnect.bind(this.pc),
-			function cb(err) {
+			function cb(err, res) {
 				if (err) log.error(err, 'error while closing session');
 				if (self.socket) self.socket.destroy();
 				if (done) done();
-			}, true
+			},
+			{waitPers: true, obj: this.pc}
 		);
 	}
 };
@@ -220,8 +215,7 @@ Session.prototype.checkForMessages = function checkForMessages() {
 			break;
 		}
 		// still here? then schedule message handling
-		var timer = metrics.createTimer('req.wait', 0.1);
-		setImmediate(this.handleMessage.bind(this), msg, timer);
+		setImmediate(this.enqueueMessage.bind(this), msg);
 	}
 	if (bufstr.length === 0) {
 		delete this.buffer;  // buffer fully processed
@@ -234,34 +228,34 @@ Session.prototype.checkForMessages = function checkForMessages() {
 };
 
 
-Session.prototype.handleMessage = function handleMessage(msg, waitTimer) {
-	if (waitTimer) waitTimer.stop();
-	log.trace({data: msg}, 'got %s request', msg.type);
+Session.prototype.enqueueMessage = function enqueueMessage(msg) {
+	log.trace({data: msg}, 'queueing %s request', msg.type);
 	metrics.increment('net.amf.rx', 0.01);
-	var self = this;
-	var rc = new RC(msg.type, this.pc, this);
-	this.dom.run(function domWrapper() {
-		rc.run(
-			function clientReq() {
-				var procTimer = metrics.createTimer('req.proc.' + msg.type,
-					(msg.type === 'move_xy') ? 0.1 : undefined);
-				self.processRequest.call(self, msg);
-				if (procTimer) procTimer.stop();
-			},
-			function callback(err) {
-				if (err) self.handleAmfReqError.call(self, err, msg);
-			}
-		);
-	});
+	if (msg.type === 'ping') {
+		this.processRequest(msg);
+	}
+	else {
+		var rq = this.pc ? this.pc.getRQ() : RQ.getGlobal('prelogin');
+		rq.push(msg.type, this.processRequest.bind(this, msg),
+			this.handleAmfReqError.bind(this, msg),
+			{session: this, obj: this.pc});
+	}
 };
 
 
 Session.prototype.processRequest = function processRequest(req) {
 	log.trace({data: req}, 'handling %s request', req.type);
-	var abort = this.preRequestProc(req);
-	if (abort) return;
-	this.gsjsProcessMessage(this.pc, req);
-	this.postRequestProc(req);
+	var timer = metrics.createTimer('req.proc.' + req.type,
+		(req.type === 'move_xy') ? 0.1 : undefined);
+	try {
+		var abort = this.preRequestProc(req);
+		if (abort) return;
+		this.gsjsProcessMessage(this.pc, req);
+		this.postRequestProc(req);
+	}
+	finally {
+		timer.stop();
+	}
 };
 
 
@@ -362,7 +356,7 @@ Session.prototype.flushPreLoginBuffer = function flushPreLoginBuffer() {
 };
 
 
-Session.prototype.handleAmfReqError = function handleAmfReqError(err, req) {
+Session.prototype.handleAmfReqError = function handleAmfReqError(req, err) {
 	if (!err) return;
 	if (typeof req !== 'object') req = {};
 	if (typeof err === 'string') {

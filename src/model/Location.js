@@ -11,7 +11,7 @@ var Bag = require('model/Bag');
 var IdObjRefMap = require('model/IdObjRefMap');
 var OrderedHash = require('model/OrderedHash');
 var pers = require('data/pers');
-var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 var rpc = require('data/rpc');
 var util = require('util');
 var utils = require('utils');
@@ -46,13 +46,7 @@ function Location(data, geo) {
 	}
 	Location.super_.call(this, data);
 	// initialize items and players, convert to IdObjRefMap
-	if (!this.players || this.players instanceof Array) {
-		this.players = utils.arrayToHash(this.players);
-	}
 	this.players = new IdObjRefMap(this.players);
-	if (!this.items || this.items instanceof Array) {
-		this.items = utils.arrayToHash(this.items);
-	}
 	this.items = new IdObjRefMap(this.items);
 	// convert neighbor list to OrderedHash
 	if (this.neighbors) {
@@ -88,6 +82,9 @@ Object.defineProperty(Location.prototype, 'activePlayers', {
 
 Location.prototype.gsOnLoad = function gsOnLoad() {
 	Location.super_.prototype.gsOnLoad.call(this);
+	// initialize request queue (not strictly necessary b/c it would be created
+	// on demand, but this makes the logs easier to grok)
+	this.getRQ();
 	// periodically check whether location can be released from memory
 	var unloadInt = config.get('pers:locUnloadInt', null);
 	if (unloadInt) {
@@ -103,14 +100,23 @@ Location.prototype.gsOnLoad = function gsOnLoad() {
  * @param {Geo} geo geometry data (location TSID will be derived from
  *        `geo.tsid`)
  * @param {object} [data] additional properties
- * @returns {object} a `Location` instance wrapped in a {@link
- * module:data/persProxy|persistence proxy}
+ * @returns {object} a `Location` object
  */
 Location.create = function create(geo, data) {
 	data = data || {};
 	data.tsid = geo.getLocTsid();
 	data.class_tsid = data.class_tsid || 'town';
 	return pers.create(Location, data);
+};
+
+
+/**
+ * Retrieves the request queue for this location.
+ *
+ * @returns {RequestQueue} the request queue for this location
+ */
+Location.prototype.getRQ = function getRQ() {
+	return RQ.get(this);
 };
 
 
@@ -145,13 +151,13 @@ Location.prototype.addPlayer = function addPlayer(player) {
  */
 Location.prototype.gsOnPlayerEnter = function gsOnPlayerEnter(player) {
 	if (this.onPlayerEnter) {
-		this.onPlayerEnter(player);
+		this.rqPush(this.onPlayerEnter, player);
 	}
 	for (var k in this.items) {
 		var it = this.items[k];
 		if (it && it.onPlayerEnter) {
 			try {
-				it.onPlayerEnter(player);
+				it.rqPush(it.onPlayerEnter, player);
 			}
 			catch (e) {
 				log.error(e, 'error in %s.onPlayerEnter handler', it);
@@ -172,13 +178,13 @@ Location.prototype.gsOnPlayerEnter = function gsOnPlayerEnter(player) {
 Location.prototype.removePlayer = function removePlayer(player, newLoc) {
 	delete this.players[player.tsid];
 	if (this.onPlayerExit) {
-		this.onPlayerExit(player, newLoc);
+		this.rqPush(this.onPlayerExit, player, newLoc);
 	}
 	for (var k in this.items) {
 		var it = this.items[k];
 		if (it && it.onPlayerExit) {
 			try {
-				it.onPlayerExit(player);
+				it.rqPush(it.onPlayerExit, player);
 			}
 			catch (e) {
 				log.error(e, 'error in %s.onPlayerExit handler', it);
@@ -197,24 +203,28 @@ Location.prototype.checkUnload = function checkUnload() {
 	// trivial heuristic for now - may become more complex in the future
 	// (e.g. minimum empty period before unloading)
 	if (this.players.length === 0) {
-		this.unload();
+		var self = this;
+		this.unload(function cb(err) {
+			if (err) log.error(err, 'failed to unload %s', self);
+		});
 	}
 };
 
 
 /**
- * Schedules the location (including geometry) and all contained items
- * for removal from memory at the end of the current request.
+ * Schedules this location and its associated geometry object to be released
+ * from the live object cache after all pending requests for it have been
+ * handled. When this is called, the location's request queue will not accept
+ * any new requests.
+ *
+ * @param {function} [callback] for optional error handling
  */
-Location.prototype.unload = function unload() {
-	log.info('%s.unload', this);
-	var rc = RC.getContext();
-	var items = this.getAllItems(false, false);
-	for (var k in items) {
-		rc.setUnload(items[k]);
-	}
-	rc.setUnload(this.geometry);
-	rc.setUnload(this);
+Location.prototype.unload = function unload(callback) {
+	var self = this;
+	this.getRQ().push('unload', function unloadReq() {
+		Location.super_.prototype.unload.call(self);
+		self.geometry.unload();
+	}, callback, {close: true, obj: this});
 };
 
 
@@ -421,8 +431,9 @@ Location.prototype.getPath = function getPath(path) {
  */
 Location.prototype.sendItemStateChange = function sendItemStateChange(item) {
 	for (var k in this.items) {
-		if (this.items[k] !== item && this.items[k].onContainerItemStateChanged) {
-			this.items[k].onContainerItemStateChanged(item);
+		var it = this.items[k];
+		if (it !== item && it.onContainerItemStateChanged) {
+			it.rqPush(it.onContainerItemStateChanged, item);
 		}
 	}
 };

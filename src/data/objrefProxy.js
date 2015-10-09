@@ -37,12 +37,14 @@ module.exports = {
 	makeProxy: makeProxy,
 	proxify: proxify,
 	refify: refify,
-	wrap: wrap,
+	setupObjRefProp: setupObjRefProp,
+	copyOwnProps: copyOwnProps,
 };
 
 
 require('harmony-reflect');
 var pers = require('data/pers');
+var utils = require('utils');
 
 
 /**
@@ -148,8 +150,8 @@ function resolve(objref) {
 
 
 /**
- * Recursively replaces objrefs with proxies in the supplied data
- * (in-place replacement, **the input data will be modified!**).
+ * Recursively replaces objrefs with getters/setters in the supplied
+ * data (in-place replacement, **the input data will be modified!**).
  *
  * @param {object} data arbitrary data containing objrefs; must not be
  *        an objref itself
@@ -161,13 +163,61 @@ function proxify(data, handled) {
 		var v = data[k];
 		if (v instanceof Object) {
 			if (v.objref === true) {  // explicit check for boolean-type property
-				data[k] = makeProxy(v);
+				pers.registerProxy(v);
+				setupObjRefProp(v.tsid, data, k);
 			}
 			else {
 				if (handled.indexOf(v) !== -1) continue;  // circular ref, v is already covered
 				handled.push(v);
 				proxify(v, handled);
 			}
+		}
+	}
+}
+
+
+/**
+ * Sets up an accessor property descriptor representing an objref. The getter
+ * refers access straight to the persistence layer (returning the referenced
+ * object itself or a proxy, depending on whether it was already loaded), while
+ * the setter causes a new descriptor to be created for the new value.
+ *
+ * @param {string} tsid TSID of the referenced game object
+ * @param {object} parent holder of the reference
+ * @param {string} name the desired property name
+ */
+function setupObjRefProp(tsid, parent, name) {
+	Object.defineProperty(parent, name, {
+		configurable: true,
+		enumerable: true,
+		get: function get() {
+			return pers.get(tsid);
+		},
+		set: function set(val) {
+			delete this[name];
+			if (utils.isGameObject(val)) {
+				setupObjRefProp(val.tsid, this, name);
+			}
+			else {
+				this[name] = val;
+			}
+		},
+	});
+}
+
+
+/**
+ * Shallow copies own enumerable properties from one object to another,
+ * preserving objref accessor descriptors.
+ *
+ * @param {object} from the source object
+ * @param {object} to the target object
+ */
+function copyOwnProps(from, to) {
+	for (var key in from) {
+		if (from.hasOwnProperty(key) && !to.hasOwnProperty(key)) {
+			var desc = Object.getOwnPropertyDescriptor(from, key);
+			Object.defineProperty(to, key, desc);
 		}
 	}
 }
@@ -225,21 +275,4 @@ function makeRef(obj) {
 	};
 	if (obj.label !== undefined) ret.label = obj.label;
 	return ret;
-}
-
-
-/**
- * Wraps a "regular" game object (i.e. not an objref) in an objref
- * proxy. This can be used to make sure there are no stale copies of an
- * object (i.e. any operations on objects are always performed on the
- * instances in the persistence layer cache; see {@link
- * module:data/pers}).
- *
- * @param {GameObject} obj the game object to wrap
- * @returns {Proxy} A proxy wrapper for the given objref (as described
- *          in the module docs above).
- */
-function wrap(obj) {
-	if (typeof obj !== 'object' || obj === null || obj.__isORP) return obj;
-	return makeProxy(makeRef(obj));
 }

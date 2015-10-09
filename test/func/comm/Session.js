@@ -5,6 +5,7 @@ var auth = require('comm/auth');
 var abePassthrough = require('comm/abe/passthrough');
 var net = require('net');
 var path = require('path');
+var wait = require('wait.for');
 var config = require('config');
 var RC = require('data/RequestContext');
 var Session = require('comm/Session');
@@ -108,20 +109,15 @@ suite('Session', function () {
 		});
 
 		test('login_start', function (done) {
-			var onLoginCalled = false;
 			var s = new Session('TEST', helpers.getDummySocket());
 			s.gsjsProcessMessage = function (pc, req) {
 				assert.strictEqual(pc.tsid, 'P00000000000001');
 				assert.strictEqual(req.type, 'login_start');
-				assert.isTrue(onLoginCalled);
+				assert.strictEqual(pc.session, s);
 				done();
 			};
 			var rc = new RC('login_start TEST', undefined, s);
 			rc.run(function () {
-				var p = pers.get('P00000000000001');
-				p.onLogin = function () {
-					onLoginCalled = true;
-				};
 				s.processRequest({
 					msg_id: '1',
 					type: 'login_start',
@@ -130,15 +126,18 @@ suite('Session', function () {
 			});
 		});
 
-		test('login_end', function () {
+		test('login_end', function (done) {
 			var onPlayerEnterCalled = false;
 			var s = new Session('TEST', helpers.getDummySocket());
-			s.gsjsProcessMessage = function dummy() {};  // just a placeholder to prevent calling the "real" function
+			s.gsjsProcessMessage = function (pc, req) {
+				assert.isFalse(onPlayerEnterCalled);
+			};
 			var rc = new RC('login_end TEST', undefined, s);
 			rc.run(function () {
 				var l = pers.get('LLI32G3NUTD100I');
 				l.onPlayerEnter = function () {
 					onPlayerEnterCalled = true;
+					return done();
 				};
 				var p = pers.get('P00000000000001');
 				s.pc = p;  // login_start must have already happened
@@ -148,36 +147,40 @@ suite('Session', function () {
 					type: 'login_end',
 				});
 				assert.deepEqual(Object.keys(l.players), ['P00000000000001']);
-				assert.isTrue(onPlayerEnterCalled);
+				assert.isFalse(onPlayerEnterCalled);
 			});
 		});
 	});
 
 
-	suite('error handling', function () {
+	suite('FIFO request processing', function () {
 
-		test('unhandled errors during request processing are caught by domain',
-			function (done) {
-			var s = new Session('TEST', helpers.getDummySocket());
-			var thrown = false;
+		this.timeout(2000);
+		this.slow(1000);
+
+		test('processes regular requests in FIFO order', function (done) {
+			var s = helpers.getTestSession();
+			var fastDone = false;
+			var slowDone = false;
 			s.processRequest = function processRequest(req) {
-				RC.getContext().setPostPersCallback(function cb() {
-					thrown = true;
-					throw new Error('unhandled error in RC.run');
-				});
+				if (req.type === 'fast') {
+					fastDone = true;
+					assert.isTrue(slowDone);
+					done();
+				}
+				if (req.type === 'slow') {
+					// simulate a "slow" GSJS request that yields its fiber
+					wait.for(function (cb) {
+						setTimeout(function () {
+							slowDone = true;
+							assert.isFalse(fastDone);
+							cb();
+						}, 100);
+					});
+				}
 			};
-			// hack to prevent mocha from catching the error, so the domain has
-			// a chance to handle it
-			// see https://github.com/mochajs/mocha/issues/513#issuecomment-26963630
-			process.nextTick(function () {
-				s.handleMessage({});
-			});
-			setImmediate(function () {
-				assert.isTrue(thrown);
-				// nothing else to assert - we're just testing that the error
-				// does not bubble up to the surface
-				done();
-			});
+			s.enqueueMessage({type: 'slow'});
+			s.enqueueMessage({type: 'fast'});
 		});
 	});
 });
