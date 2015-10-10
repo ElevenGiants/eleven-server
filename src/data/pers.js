@@ -104,6 +104,10 @@ function shutdown(done) {
 	// then actually write the objects
 	var num = Object.keys(cache).length;
 	async.eachLimit(Object.keys(cache), 5, function iter(k, cb) {
+		if (!cache[k]) {
+			log.debug('%s already unloaded through its container/owner', k);
+			return cb();
+		}
 		write(cache[k], 'shutdown', cb);
 		if (--num % 50 === 0 && num > 0) {
 			log.info('persistence layer shutdown: %s objects remaining', num);
@@ -272,7 +276,11 @@ function create(modelType, data) {
  *        operations have finished
  */
 function postRequestProc(dlist, ulist, logmsg, callback) {
-	assert(!shuttingDown, 'persistence layer shutdown initiated');
+	if (shuttingDown) {
+		var e = new Error('no more persistence operations allowed (shutdown)');
+		log.error({err: e}, 'failed to persist %s request', logmsg);
+		if (callback) return callback(e);
+	}
 	var dtsids = Object.keys(dlist);
 	var utsids = [];
 	for (var k in ulist) {
@@ -304,7 +312,7 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
 				log.error(e, 'failed to unload %s', utsids[i]);
 			}
 		}
-		if (callback) callback(err);
+		if (callback) return callback(err);
 	});
 }
 

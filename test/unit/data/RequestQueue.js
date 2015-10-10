@@ -71,7 +71,7 @@ suite('RequestQueue', function () {
 					throw new Error('should not be reached');
 				},
 				function (err) {
-					assert.include(err.message, 'flagged for shutdown');
+					assert.isUndefined(err, 'push is ignored silently');
 					assert.lengthOf(rq.queue, 1, 'request not queued');
 					setTimeout(function () {
 						// wait for 'close' request to be processed (scheduled via setImmediate)

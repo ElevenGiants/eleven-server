@@ -135,8 +135,16 @@ Session.prototype.onSocketClose = function onSocketClose(hadError) {
 Session.prototype.close = function close(done) {
 	log.info({session: this}, 'session close');
 	if (this.pc && this.pc.isConnected()) {
+		var rq;
+		try {
+			rq = this.pc.getRQ();
+		}
+		catch (err) {
+			log.error(err, 'error while closing session');
+			return done ? done() : undefined;
+		}
 		var self = this;
-		this.pc.getRQ().push('sessionClose',
+		rq.push('sessionClose',
 			this.pc.onDisconnect.bind(this.pc),
 			function cb(err, res) {
 				if (err) log.error(err, 'error while closing session');
@@ -146,6 +154,7 @@ Session.prototype.close = function close(done) {
 			{waitPers: true, obj: this.pc}
 		);
 	}
+	else if (done) done();
 };
 
 

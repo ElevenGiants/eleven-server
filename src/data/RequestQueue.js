@@ -89,11 +89,15 @@ RequestQueue.create = function create(id) {
 
 
 RequestQueue.shutdown = function shutdown(done) {
-	log.info('request queue shutdown initiated');
+	var keys = Object.keys(rqs);
+	log.info('request queue shutdown initiated (%s RQs)', keys.length);
 	shuttingDown = true;
-	async.eachLimit(rqs, 5, function iter(k, cb) {
-		rqs[k].closing = true;
-		rqs[k].closeCallback = cb;
+	async.eachLimit(keys, 5, function iter(k, cb) {
+		var rq = rqs[k];
+		log.info('closing %s', rq);
+		rq.closing = true;
+		rq.closeCallback = cb;
+		rq.next();  // make sure closeCallback is called for empty queues
 	}, function callback() {
 		log.info('request queue shutdown complete');
 		done();
@@ -174,7 +178,7 @@ RequestQueue.prototype.getLength = function getLength() {
 RequestQueue.prototype.push = function push(tag, func, callback, options) {
 	if (this.closing) {
 		log.warn('tried to push %s request, but %s is shutting down', tag, this);
-		return callback ? callback(new Error('RQ flagged for shutdown')) : undefined;
+		return callback ? callback() : undefined;
 	}
 	if (options && options.obj) tag = options.obj.tsid + '.' + tag;
 	var entry = {
@@ -212,6 +216,8 @@ RequestQueue.prototype.next = function next() {
 	log.trace({len: this.queue.length}, 'checking for next request');
 	if (this.inProgress) return;
 	if (this.queue.length) {
+		if (this.closing) log.debug('%s request(s) remaining before closing %s',
+			this.queue.length, this);
 		this.handle(this.queue.shift());
 	}
 	else if (this.closing && rqs[this.id]) {
