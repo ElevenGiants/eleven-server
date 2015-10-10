@@ -274,7 +274,7 @@ Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
 	var k, it;
 	if (prev !== cont) {
 		if (this.onContainerChanged) {
-			this.rqPush(this.onContainerChanged, prev, cont);
+			this.onContainerChanged(prev, cont);
 		}
 		if (prev) {
 			for (k in prev.items) {
