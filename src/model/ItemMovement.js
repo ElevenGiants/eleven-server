@@ -52,6 +52,13 @@ var FLOCK_REPEL_DIST_SQUARED = 100 * 100;
  */
 function ItemMovement(item) {
 	this.item = item;
+	if (item.gsMovement) {
+		var keys = Object.keys(item.gsMovement);
+		for (var i = 0; i < keys.length; i++) {
+			var k = keys[i];
+			this[k] = item.gsMovement[k];
+		}
+	}
 }
 
 
@@ -942,4 +949,25 @@ ItemMovement.prototype.startMove = function startMove(transport, dest, options) 
 		return false;
 	}
 	return true;
+};
+
+/**
+ * Creates a processed shallow copy of this location, prepared for
+ * serialization.
+ *
+ * @see {@link GameObject#serialize|GameObject.serialize}
+ */
+ItemMovement.prototype.serialize = function serialize() {
+	var ret = {};
+	var keys = Object.keys(this);  // Object.keys only includes own properties
+	for (var i = 0; i < keys.length; i++) {
+		var k = keys[i];
+		if (k[0] !== '!') {
+			var val = this[k];
+			if (typeof val !== 'function') {
+				ret[k] = val;
+			}
+		}
+	}
+	return ret;
 };
