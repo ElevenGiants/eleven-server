@@ -56,8 +56,14 @@ function Item(data) {
 	Item.super_.call(this, data);
 	if (this.x === undefined) this.x = 0;
 	if (this.y === undefined) this.y = 0;
-	// for NPC Movement
-	utils.addNonEnumerable(this, 'gsMovement', null);
+	// initialize NPC movement
+	if (this.gsMovement) {
+		this.gsMovement = new ItemMovement(this);
+		utils.makeNonEnumerable(this, 'gsMovement');
+	}
+	else {
+		utils.addNonEnumerable(this, 'gsMovement', null);
+	}
 	if (!utils.isInt(this.count)) this.count = 1;
 	// add some non-enumerable properties (used internally or by GSJS)
 	utils.addNonEnumerable(this, 'collDet', false);
@@ -80,6 +86,25 @@ utils.copyProps(require('model/ItemApi').prototype, Item.prototype);
 Item.prototype.gsOnLoad = function gsOnLoad() {
 	this.updatePath();
 	Item.super_.prototype.gsOnLoad.call(this);
+	if (this.gsMovement && this.gsMovement.path && this.gsMovement.path.length) {
+		log.info('resuming NPC movement for %s', this);
+		this.gsMovement.moveStep();
+	}
+};
+
+
+/**
+ * Creates a processed shallow copy of this item, prepared for
+ * serialization.
+ *
+ * @see {@link GameObject#serialize|GameObject.serialize}
+ */
+Item.prototype.serialize = function serialize() {
+	var ret = Item.super_.prototype.serialize.call(this);
+	if (this.gsMovement) {
+		ret.gsMovement = GameObject.prototype.serialize.call(this.gsMovement);
+	}
+	return ret;
 };
 
 

@@ -52,6 +52,12 @@ var FLOCK_REPEL_DIST_SQUARED = 100 * 100;
  */
 function ItemMovement(item) {
 	this.item = item;
+	// initialize with previous parameters after deserialization, if applicable
+	if (item.gsMovement) {
+		Object.keys(item.gsMovement).forEach(function set(k) {
+			this[k] = item.gsMovement[k];
+		}, this);
+	}
 }
 
 
