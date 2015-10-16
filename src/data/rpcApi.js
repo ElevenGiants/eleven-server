@@ -19,6 +19,7 @@ module.exports = {
 	getGsjsConfig: getGsjsConfig,
 	sendToAll: sendToAll,
 	getPlayerInfo: getPlayerInfo,
+	getSessionInfo: getSessionInfo,
 	getGSStatus: getGSStatus,
 };
 
@@ -247,6 +248,31 @@ function getPlayerInfo(locally) {
 		}
 		else {
 			res = rpc.sendRequest(gsid, 'gs', ['getPlayerInfo', [true]]);
+		}
+		// add 'gs' property to each entry:
+		lodash.assign(ret, res, function addGS(destVal, srcVal) {
+			srcVal.gs = gsid;
+			return srcVal;
+		});
+		cb();
+	});
+	return ret;
+}
+
+
+function getSessionInfo(locally) {
+	if (locally) {
+		return sessionMgr.getSessionInfo();
+	}
+	var ret = {};
+	config.forEachGS(function collect(gsconf, cb) {
+		var gsid = gsconf.gsid;
+		var res = {};
+		if (gsid === config.getGsid()) {
+			res = sessionMgr.getSessionInfo();
+		}
+		else {
+			res = rpc.sendRequest(gsid, 'gs', ['getSessionInfo', [true]]);
 		}
 		// add 'gs' property to each entry:
 		lodash.assign(ret, res, function addGS(destVal, srcVal) {
