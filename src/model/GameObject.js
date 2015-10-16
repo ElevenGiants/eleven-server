@@ -268,9 +268,6 @@ GameObject.prototype.scheduleTimer = function scheduleTimer(options, key) {
 	}
 	var timerCall = function timerCall() {
 		log.trace({options: options}, 'timer call');
-		if (self.stale) {
-			throw new Error('stale object');
-		}
 		if (!options.interval) {
 			delete self.gsTimers[key];
 		}
@@ -292,7 +289,20 @@ GameObject.prototype.scheduleTimer = function scheduleTimer(options, key) {
 		}
 	};
 	var execTimer = function execTimer() {
-		self.getRQ().push(options.fname, timerCall, function callback(e) {
+		if (self.stale) {
+			log.error('timer call on stale object %s', self);
+			return;
+		}
+		var rq;
+		try {
+			rq = self.getRQ();
+			log.trace('RQ for %s.%s: %s', self, options.fname, rq);
+		}
+		catch (e) {
+			log.error(e, 'could not get RQ for %s.%s', self, options.fname);
+			return;
+		}
+		rq.push(options.fname, timerCall, function callback(e) {
 			if (e) {
 				log.error(e, 'error calling %s.%s (interval: %s)', self,
 					options.fname, !!options.interval);
