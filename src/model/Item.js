@@ -142,6 +142,7 @@ Item.prototype.getRQ = function getRQ() {
  */
 Item.prototype.del = function del() {
 	log.trace('del %s', this);
+	log.info('Item.del: %s', this);  // TODO for broken objref debugging, remove when no longer needed
 	Item.super_.prototype.del.call(this);
 	if (this.container) {
 		RC.setDirty(this.container);

@@ -460,6 +460,7 @@ function write(obj, logmsg, callback) {
  */
 function del(obj, logmsg, callback) {
 	log.debug('pers.del: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
+	log.info('pers.del: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');  // TODO for broken objref debugging, remove when no longer needed
 	metrics.increment('pers.del');
 	if (obj.tsid in cache) {
 		obj.suspendGsTimers();

@@ -155,6 +155,7 @@ GameObject.prototype.rqPush = function rqPush(func) {
  * Schedules this object for deletion after the current request.
  */
 GameObject.prototype.del = function del() {
+	log.info('GameObject.del: %s', this);  // TODO for broken objref debugging, remove when no longer needed
 	this.deleted = true;
 	this.unload();
 };
