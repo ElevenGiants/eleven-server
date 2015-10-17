@@ -361,7 +361,7 @@ ItemMovement.prototype.moveFlying = function moveFlying(nextPath) {
 		return {forceStop: MOVE_CB_STATUS.ARRIVED};
 	}
 	// otherwise, set new destination within the flight area if necessary
-	if (!('x' in nextPath) || this.item.x === nextPath.x) {
+	if (!('x' in nextPath) || (!nextPath.stopAtEnd && this.item.x === nextPath.x)) {
 		this.nextFlightPath(nextPath);
 	}
 	var dirX = this.dirX(nextPath.x);
