@@ -28,6 +28,7 @@ var util = require('util');
 var vm = require('vm');
 var bunyan = require('bunyan');
 var config = require('config');
+var lodash = require('lodash');
 var pers = require('data/pers');
 var RQ = require('data/RequestQueue');
 var gsjsBridge = require('model/gsjsBridge');
@@ -95,6 +96,7 @@ function handleConnect(socket) {
 	r.context.bunyan = bunyan;
 	r.context.sessionMgr = sessionMgr;
 	r.context.rq = RQ;
+	r.context.ld = lodash;
 }
 
 
