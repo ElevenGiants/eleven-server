@@ -57,7 +57,13 @@ function Item(data) {
 	if (this.x === undefined) this.x = 0;
 	if (this.y === undefined) this.y = 0;
 	// for NPC Movement
-	utils.addNonEnumerable(this, 'gsMovement', null);
+	if (this.gsMovement) {
+		this.gsMovement = new ItemMovement(this);
+		utils.makeNonEnumerable(this, 'gsMovement');
+	}
+	else {
+		utils.addNonEnumerable(this, 'gsMovement', null);
+	}
 	if (!utils.isInt(this.count)) this.count = 1;
 	// add some non-enumerable properties (used internally or by GSJS)
 	utils.addNonEnumerable(this, 'collDet', false);
@@ -80,6 +86,9 @@ utils.copyProps(require('model/ItemApi').prototype, Item.prototype);
 Item.prototype.gsOnLoad = function gsOnLoad() {
 	this.updatePath();
 	Item.super_.prototype.gsOnLoad.call(this);
+	if (this.gsMovement) {
+		this.gsMovement.moveStep();
+	}
 };
 
 
@@ -561,4 +570,18 @@ Item.prototype.getClosestItem = function getClosestItem(filter, options) {
 		return this.container.getClosestItem(this.x, this.y, filter, options, this);
 	}
 	return null;
+};
+
+/**
+ * Creates a processed shallow copy of this location, prepared for
+ * serialization.
+ *
+ * @see {@link GameObject#serialize|GameObject.serialize}
+ */
+Item.prototype.serialize = function serialize() {
+	var ret = Item.super_.prototype.serialize.call(this);
+	if (this.gsMovement) {
+		ret.gsMovement =  this.gsMovement.serialize();
+	}
+	return ret;
 };
