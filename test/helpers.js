@@ -1,6 +1,6 @@
 'use strict';
 
-var amf = require('node_amf_cc');
+var amf = require('amflib/node-amf/amf');
 var events = require('events');
 var Player = require('model/Player');
 var Session = require('comm/Session');
@@ -42,8 +42,7 @@ exports.getOnlinePlayer = function getOnlinePlayer(data) {
 
 
 exports.amfEnc = function amfEnc(data) {
-	data = JSON.parse(JSON.stringify(data));
-	data = amf.serialize(data);
+	data = amf.serializer().writeObject(data);
 	var ret = new Buffer(Buffer.byteLength(data, 'binary'));
 	ret.write(data, 0, ret.length, 'binary');
 	return ret;
