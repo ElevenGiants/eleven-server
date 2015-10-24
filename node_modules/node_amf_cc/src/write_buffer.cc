@@ -9,7 +9,7 @@ WriteBuffer::~WriteBuffer() {
 }
 
 v8::Handle<v8::String> WriteBuffer::toString() const {
-  return NanNew<v8::String>(bytes_.data(), bytes_.size());
+  return Nan::New<v8::String>(bytes_.data(), bytes_.size()).ToLocalChecked();
 }
 
 void WriteBuffer::clear() {

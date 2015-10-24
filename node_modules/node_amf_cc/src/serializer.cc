@@ -45,23 +45,23 @@ Serializer::~Serializer() {
 void Serializer::Init(Handle<Object> exports) {
   bigEndian = isBigEndian();
 
-  exports->Set(NanNew<String>("serialize"),
-      NanNew<FunctionTemplate>(Run)->GetFunction());
+  exports->Set(Nan::New<String>("serialize").ToLocalChecked(),
+      Nan::New<FunctionTemplate>(Run)->GetFunction());
 }
 
 NAN_METHOD(Serializer::Run) {
-  NanEscapableScope();
+  Nan::EscapableHandleScope scope;
 
-  if (args.Length() != 1) {
-    NanThrowError("Need exactly one argument");
+  if (info.Length() != 1) {
+    Nan::ThrowError("Need exactly one argument");
   }
 
   // If argument is not valid, you can validate it by calling JSON.parse(JSON.stringify(args[0])) i.e.
   // http://stackoverflow.com/questions/15990445/accessing-json-stringify-from-node-js-c-bindings
 
   std::auto_ptr<Serializer> obj(new Serializer()); 
-  obj->writeValue(args[0]);
-  NanReturnValue(obj->buffer_.toString());
+  obj->writeValue(info[0]);
+  info.GetReturnValue().Set(obj->buffer_.toString());
 }
 
 void Serializer::clear() {
@@ -130,7 +130,7 @@ void Serializer::writeArray(Handle<Array> value) {
   // flag with XXXXXXX1 indicating length of dense portion with instance
   int flag = ( len << 1 ) | 1;
   writeU29(flag);
-  writeUTF8(NanNew<String>(""));
+  writeUTF8(Nan::New<String>("").ToLocalChecked());
   for (int i = 0; i < len; i++) {
     writeValue(value->Get(i));
   }
@@ -148,10 +148,10 @@ void Serializer::writeObject(Handle<Object> value) {
   objRefs_[valueId] = objRefs_.size();
   // flag with instance, no traits, no externalizable
   writeU29(INSTANCE_NO_TRAITS_NO_EXTERNALIZABLE);
-  if (value->HasOwnProperty(NanNew<String>("type"))) {
-    writeUTF8(value->Get(NanNew<String>("type"))->ToString());
+  if (value->HasOwnProperty(Nan::New<String>("type").ToLocalChecked())) {
+    writeUTF8(value->Get(Nan::New<String>("type").ToLocalChecked())->ToString());
   } else {
-    writeUTF8(NanNew<String>("Object")); 
+    writeUTF8(Nan::New<String>("Object").ToLocalChecked()); 
   } 
 
   // write serializable properties
@@ -162,16 +162,16 @@ void Serializer::writeObject(Handle<Object> value) {
     writeUTF8(propName);
     writeValue(propValue); 
   }
-  writeUTF8(NanNew<String>(""));
+  writeUTF8(Nan::New<String>("").ToLocalChecked());
 }
 
 void Serializer::writeDate(Handle<Object> date) {
   Handle<Value> argv[] = {
     date,
-    NanNew<Integer>(0),
-    NanNull() 
+    Nan::New<Integer>(0),
+    Nan::Null() 
   };
-  Local<Value> dateDouble = NanMakeCallback(date, "getTime", 3, argv);
+  Local<Value> dateDouble = Nan::MakeCallback(date, "getTime", 3, argv);
 
   writeU8(AMF::AMF3_DATE);
   writeU29(1);
@@ -230,7 +230,7 @@ void Serializer::writeU8(unsigned char n) {
 void Serializer::writeU29(int64_t n, bool writeMarker) {
   std::vector<unsigned char> bytes;
   if (n < 0) {
-    NanThrowError("U29 range error - negative number");
+    Nan::ThrowError("U29 range error - negative number");
   }
   if (n < 0x00200000) {
     bytes.push_back(n & 0x7F);

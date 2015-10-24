@@ -20,25 +20,25 @@ Deserializer::~Deserializer() {
 }
 
 void Deserializer::Init(Handle<Object> exports) {
-  exports->Set(NanNew<String>("deserialize"),
-      NanNew<FunctionTemplate>(Run)->GetFunction());
+  exports->Set(Nan::New("deserialize").ToLocalChecked(),
+      Nan::New<FunctionTemplate>(Run)->GetFunction());
 }
 
 NAN_METHOD(Deserializer::Run) {
-  NanEscapableScope();
+  Nan::EscapableHandleScope scope;
 
-  if (args.Length() != 1) {
-    NanThrowError("Need exactly one argument");
+  if (info.Length() != 1) {
+    Nan::ThrowError("Need exactly one argument");
   }
  
   std::auto_ptr<Deserializer> obj(new Deserializer());
-  obj->init(args[0]->ToString());
-  Handle<Object> returnValue = NanNew<Object>();
-  returnValue->Set(NanNew<String>("value"), 
+  obj->init(info[0]->ToString());
+  Handle<Object> returnValue = Nan::New<Object>();
+  returnValue->Set(Nan::New<String>("value").ToLocalChecked(), 
       obj->readValue(obj->buffer_->getRegion()));
-  returnValue->Set(NanNew<String>("consumed"), 
-      NanNew<Integer>(obj->buffer_->getRegion()->consumed())); 
-  NanReturnValue(returnValue);
+  returnValue->Set(Nan::New<String>("consumed").ToLocalChecked(), 
+      Nan::New<Integer>(obj->buffer_->getRegion()->consumed())); 
+  info.GetReturnValue().Set(returnValue);
 }
 
 void Deserializer::init(Handle<String> payload) {
@@ -53,13 +53,13 @@ Handle<Value> Deserializer::readValue(ReadBuffer::Region* region) {
 #endif 
   switch (marker) {
     case AMF3_UNDEFINED: 
-      return NanUndefined();
+      return Nan::Undefined();
     case AMF3_NULL:
-      return NanNull();
+      return Nan::Null();
     case AMF3_FALSE:
-      return NanFalse();
+      return Nan::False();
     case AMF3_TRUE:
-      return NanTrue();
+      return Nan::True();
     case AMF3_INTEGER:
       return readInteger(region);
     case AMF3_DOUBLE:
@@ -73,58 +73,58 @@ Handle<Value> Deserializer::readValue(ReadBuffer::Region* region) {
     case AMF3_DATE:
       return readDate(region);
     default: 
-      NanThrowError("Unsupported AMF3 marker");
+      Nan::ThrowError("Unsupported AMF3 marker");
   }  
-  return NanUndefined();
+  return Nan::Undefined();
 }
 
 Handle<Integer> Deserializer::readInteger(ReadBuffer::Region* region) {
   int32_t v;
   if (!region->readInt29(&v)) {
-    NanThrowError("Integer expected but not found at position"); 
+    Nan::ThrowError("Integer expected but not found at position"); 
   }
-  return NanNew<Integer>(v);
+  return Nan::New<Integer>(v);
 }
 
 Handle<Number> Deserializer::readDouble(ReadBuffer::Region* region) {
   double v;
   if (!region->readDouble(&v)) {
-    // TODO: make NanThrowError take varargs and format string
-    NanThrowError("Double expected but not found at position");
+    // TODO: make Nan::ThrowError take varargs and format string
+    Nan::ThrowError("Double expected but not found at position");
   }
-  return NanNew<Number>(v);
+  return Nan::New<Number>(v);
 }
 
 
 Handle<String> toString(ReadRegion* region, int32_t len) {
   uint8_t* str = NULL;
   if (!region->read(&str, len)) {
-    NanThrowError("String expected but not long enough");
+    Nan::ThrowError("String expected but not long enough");
   }
 #if DEBUG
   printf("utf8=%.*s\n", len, (char*)str); 
 #endif
-  return NanNew<String>(reinterpret_cast<char*>(str), len);
+  return Nan::New<String>(reinterpret_cast<char*>(str), len).ToLocalChecked();
 }
 
 Handle<String> Deserializer::readUTF8(ReadRegion* region) {
   int32_t n = 0;
   if (!region->readInt29(&n)) {
-    NanThrowError("String expected but no length information found");
+    Nan::ThrowError("String expected but no length information found");
   }
 
   if (n & 1) {
     int32_t len = n >> 1;
     // index string unless empty
     if (len == 0) {
-      return NanNew<String>("");
+      return Nan::New<String>("").ToLocalChecked();
     }
     strRefs_.push_back(region->copy(len));
     return toString(region, len);
   } else {
     uint32_t refIndex = n >> 1;
     if (refIndex >= strRefs_.size()) {
-      NanThrowError("No string reference at index!");
+      Nan::ThrowError("No string reference at index!");
     }
     ReadRegion temp = strRefs_[refIndex].copy();
     return toString(&temp, temp.remainingLength());
@@ -134,7 +134,7 @@ Handle<String> Deserializer::readUTF8(ReadRegion* region) {
 Handle<Array> Deserializer::readArray(ReadBuffer::Region* region) {
   int32_t n = 0;
   if (!region->readInt29(&n)) {
-    NanThrowError("Array length not found");
+    Nan::ThrowError("Array length not found");
   }
 
   if (n & 1) {
@@ -144,7 +144,7 @@ Handle<Array> Deserializer::readArray(ReadBuffer::Region* region) {
   } else {
     uint32_t refIndex = n >> 1;
     if (refIndex >= objRefs_.size()) {
-      NanThrowError("No object reference at index!");
+      Nan::ThrowError("No object reference at index!");
     }
     ObjRef ref = objRefs_[refIndex];
     return readArrayWithLength(&ref.region, ref.attr);
@@ -158,7 +158,7 @@ Handle<Array> Deserializer::readArrayWithLength(
     readValue(region);
   }
  
-  Handle<Array> a = NanNew<Array>(len);
+  Handle<Array> a = Nan::New<Array>(len);
   for (int i = 0; i < len; i++) {
     a->Set(i, readValue(region));
   }
@@ -185,14 +185,14 @@ inline bool isExternalizableTraitFlag(int32_t n) {
 Handle<Object> Deserializer::readObject(ReadBuffer::Region* region) {
   int32_t n = 0;
   if (!region->readInt29(&n)) {
-    NanThrowError("Object attributes not found");
+    Nan::ThrowError("Object attributes not found");
   }
 
   if (isObjectReferenceFlag(n)) {
     // Reconstruct object reference ad re-parse it.
     uint32_t refIndex = n >> 1;
     if (refIndex >= objRefs_.size()) {
-      NanThrowError("No object reference at index!");
+      Nan::ThrowError("No object reference at index!");
     }
     ObjRef ref = objRefs_[refIndex];
     return readObjectWithFlag(&ref.region, ref.attr);
@@ -205,9 +205,9 @@ Handle<Object> Deserializer::readObject(ReadBuffer::Region* region) {
 Handle<Object> Deserializer::readObjectWithFlag(
     ReadBuffer::Region* region, int32_t n) {
   if (isObjectReferenceFlag(n)) {
-    NanThrowError("Fatal error - obect reference flag passed to readObjectWithFlag");
+    Nan::ThrowError("Fatal error - obect reference flag passed to readObjectWithFlag");
   } else if (isExternalizableTraitFlag(n)) {
-    NanThrowError("Externalizable traits not supported!");
+    Nan::ThrowError("Externalizable traits not supported!");
   } else if (isTraitDeclarationFlag(n)) {
     Traits traits;
     traits.dynamic = (n & 8) ? true : false;
@@ -221,14 +221,14 @@ Handle<Object> Deserializer::readObjectWithFlag(
   } else if (isTraitReferenceFlag(n)) {
     uint32_t refIndex = n >> 2;
     if (refIndex >= traitRefs_.size()) {
-      NanThrowError("No trait reference at index!");
+      Nan::ThrowError("No trait reference at index!");
     }
     Traits traits = traitRefs_[refIndex];
     return readObjectFromRegionAndTraits(region, traits);
   } else {
-    NanThrowError("Unrecognized flag!"); 
+    Nan::ThrowError("Unrecognized flag!"); 
   }
-  return NanNew<Object>();  // workaround compiler warning. We'll never get here. 
+  return Nan::New<Object>();  // workaround compiler warning. We'll never get here. 
 }
 
 void Deserializer::readObjectDynamicProps(
@@ -240,7 +240,7 @@ void Deserializer::readObjectDynamicProps(
 }
 
 Handle<Object> Deserializer::readObjectFromRegion(ReadBuffer::Region* region) {
-  Handle<Object> o = NanNew<Object>();
+  Handle<Object> o = Nan::New<Object>();
   (void)readUTF8(region);  // object's class name
   readObjectDynamicProps(region, o);
   return o;
@@ -248,7 +248,7 @@ Handle<Object> Deserializer::readObjectFromRegion(ReadBuffer::Region* region) {
 
 Handle<Object> Deserializer::readObjectFromRegionAndTraits(
     ReadBuffer::Region* region, const Traits& traits) {
-  Handle<Object> o = NanNew<Object>();
+  Handle<Object> o = Nan::New<Object>();
   for (uint32_t i = 0; i < traits.props.size(); i++) {
     o->Set(traits.props[i], readValue(region));
   }
@@ -261,23 +261,23 @@ Handle<Object> Deserializer::readObjectFromRegionAndTraits(
 Handle<Value> Deserializer::readDate(ReadBuffer::Region* region) {
   int32_t n = 0;
   if (!region->readInt29(&n)) {
-    NanThrowError("Object attributes not found");
+    Nan::ThrowError("Object attributes not found");
   }
   if (n & 1) {
     objRefs_.push_back(makeRef(region->copy(8), 0));
   } else {
     uint32_t refIndex = n >> 1;
     if (refIndex >= objRefs_.size()) {
-      NanThrowError("No object reference at index!");
+      Nan::ThrowError("No object reference at index!");
     }
     ReadRegion temp = objRefs_[refIndex].region.copy();
     region = &temp;
   }
   double time;
   if (!region->readDouble(&time)) {
-    NanThrowError("Time expected");
+    Nan::ThrowError("Time expected");
   }
-  return NanNew<Date>(time);
+  return Nan::New<Date>(time).ToLocalChecked();
 }
 
 Deserializer::ObjRef::ObjRef() : attr(0) { }
