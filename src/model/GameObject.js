@@ -261,6 +261,7 @@ GameObject.prototype.setGsTimer = function setGsTimer(options) {
  */
 GameObject.prototype.scheduleTimer = function scheduleTimer(options, key) {
 	var self = this;
+	var tsid = this.tsid;
 	if (options.delay > 2147483647) {
 		// see https://github.com/joyent/node/issues/3605
 		log.error(new errors.DummyError(), 'timer/interval delay too long: %s',
@@ -290,17 +291,17 @@ GameObject.prototype.scheduleTimer = function scheduleTimer(options, key) {
 		}
 	};
 	var execTimer = function execTimer() {
-		if (self.stale) {
-			log.error('timer call on stale object %s', self);
-			return;
-		}
 		var rq;
 		try {
+			if (self.stale) {
+				log.error('timer call on stale object %s', tsid);
+				return;
+			}
 			rq = self.getRQ();
 			log.trace('RQ for %s.%s: %s', self, options.fname, rq);
 		}
 		catch (e) {
-			log.error(e, 'could not get RQ for %s.%s', self, options.fname);
+			log.error(e, 'could not get RQ for %s.%s', tsid, options.fname);
 			return;
 		}
 		rq.push(options.fname, timerCall, function callback(e) {
