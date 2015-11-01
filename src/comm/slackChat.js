@@ -141,43 +141,44 @@ function onSlackMessage(msg) {
 	if (msg.type !== 'message') return;  // ignore meta stuff
 	// is this a connected group managed by this GS instance?
 	var groupTsid = channelToGroup[msg.channel];
-	if (groupTsid) {
-		// special handling for edits of earlier messages
-		if (msg.subtype === 'message_changed' && msg.message) {
-			msg = msg.message;  // for edits, message prop seems to contain the actual payload
-			msg.text = '[EDIT] ' + msg.text;
-		}
-		// prepare message payload
-		var user = slack.getUserByID(msg.user);
-		var out = {
-			type: 'pc_groups_chat',
-			tsid: groupTsid,
-			pc: {
-				tsid: 'PSLACK' + user.id,  // unique pseudo TSID so client assigns different colors
-				label: user.name,
-			},
-			txt: processMsgText(msg.text),
-		};
-		utils.addNonEnumerable(out, 'fromSlack', true);
-		// dispatch message to group in separate request context
-		RQ.getGlobal('persget').push('slackMsg.getGroup',
-			pers.get.bind(null, groupTsid),
-			function cb(err, group) {
-				if (err) {
-					return log.error(err, 'group not found');
-				}
-				group.getRQ().push('slackMsg.dispatch',
-					group.chat_send_msg.bind(null, out),
-					function cb(err, res) {
-						if (err) {
-							log.error({err: err, data: msg}, 'error ' +
-								'dispatching group chat message from Slack');
-						}
-					}
-				);
-			}
-		);
+	if (!groupTsid) return;
+	// special handling for edits/removals of earlier messages
+	if (msg.subtype === 'message_deleted') return;
+	if (msg.subtype === 'message_changed' && msg.message) {
+		msg = msg.message;  // for edits, message prop seems to contain the actual payload
+		msg.text = '[EDIT] ' + msg.text;
 	}
+	// prepare message payload
+	var user = slack.getUserByID(msg.user);
+	var out = {
+		type: 'pc_groups_chat',
+		tsid: groupTsid,
+		pc: {
+			//TODO user is undefined when a Slack message is deleted!
+			tsid: 'PSLACK' + user.id,  // unique pseudo TSID so client assigns different colors
+			label: user.name,
+		},
+		txt: processMsgText(msg.text),
+	};
+	utils.addNonEnumerable(out, 'fromSlack', true);
+	// dispatch message to group in separate request context
+	RQ.getGlobal('persget').push('slackMsg.getGroup',
+		pers.get.bind(null, groupTsid),
+		function cb(err, group) {
+			if (err) {
+				return log.error(err, 'group not found');
+			}
+			group.getRQ().push('slackMsg.dispatch',
+				group.chat_send_msg.bind(group, out),
+				function cb(err, res) {
+					if (err) {
+						log.error({err: err, data: msg}, 'error ' +
+							'dispatching group chat message from Slack');
+					}
+				}
+			);
+		}
+	);
 }
 
 
