@@ -510,7 +510,7 @@ function getGsid(objOrTsid) {
 	// quests or DCs mapped by their owner (location, player or group)
 	if (utils.isQuest(obj) || utils.isDC(obj)) {
 		assert(utils.isLoc(obj.owner) || utils.isPlayer(obj.owner) ||
-			utils.isGroup(obj.owner) || obj.owner.class_tsid == "bag_butler",
+			utils.isGroup(obj.owner) || obj.owner.class_tsid === 'bag_butler',
 			util.format('invalid owner for %s: %s', obj, obj.owner));
 		return getGsid(obj.owner);
 	}

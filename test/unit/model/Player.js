@@ -723,6 +723,21 @@ suite('Player', function () {
 		});
 	});
 
+	suite('inventoryGetItems', function () {
+		test('works as expected', function () {
+			var p = getCDTestPlayer();
+			var i1 = new Item({tsid: 'I1', class_tsid: 'apple', count: 10});
+			var i2 = new Item({tsid: 'I2', class_tsid: 'pi'});
+			var i3 = new Item({tsid: 'I3', class_tsid: 'apple', count: 5});
+			var i4 = new Item({tsid: 'I4', class_tsid: 'banana', count: 7});
+			var i5 = new Item({tsid: 'I5', class_tsid: 'apple', count: 3});
+			p.items = {I1: i1, I2: i2, I3: i3, I4: i4, I5: i5};
+			assert.deepEqual(p.inventoryGetItems('apple', 20), {I1: i1, I3: i3, I5: i5});
+			assert.deepEqual(p.inventoryGetItems('apple', 18), {I1: i1, I3: i3, I5: i5});
+			assert.deepEqual(p.inventoryGetItems('apple', 15), {I1: i1, I3: i3});
+			assert.deepEqual(p.inventoryGetItems('apple', 1), {I1: i1});
+		});
+	});
 
 	suite('handleCollision', function () {
 

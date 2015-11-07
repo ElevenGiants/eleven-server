@@ -787,13 +787,23 @@ Player.prototype.isHit = function isHit(it, hitBox) {
 	return xDist < (hitBox.w + pcWidth) / 2 && yDist < (hitBox.h + pcHeight) / 2;
 };
 
-Player.prototype.inventoryGetItems = function(class_id, maxCount) {
+/**
+ * Get an array of item stacks of type "class_id", including all
+ * stacks if the total item count is < "maxCount" or enough stacks
+ * in order to get => "maxCount"
+ *
+ * @param {string} [classId] class id of the item to get
+ * @param {string} [maxCount] number to retrieve up to of the
+ *        given class id
+ * @returns {array} array of item stacks
+ */
+Player.prototype.inventoryGetItems = function (classId, maxCount) {
 	var rval = {};
 	var remainingCount = maxCount;
 	var allItems = this.getAllItems();
 	for (var key in allItems) {
 		var val = allItems[key];
-		if (val.class_id == class_id) {
+		if (val.class_id === classId) {
 			rval[key] = val;
 			remainingCount -= val.count;
 			if (remainingCount <= 0) {
