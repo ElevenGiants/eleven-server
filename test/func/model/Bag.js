@@ -75,7 +75,6 @@ suite('Bag', function () {
 			new RC().run(
 				function () {
 					var b = Bag.create('bag_bigger_gray');
-					assert.isTrue(b.__isPP);
 					assert.isTrue(utils.isBag(b));
 					assert.strictEqual(b.class_tsid, 'bag_bigger_gray');
 					assert.strictEqual(b.constructor.name, 'bag_bigger_gray');

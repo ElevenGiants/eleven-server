@@ -4,6 +4,7 @@ var Item = require('model/Item');
 var Geo = require('model/Geo');
 var Location = require('model/Location');
 var NpcMovementError = require('errors').NpcMovementError;
+var RQ = require('data/RequestQueue');
 
 
 var STATUS = {
@@ -75,6 +76,15 @@ suite('ItemMovement', function () {
 
 	this.timeout(10000);
 	this.slow(10000);
+
+	setup(function () {
+		RQ.init();
+	});
+
+	teardown(function () {
+		RQ.init();
+	});
+
 
 	suite('platform walking movement', function () {
 
@@ -211,7 +221,7 @@ suite('ItemMovement', function () {
 				else {
 					assert.strictEqual(this.check, 3);
 					assert.strictEqual(args.status, STATUS.ARRIVED);
-					assert.deepEqual(this.movement.platform, plat2);
+					assert.deepEqual(this.gsMovement.platform, plat2);
 					assert.strictEqual(this.x, pt3.x);
 					assert.strictEqual(this.y, plat2.start.y);
 					done();

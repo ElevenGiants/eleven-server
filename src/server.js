@@ -156,6 +156,7 @@ function shutdown() {
 function shutdownWorker(gsid) {
 	var worker = workers[gsid];
 	var logtag = util.format('worker %s (%s)', worker.id, gsid);
+	stopHeartbeat(gsid);
 	shutdownTimers[worker.id] = setTimeout(killWorker,
 		config.get('proc:shutdownTimeout'), worker, gsid);
 	log.info('sending shutdown message to %s', logtag);

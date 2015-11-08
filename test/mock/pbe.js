@@ -71,8 +71,8 @@ function write(obj, callback) {
 }
 
 
-function del(tsid, callback) {
+function del(obj, callback) {
 	counts.del++;
-	delete db[tsid];
+	delete db[obj.tsid];
 	if (callback) callback(null, null);
 }

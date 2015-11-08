@@ -69,7 +69,6 @@ function init() {
 		],
 		serializers: {
 			err: bunyan.stdSerializers.err,
-			rc: RC.logSerialize,
 			session: Session.logSerialize,
 		},
 	});
@@ -171,14 +170,15 @@ function wrapLogEmitter(emitter, metric) {
 		if (metrics && metric) {
 			metrics.increment(metric);
 		}
-		// add 'rc' and 'session' fields if available
+		// add 'rq', 'rc' and 'session' fields if available
 		if (typeof arguments[0] === 'object' && arguments[0] !== null &&
 			!(arguments[0] instanceof Error)) {
 			arguments[0] = lodash.clone(arguments[0]);
 		}
 		var rc = RC.getContext(true);
 		if (rc) {
-			addField(arguments, 'rc', rc);
+			addField(arguments, 'rc', rc.tag);
+			if (rc.owner) addField(arguments, 'rq', rc.owner);
 			if (rc.session) addField(arguments, 'session', rc.session);
 		}
 		// override bunyan's source code location detection (otherwise it would

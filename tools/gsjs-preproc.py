@@ -113,7 +113,7 @@ def process_classify(module, lines):
         if get_function_name(lines[i]) is not None:
             l = lines[i]
             fname = get_function_name(l)
-            lines[i] = 'this.%s = function%s' % (fname, l[l.find('('):])
+            lines[i] = 'this.%s = function %s%s' % (fname, fname, l[l.find('('):])
         elif lines[i].startswith('var '):
             # hacky - just assumes all non-indented vars belong to the module namespace
             varname = lines[i][len('var '):].strip()

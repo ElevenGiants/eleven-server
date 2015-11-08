@@ -9,7 +9,7 @@ var Player = require('model/Player');
 var Item = require('model/Item');
 var pbeMock = require('../../mock/pbe');
 var RC = require('data/RequestContext');
-var orproxy = require('data/objrefProxy');
+var orProxy = require('data/objrefProxy');
 var wait = require('wait.for');
 
 
@@ -46,8 +46,8 @@ suite('pers', function () {
 		test('loaded game objects are initialized correctly', function (done) {
 			new RC().run(function () {
 				var o = pers.get('IHFK8C8NB6J2FJ5');
-				assert.instanceOf(o.__proxyTarget, Item);
-				assert.instanceOf(o.__proxyTarget, GameObject);
+				assert.instanceOf(o, Item);
+				assert.instanceOf(o, GameObject);
 				assert.strictEqual(o.constructor.name, o.class_tsid);
 				assert.property(o, 'distributeQuoinShards', 'quoin-specific property');
 				assert.property(o, 'distanceFromPlayer', 'property from item.js');
@@ -58,7 +58,7 @@ suite('pers', function () {
 			function (done) {
 			new RC().run(function () {
 				var p = pers.get('P00000000000002');
-				assert.instanceOf(p.__proxyTarget, Player);
+				assert.instanceOf(p, Player);
 				assert.deepEqual(Object.keys(p.items), ['I00000000000002']);
 				assert.isTrue(p.items.I00000000000002.__isORP);
 			}, done);
@@ -115,7 +115,8 @@ suite('pers', function () {
 					if (err) done(err);
 					assert.notProperty(gsTimers.go1.foo, 'handle');
 					assert.notProperty(gsTimers.go2.foo, 'handle');
-				}
+				},
+				true
 			);
 			setTimeout(function wait() {
 				assert.isFalse(timerFired);
@@ -124,16 +125,42 @@ suite('pers', function () {
 		});
 
 		test('does not load objects scheduled for unloading', function (done) {
-			var p = orproxy.makeProxy({tsid: 'GNOTAVAILABLE', objref: true});
+			var p = orProxy.makeProxy({tsid: 'GNOTAVAILABLE', objref: true});
 			var rc = new RC();
 			rc.run(
 				function () {
 					rc.setUnload(p);
 				},
 				function cb(err, res) {
-					if (err) done(err);
+					if (err) return done(err);
 					assert.strictEqual(pbeMock.getCounts().read, 0);
-					done();
+					return done();
+				}
+			);
+		});
+
+		test('does not load non-loaded objects referenced within objects' +
+			' scheduled for unloading', function (done) {
+			var obj = {
+				tsid: 'P1',
+				items: {b1: {tsid: 'B1'}},
+			};
+			pbeMock.getDB().p1 = obj;
+			obj.location = orProxy.makeProxy({tsid: 'L1', objref: true});
+			obj.items.b1 = {tsid: 'B1', items: {}};
+			obj.items.b1.items.i1 = orProxy.makeProxy({tsid: 'I1', objref: true});
+			pbeMock.getDB().b1 = obj.items.b1;
+			var rc = new RC();
+			rc.run(function () {
+					pers.get('P1');
+					pers.get('B1');
+					assert.strictEqual(pbeMock.getCounts().read, 2);
+					rc.setUnload(obj);
+				},
+				function cb(err, res) {
+					if (err) return done(err);
+					assert.strictEqual(pbeMock.getCounts().read, 2);
+					return done();
 				}
 			);
 		});

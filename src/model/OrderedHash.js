@@ -4,6 +4,7 @@ module.exports = OrderedHash;
 
 
 require('harmony-reflect');
+var orProxy = require('data/objrefProxy');
 var utils = require('utils');
 
 
@@ -57,7 +58,7 @@ function OrderedHash(data) {
 
 
 function OrderedHashAux(data) {
-	utils.copyProps(data, this);
+	orProxy.copyOwnProps(data, this);
 }
 
 

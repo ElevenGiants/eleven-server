@@ -15,6 +15,7 @@ var GameObjectApi = module.exports = function GameObjectApi() {};
  * Schedules this object for deletion after the current request.
  */
 GameObjectApi.prototype.apiDelete = function apiDelete() {
+	log.info('%s.apiDelete()', this);  // TODO for broken objref debugging, remove when no longer needed
 	log.debug('%s.apiDelete()', this);
 	this.del();
 };

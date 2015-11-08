@@ -13,6 +13,7 @@ module.exports = {
 	newSession: newSession,
 	getSessionCount: getSessionCount,
 	getPlayerInfo: getPlayerInfo,
+	getSessionInfo: getSessionInfo,
 	forEachSession: forEachSession,
 	sendToAll: sendToAll,
 };
@@ -53,7 +54,7 @@ function newSession(socket) {
 
 
 function onSessionClose(session) {
-	log.info('unlink %s', session);
+	log.info({session: session}, 'session unlink');
 	delete sessions[session.id];
 }
 
@@ -95,6 +96,19 @@ function getPlayerInfo() {
 				},
 			};
 		}
+	}
+	return ret;
+}
+
+
+function getSessionInfo() {
+	var ret = {};
+	for (var id in sessions) {
+		var s = sessions[id];
+		ret[id] = {id: id};
+		if (s.socket) ret[id].socket = s.socket.remoteAddress + ':' + s.socket.remotePort;
+		ret[id].loggedIn = s.loggedIn;
+		if (s.pc) ret[id].pc = s.pc.tsid;
 	}
 	return ret;
 }

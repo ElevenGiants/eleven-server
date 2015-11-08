@@ -6,9 +6,11 @@ module.exports = GameObject;
 var assert = require('assert');
 var config = require('config');
 var errors = require('errors');
+var orProxy = require('data/objrefProxy');
 var util = require('util');
 var utils = require('utils');
 var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 
 
 GameObject.prototype.TSID_INITIAL = 'G';
@@ -38,13 +40,8 @@ function GameObject(data) {
 	utils.addNonEnumerable(this, 'deleted', false);
 	utils.addNonEnumerable(this, 'stale', false);
 	// copy supplied data
-	var key;
-	for (key in data) {
-		this[key] = data[key];
-	}
-	if (!this.ts) {
-		this.ts = new Date().getTime();
-	}
+	orProxy.copyOwnProps(data, this);
+	this.ts = this.ts || Date.now();
 	if (!this.gsTimers) this.gsTimers = {};
 	utils.makeNonEnumerable(this, 'gsTimers');
 }
@@ -61,7 +58,7 @@ utils.copyProps(require('model/GameObjectApi').prototype, GameObject.prototype);
  */
 GameObject.prototype.gsOnLoad = function gsOnLoad() {
 	if (this.onLoad) {
-		this.onLoad();
+		this.rqPush(this.onLoad);
 	}
 	this.resumeGsTimers();
 };
@@ -117,10 +114,50 @@ GameObject.prototype.toString = function toString() {
 
 
 /**
+ * Schedules this object to be released from the live object cache after the
+ * current request.
+ */
+GameObject.prototype.unload = function unload() {
+	log.debug('%s.unload', this);
+	this.stale = true;
+	var rc = RC.getContext(true);
+	if (rc) rc.setUnload(this);
+};
+
+
+/**
+ * Retrieves the right request queue to process operations on this object.
+ * Should be overridden by subclasses when appropriate.
+ *
+ * @returns {RequestQueue} the request queue for this object
+ */
+GameObject.prototype.getRQ = function getRQ() {
+	return RQ.getGlobal();
+};
+
+
+/**
+ * Convenience method: pushes the given function to the request queue this
+ * object is currently assigned to. The function will be called with `this`
+ * bound to the object.
+ *
+ * @param {function} func the function to enqueue
+ * @param {...*} [args] arbitrary arguments for the `func`
+ */
+GameObject.prototype.rqPush = function rqPush(func) {
+	var args = Array.prototype.slice.call(arguments, 1);
+	var f = func.bind.apply(func, [this].concat(args));
+	this.getRQ().push(func.name, f, undefined, {obj: this});
+};
+
+
+/**
  * Schedules this object for deletion after the current request.
  */
 GameObject.prototype.del = function del() {
+	log.info('GameObject.del: %s', this);  // TODO for broken objref debugging, remove when no longer needed
 	this.deleted = true;
+	this.unload();
 };
 
 
@@ -209,15 +246,13 @@ GameObject.prototype.setGsTimer = function setGsTimer(options) {
 		start: new Date().getTime(),
 		options: options,
 	};
-	// make sure update timer setup is persisted (gsTimers is non-enumerable)
-	RC.setDirty(this);
 };
 
 
 /**
  * Helper function for {@link GameObject#setGsTimer|setGsTimer}.
- * Actually schedules the (timer driven) function call, wrapped in a
- * separate {@link RequestContext}.
+ * Schedules the (timer driven) function call in the object's request queue
+ * (which may be a different one than the current queue).
  *
  * @param {object} options timer call options (see {@link
  *        GameObject#setGsTimer|setGsTimer} for details)
@@ -232,47 +267,50 @@ GameObject.prototype.scheduleTimer = function scheduleTimer(options, key) {
 			options.delay);
 		options.delay = 2147483647;
 	}
-	var handle = setTimeout(
-		function execTimer() {
-			var rc = new RC(options.fname, self);
-			rc.run(
-				function timerCall() {
-					log.trace({options: options}, 'timer call');
-					if (self.stale) {
-						throw new Error('stale object');
-					}
-					if (!options.interval) {
-						delete self.gsTimers[key];
-					}
-					try {
-						self.gsTimerExec(options);
-					}
-					catch (e) {
-						delete self.gsTimers[key];  // clean up
-						log.error(e, 'error calling %s.%s (interval: %s)', self,
-							options.fname, !!options.interval);
-						// don't rethrow - we want to make sure the offending
-						// timer/interval is not called again upon unload/reload
-						return;
-					}
-					// schedule next interval iteration (unless it was canceled)
-					if (self.gsTimers[key] && options.interval) {
-						delete self.gsTimers[key];
-						self.setGsTimer(options);
-					}
-					// make sure update timer setup is persisted
-					rc.setDirty(self);
-				},
-				function callback(e) {
-					if (e) {
-						log.error(e, 'error calling %s.%s (interval: %s)', self,
-							options.fname, !!options.interval);
-					}
-				}
-			);
-		}, options.delay
-	);
-	return handle;
+	var timerCall = function timerCall() {
+		log.trace({options: options}, 'timer call');
+		if (!options.interval) {
+			delete self.gsTimers[key];
+		}
+		try {
+			self.gsTimerExec(options);
+		}
+		catch (e) {
+			delete self.gsTimers[key];  // clean up
+			log.error(e, 'error calling %s.%s (interval: %s)', self,
+				options.fname, !!options.interval);
+			// don't rethrow - we want to make sure the offending
+			// timer/interval is not called again upon unload/reload
+			return;
+		}
+		// schedule next interval iteration (unless it was canceled)
+		if (self.gsTimers[key] && options.interval) {
+			delete self.gsTimers[key];
+			self.setGsTimer(options);
+		}
+	};
+	var execTimer = function execTimer() {
+		if (self.stale) {
+			log.error('timer call on stale object %s', self);
+			return;
+		}
+		var rq;
+		try {
+			rq = self.getRQ();
+			log.trace('RQ for %s.%s: %s', self, options.fname, rq);
+		}
+		catch (e) {
+			log.error(e, 'could not get RQ for %s.%s', self, options.fname);
+			return;
+		}
+		rq.push(options.fname, timerCall, function callback(e) {
+			if (e) {
+				log.error(e, 'error calling %s.%s (interval: %s)', self,
+					options.fname, !!options.interval);
+			}
+		}, {obj: self});
+	};
+	return setTimeout(execTimer, options.delay);
 };
 
 
@@ -312,7 +350,7 @@ GameObject.prototype.gsTimerExists = function gsTimerExists(fname, interval, act
 
 /**
  * Suspends all currently active timers/intervals on the object.
- * This must be called before unloading an object.
+ * Called from the persistence layer before unloading an object.
  */
 GameObject.prototype.suspendGsTimers = function suspendGsTimers() {
 	for (var key in this.gsTimers) {
@@ -402,8 +440,6 @@ GameObject.prototype.cancelGsTimer = function cancelGsTimer(fname, interval) {
 			ret = true;
 		}
 		delete this.gsTimers[fname];
-		// make sure update timer setup is persisted (gsTimers is non-enumerable)
-		RC.setDirty(this);
 	}
 	return ret;
 };

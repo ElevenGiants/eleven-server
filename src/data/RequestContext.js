@@ -8,7 +8,6 @@ var util = require('util');
 var wait = require('wait.for');
 var Fiber = require('wait.for/node_modules/fibers');
 var pers = require('data/pers');
-var utils = require('utils');
 
 
 /**
@@ -24,29 +23,26 @@ var utils = require('utils');
  * Fibers-based features like {@link
  * https://github.com/luciotato/waitfor|wait.for}.
  *
- * @param {string} [logtag] short text describing the nature or type of
- *        the request (just for logging)
- * @param {GameObject|string} [owner] game object on whose behalf the
- *        request is executed (commonly a {@link Player}), or its TSID
- *        (just for logging)
+ * @param {string} [tag] short text describing the nature or type of the request
+ *        (should uniquely identify the request within a client session)
+ * @param {GameObject|string} [owner] game object in whose queue the
+ *        request is executed (commonly a {@link Location} or {@link
+ *        Group}), respecively their TSID (just for logging)
  * @param {Session} [session] client session where the request
  *        originated (if applicable)
  *
  * @constructor
  */
-function RequestContext(logtag, owner, session) {
-	this.logtag = logtag;
+function RequestContext(tag, owner, session) {
+	this.tag = tag;
 	this.owner = owner;
 	this.session = session;
 	// request-local game object cache
 	this.cache = {};
-	// dirty object collectors for persistence
-	this.added = {};
+	// dirty object collector for persistence
 	this.dirty = {};
 	// objects scheduled for unloading after current request
 	this.unload = {};
-	// post-request-and-persistence callback (see setPostPersCallback)
-	this.postPersCallback = null;
 }
 
 
@@ -55,8 +51,9 @@ function RequestContext(logtag, owner, session) {
  * request-local persistence and exception handling. Fibers-based
  * functionality can be used anywhere within `func`.
  *
- * If the function finishes successfully, any modified game objects are
- * persisted (see {@link RequestContext#setDirty|setDirty}).
+ * If the function finishes successfully, modified game objects that were
+ * **explicitly** flagged as dirty are persisted (see
+ * {@link RequestContext#setDirty|setDirty}).
  *
  * @param {function} func function to run in request context
  * @param {function} [callback]
@@ -76,32 +73,23 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 	//jscs:disable safeContextKeyword
 	var rc = this;
 	//jscs:enable safeContextKeyword
-	var tag = util.format('%s/%s/%s', func.name, rc.owner, rc.logtag);
+	var logtag = util.format('%s/%s', rc.owner, rc.tag);
 	wait.launchFiber(function rcFiber() {
 		var res = null;
 		try {
 			Fiber.current.rc = rc;
 			// call function in fiber context
 			res = func();
-			log.debug('finished %s (%s dirty, %s added)', tag,
-				Object.keys(rc.dirty).length, Object.keys(rc.added).length);
+			log.debug('finished %s (%s dirty)', logtag, Object.keys(rc.dirty).length);
 		}
 		catch (err) {
 			/*jshint -W030 */  // trigger prepareStackTrace (parts of the trace might not be available outside the RC)
 			err.stack;
 			/*jshint +W030 */
-			pers.postRequestRollback(rc.dirty, rc.added, tag, function done() {
-				callback(err);
-			});
-			return;
+			return callback(err);
 		}
 		// persist modified objects
-		pers.postRequestProc(rc.dirty, rc.added, rc.unload, tag, function done() {
-			// invoke special post-persistence callback if there is one
-			if (typeof rc.postPersCallback === 'function') {
-				rc.postPersCallback();
-			}
-			// continue with "regular" request context callback
+		pers.postRequestProc(rc.dirty, rc.unload, logtag, function done() {
 			if (waitPers) {
 				return callback(null, res);
 			}
@@ -135,21 +123,6 @@ RequestContext.getContext = function getContext(relaxed) {
 
 
 /**
- * Class method for serializing the `rc` field in bunyan log calls.
- *
- * @see {@link https://github.com/trentm/node-bunyan#serializers}
- * @static
- * @private
- */
-RequestContext.logSerialize = function logSerialize(rc) {
-	var ret = {};
-	if (rc.logtag) ret.logtag = rc.logtag;
-	if (rc.owner) ret.owner = '' + rc.owner;
-	return ret;
-};
-
-
-/**
  * Flags the given (existing/not newly created) game object as dirty, causing it
  * to be written to persistent storage at the end of the current request. Does
  * nothing when called without an active request context.
@@ -163,34 +136,26 @@ RequestContext.setDirty = function setDirty(obj) {
 
 
 /**
- * Flags the given game object as dirty, causing it to be written to
- * persistent storage at the end of the current request (if the request
- * finishes successfully). Can only be called from within a request
- * (see {@link RequestContext#run|run}).
+ * Explicitly flags the given game object as dirty, causing it to be written to
+ * persistent storage at the end of the current request (if the request finishes
+ * successfully). Can only be called from within a request (see
+ * {@link RequestContext#run|run}).
  *
  * @param {GameObject} obj the new or updated object
- * @param {boolean} [added] `true` if `obj` is a newly created object
  */
-RequestContext.prototype.setDirty = function setDirty(obj, added) {
-	if (added) {
-		this.added[obj.tsid] = obj;
-	}
-	else if (!(obj.tsid in this.added)) {
-		this.dirty[obj.tsid] = obj;
-	}
+RequestContext.prototype.setDirty = function setDirty(obj) {
+	this.dirty[obj.tsid] = obj;
 };
 
 
 /**
  * Schedules a game object for unloading from the live object cache at
  * the end of the current request. Can only be called from within a
- * request (see {@link RequestContext#run|run}). This includes {@link
- * RequestContext#setDirty|setDirty}.
+ * request (see {@link RequestContext#run|run}).
  *
  * @param {GameObject} obj
  */
 RequestContext.prototype.setUnload = function setUnload(obj) {
-	utils.addNonEnumerable(obj, 'stale', true);
 	this.unload[obj.tsid] = obj;
 };
 

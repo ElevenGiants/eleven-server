@@ -28,8 +28,9 @@ var util = require('util');
 var vm = require('vm');
 var bunyan = require('bunyan');
 var config = require('config');
+var lodash = require('lodash');
 var pers = require('data/pers');
-var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 var gsjsBridge = require('model/gsjsBridge');
 var globalApi = require('model/globalApi');
 var rpc = require('data/rpc');
@@ -93,7 +94,9 @@ function handleConnect(socket) {
 	r.context.config = config;
 	r.context.logging = logging;
 	r.context.bunyan = bunyan;
-	r.sessionMgr = sessionMgr;
+	r.context.sessionMgr = sessionMgr;
+	r.context.rq = RQ;
+	r.context.ld = lodash;
 }
 
 
@@ -112,12 +115,10 @@ function getReplEval(addr, socket) {
 			log.trace({client: addr}, 'parse error: %s', e.message);
 			return replCallback(e);
 		}
-		// run Script in a separate request context (so changes are persisted
-		// and errors can be handled safely)
+		// run Script in a separate request context
 		log.info({client: addr}, code);
-		var rc = new RC('repl', addr);
-		rc.run(
-			function replEval() {
+		RQ.getGlobal('repl').push('repl.' + addr,
+			function req() {
 				var res = script.runInContext(context, {displayErrors: false});
 				return util.inspect(res, {showHidden: false, depth: 1, colors: true});
 			},
@@ -136,7 +137,8 @@ function getReplEval(addr, socket) {
 						socket.destroy();
 					}
 				}
-			}, true
+			},
+			{waitPers: true}
 		);
 	};
 }

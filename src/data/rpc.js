@@ -1,4 +1,5 @@
 'use strict';
+/*jshint -W072 */  // function parameters prescribed by RPC API
 
 /**
  * Module for management of the transparent RPC connections between
@@ -42,6 +43,7 @@ var metrics = require('metrics');
 var orProxy = require('data/objrefProxy');
 var pers = require('data/pers');
 var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 var rpcApi = require('data/rpcApi');
 var rpcProxy = require('data/rpcProxy');
 var utils = require('utils');
@@ -277,7 +279,8 @@ function sendObjRequest(objOrTsid, fname, args, callback) {
 			gsid, objOrTsid), e);
 	}
 	var tsid = typeof objOrTsid === 'string' ? objOrTsid : objOrTsid.tsid;
-	return sendRequest(gsid, 'obj', [tsid, fname, args], callback);
+	var tag = RC.getContext(true) ? RC.getContext().tag + '.' + fname : null;
+	return sendRequest(gsid, 'obj', [tsid, tag, fname, args], callback);
 }
 
 
@@ -325,6 +328,7 @@ function sendRequest(gsid, rpcFunc, args, callback) {
 	var rpcArgs = [config.getGsid()].concat(args);
 	if (callback) {
 		client.request(rpcFunc, rpcArgs, function cb(err, res) {
+			log.trace('%s returned', logmsg);
 			orProxy.proxify(ret);
 			callback(err, res);
 		});
@@ -349,9 +353,9 @@ function sendRequest(gsid, rpcFunc, args, callback) {
  *
  * @param {string} callerId ID of the component requesting the function
  *        call (for logging)
- * @param {object|string} objOrTsid either an object whose function
- *        with the given name should be called, or the TSID of a game
- *        object
+ * @param {object} obj the object on which a function should be called
+ * @param {string|null} tag ID tag of ongoing request process this RPC belongs
+ *        to (if any)
  * @param {string} fname name of the function to call on the object
  * @param {array} args function call arguments
  * @param {function} callback
@@ -361,43 +365,40 @@ function sendRequest(gsid, rpcFunc, args, callback) {
  * callback for the RPC library, returning the result (or errors) to
  * the remote caller
  */
-function handleRequest(callerId, objOrTsid, fname, args, callback) {
+function handleRequest(callerId, obj, tag, fname, args, callback) {
 	metrics.increment('net.rpc.rx', 0.01);
+	if (!obj || typeof obj[fname] !== 'function') {
+		var msg = util.format('no such function: %s.%s', obj, fname);
+		return callback(new RpcError(msg));
+	}
 	orProxy.proxify(args);  // unmarshal arguments
-	var logmsg = util.format('RPC from %s: %s.%s', callerId, objOrTsid, fname);
-	log.debug('%s(%s)', logmsg, args instanceof Array ? args.join(', ') : args);
-	// process RPC in its own request context
-	var rc = new RC(objOrTsid + '.' + fname, 'rpc.' + callerId);
-	rc.run(
-		function rpcReq() {
-			var obj = objOrTsid;
-			if (typeof obj === 'string') {
-				obj = pers.get(obj);
-			}
-			if (!obj || typeof obj[fname] !== 'function') {
-				throw new RpcError(util.format('no such function: %s.%s',
-					objOrTsid, fname));
-			}
-			var ret = obj[fname].apply(obj, args);
-			// convert <undefined> result to <null> so RPC lib produces a valid
-			// response (it just omits the <result> property otherwise)
-			if (ret === undefined) ret = null;
-			return ret;
-		},
-		function rpcReqCallback(err, res) {
-			if (err) {
-				log.error(err, 'exception in %s', logmsg);
-			}
-			if (typeof callback !== 'function') {
-				log.error('%s called without a valid callback', logmsg);
-			}
-			else {
-				res = orProxy.refify(res);  // marshal return value
-				callback(err, res);
-			}
-		},
-		true  // make sure changes are persisted before returning RPC
-	);
+	var logtag = util.format('%s.%s.%s', callerId, obj.tsid ? obj.tsid : obj, fname);
+	log.debug('%s(%s)', logtag, args instanceof Array ? args.join(', ') : args);
+	var rpcReq = function rpcReq() {
+		var ret = obj[fname].apply(obj, args);
+		// convert <undefined> result to <null> so RPC lib produces a valid
+		// response (it just omits the <result> property otherwise)
+		if (ret === undefined) ret = null;
+		return ret;
+	};
+	var rpcCallback = function rpcCallback(err, res) {
+		if (err) {
+			log.error(err, 'exception in %s', logtag);
+		}
+		if (typeof callback !== 'function') {
+			log.error('%s called without a valid callback', logtag);
+		}
+		else {
+			log.trace('%s finished', logtag);
+			res = orProxy.refify(res);  // marshal return value
+			return callback(err, res);
+		}
+	};
+	var rq = RQ.getGlobal('rpc');
+	if (obj.tsid && isLocal(obj) && typeof obj.getRQ === 'function') {
+		rq = obj.getRQ();
+	}
+	rq.push(tag, rpcReq, rpcCallback, {waitPers: true});
 }
 
 
@@ -407,13 +408,31 @@ function handleRequest(callerId, objOrTsid, fname, args, callback) {
  *
  * @param {string} callerId ID of the calling component (for logging)
  * @param {string} tsid TSID of the game object to call the function on
+ * @param {string|null} tag ID tag of ongoing request process this RPC belongs
+ *        to (if any)
  * @param {string} fname name of the function to call on the object
  * @param {array} args function call arguments
  * @param {function} callback callback for the RPC library, returning
  *        the result (or errors) to the remote caller
  */
-function objectRequest(callerId, tsid, fname, args, callback) {
-	handleRequest(callerId, tsid, fname, args, callback);
+function objectRequest(callerId, tsid, tag, fname, args, callback) {
+	// backwards compatibility with external components
+	if (arguments.length === 5) {
+		callback = args;
+		args = fname;
+		fname = tag;
+		tag = null;
+	}
+	RQ.getGlobal('persget').push('rpc.get.' + tsid,
+		pers.get.bind(null, tsid),
+		function cb(err, obj) {
+			if (err) {
+				log.error(err, 'error loading %s for RPC', tsid);
+				return;
+			}
+			handleRequest(callerId, obj, tag, fname, args, callback);
+		}
+	);
 }
 
 
@@ -428,7 +447,7 @@ function objectRequest(callerId, tsid, fname, args, callback) {
  *        the result (or errors) to the remote caller
  */
 function globalApiRequest(callerId, fname, args, callback) {
-	handleRequest(callerId, globalApi, fname, args, callback);
+	handleRequest(callerId, globalApi, null, fname, args, callback);
 }
 
 
@@ -443,7 +462,8 @@ function globalApiRequest(callerId, fname, args, callback) {
  *        the result (or errors) to the remote caller
  */
 function adminRequest(callerId, fname, argsObject, callback) {
-	handleRequest(callerId, gsjsBridge.getAdmin(), fname, [argsObject], callback);
+	handleRequest(callerId, gsjsBridge.getAdmin(), null, fname, [argsObject],
+		callback);
 }
 
 
@@ -458,7 +478,7 @@ function adminRequest(callerId, fname, argsObject, callback) {
  *        the result (or errors) to the remote caller
  */
 function gsApiRequest(callerId, fname, args, callback) {
-	handleRequest(callerId, rpcApi, fname, args, callback);
+	handleRequest(callerId, rpcApi, null, fname, args, callback);
 }
 
 
@@ -612,3 +632,4 @@ function getOnClientShutdownHandler(gsid) {
 		log.info('[jrpc client for %s] shutdown', gsid);
 	};
 }
+/*jshint +W072 */

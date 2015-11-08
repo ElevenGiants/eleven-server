@@ -11,12 +11,6 @@ suite('IdObjRefMap', function () {
 			var oh = new IdObjRefMap();
 			assert.strictEqual(oh.length, 0);
 		});
-
-		test('JSON serialization skips everything but data properties', function () {
-			var iorm = new IdObjRefMap({x: 'x', y: {z: 'z'}});
-			assert.strictEqual(JSON.stringify(iorm),
-				'{"x":"x","y":{"z":"z"}}');
-		});
 	});
 
 
@@ -40,28 +34,28 @@ suite('IdObjRefMap', function () {
 	suite('apiIterate', function () {
 
 		test('works without class_tsid parameter', function () {
-			var iorm = new IdObjRefMap({
-				x: {id: 'x', class_tsid: 'cx'},
-				y: {id: 'y', class_tsid: 'cy'},
-				z: {id: 'z'},
-			});
+			var iorm = new IdObjRefMap([
+				{tsid: 'x', class_tsid: 'cx'},
+				{tsid: 'y', class_tsid: 'cy'},
+				{tsid: 'z'},
+			]);
 			var visited = [];
 			iorm.apiIterate(function (o) {
-				visited.push(o.id);
+				visited.push(o.tsid);
 			});
 			assert.sameMembers(visited, ['x', 'y', 'z']);
 		});
 
 		test('works with class_tsid parameter', function () {
-			var iorm = new IdObjRefMap({
-				w: {id: 'w', class_tsid: 'cx'},
-				x: {id: 'x', class_tsid: 'cx'},
-				y: {id: 'y', class_tsid: 'cy'},
-				z: {id: 'z'},
-			});
+			var iorm = new IdObjRefMap([
+				{tsid: 'w', class_tsid: 'cx'},
+				{tsid: 'x', class_tsid: 'cx'},
+				{tsid: 'y', class_tsid: 'cy'},
+				{tsid: 'z'},
+			]);
 			var visited = [];
 			iorm.apiIterate('cx', function (o) {
-				visited.push(o.id);
+				visited.push(o.tsid);
 			});
 			assert.sameMembers(visited, ['w', 'x']);
 		});

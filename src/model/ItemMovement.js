@@ -52,6 +52,12 @@ var FLOCK_REPEL_DIST_SQUARED = 100 * 100;
  */
 function ItemMovement(item) {
 	this.item = item;
+	// initialize with previous parameters after deserialization, if applicable
+	if (item.gsMovement) {
+		Object.keys(item.gsMovement).forEach(function set(k) {
+			this[k] = item.gsMovement[k];
+		}, this);
+	}
 }
 
 
@@ -361,7 +367,7 @@ ItemMovement.prototype.moveFlying = function moveFlying(nextPath) {
 		return {forceStop: MOVE_CB_STATUS.ARRIVED};
 	}
 	// otherwise, set new destination within the flight area if necessary
-	if (!('x' in nextPath) || this.item.x === nextPath.x) {
+	if (!('x' in nextPath) || (!nextPath.stopAtEnd && this.item.x === nextPath.x)) {
 		this.nextFlightPath(nextPath);
 	}
 	var dirX = this.dirX(nextPath.x);
@@ -535,10 +541,10 @@ ItemMovement.prototype.flockAlign = function flockAlign(nextPath, neighbours) {
 		var dy = this.item.y - n.y;
 		var dd = dx * dx + dy * dy;
 		if (dd > 0 && dd < FLOCK_RADIUS_SQUARED) {
-			if (n.movement && n.movement.path &&
-				n.movement.path.length > 0 && 'vx' in n.movement.path[0]) {
-				alignVx += n.movement.path[0].vx;
-				alignVy += n.movement.path[0].vy;
+			if (n.gsMovement && n.gsMovement.path &&
+				n.gsMovement.path.length > 0 && 'vx' in n.gsMovement.path[0]) {
+				alignVx += n.gsMovement.path[0].vx;
+				alignVy += n.gsMovement.path[0].vy;
 				alignCount++;
 			}
 		}

@@ -5,6 +5,7 @@ var config = rewire('config');
 var rpc = rewire('data/rpc');
 var persMock = require('../../mock/pers');
 var orProxy = require('data/objrefProxy');
+var RQ = require('data/RequestQueue');
 var Geo = require('model/Geo');
 var Location = require('model/Location');
 var Player = require('model/Player');
@@ -18,11 +19,13 @@ suite('rpc', function () {
 	setup(function () {
 		rpc.__set__('pers', persMock);
 		persMock.reset();
+		RQ.init();
 	});
 
 	teardown(function () {
 		persMock.reset();
 		rpc.__set__('pers', require('data/pers'));
+		RQ.init();
 	});
 
 

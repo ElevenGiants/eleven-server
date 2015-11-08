@@ -10,7 +10,7 @@ var Prop = require('model/Property');
 var Bag = require('model/Bag');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
-var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 var util = require('util');
 var utils = require('utils');
 var lodash = require('lodash');
@@ -138,8 +138,7 @@ utils.copyProps(require('model/PlayerApi').prototype, Player.prototype);
  *
  * @param {object} [data] player data; must contain everything required
  *        for a new player
- * @returns {object} a `Player` instance wrapped in a {@link
- * module:data/persProxy|persistence proxy}
+ * @returns {object} a `Player` object
  */
 Player.create = function create(data) {
 	assert(typeof data === 'object', 'minimal player data set required');
@@ -199,8 +198,25 @@ Player.prototype.serialize = function serialize() {
 
 
 /**
- * Initializes the instance for an active player; called when a client
- * is actually logging in on this GS as this player.
+ * Retrieves the request queue for this player (typically, the queue of the
+ * location the player is currently in).
+ *
+ * @returns {RequestQueue} the request queue for this player
+ */
+Player.prototype.getRQ = function getRQ() {
+	if (this.location && rpc.isLocal(this.location)) {
+		return RQ.get(this.location);
+	}
+	else {
+		return RQ.getGlobal();
+	}
+};
+
+
+/**
+ * Initializes the instance for an active player; needs to be called first when
+ * a client is actually logging in on this GS, to enable sending messages back
+ * to the client.
  *
  * @param {Session} session the session for the connected client
  * @param {boolean} isRelogin `true` if the client is already in-game
@@ -215,9 +231,12 @@ Player.prototype.onLoginStart = function onLoginStart(session, isRelogin) {
 			noCatchUp: true});
 	}
 	if (isRelogin) {
-		this.onRelogin();
+		this.rqPush(this.onRelogin);
 	}
 	else {
+		// not in RQ since GSJS code processing the login_start request relies
+		// on the player being fully initialized, which may not always be the
+		// case (e.g. players in fixtures not having their DCs etc. yet)
 		this.onLogin();
 	}
 	if (auth.getTokenLifespan() > 0) {
@@ -248,15 +267,15 @@ Player.prototype.onDisconnect = function onDisconnect() {
 		// remove from location, onExit callbacks etc.
 		this.startMove();
 		// GSJS logout event
-		this.onLogout();
+		this.rqPush(this.onLogout);
 		// let other clients in same location know we're gone
 		this.location.send({
 			type: 'pc_logout',
 			pc: {tsid: this.tsid, label: this.label},
 		}, false, this);
+		// stop timers etc and unload from live object cache
+		this.rqPush(this.unload);
 	}
-	// in any case, stop timers etc and unload from live object cache
-	this.unload();
 	// unlink the session, so this function won't be accidentally called again
 	this.session = null;
 };
@@ -283,64 +302,6 @@ Player.prototype.refreshToken = function refreshToken() {
  */
 Player.prototype.isConnected = function isConnected() {
 	return this.session !== undefined && this.session !== null;
-};
-
-
-/**
- * Removes the player and all related objects (inventory items, DCs,
- * quests etc) from the GS live object cache (or more specifically,
- * schedules their removal at the end of the current request).
- */
-Player.prototype.unload = function unload() {
-	log.debug('%s.unload', this);
-	var objects = this.getConnectedObjects();
-	for (var k in objects) {
-		RC.getContext().setUnload(objects[k]);
-	}
-};
-
-
-/**
- * Creates a flat hash of all game objects that are "contained" in this
- * player (bags, items, DCs, quests), including the player object
- * itself.
- *
- * @returns {object} an object with TSIDs as prop names and {@link
- *          GameObject} instances as properties
- * @private
- */
-Player.prototype.getConnectedObjects = function getConnectedObjects() {
-	// collect objects in a hash (object with TSIDs as property names) to
-	// implicitly avoid duplicate entries
-	var ret = {};
-	// get all bags and items
-	var inventory = this.getAllItems(true, false);
-	for (var k in inventory) {
-		ret[inventory[k].tsid] = inventory[k];
-	}
-	// get all DCs and quests
-	var hashes = [this, this.jobs, this.friends];
-	if (this.quests) {
-		hashes.push(this.quests);
-		if (this.quests.todo) hashes.push(this.quests.todo.quests);
-		if (this.quests.done) hashes.push(this.quests.done.quests);
-		if (this.quests.fail_repeat) hashes.push(this.quests.fail_repeat.quests);
-		if (this.quests.misc) hashes.push(this.quests.misc.quests);
-	}
-	hashes.forEach(function collectDCs(hash) {
-		if (typeof hash !== 'object') return;  // guard against uninitialized structures
-		Object.keys(hash).forEach(function iter(k) {
-			var prop = hash[k];
-			if (typeof prop === 'object' && (utils.isDC(prop) || utils.isQuest(prop))) {
-				ret[prop.tsid] = prop;
-			}
-		});
-	});
-	// add player itself
-	ret[this.tsid] = this;
-	return ret;
-	// Yes, this function contains way too much game specific knowledge about
-	// the GSJS player data. A more generic solution would be preferable.
 };
 
 
@@ -429,14 +390,15 @@ Player.prototype.gsMoveCheck = function gsMoveCheck(newLocId) {
 		hostport: gsConf.hostPort,
 		token: token,
 	});
-	// set up callback that will tell the client to reconnect to the new GS
-	// once the current request is finished
+	// set up next request that will tell the client to reconnect to the new GS
 	var self = this;
-	RC.getContext().setPostPersCallback(function triggerReconnect() {
-		if (self.isConnected()) {
-			self.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
-		}
-	});
+	this.getRQ().push('unload', this.unload.bind(this),
+		function triggerReconnect() {
+			if (self.isConnected()) {
+				self.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
+				self.session = null;  // cut the cord
+			}
+		}, {waitPers: true, obj: this, session: this.session});
 	var ret = utils.shallowCopy(gsConf);
 	ret.token = token;
 	return ret;
@@ -718,7 +680,7 @@ Player.prototype.handleCollision = function handleCollision(it, hitBox, hitBoxNa
 			if (!this['!colliders'][hitBoxName]) {
 				log.trace('%s entered location hitbox "%s"', this, hitBoxName);
 				// call the handler for this hitbox
-				this.location.hitBox(this, hitBoxName, hit);
+				this.location.rqPush(this.location.hitBox, this, hitBoxName, hit);
 				// "abuse" player's colliders list to keep track of location hitboxes we're in
 				this['!colliders'][hitBoxName] = t;
 			}
@@ -728,7 +690,7 @@ Player.prototype.handleCollision = function handleCollision(it, hitBox, hitBoxNa
 			if (hitBoxName || !it['!colliders'][this.tsid]) {
 				log.trace('%s entered/inside hitbox "%s" of %s', this, hitBoxName, it);
 				// call item's collision handler
-				it.onPlayerCollision(this, hitBoxName);
+				it.rqPush(it.onPlayerCollision, this, hitBoxName);
 				// keep track of player in the item's hitbox
 				if (!hitBoxName) {
 					it['!colliders'][this.tsid] = t;
@@ -745,7 +707,7 @@ Player.prototype.handleCollision = function handleCollision(it, hitBox, hitBoxNa
 				delete this['!colliders'][hitBoxName];
 				// call the handler for leaving the hitbox (if any)
 				if (this.location.onLeavingHitBox) {
-					this.location.onLeavingHitBox(this, hitBoxName);
+					this.location.rqPush(this.location.onLeavingHitBox, this, hitBoxName);
 				}
 			}
 		}
@@ -756,7 +718,7 @@ Player.prototype.handleCollision = function handleCollision(it, hitBox, hitBoxNa
 			delete it['!colliders'][this.tsid];
 			// call the handler for leaving the item's hitbox (if any)
 			if (it.onPlayerLeavingCollisionArea) {
-				it.onPlayerLeavingCollisionArea(this);
+				it.rqPush(it.onPlayerLeavingCollisionArea, this);
 			}
 		}
 	}

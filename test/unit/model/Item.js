@@ -6,9 +6,19 @@ var Bag = require('model/Bag');
 var Player = require('model/Player');
 var Geo = require('model/Geo');
 var Location = require('model/Location');
+var RQ = require('data/RequestQueue');
 
 
 suite('Item', function () {
+
+	setup(function () {
+		RQ.init();
+	});
+
+	teardown(function () {
+		RQ.init();
+	});
+
 
 	suite('ctor', function () {
 
@@ -208,11 +218,17 @@ suite('Item', function () {
 		test('sends appropriate onContainerChanged events', function (done) {
 			var it = getTestItem('IT');
 			it.onContainerChanged = function onContainerChanged(prev, curr) {
-				assert.strictEqual(prev.tsid, 'LX');
-				assert.strictEqual(curr.tsid, 'BX');
-				done();
+				if (prev) {
+					assert.strictEqual(prev.tsid, 'LX');
+					assert.strictEqual(curr.tsid, 'BX');
+					done();
+				}
+				else {
+					// no previous container
+					assert.strictEqual(curr.tsid, 'LX');
+				}
 			};
-			it.setContainer(new Location({tsid: 'LX'}, new Geo()), 0, 0);  // does not trigger onContainerChanged (no previous container)
+			it.setContainer(new Location({tsid: 'LX'}, new Geo()), 0, 0);
 			it.setContainer(new Bag({tsid: 'BX', tcont: 'LDUMMY'}), 3, 7);
 		});
 

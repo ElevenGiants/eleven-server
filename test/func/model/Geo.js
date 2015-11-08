@@ -40,7 +40,6 @@ suite('Geo', function () {
 			new RC().run(
 				function () {
 					var g = Geo.create();
-					assert.isTrue(g.__isPP);
 					assert.isTrue(utils.isGeo(g));
 				},
 				function cb(err, res) {

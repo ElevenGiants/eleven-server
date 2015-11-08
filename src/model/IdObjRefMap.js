@@ -3,6 +3,7 @@
 module.exports = IdObjRefMap;
 
 
+var orProxy = require('data/objrefProxy');
 var utils = require('utils');
 
 
@@ -11,12 +12,26 @@ var utils = require('utils');
  * properties with their TSIDs as names), providing a `length`
  * property and an iterator helper function.
  *
- * @param {object} [data] optional initial content (properties are
- *        shallow-copied into the map)
+ * @param {array} [data] optional initial content (array elements are
+ *        shallow-copied into the map; objref descriptors are copied
+ *        without loading the referenced objects)
  * @constructor
  */
 function IdObjRefMap(data) {
-	utils.copyProps(data, this);
+	if (data && !(data instanceof Array)) {
+		throw new TypeError('invalid data type for IdObjRefMap: ' + typeof data);
+	}
+	for (var i = 0; data && (i < data.length); i++) {
+		var obj = data[i];
+		if (obj.__isORP) {
+			orProxy.setupObjRefProp(obj.tsid, this, obj.tsid);
+		}
+		else {
+			// if the object is already loaded, we don't need the accessor
+			// property (and this allows tests without persistence layer)
+			this[obj.tsid] = obj;
+		}
+	}
 }
 
 
@@ -59,4 +74,5 @@ IdObjRefMap.prototype.apiIterate = function apiIterate(classTsid, func) {
 		}
 	}
 };
+// hide function from for...in loops on IdObjRefMap instances:
 utils.makeNonEnumerable(IdObjRefMap.prototype, 'apiIterate');

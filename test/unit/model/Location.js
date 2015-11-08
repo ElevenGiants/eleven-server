@@ -7,9 +7,19 @@ var Bag = require('model/Bag');
 var Player = require('model/Player');
 var pers = require('data/pers');
 var pbeMock = require('../../mock/pbe');
+var RQ = require('data/RequestQueue');
 
 
 suite('Location', function () {
+
+	setup(function () {
+		RQ.init();
+	});
+
+	teardown(function () {
+		RQ.init();
+	});
+
 
 	function getDummyGeo() {
 		// blank dummy object to prevent Location from trying to retrieve
@@ -88,6 +98,11 @@ suite('Location', function () {
 			var b = new Bag({tsid: 'B1', items: [i]});
 			i.container = b;
 			var l = new Location({items: [b]}, new Geo());
+			l.getRQ = function mockGetRQ() {
+				return {
+					push: function push() {},
+				};
+			};
 			b.container = l;
 			l.del();
 			assert.isTrue(l.deleted);
@@ -348,7 +363,7 @@ suite('Location', function () {
 
 	suite('gsOnPlayerEnter', function () {
 
-		test('calls onEnter callbacks', function () {
+		test('calls onEnter callbacks', function (done) {
 			var itemOnPlayerEnterCalled = false;
 			var locOnPlayerEnterCalled = false;
 			var i = new Item({tsid: 'I'});
@@ -357,14 +372,14 @@ suite('Location', function () {
 			i.onPlayerEnter = function (player) {
 				itemOnPlayerEnterCalled = true;
 				assert.strictEqual(player, p);
+				if (locOnPlayerEnterCalled) return done();
 			};
 			l.onPlayerEnter = function (player) {
 				locOnPlayerEnterCalled = true;
 				assert.strictEqual(player, p);
+				if (itemOnPlayerEnterCalled) return done();
 			};
 			l.gsOnPlayerEnter(p);
-			assert.isTrue(itemOnPlayerEnterCalled);
-			assert.isTrue(locOnPlayerEnterCalled);
 		});
 	});
 });

@@ -2,8 +2,8 @@
 
 var path = require('path');
 var pers = require('data/pers');
-var persProxy = require('data/persProxy');
 var RC = require('data/RequestContext');
+var RQ = require('data/RequestQueue');
 var pbeMock = require('../../mock/pbe');
 var Location = require('model/Location');
 var Geo = require('model/Geo');
@@ -20,12 +20,14 @@ suite('Location', function () {
 		// initialize gsjsBridge data structures (empty) without loading all the prototypes
 		gsjsBridge.init(true);
 		pers.init(pbeMock);
+		RQ.init();
 	});
 
 	teardown(function () {
 		// reset gsjsBridge so the cached prototypes don't influence other tests
 		gsjsBridge.reset();
 		pers.init();  // disable mock back-end
+		RQ.init();
 	});
 
 
@@ -48,30 +50,6 @@ suite('Location', function () {
 		});
 
 
-		test('Location initialization does not flag Location or Geo as dirty',
-			function (done) {
-			var rc = new RC();
-			rc.run(function () {
-				var g = persProxy.makeProxy(new Geo({tsid: 'GX'}));
-				persProxy.makeProxy(new Location({tsid: 'LX'}, g));
-				assert.strictEqual(Object.keys(rc.dirty).length, 0);
-			}, done);
-		});
-
-		test('geometry changes do not set dirty flag for Location', function (done) {
-			var g = persProxy.makeProxy(new Geo(
-				{tsid: 'GX', layers: {middleground: {doors: {}}}}));
-			var l = persProxy.makeProxy(new Location({tsid: 'LX'}, g));
-			var rc = new RC();
-			rc.run(function () {
-				l.geometry.layers.middleground.doors.d = {
-					connect: {target: {label: 'china', tsid: 'LABC'}},
-				};
-				l.updateGeo();
-				assert.deepEqual(Object.keys(rc.dirty), ['GX']);
-			}, done);
-		});
-
 		test('replacing the whole geometry with a plain object is handled right',
 			function (done) {
 			// GSJS does that (loc.geometry = {})
@@ -82,16 +60,10 @@ suite('Location', function () {
 				l.geometry = {something: 'foomp', tsid: 'GFOO'};
 				l.updateGeo();
 				// check that object was converted to Geo
-				assert.instanceOf(l.geometry.__proxyTarget, Geo);
+				assert.instanceOf(l.geometry, Geo);
 				assert.strictEqual(l.geometry.something, 'foomp');
 				assert.strictEqual(l.geometry.tsid, 'GX',
 					'TSID changed back according to Location TSID');
-				// check that it will be persisted
-				assert.deepEqual(Object.keys(rc.added), ['GX']);
-				var newG = rc.added.GX;
-				assert.instanceOf(newG.__proxyTarget, Geo);
-				assert.strictEqual(newG.tsid, 'GX');
-				assert.strictEqual(newG.something, 'foomp');
 			}, done);
 		});
 
@@ -119,8 +91,12 @@ suite('Location', function () {
 			new RC().run(
 				function () {
 					var g = Geo.create();
+<<<<<<< HEAD
 					var l = Location.create({geo: g});
 					assert.isTrue(l.__isPP);
+=======
+					var l = Location.create(g);
+>>>>>>> master
 					assert.isTrue(utils.isLoc(l));
 					assert.strictEqual(l.class_tsid, 'town');
 					assert.strictEqual(l.tsid.substr(1), g.tsid.substr(1));
@@ -188,26 +164,45 @@ suite('Location', function () {
 
 	suite('unload', function () {
 
+		this.slow(1000);
+
 		test('does its job', function (done) {
-			var i1, i2, b, l;
+			var i1, i2, b, l, g;
 			var rc = new RC();
+			var unloadCount = 0;
 			rc.run(
 				function () {
+					g = Geo.create();
+					l = Location.create(g);
 					i1 = Item.create('apple');
+<<<<<<< HEAD
 					i2 = Item.create('banana');
 					b = new Bag({class_tsid: 'bag_bigger_green', items: [i2]});
 					l = Location.create({geo: Geo.create()});
+=======
+>>>>>>> master
 					l.addItem(i1, 12, 13);
+					i2 = Item.create('banana');
+					b = Bag.create('bag_bigger_green');
 					l.addItem(b, 12, 13);
-					l.unload();
-				},
-				function callback(err, res) {
-					if (err) return done(err);
-					assert.sameMembers(Object.keys(rc.unload),
-						[i1.tsid, i2.tsid, b.tsid, l.geometry.tsid, l.tsid]);
-					done();
+					b.addToSlot(i2, 0);
+					l.suspendGsTimers = g.suspendGsTimers = b.suspendGsTimers =
+						i1.suspendGsTimers = i2.suspendGsTimers = function check() {
+						unloadCount++;
+					};
+					var rq = l.getRQ();
+					l.unload(function (err) {
+						if (err) return done(err);
+						assert.isTrue(rq.closing);
+					});
 				}
 			);
+			// RQ is closed asynchronously in rq.next, so defer the rest of the test a bit
+			setTimeout(function checkRqShutown() {
+				assert.strictEqual(unloadCount, 5);
+				assert.isUndefined(RQ.get(l.tsid, true));
+				done();
+			}, 100);
 		});
 	});
 

@@ -30,7 +30,6 @@ suite('DataContainer', function () {
 				function () {
 					var group = Group.create();
 					var dc = DataContainer.create(group);
-					assert.isTrue(dc.__isPP);
 					assert.isTrue(utils.isDC(dc));
 					assert.strictEqual(dc.owner, group);
 				},

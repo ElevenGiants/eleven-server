@@ -6,6 +6,7 @@ module.exports = Quest;
 var assert = require('assert');
 var GameObject = require('model/GameObject');
 var pers = require('data/pers');
+var RQ = require('data/RequestQueue');
 var util = require('util');
 var utils = require('utils');
 
@@ -34,12 +35,27 @@ function Quest(data) {
  * @param {string} classTsid specific class of the quest
  * @param {Location|Player} owner top-level game object this quest
  *        belongs to
- * @returns {object} a `Quest` instance wrapped in a {@link
- * module:data/persProxy|persistence proxy}
+ * @returns {object} a `Quest` object
  */
 Quest.create = function create(classTsid, owner) {
 	assert(utils.isLoc(owner) || utils.isPlayer(owner), util.format(
 		'invalid Quest owner: %s', owner));
 	var quest = pers.create(Quest, {class_tsid: classTsid, owner: owner});
 	return quest;
+};
+
+
+/**
+ * Retrieves the request queue for this quest (typically, the queue of its
+ * owner).
+ *
+ * @returns {RequestQueue} the request queue for this DC
+ */
+Quest.prototype.getRQ = function getRQ() {
+	if (this.owner) {
+		return this.owner.getRQ();
+	}
+	else {
+		return RQ.getGlobal();
+	}
 };

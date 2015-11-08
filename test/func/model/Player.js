@@ -43,12 +43,12 @@ suite('Player', function () {
 						location: l,
 						skip_newux: true,  // just so we're not reliant on newux location data
 					});
-					assert.isTrue(p.__isPP);
 					assert.isTrue(utils.isPlayer(p));
 					assert.strictEqual(p.class_tsid, 'human');
 					assert.strictEqual(p.label, 'Edgar');
 					assert.isTrue(utils.isDC(p.skills));
 					assert.isTrue(utils.isDC(p.quests.todo));
+					p.unload();
 				},
 				function cb(err, res) {
 					if (err) return done(err);
