@@ -67,26 +67,29 @@ Geo.prototype.getRQ = function getRQ() {
 Geo.prototype.prepConnects = function prepConnects() {
 	if (this.layers && this.layers.middleground) {
 		var mg = this.layers.middleground;
-		var i, k;
+		var i, k, tsid;
 		for (k in mg.signposts) {
 			var signpost = mg.signposts[k];
+			utils.addNonEnumerable(signpost, 'toJSON', getSignpostToJSON(signpost));
 			for (i in signpost.connects) {
 				signpost.connects[i] = prepConnect(signpost.connects[i]);
 				// remove links to unavailable locations:
-				if (!pers.exists(signpost.connects[i].street_tsid)) {
-					log.info('%s: removing unavailable signpost connect %s',
-						this, signpost.connects[i].street_tsid);
+				tsid = signpost.connects[i].street_tsid;
+				if (tsid && !pers.exists(tsid)) {
+					log.info('%s: removing unavailable signpost connect %s', this, tsid);
 					delete signpost.connects[i];
 				}
 			}
 		}
 		for (k in mg.doors) {
 			var door = mg.doors[k];
+			utils.addNonEnumerable(door, 'toJSON', getDoorToJSON(door));
+			if (!door.connect) continue;
 			door.connect = prepConnect(door.connect);
 			// remove links to unavailable locations:
-			if (!pers.exists(door.connect.street_tsid)) {
-				log.info('%s: removing unavailable door connect %s',
-					this, door.connect.street_tsid);
+			tsid = door.connect.street_tsid;
+			if (tsid && !pers.exists(tsid)) {
+				log.info('%s: removing unavailable door connect %s', this, tsid);
 				delete mg.doors[k];
 			}
 		}
@@ -103,6 +106,41 @@ function prepConnect(conn) {
 	}
 	// client does not need/want target, only GSJS:
 	utils.makeNonEnumerable(ret, 'target');
+	return ret;
+}
+
+
+function getSignpostToJSON(signpost) {
+	return function toJSON() {
+		var ret = utils.shallowCopy(signpost);
+		var connects = {};
+		for (var k in signpost.connects) {
+			connects[k] = connectToJSON(signpost.connects[k]);
+		}
+		ret.connects = connects;
+		return ret;
+	};
+}
+
+
+function getDoorToJSON(door) {
+	return function toJSON() {
+		var ret = utils.shallowCopy(door);
+		if (door.connect) {
+			ret.connect = connectToJSON(door.connect);
+		}
+		return ret;
+	};
+}
+
+
+function connectToJSON(connect) {
+	var ret = utils.shallowCopy(connect);
+	if (connect.target) {
+		ret.street_tsid = connect.target.tsid;
+		ret.label = connect.target.label;
+		delete ret.target;
+	}
 	return ret;
 }
 
@@ -137,7 +175,9 @@ Geo.prototype.serialize = function serialize() {
 		mg.doors = utils.shallowCopy(mg.doors);
 		for (k in mg.doors) {
 			mg.doors[k] = utils.shallowCopy(mg.doors[k]);
-			mg.doors[k].connect = revertConnect(mg.doors[k].connect);
+			if (mg.doors[k].connect) {
+				mg.doors[k].connect = revertConnect(mg.doors[k].connect);
+			}
 		}
 	}
 	return ret;

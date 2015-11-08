@@ -541,17 +541,25 @@ Location.prototype.getClosestItem = function getClosestItem(x, y, filter,
 Location.prototype.copyLocation = function copyLocation(label, moteId, hubId,
 	isInstance, altClassTsid) {
 	// copy geometry
-	var newGeo = Geo.create();
+	var newGeo = Geo.create({label: label});
 	newGeo.copyProps(this.geometry, ['tsid', 'label']);
-	newGeo.label = label;
+	for (var j in newGeo.layers.middleground.signposts) {
+		newGeo.layers.middleground.signposts[j].connects = {};
+	}
+	for (var k in newGeo.layers.middleground.doors) {
+		delete newGeo.layers.middleground.doors[k].connect;
+	}
 	// copy location
-	var data = {class_tsid: altClassTsid || this.class_tsid};
+	var data = {
+		class_tsid: altClassTsid || this.class_tsid,
+		label: label,
+		moteid: moteId,
+		hubid: hubId,
+		is_instance: isInstance,
+	};
 	var newLoc = Location.create(newGeo, data);
-	newLoc.copyProps(this, ['tsid', 'class_tsid', 'instances', 'players', 'items']);
-	newLoc.label = label;
-	newLoc.moteid = moteId;
-	newLoc.hubid = hubId;
-	newLoc.is_instance = isInstance;
+	newLoc.copyProps(this, ['tsid', 'class_tsid', 'label', 'moteid', 'hubid',
+		'is_instance', 'instances', 'players', 'items']);
 	for (var i in this.items) {
 		var srcItem = this.items[i];
 		var newItem = api.apiNewItemStack(srcItem.class_tsid, srcItem.count);
