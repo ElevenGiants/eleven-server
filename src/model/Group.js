@@ -74,3 +74,25 @@ Group.prototype.unload = function unload(callback) {
 		Group.super_.prototype.unload.call(self);
 	}, callback, {close: true, obj: this});
 };
+
+
+/**
+ * Schedules this group for deletion after the current request. Special handling
+ * for instance groups.
+ */
+Group.prototype.del = function del() {
+	log.trace('del %s', this);
+	Group.super_.prototype.del.call(this);
+	// explicit cleanup for instance groups: remove reference from instances DC
+	// of the corresponding template location
+	if (this.instance_id && this.base_tsid) {
+		log.debug('deleting instance %s of %s', this.tsid, this.base_tsid);
+		var templateLoc = pers.get(this.base_tsid);
+		if (templateLoc.instances) {
+			templateLoc.instances.removeInstance(this.instance_id, this.tsid);
+		}
+		else {
+			log.info('no instance list found for %s', this.base_tsid);
+		}
+	}
+};

@@ -6,6 +6,7 @@ module.exports = DataContainer;
 var assert = require('assert');
 var GameObject = require('model/GameObject');
 var pers = require('data/pers');
+var RC = require('data/RequestContext');
 var RQ = require('data/RequestQueue');
 var util = require('util');
 var utils = require('utils');
@@ -56,5 +57,28 @@ DataContainer.prototype.getRQ = function getRQ() {
 	}
 	else {
 		return RQ.getGlobal();
+	}
+};
+
+
+/**
+ * Special helper for instance group cleanup, removing an obsolete instance
+ * group reference from a template location's `instances` DC.
+ * Called from {@link Group#del} (potentially from a remote GS worker via RPC)
+ * when an instance group is cleared.
+ *
+ * @param {string} instId the instance template ID (e.g. "hell_one")
+ * @param {string} instTsid TSID of the instance group that is being deleted
+ */
+DataContainer.prototype.removeInstance = function removeInstance(instId, instTsid) {
+	var instanceList = this.instances ? this.instances[instId] : [];
+	for (var i = 0; i < instanceList.length; i++) {
+		if (instanceList[i].tsid === instTsid) {
+			instanceList.splice(i, 1);
+			log.debug('instance %s removed from %s instance list in %s',
+				instTsid, instId, this.tsid);
+			RC.setDirty(this);
+			break;
+		}
 	}
 };
