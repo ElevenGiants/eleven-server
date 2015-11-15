@@ -8,6 +8,7 @@ var config = require('config');
 var GameObject = require('model/GameObject');
 var Geo = require('model/Geo');
 var Bag = require('model/Bag');
+var Item = require('model/Item');
 var IdObjRefMap = require('model/IdObjRefMap');
 var OrderedHash = require('model/OrderedHash');
 var pers = require('data/pers');
@@ -15,7 +16,6 @@ var RQ = require('data/RequestQueue');
 var rpc = require('data/rpc');
 var util = require('util');
 var utils = require('utils');
-var api = require('model/globalApi');
 
 
 util.inherits(Location, GameObject);
@@ -108,6 +108,38 @@ Location.create = function create(geo, data) {
 	data.tsid = geo.getLocTsid();
 	data.class_tsid = data.class_tsid || 'town';
 	return pers.create(Location, data);
+};
+
+
+/**
+ * Creates a copy of a location.
+ *
+ * @param {Location} src the location to copy
+ * @param {object} options settings for the copied location
+ * @param {string} options.label label for new location
+ * @param {string} options.moteId mote ID for new location
+ * @param {string} options.hubId hub ID for new location
+ * @param {boolean} options.isInstance is the copied location an instance
+ * @param {string} [options.classTsid] alternate class of new location (source
+ *        location class by default)
+ * @returns {Location} the copied location
+ */
+Location.copy = function copy(src, options) {
+	var geo = Geo.copy(src.geometry, options.label);
+	var ret = Location.create(geo, {
+		class_tsid: options.classTsid || src.class_tsid,
+		label: options.label,
+		moteid: options.moteId,
+		hubid: options.hubId,
+		is_instance: options.isInstance,
+	});
+	ret.copyProps(src, ['class_tsid', 'label', 'moteid', 'hubid',
+		'is_instance', 'instances', 'players', 'items']);
+	for (var k in src.items) {
+		Item.copy(src.items[k], ret);
+	}
+	ret.onCreateAsCopyOf(src);
+	return ret;
 };
 
 
@@ -524,49 +556,4 @@ Location.prototype.getClosestItem = function getClosestItem(x, y, filter,
 		}
 	}
 	return found;
-};
-
-
-/**
- * Creates a copy of this location.
- *
- * @param {string} label label for new location
- * @param {string} moteId mote ID for new location
- * @param {string} hubId hub ID for new location
- * @param {boolean} isInstance is the copied location an instance
- * @param {string} [altClassTsid] alternate class of new location (source
-          location class by default)
- * @returns {Location} the copied location
- */
-Location.prototype.copyLocation = function copyLocation(label, moteId, hubId,
-	isInstance, altClassTsid) {
-	// copy geometry
-	var newGeo = Geo.create({label: label});
-	newGeo.copyProps(this.geometry, ['tsid', 'label']);
-	for (var j in newGeo.layers.middleground.signposts) {
-		newGeo.layers.middleground.signposts[j].connects = {};
-	}
-	for (var k in newGeo.layers.middleground.doors) {
-		delete newGeo.layers.middleground.doors[k].connect;
-	}
-	// copy location
-	var data = {
-		class_tsid: altClassTsid || this.class_tsid,
-		label: label,
-		moteid: moteId,
-		hubid: hubId,
-		is_instance: isInstance,
-	};
-	var newLoc = Location.create(newGeo, data);
-	newLoc.copyProps(this, ['tsid', 'class_tsid', 'label', 'moteid', 'hubid',
-		'is_instance', 'instances', 'players', 'items']);
-	for (var i in this.items) {
-		var srcItem = this.items[i];
-		var newItem = api.apiNewItemStack(srcItem.class_tsid, srcItem.count);
-		newItem.copyProps(srcItem, ['tsid', 'class_tsid', 'count', 'tcont',
-			'pcont', 'container']);
-		newItem.setContainer(newLoc, srcItem.x, srcItem.y);
-	}
-	newLoc.onCreateAsCopyOf(this);
-	return newLoc;
 };

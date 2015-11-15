@@ -10,6 +10,8 @@
  */
 var LocationApi = module.exports = function LocationApi() {};
 
+var Location = require('model/Location');
+
 
 /**
  * Puts the item into the location at the given position, merging it
@@ -364,7 +366,14 @@ LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId,
 	hubId, isInstance, altClassTsid) {
 	log.debug('%s.apiCopyLocation(%s, %s, %s, %s, %s)', this, label, moteId,
 		hubId, isInstance, altClassTsid);
-	return this.copyLocation(label, moteId, hubId, isInstance, altClassTsid);
+	var options = {
+		classTsid: altClassTsid,
+		label: label,
+		moteid: moteId,
+		hubid: hubId,
+		isInstance: isInstance,
+	};
+	return Location.copy(this, options);
 };
 
 

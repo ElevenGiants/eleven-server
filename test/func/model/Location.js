@@ -196,13 +196,14 @@ suite('Location', function () {
 	});
 
 
-	suite('copyLocation', function () {
+	suite('copy', function () {
 
 		test('does its job', function (done) {
 			new RC().run(function () {
 				var src = new Location({}, new Geo({layers: {middleground: {}}}));
-				var copy = src.copyLocation('Test Label', 'Mote Test',
-					'Hub Test', true, 'home');
+				var copy = Location.copy(src, {label: 'Test Label',
+					moteId: 'Mote Test', hubId: 'Hub Test', isInstance: true,
+					classTsid: 'home'});
 				assert.notEqual(copy.geometry.layers.middleground, undefined);
 				assert.strictEqual(copy.label, 'Test Label');
 				assert.strictEqual(copy.moteid, 'Mote Test');
@@ -213,24 +214,21 @@ suite('Location', function () {
 		});
 
 		test('copies items', function (done) {
-			new RC().run(function () {
+			var rc = new RC();
+			rc.run(function () {
 				var geo = new Geo({layers: {middleground: {doors: {d: {connect:
 					{target: {label: 'uranus', tsid: 'LABC'}}}}}}});
-				var data = {items: [
-					{tsid: 'BX', class_tsid: 'bag_bigger', tcont: 'LABC', x: 100, y: 100},
-				]};
-				var src = new Location(data, geo);
-				var copy = src.copyLocation('Test Label', 'Mote Test',
-					'Hub Test', true, 'home');
-				assert.doesNotThrow(function () {
-					var count = 0;
-					for (var i in copy.items) {
-						count++;
-						assert.strictEqual(copy.items[i].tsid[0], 'B');
-						assert.notStrictEqual(copy.items[i].tsid, 'BX');
-					}
-					assert.notStrictEqual(count, 0);
-				});
+				var l = new Location({}, geo);
+				rc.cache[l.tsid] = l;  // required so l can be "loaded" from persistence
+				var i = Item.create('apple');
+				l.addItem(i, 12, 13);
+				var copy = Location.copy(l, {label: 'Label', moteId: 'Mote',
+					hubId: 'Hub', isIstance: true, classTsid: 'home'});
+				var icopy = copy.items[Object.keys(copy.items)[0]];
+				assert.strictEqual(icopy.class_tsid, 'apple');
+				assert.strictEqual(icopy.x, 12);
+				assert.strictEqual(icopy.y, 13);
+				assert.notStrictEqual(icopy, i);
 			}, done);
 		});
 	});

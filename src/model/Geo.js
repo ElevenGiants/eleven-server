@@ -48,6 +48,29 @@ Geo.create = function create(data) {
 
 
 /**
+ * Creates a copy of a geometry object, with door/signpost connects removed.
+ *
+ * @param {Geo} src the geometry object to copy
+ * @param {string} label label for the copied geometry
+ * @returns {Geo} a "clone" of the source geometry object
+ */
+Geo.copy = function copy(src, label) {
+	var ret = Geo.create({
+		label: label,
+		tsid: rpc.makeLocalTsid(Geo.prototype.TSID_INITIAL),
+	});
+	ret.copyProps(src, ['label']);
+	for (var j in ret.layers.middleground.signposts) {
+		ret.layers.middleground.signposts[j].connects = {};
+	}
+	for (var k in ret.layers.middleground.doors) {
+		delete ret.layers.middleground.doors[k].connect;
+	}
+	return ret;
+};
+
+
+/**
  * Retrieves the request queue for the location corresponding to this `Geo`.
  *
  * @returns {RequestQueue} the request queue for this `Geo`'s location

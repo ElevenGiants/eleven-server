@@ -461,16 +461,19 @@ GameObject.prototype.hasActiveGsTimers = function hasActiveGsTimers() {
 
 
 /**
- * Copies non-function-type direct properties of another object onto
- * this one (overwriting existing properties with the same name).
- * Objects and arrays are deep-copied.
+ * Copies non-function-type direct properties of another object onto this one
+ * (overwriting existing properties with the same name). Regular objects and
+ * arrays are deep-copied, whereas game objects (including objrefs) are copied
+ * by reference.
  *
  * @param {GameObject} from copy source
- * @param {array} [skipList] list of property names to skip
+ * @param {array} [skipList] list of property names to skip (in addition to
+ *        `tsid`, which is always implicitly skipped)
  */
 GameObject.prototype.copyProps = function copyProps(from, skipList) {
 	for (var key in from) {
 		if (!from.hasOwnProperty(key)) continue;
+		if (key === 'tsid') continue;
 		if (skipList && skipList.indexOf(key) !== -1) continue;
 		var val = from[key];
 		if (typeof val === 'function') continue;

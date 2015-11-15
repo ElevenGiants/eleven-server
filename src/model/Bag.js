@@ -50,6 +50,16 @@ Bag.create = function create(classTsid) {
 
 
 /**
+ * Creates an identical copy of a bag.
+ *
+ * @param {Bag} src the bag to copy
+ * @param {Location|Player} [cont] container for the copied item
+ * @returns {Bag} a "clone" of this bag
+ */
+Bag.copy = Item.copy;
+
+
+/**
  * Schedules this bag and all contained items for deletion after the
  * current request.
  */
