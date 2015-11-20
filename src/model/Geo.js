@@ -88,6 +88,9 @@ Geo.prototype.getRQ = function getRQ() {
  * changed).
  */
 Geo.prototype.prepConnects = function prepConnects() {
+	if (!rpc.isLocal(this)) {
+		log.debug('location not managed by this GS, skipping prepConnects');
+	}
 	if (this.layers && this.layers.middleground) {
 		var mg = this.layers.middleground;
 		var i, k, tsid;

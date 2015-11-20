@@ -59,7 +59,9 @@ function Location(data, geo) {
 	utils.addNonEnumerable(this, 'geo');
 	var geoData = geo || pers.get(this.getGeoTsid(), true);
 	assert(typeof geoData === 'object', 'no geometry data for ' + this);
-	this.updateGeo(geoData);
+	if (rpc.isLocal(this)) {
+		this.updateGeo(geoData);
+	}
 }
 
 utils.copyProps(require('model/LocationApi').prototype, Location.prototype);
