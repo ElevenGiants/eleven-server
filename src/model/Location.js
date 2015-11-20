@@ -114,7 +114,7 @@ Location.create = function create(geo, data) {
 
 
 /**
- * Creates a copy of a location.
+ * Creates a copy of a template location. Only works for instance templates.
  *
  * @param {Location} src the location to copy
  * @param {object} options settings for the copied location
@@ -127,6 +127,10 @@ Location.create = function create(geo, data) {
  * @returns {Location} the copied location
  */
 Location.copy = function copy(src, options) {
+	if (!src.instance_me) {
+		log.debug('not copying %s (not an instance template)', src);
+		return;
+	}
 	var geo = Geo.copy(src.geometry, options.label);
 	var ret = Location.create(geo, {
 		class_tsid: options.classTsid || src.class_tsid,
@@ -135,7 +139,7 @@ Location.copy = function copy(src, options) {
 		hubid: options.hubId,
 		is_instance: options.isInstance,
 	});
-	ret.copyProps(src, ['class_tsid', 'label', 'moteid', 'hubid',
+	ret.copyProps(src, ['class_tsid', 'label', 'moteid', 'hubid', 'instance_me',
 		'is_instance', 'instances', 'players', 'items']);
 	for (var k in src.items) {
 		Item.copy(src.items[k], ret);

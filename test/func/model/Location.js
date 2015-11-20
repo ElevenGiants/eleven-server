@@ -200,7 +200,8 @@ suite('Location', function () {
 
 		test('does its job', function (done) {
 			new RC().run(function () {
-				var src = new Location({}, new Geo({layers: {middleground: {}}}));
+				var src = new Location({instance_me: 'foo'},
+					new Geo({layers: {middleground: {}}}));
 				var copy = Location.copy(src, {label: 'Test Label',
 					moteId: 'Mote Test', hubId: 'Hub Test', isInstance: true,
 					classTsid: 'home'});
@@ -218,7 +219,7 @@ suite('Location', function () {
 			rc.run(function () {
 				var geo = new Geo({layers: {middleground: {doors: {d: {connect:
 					{target: {label: 'uranus', tsid: 'LABC'}}}}}}});
-				var l = new Location({}, geo);
+				var l = new Location({instance_me: 'foo'}, geo);
 				rc.cache[l.tsid] = l;  // required so l can be "loaded" from persistence
 				var i = Item.create('apple');
 				l.addItem(i, 12, 13);

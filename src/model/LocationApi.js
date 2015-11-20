@@ -352,7 +352,7 @@ LocationApi.prototype.apiGetActivePlayersInTheRadiusX =
 
 
 /**
- * Creates a copy of the location.
+ * Creates a copy of the location. Only works for instance templates.
  *
  * @param {string} label label for new location
  * @param {string} moteId mote ID for new location
