@@ -1,2 +1,3 @@
 *.sh	eol=lf
+*.nvmrc	eol=lf
 node_modules/**	-text
