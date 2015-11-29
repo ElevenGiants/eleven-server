@@ -186,7 +186,8 @@ suite('GameObject', function () {
 			var go = new GameObject();
 			go.foo = function foo() {
 				assert.isDefined(RC.getContext());
-				assert.strictEqual(RC.getContext().tag, go.tsid + '.foo');
+				assert.match(RC.getContext().tag,
+					new RegExp('^' + go.tsid + '\\.foo_\\d{13}$'));
 				done();
 			};
 			go.scheduleTimer({fname: 'foo'}, 'key');
