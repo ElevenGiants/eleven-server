@@ -147,6 +147,21 @@ Item.create = function create(classTsid, count) {
 
 
 /**
+ * Creates an identical copy of an item stack.
+ *
+ * @param {Item} src the item to copy
+ * @param {Location|Player|Bag} [cont] container for the copied item
+ * @returns {Item} a "clone" of the source item
+ */
+Item.copy = function copy(src, cont) {
+	var ret = Item.create(src.class_tsid, src.count);
+	ret.copyProps(src, ['tcont', 'pcont', 'container']);
+	if (cont) ret.setContainer(cont, src.x, src.y);
+	return ret;
+};
+
+
+/**
  * Retrieves the request queue for this item (typically, the queue of the
  * location the item is currently in).
  *

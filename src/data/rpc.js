@@ -329,15 +329,19 @@ function sendRequest(gsid, rpcFunc, args, callback) {
 	if (callback) {
 		client.request(rpcFunc, rpcArgs, function cb(err, res) {
 			log.trace('%s returned', logmsg);
-			orProxy.proxify(ret);
+			// wrapping to handle the special case where res is an objref itself
+			var wrap = {res: res};
+			orProxy.proxify(wrap);
 			callback(err, res);
 		});
 	}
 	else {
 		try {
-			var ret = wait.forMethod(client, 'request', rpcFunc, rpcArgs);
-			orProxy.proxify(ret);
-			return ret;
+			var res = wait.forMethod(client, 'request', rpcFunc, rpcArgs);
+			// wrapping to handle the special case where res is an objref itself
+			var wrap = {res: res};
+			orProxy.proxify(wrap);
+			return wrap.res;
 		}
 		catch (e) {
 			throw new RpcError('error calling ' + logmsg, e);

@@ -65,6 +65,21 @@ suite('Item', function () {
 	});
 
 
+	suite('copy', function () {
+
+		test('does its job', function (done) {
+			new RC().run(function () {
+				var i = new Item({class_tsid: 'apple', count: 5, x: 123});
+				var copy = Item.copy(i);
+				assert.strictEqual(copy.class_tsid, 'apple');
+				assert.strictEqual(copy.count, 5);
+				assert.strictEqual(copy.x, 123);
+				assert.notStrictEqual(i.tsid, copy.tsid);
+			}, done);
+		});
+	});
+
+
 	suite('delete', function () {
 
 		this.slow(400);

@@ -8,6 +8,7 @@ var config = require('config');
 var GameObject = require('model/GameObject');
 var Geo = require('model/Geo');
 var Bag = require('model/Bag');
+var Item = require('model/Item');
 var IdObjRefMap = require('model/IdObjRefMap');
 var OrderedHash = require('model/OrderedHash');
 var pers = require('data/pers');
@@ -58,7 +59,9 @@ function Location(data, geo) {
 	utils.addNonEnumerable(this, 'geo');
 	var geoData = geo || pers.get(this.getGeoTsid(), true);
 	assert(typeof geoData === 'object', 'no geometry data for ' + this);
-	this.updateGeo(geoData);
+	if (rpc.isLocal(this)) {
+		this.updateGeo(geoData);
+	}
 }
 
 utils.copyProps(require('model/LocationApi').prototype, Location.prototype);
@@ -107,6 +110,42 @@ Location.create = function create(geo, data) {
 	data.tsid = geo.getLocTsid();
 	data.class_tsid = data.class_tsid || 'town';
 	return pers.create(Location, data);
+};
+
+
+/**
+ * Creates a copy of a template location. Only works for instance templates.
+ *
+ * @param {Location} src the location to copy
+ * @param {object} options settings for the copied location
+ * @param {string} options.label label for new location
+ * @param {string} options.moteId mote ID for new location
+ * @param {string} options.hubId hub ID for new location
+ * @param {boolean} options.isInstance is the copied location an instance
+ * @param {string} [options.classTsid] alternate class of new location (source
+ *        location class by default)
+ * @returns {Location} the copied location
+ */
+Location.copy = function copy(src, options) {
+	if (!src.instance_me) {
+		log.debug('not copying %s (not an instance template)', src);
+		return;
+	}
+	var geo = Geo.copy(src.geometry, options.label);
+	var ret = Location.create(geo, {
+		class_tsid: options.classTsid || src.class_tsid,
+		label: options.label,
+		moteid: options.moteId,
+		hubid: options.hubId,
+		is_instance: options.isInstance,
+	});
+	ret.copyProps(src, ['class_tsid', 'label', 'moteid', 'hubid', 'instance_me',
+		'is_instance', 'instances', 'players', 'items']);
+	for (var k in src.items) {
+		Item.copy(src.items[k], ret);
+	}
+	ret.onCreateAsCopyOf(src);
+	return ret;
 };
 
 

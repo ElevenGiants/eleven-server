@@ -194,4 +194,43 @@ suite('Location', function () {
 			}, 100);
 		});
 	});
+
+
+	suite('copy', function () {
+
+		test('does its job', function (done) {
+			new RC().run(function () {
+				var src = new Location({instance_me: 'foo'},
+					new Geo({layers: {middleground: {}}}));
+				var copy = Location.copy(src, {label: 'Test Label',
+					moteId: 'Mote Test', hubId: 'Hub Test', isInstance: true,
+					classTsid: 'home'});
+				assert.notEqual(copy.geometry.layers.middleground, undefined);
+				assert.strictEqual(copy.label, 'Test Label');
+				assert.strictEqual(copy.moteid, 'Mote Test');
+				assert.strictEqual(copy.hubid, 'Hub Test');
+				assert.isTrue(copy.is_instance);
+				assert.strictEqual(copy.class_tsid, 'home');
+			}, done);
+		});
+
+		test('copies items', function (done) {
+			var rc = new RC();
+			rc.run(function () {
+				var geo = new Geo({layers: {middleground: {doors: {d: {connect:
+					{target: {label: 'uranus', tsid: 'LABC'}}}}}}});
+				var l = new Location({instance_me: 'foo'}, geo);
+				rc.cache[l.tsid] = l;  // required so l can be "loaded" from persistence
+				var i = Item.create('apple');
+				l.addItem(i, 12, 13);
+				var copy = Location.copy(l, {label: 'Label', moteId: 'Mote',
+					hubId: 'Hub', isIstance: true, classTsid: 'home'});
+				var icopy = copy.items[Object.keys(copy.items)[0]];
+				assert.strictEqual(icopy.class_tsid, 'apple');
+				assert.strictEqual(icopy.x, 12);
+				assert.strictEqual(icopy.y, 13);
+				assert.notStrictEqual(icopy, i);
+			}, done);
+		});
+	});
 });

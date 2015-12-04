@@ -48,6 +48,7 @@ var rpc = require('data/rpc');
 var RC = require('data/RequestContext');
 var metrics = require('metrics');
 var DummyError = require('errors').DummyError;
+var utils = require('utils');
 
 
 // live game object cache
@@ -149,6 +150,11 @@ function load(tsid) {
 	assert(pbe, 'persistence back-end not set');
 	log.debug('pers.load: %s', tsid);
 	var data = pbe.read(tsid);
+	if (data === null && (utils.isGeo(tsid) || utils.isLoc(tsid))) {
+		log.info('no data for %s, using temp location data instead', tsid);
+		data = pbe.read(utils.isGeo(tsid) ? 'GKZ8WU4WGMQME7CXXX' : 'LKZ8WU4WGMQME7CXXX');
+		if (data) data.tsid = tsid;
+	}
 	if (typeof data !== 'object' || data === null) {
 		log.info(new DummyError(), 'no or invalid data for %s', tsid);
 		return null;

@@ -182,7 +182,7 @@ RequestQueue.prototype.push = function push(tag, func, callback, options) {
 	}
 	if (options && options.obj) tag = options.obj.tsid + '.' + tag;
 	var entry = {
-		tag: tag,
+		tag: tag + '_' + Date.now(),
 		func: func,
 		waitTimer: metrics.createTimer('req.wait', 0.1),
 	};
