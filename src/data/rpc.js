@@ -398,16 +398,16 @@ function handleRequest(callerId, obj, tag, fname, args, callback) {
 			return callback(err, res);
 		}
 	};
-	var rq = RQ.getGlobal('rpc');
 	try {
+		var rq = RQ.getGlobal('rpc');
 		if (obj.tsid && isLocal(obj) && typeof obj.getRQ === 'function') {
 			rq = obj.getRQ();
 		}
+		rq.push(tag, rpcReq, rpcCallback, {waitPers: true});
 	}
 	catch (err) {
 		return rpcCallback(err);
 	}
-	rq.push(tag, rpcReq, rpcCallback, {waitPers: true});
 }
 
 

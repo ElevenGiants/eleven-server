@@ -7,6 +7,7 @@ var assert = require('assert');
 var GameObject = require('model/GameObject');
 var pers = require('data/pers');
 var RC = require('data/RequestContext');
+var rpc = require('data/rpc');
 var RQ = require('data/RequestQueue');
 var util = require('util');
 var utils = require('utils');
@@ -52,8 +53,8 @@ DataContainer.create = function create(owner) {
  * @returns {RequestQueue} the request queue for this DC
  */
 DataContainer.prototype.getRQ = function getRQ() {
-	if (this.owner) {
-		return RQ.get(this.owner);
+	if (this.owner && rpc.isLocal(this.owner)) {
+		return this.owner.getRQ();
 	}
 	else {
 		return RQ.getGlobal();
