@@ -103,8 +103,21 @@ function handleConnect(socket) {
 function getReplEval(addr, socket) {
 	return function replEval(code, context, file, replCallback) {
 		log.trace({client: addr}, code);
-		var script;
+		// the REPL callback handler may run into unexpected problems, handle those safely
+		var guardedCallback = function guardedCallback(err, res) {
+			try {
+				return replCallback(err, res);
+			}
+			catch (e) {
+				log.error(e, 'unhandled error in REPL callback: %s', e.message);
+				if (socket && typeof socket.destroy === 'function') {
+					log.info('closing REPL connection after error: %s', addr);
+					socket.destroy();
+				}
+			}
+		};
 		// create Script object to check syntax
+		var script;
 		try {
 			script = vm.createScript(code, {
 				filename: file,
@@ -113,7 +126,7 @@ function getReplEval(addr, socket) {
 		}
 		catch (e) {
 			log.trace({client: addr}, 'parse error: %s', e.message);
-			return replCallback(e);
+			return guardedCallback(e);
 		}
 		// run Script in a separate request context
 		log.info({client: addr}, code);
@@ -126,17 +139,7 @@ function getReplEval(addr, socket) {
 				if (err) {
 					log.error(err, 'error in REPL call: %s', err.message);
 				}
-				// the REPL callback handler may run into unexpected problems
-				try {
-					return replCallback(err, res);
-				}
-				catch (e) {
-					log.error(e, 'unhandled error in REPL callback: %s', e.message);
-					if (socket && typeof socket.destroy === 'function') {
-						log.info('closing REPL connection after error: %s', addr);
-						socket.destroy();
-					}
-				}
+				return guardedCallback(err, res);
 			},
 			{waitPers: true}
 		);
