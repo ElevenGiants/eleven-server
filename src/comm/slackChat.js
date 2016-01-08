@@ -150,33 +150,41 @@ function onSlackMessage(msg) {
 	}
 	// prepare message payload
 	var user = slack.getUserByID(msg.user);
+	if (!user) {
+		log.error({data: msg}, 'could not retrieve Slack user');
+		return;
+	}
 	var out = {
 		type: 'pc_groups_chat',
 		tsid: groupTsid,
 		pc: {
-			//TODO user is undefined when a Slack message is deleted!
 			tsid: 'PSLACK' + user.id,  // unique pseudo TSID so client assigns different colors
 			label: user.name,
 		},
 		txt: processMsgText(msg.text),
 	};
 	utils.addNonEnumerable(out, 'fromSlack', true);
-	// dispatch message to group in separate request context
+	dispatchToGroup(out, function cb(err) {
+		if (err) {
+			log.error({err: err, data: msg},
+				'error dispatching group chat message from Slack');
+		}
+	});
+}
+
+
+/**
+ * Helper for `onSlackMessage`, sends an incoming message from Slack to a group
+ * in separate request context.
+ * @private
+ */
+function dispatchToGroup(msg, callback) {
 	RQ.getGlobal('persget').push('slackMsg.getGroup',
-		pers.get.bind(null, groupTsid),
+		pers.get.bind(null, msg.tsid),
 		function cb(err, group) {
-			if (err) {
-				return log.error(err, 'group not found');
-			}
+			if (err) callback(err);
 			group.getRQ().push('slackMsg.dispatch',
-				group.chat_send_msg.bind(group, out),
-				function cb(err, res) {
-					if (err) {
-						log.error({err: err, data: msg}, 'error ' +
-							'dispatching group chat message from Slack');
-					}
-				}
-			);
+				group.chat_send_msg.bind(group, msg, callback));
 		}
 	);
 }

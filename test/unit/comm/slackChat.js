@@ -32,4 +32,58 @@ suite('slackChat', function () {
 			slackChat.__set__('slack', undefined);  // clean up
 		});
 	});
+
+
+	suite('onSlackMessage', function () {
+
+		setup(function () {
+			slackChat.__set__('channelToGroup', {C037FB4HV: 'GXYZ'});
+			slackChat.__set__('slack', {getUserByID: function getUserByIDStub(id) {
+				return {id: 'PASDF', name: 'D. Ummy User'};
+			}});
+		});
+
+		teardown(function () {
+			slackChat.__set__('channelToGroup', {});
+			slackChat.__set__('slack', undefined);
+		});
+
+		var onSlackMessage = slackChat.__get__('onSlackMessage');
+
+		test('works as expected', function (done) {
+			var dispatchToGroup = slackChat.__get__('dispatchToGroup');
+			slackChat.__set__('dispatchToGroup', function dispatchToGroupStub(msg) {
+				assert.deepEqual(msg, {
+					type: 'pc_groups_chat',
+					tsid: 'GXYZ',
+					pc: {tsid: 'PSLACKPASDF', label: 'D. Ummy User'},
+					txt: 'this is a message that was posted in Slack',
+				});
+				assert.isTrue(msg.fromSlack);
+				return done();
+			});
+			onSlackMessage({
+				type: 'message',
+				channel: 'C037FB4HV',
+				user: 'U024H9SL6',
+				text: 'this is a message that was posted in Slack',
+				ts: '1452279130.000011',
+				team: 'T024H4M2R',
+			});
+			slackChat.__set__('dispatchToGroup', dispatchToGroup);
+		});
+
+		test('handles missing user', function () {
+			// for unknown reasons, the Slack lib sometimes does not return a
+			// user; simulate this
+			slackChat.__set__('slack', {getUserByID: function getUserByIDStub(id) {}});
+			onSlackMessage({
+				type: 'message',
+				channel: 'C037FB4HV',
+				user: 'U024H9SL6',
+				text: 'barf',
+			});
+			// nothing specific to check, it just shouldn't throw an error
+		});
+	});
 });
