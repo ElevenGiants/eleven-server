@@ -43,7 +43,7 @@ function Geo(data) {
  * @returns {object} a `Geo` object
  */
 Geo.create = function create(data) {
-	return pers.create(Geo, data);
+	return pers.create(Geo, data, true);
 };
 
 

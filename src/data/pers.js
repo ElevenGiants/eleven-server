@@ -249,14 +249,17 @@ function get(tsid, noProxy) {
  * @param {function} modelType the desired game object model type (i.e.
  *        a constructor like `Player` or `Geo`)
  * @param {object} [data] additional properties for the object
+ * @param {boolean} [upsert] when `true`, allows replacing existing objects
  * @returns {object} the new object, wrapped in a persistence proxy
  */
-function create(modelType, data) {
+function create(modelType, data, upsert) {
 	log.debug('pers.create: %s%s', modelType.name,
 		(typeof data === 'object' && data.tsid) ? ('#' + data.tsid) : '');
 	data = data || {};
 	var obj = gsjsBridge.create(data, modelType);
-	assert(!(obj.tsid in cache), 'object already exists: ' + obj.tsid);
+	if (!upsert) {
+		assert(!(obj.tsid in cache), 'object already exists: ' + obj.tsid);
+	}
 	cache[obj.tsid] = obj;
 	RC.getContext().setDirty(obj);
 	if (typeof obj.onCreate === 'function') {

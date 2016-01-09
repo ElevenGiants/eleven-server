@@ -534,9 +534,9 @@ function getGsid(objOrTsid) {
 			util.format('invalid tcont for %s: %s', obj, obj.tcont));
 		return getGsid(obj.tcont);
 	}
-	// quests or DCs mapped by their owner (location, player or group)
+	// quests or DCs mapped by their owner (location, player/bag/item or group)
 	if (utils.isQuest(obj) || utils.isDC(obj)) {
-		assert(utils.isLoc(obj.owner) || utils.isPlayer(obj.owner) ||
+		assert(utils.isLoc(obj.owner) || utils.isItem(obj.owner) ||
 			utils.isGroup(obj.owner),
 			util.format('invalid owner for %s: %s', obj, obj.owner));
 		return getGsid(obj.owner);

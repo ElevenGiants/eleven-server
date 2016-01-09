@@ -114,7 +114,7 @@ Location.create = function create(geo, data) {
 
 
 /**
- * Creates a copy of a template location. Only works for instance templates.
+ * Creates a copy of a template location.
  *
  * @param {Location} src the location to copy
  * @param {object} options settings for the copied location
@@ -127,9 +127,8 @@ Location.create = function create(geo, data) {
  * @returns {Location} the copied location
  */
 Location.copy = function copy(src, options) {
-	if (!src.instance_me) {
-		log.debug('not copying %s (not an instance template)', src);
-		return;
+	if (options.isInstance) {
+		assert(src.instance_me, src + ' is not an instance template');
 	}
 	var geo = Geo.copy(src.geometry, options.label);
 	var ret = Location.create(geo, {

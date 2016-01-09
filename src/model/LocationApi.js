@@ -352,7 +352,7 @@ LocationApi.prototype.apiGetActivePlayersInTheRadiusX =
 
 
 /**
- * Creates a copy of the location. Only works for instance templates.
+ * Creates a copy of the location.
  *
  * @param {string} label label for new location
  * @param {string} moteId mote ID for new location
@@ -369,8 +369,8 @@ LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId,
 	var options = {
 		classTsid: altClassTsid,
 		label: label,
-		moteid: moteId,
-		hubid: hubId,
+		moteId: moteId,
+		hubId: hubId,
 		isInstance: isInstance,
 	};
 	return Location.copy(this, options);
