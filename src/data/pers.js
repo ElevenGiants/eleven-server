@@ -31,7 +31,6 @@
 module.exports = {
 	init: init,
 	shutdown: shutdown,
-	exists: exists,
 	get: get,
 	create: create,
 	registerProxy: registerProxy,
@@ -117,23 +116,6 @@ function shutdown(done) {
 		log.info('persistence layer shutdown complete');
 		done();
 	});
-}
-
-
-/**
- * Checks if the persistence layer contains an object with the given
- * TSID, *without actually loading the object*. This should not be used
- * to test if an object exists before reading or writing it
- * (anti-pattern, potential race condition), only for specific cases
- * where it is necessary to perform distinct actions based on the
- * existence of an object.
- *
- * @param {string} tsid TSID to check
- * @returns {boolean} `true` if the object exists, `false` otherwise
- */
-function exists(tsid) {
-	assert(pbe, 'persistence back-end not set');
-	return pbe.read(tsid) !== null;
 }
 
 

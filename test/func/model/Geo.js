@@ -58,19 +58,4 @@ suite('Geo', function () {
 			}, assert.AssertionError);
 		});
 	});
-
-
-	suite('prepConnects', function () {
-
-		this.slow(100);
-
-		test('removes unavailable connects', function (done) {
-			new RC().run(function () {
-				var g = pers.get('GLI32G3NUTD100I');
-				assert.notProperty(g.layers.middleground.doors, 'door_1300484753304');
-				var signpost = g.layers.middleground.signposts.signpost_1;
-				assert.deepEqual(signpost.connects, {});
-			}, done);
-		});
-	});
 });
