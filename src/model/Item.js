@@ -537,7 +537,7 @@ Item.prototype.gsStartMoving = function gsStartMoving(transport, dest, options) 
  * Stops item movement.
  */
 Item.prototype.gsStopMoving = function gsStopMoving() {
-	if (this.gsMovement) this.gsMovement.stopMove();
+	if (this.gsMovement && this.gsMovement.isMoving()) this.gsMovement.stopMove();
 };
 
 

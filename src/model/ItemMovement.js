@@ -124,8 +124,7 @@ ItemMovement.prototype.dirY = function dirY(targetY) {
 /**
  * Stops any item movement.
  *
- * @param {object} status the status object sent to the movement
- *        callback
+ * @param {number} status the status code sent to the movement callback
  * @param {boolean} [queueChanges] if `true`, queue item changes to be
  *        sent to players in the location
  */
@@ -147,6 +146,16 @@ ItemMovement.prototype.stopMove = function stopMove(status, queueChanges) {
 	if (queueChanges) {
 		this.item.queueChanges(false, !fullStatus);
 	}
+};
+
+
+/**
+ * Checks if the item is currently moving.
+ *
+ * @returns {boolean} `true` if the item is moving
+ */
+ItemMovement.prototype.isMoving = function isMoving() {
+	return this.item.gsTimerExists('movementTimer');
 };
 
 
