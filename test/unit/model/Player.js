@@ -8,6 +8,7 @@ var Property = require('model/Property');
 var Player = rewire('model/Player');
 var Location = require('model/Location');
 var Geo = require('model/Geo');
+var Bag = require('model/Bag');
 var Item = require('model/Item');
 var RC = rewire('data/RequestContext');
 var RQ = require('data/RequestQueue');
@@ -722,6 +723,28 @@ suite('Player', function () {
 					p.handleCollision(i, i.hitBox);
 				},
 			], done);
+		});
+	});
+
+
+	suite('getClassItems', function () {
+
+		test('works recursively', function () {
+			var i1 = new Item({tsid: 'I1', class_tsid: 'apple', count: 10});
+			var i2 = new Item({tsid: 'I2', class_tsid: 'apple', count: 1});
+			var i3 = new Item({tsid: 'I3', class_tsid: 'apple', count: 3});
+			var i4 = new Item({tsid: 'I4', class_tsid: 'banana', count: 7});
+			var i5 = new Item({tsid: 'I5', class_tsid: 'apple', count: 5});
+			var b1 = new Bag({tsid: 'B1', class_tsid: 'bag_generic_blue',
+				items: [i1, i2]});
+			var b2 = new Bag({tsid: 'B2', class_tsid: 'bag_generic_green',
+				items: [i3, i4]});
+			var p = new Player({tsid: 'P', items: [b1, i5, b2]});
+			assert.deepEqual(p.getClassItems('apple'),
+				{I1: i1, I2: i2, I5: i5, I3: i3});
+			assert.deepEqual(p.getClassItems('apple', 14),
+				{I1: i1, I2: i2, I5: i5});
+			assert.deepEqual(p.getClassItems('apple', 3), {I1: i1});
 		});
 	});
 });
