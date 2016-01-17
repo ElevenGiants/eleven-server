@@ -30,7 +30,9 @@ Geo.prototype.TSID_INITIAL = 'G';
 function Geo(data) {
 	data = data || {};
 	if (!data.tsid) data.tsid = rpc.makeLocalTsid(Geo.prototype.TSID_INITIAL);
-	if (!data.layers) data.layers = {middleground: {}};
+	if (!data.layers) {
+		data.layers = {middleground: {decos: {}, doors: {}, signposts: {}}};
+	}
 	Geo.super_.call(this, data);
 	this.prepConnects();
 }

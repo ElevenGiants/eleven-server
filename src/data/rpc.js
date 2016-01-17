@@ -44,13 +44,10 @@ var orProxy = require('data/objrefProxy');
 var pers = require('data/pers');
 var RC = require('data/RequestContext');
 var RQ = require('data/RequestQueue');
-var rpcApi = require('data/rpcApi');
 var rpcProxy = require('data/rpcProxy');
 var utils = require('utils');
 var util = require('util');
 var wait = require('wait.for');
-var gsjsBridge = require('model/gsjsBridge');
-var globalApi = require('model/globalApi');
 
 
 /**
@@ -456,6 +453,7 @@ function objectRequest(callerId, tsid, tag, fname, args, callback) {
  *        the result (or errors) to the remote caller
  */
 function globalApiRequest(callerId, fname, args, callback) {
+	var globalApi = require('model/globalApi');
 	handleRequest(callerId, globalApi, null, fname, args, callback);
 }
 
@@ -471,6 +469,7 @@ function globalApiRequest(callerId, fname, args, callback) {
  *        the result (or errors) to the remote caller
  */
 function adminRequest(callerId, fname, argsObject, callback) {
+	var gsjsBridge = require('model/gsjsBridge');
 	handleRequest(callerId, gsjsBridge.getAdmin(), null, fname, [argsObject],
 		callback);
 }
@@ -487,6 +486,7 @@ function adminRequest(callerId, fname, argsObject, callback) {
  *        the result (or errors) to the remote caller
  */
 function gsApiRequest(callerId, fname, args, callback) {
+	var rpcApi = require('data/rpcApi');
 	handleRequest(callerId, rpcApi, null, fname, args, callback);
 }
 
