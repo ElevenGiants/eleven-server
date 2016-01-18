@@ -84,10 +84,10 @@ function safeClone(obj, cloneGameObjects) {
  *            <li>`{ok: 0, offline: true}` if the respective player is
  *              not currently online (only possible when `onlineOnly`
  *              is `true`)</li>
- *            <li>`{ok: 1, res: <return value>}` if the call was
+ *            <li>`{ok: 1, tsid: <TSID>, res: <return value>}` if the call was
  *              successful and returned a primitive value</li>
- *            <li>`{ok: 1, <properties of return value...>}` if the
- *              call was successful and returned an object</li>
+ *            <li>`{ok: 1, tsid: <TSID>, <properties of return value...>}` if
+ *              the call was successful and returned an object</li>
  *          </ul>
  */
 function callFor(fname, targets, args, onlineOnly) {
@@ -107,6 +107,7 @@ function callFor(fname, targets, args, onlineOnly) {
 			var obj = pers.get(tsid);
 			var res = obj[fname].apply(obj, args);
 			ret[tsid] = (typeof res !== 'object' || res === null) ? {res: res} : res;
+			ret[tsid].tsid = tsid;
 			ret[tsid].ok = 1;
 		}
 		catch (e) {

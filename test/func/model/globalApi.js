@@ -36,8 +36,8 @@ suite('globalApi', function () {
 				var i2 = Item.create('pi');
 				var res = callFor('toString', [i1.tsid, i2.tsid]);
 				var expected = {};
-				expected[i1.tsid] = {ok: 1, res: i1.toString()};
-				expected[i2.tsid] = {ok: 1, res: i2.toString()};
+				expected[i1.tsid] = {ok: 1, tsid: i1.tsid, res: i1.toString()};
+				expected[i2.tsid] = {ok: 1, tsid: i2.tsid, res: i2.toString()};
 				assert.deepEqual(res, expected);
 			}, done);
 		});
@@ -60,7 +60,7 @@ suite('globalApi', function () {
 				};
 				var res = callFor('send', [p1, p2], ['blerch'], true);
 				var expected = {};
-				expected[p1.tsid] = {ok: 1, zerg: 'mooh'};
+				expected[p1.tsid] = {ok: 1, tsid: p1.tsid, zerg: 'mooh'};
 				expected[p2.tsid] = {ok: 0, offline: true};
 				assert.deepEqual(res, expected);
 			}, done);
