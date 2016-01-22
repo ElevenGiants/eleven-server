@@ -487,7 +487,4 @@ function unload(tsid, logmsg) {
 		cache[tsid].suspendGsTimers();
 		delete cache[tsid];
 	}
-	if (tsid in proxyCache) {
-		delete proxyCache[tsid];
-	}
 }
