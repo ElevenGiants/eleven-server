@@ -12,6 +12,7 @@ var Item = require('model/Item');
 var IdObjRefMap = require('model/IdObjRefMap');
 var OrderedHash = require('model/OrderedHash');
 var pers = require('data/pers');
+var RC = require('data/RequestContext');
 var RQ = require('data/RequestQueue');
 var rpc = require('data/rpc');
 var util = require('util');
@@ -300,9 +301,7 @@ Location.prototype.serialize = function serialize() {
  */
 Location.prototype.updateGeo = function updateGeo(data) {
 	log.debug('%s.updateGeo', this);
-	// optional parameter handling
-	if (!data) data = this.geometry;
-	this.geometry = data;
+	if (data) this.geometry = data;
 	// workaround for GSJS functions that replace the whole geometry property
 	if (!(this.geometry instanceof Geo)) {
 		this.geometry.tsid = this.getGeoTsid();  // make sure new data does not have a template TSID
@@ -313,6 +312,9 @@ Location.prototype.updateGeo = function updateGeo(data) {
 	// initialize/update clientGeometry and geo properties
 	this.clientGeometry = this.geometry.getClientGeo(this);
 	this.geo = this.geometry.getGeo();
+	// when called through apiGeometryUpdated, assume geo data was manipulated
+	// by GSJS, so make sure the current state is persisted
+	if (!data) RC.setDirty(this.geometry);
 };
 
 
