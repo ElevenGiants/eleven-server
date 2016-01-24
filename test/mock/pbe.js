@@ -12,12 +12,18 @@ module.exports = {
 	del: del,
 	getCounts: getCounts,
 	getDB: getDB,
+	getWrites: getWrites,
+	getReads: getReads,
+	getDeletes: getDeletes,
 };
 
 
 var fpath = null;
 var db = {};
 var counts = {};
+var reads = [];
+var writes = [];
+var deletes = [];
 
 
 function init(pbeConfig, callback) {
@@ -31,6 +37,9 @@ function init(pbeConfig, callback) {
 		write: 0,
 		del: 0,
 	};
+	reads = [];
+	writes = [];
+	deletes = [];
 	if (typeof callback === 'function') callback(null);
 }
 
@@ -42,6 +51,21 @@ function getCounts() {
 
 function getDB() {
 	return db;
+}
+
+
+function getReads() {
+	return reads;
+}
+
+
+function getWrites() {
+	return writes;
+}
+
+
+function getDeletes() {
+	return deletes;
 }
 
 
@@ -60,12 +84,14 @@ function read(tsid) {
 		db[tsid] = JSON.parse(data);
 	}
 	counts.readSuccess++;
+	reads.push(tsid);
 	return db[tsid];
 }
 
 
 function write(obj, callback) {
 	counts.write++;
+	writes.push(obj.tsid);
 	db[obj.tsid] = obj;
 	if (callback) callback(null, null);
 }
@@ -73,6 +99,7 @@ function write(obj, callback) {
 
 function del(obj, callback) {
 	counts.del++;
+	deletes.push(obj.tsid);
 	delete db[obj.tsid];
 	if (callback) callback(null, null);
 }

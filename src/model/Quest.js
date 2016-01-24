@@ -6,6 +6,7 @@ module.exports = Quest;
 var assert = require('assert');
 var GameObject = require('model/GameObject');
 var pers = require('data/pers');
+var RC = require('data/RequestContext');
 var RQ = require('data/RequestQueue');
 var util = require('util');
 var utils = require('utils');
@@ -57,5 +58,24 @@ Quest.prototype.getRQ = function getRQ() {
 	}
 	else {
 		return RQ.getGlobal();
+	}
+};
+
+
+/**
+ * Schedules this quest for deletion after the current request, making sure the
+ * respective reference is removed from the owner's quest DCs or job data in
+ * persistence.
+ */
+Quest.prototype.del = function del() {
+	log.trace('del %s', this);
+	Quest.super_.prototype.del.call(this);
+	if (utils.isPlayer(this.owner)) {
+		for (var key in this.owner.quests) {
+			RC.setDirty(this.owner.quests[key]);
+		}
+	}
+	else if (utils.isLoc(this.owner)) {
+		RC.setDirty(this.owner);
 	}
 };
