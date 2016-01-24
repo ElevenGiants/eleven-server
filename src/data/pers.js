@@ -244,9 +244,7 @@ function create(modelType, data, upsert) {
 	}
 	cache[obj.tsid] = obj;
 	RC.getContext().setDirty(obj);
-	if (typeof obj.onCreate === 'function') {
-		obj.onCreate();
-	}
+	obj.gsOnCreate();
 	metrics.increment('pers.create');
 	return obj;
 }

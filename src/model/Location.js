@@ -89,6 +89,17 @@ Location.prototype.gsOnLoad = function gsOnLoad() {
 	// initialize request queue (not strictly necessary b/c it would be created
 	// on demand, but this makes the logs easier to grok)
 	this.getRQ();
+	this.startUnloadInterval();
+};
+
+
+Location.prototype.gsOnCreate = function gsOnCreate() {
+	Location.super_.prototype.gsOnCreate.call(this);
+	this.startUnloadInterval();
+};
+
+
+Location.prototype.startUnloadInterval = function startUnloadInterval() {
 	// periodically check whether location can be released from memory
 	var unloadInt = config.get('pers:locUnloadInt', null);
 	if (unloadInt) {
