@@ -17,11 +17,11 @@ module.exports = {
 
 
 require('harmony-reflect');
+var _ = require('lodash');
 var assert = require('assert');
 var bunyan = require('bunyan');
 var config = require('config');
 var fs = require('fs');
-var lodash = require('lodash');
 var path = require('path');
 var RC = require('data/RequestContext');
 var Session = require('comm/Session');
@@ -173,7 +173,7 @@ function wrapLogEmitter(emitter, metric) {
 		// add 'rq', 'rc' and 'session' fields if available
 		if (typeof arguments[0] === 'object' && arguments[0] !== null &&
 			!(arguments[0] instanceof Error)) {
-			arguments[0] = lodash.clone(arguments[0]);
+			arguments[0] = _.clone(arguments[0]);
 		}
 		var rc = RC.getContext(true);
 		if (rc) {

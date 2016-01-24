@@ -24,6 +24,7 @@ module.exports = {
 };
 
 
+var _ = require('lodash');
 var assert = require('assert');
 var auth = require('comm/auth');
 var config = require('config');
@@ -34,7 +35,6 @@ var utils = require('utils');
 var gsjsBridge = require('model/gsjsBridge');
 var Player = require('model/Player');
 var sessionMgr = require('comm/sessionMgr');
-var lodash = require('lodash');
 var wait = require('wait.for');
 
 
@@ -250,7 +250,7 @@ function getPlayerInfo(locally) {
 			res = rpc.sendRequest(gsid, 'gs', ['getPlayerInfo', [true]]);
 		}
 		// add 'gs' property to each entry:
-		lodash.assign(ret, res, function addGS(destVal, srcVal) {
+		_.assign(ret, res, function addGS(destVal, srcVal) {
 			srcVal.gs = gsid;
 			return srcVal;
 		});
@@ -275,7 +275,7 @@ function getSessionInfo(locally) {
 			res = rpc.sendRequest(gsid, 'gs', ['getSessionInfo', [true]]);
 		}
 		// add 'gs' property to each entry:
-		lodash.assign(ret, res, function addGS(destVal, srcVal) {
+		_.assign(ret, res, function addGS(destVal, srcVal) {
 			srcVal.gs = gsid;
 			return srcVal;
 		});

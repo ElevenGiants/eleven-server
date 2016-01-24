@@ -38,9 +38,9 @@ module.exports = {
 };
 
 
+var _ = require('lodash');
 var assert = require('assert');
 var async = require('async');
-var lodash = require('lodash');
 var gsjsBridge = require('model/gsjsBridge');
 var orProxy = require('data/objrefProxy');
 var rpc = require('data/rpc');
@@ -280,7 +280,7 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
 	if (!dtsids.length && !utsids.length) {
 		return callback ? callback(null) : undefined;
 	}
-	utsids = lodash.uniq(utsids);
+	utsids = _.uniq(utsids);
 	log.trace('objects to release after %s request: %s', logmsg, utsids);
 	// process persistence changes in a safe order (add/modify first, then
 	// delete); this may leave behind orphaned data, but should at least avoid

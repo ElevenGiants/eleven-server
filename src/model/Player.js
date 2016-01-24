@@ -3,6 +3,7 @@
 module.exports = Player;
 
 
+var _ = require('lodash');
 var assert = require('assert');
 var auth = require('comm/auth');
 var config = require('config');
@@ -13,7 +14,6 @@ var rpc = require('data/rpc');
 var RQ = require('data/RequestQueue');
 var util = require('util');
 var utils = require('utils');
-var lodash = require('lodash');
 var DummyError = require('errors').DummyError;
 
 
@@ -530,14 +530,14 @@ Player.prototype.send = function send(msg, skipChanges, flushOnly) {
 			changes.stat_values = propChanges;
 		}
 		if (changes) {
-			msg = lodash.clone(msg);  // avoid modifying original message object
+			msg = _.clone(msg);  // avoid modifying original message object
 			msg.changes = changes;
 		}
 	}
 	// append "announcements" segment
 	if (this.anncs.length > 0) {
 		if (skipChanges || !msg.changes) {  // only clone if it hasn't already been cloned
-			msg = lodash.clone(msg);
+			msg = _.clone(msg);
 		}
 		msg.announcements = this.anncs;
 		this.anncs = [];

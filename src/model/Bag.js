@@ -3,10 +3,10 @@
 module.exports = Bag;
 
 
+var _ = require('lodash');
 var assert = require('assert');
 var IdObjRefMap = require('model/IdObjRefMap');
 var Item = require('model/Item');
-var lodash = require('lodash');
 var pers = require('data/pers');
 var util = require('util');
 var utils = require('utils');
@@ -200,8 +200,8 @@ Bag.prototype.getClassItems = function getClassItems(classTsid, minCount) {
 		}
 		if (utils.isBag(it)) {
 			var inBag = it.getClassItems(classTsid, minCount - count);
-			lodash.merge(ret, inBag);
-			count += lodash.sum(inBag, 'count');
+			_.merge(ret, inBag);
+			count += _.sum(inBag, 'count');
 		}
 		if (minCount && count >= minCount) break;
 	}

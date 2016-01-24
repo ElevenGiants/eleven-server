@@ -3,6 +3,7 @@
 module.exports = Item;
 
 
+var _ = require('lodash');
 var assert = require('assert');
 var GameObject = require('model/GameObject');
 var OrderedHash = require('model/OrderedHash');
@@ -86,7 +87,7 @@ utils.copyProps(require('model/ItemApi').prototype, Item.prototype);
 Item.prototype.gsOnLoad = function gsOnLoad() {
 	this.updatePath();
 	Item.super_.prototype.gsOnLoad.call(this);
-	if (this.gsMovement && this.gsMovement.path && this.gsMovement.path.length) {
+	if (utils.isLoc(this.container) && _.get(this, 'gsMovement.path.length')) {
 		log.info('resuming NPC movement for %s', this);
 		this.gsMovement.moveStep();
 	}

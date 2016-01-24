@@ -6,6 +6,7 @@
  * @module
  */
 
+var _ = require('lodash');
 var assert = require('assert');
 var gsjsBridge = require('model/gsjsBridge');
 var Property = require('model/Property');
@@ -24,7 +25,6 @@ var orProxy = require('data/objrefProxy');
 var utils = require('utils');
 var Location = require('model/Location');
 var logging = require('logging');
-var lodash = require('lodash');
 var slackChat = require('comm/slackChat');
 var crypto = require('crypto');
 
@@ -51,7 +51,7 @@ function isPlayerOnline(tsid) {
  * @returns {object} copy of the given object
  */
 function safeClone(obj, cloneGameObjects) {
-	var ret = lodash.clone(obj, true, function customizer(val) {
+	var ret = _.clone(obj, true, function customizer(val) {
 		if (typeof val === 'object' && val !== null) {
 			if (val.__isORP) {
 				return orProxy.refify(val);
