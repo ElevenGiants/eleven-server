@@ -121,13 +121,15 @@ suite('Player', function () {
 				stats: {
 					recipe_xp_today: {
 						14: new Property('14', 10),
-						20: new Property('20', 100)
-					}
-				}
+						20: new Property('20', 100),
+					},
+				},
 			});
-			var data = p.serialize();
-			var keys = Object.keys(data.stats.recipe_xp_today);
-			assert.sameMembers(keys, ['14', '20']);
+			var data = p.serialize().stats.recipe_xp_today;
+			assert.sameMembers(Object.keys(data), ['14', '20']);
+			for (var k in data) {
+				assert.notInstanceOf(data[k], Property);
+			}
 		});
 	});
 

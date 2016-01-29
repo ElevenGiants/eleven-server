@@ -182,7 +182,7 @@ Player.prototype.serialize = function serialize() {
 			else if (typeof this[group][key] === 'object') {
 				ret[group][key] = {};
 				for (var subkey in this[group][key]) {
-					ret[group][key][subkey] = this[group][key][subkey];
+					ret[group][key][subkey] = this[group][key][subkey].serialize();
 				}
 			}
 		}
