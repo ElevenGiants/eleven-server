@@ -237,6 +237,16 @@ Player.prototype.onLoginStart = function onLoginStart(session, isRelogin) {
 		// on the player being fully initialized, which may not always be the
 		// case (e.g. players in fixtures not having their DCs etc. yet)
 		this.onLogin();
+		// clear stale instance group references, if any; this is a workaround
+		// implemented with great self-loathing in order to lighten the player
+		// support load, instead of fixing the underlying architecture issues :(
+		for (var k in _.get(this.instances, 'instances')) {
+			var tsid = this.instances.instances[k].tsid;
+			if (!pers.get(tsid, true)) {
+				log.warn('removing broken instance group %s for %s', tsid, this);
+				delete this.instances.instances[k];
+			}
+		}
 	}
 	if (auth.getTokenLifespan() > 0) {
 		this.setGsTimer({fname: 'refreshToken', interval: true, internal: true,
