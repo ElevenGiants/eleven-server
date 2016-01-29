@@ -400,6 +400,10 @@ Item.prototype.getChangeData = function getChangeData(pc, removed, compact) {
 	ret.y = this.y;
 	if (this.state) ret.s = this.buildState(pc);
 	if (compact) {
+		// account for GSJS movement callbacks not requesting full changes even
+		// though they clearly should because the moving item was deleted (cf.
+		// `setFreeEnd` when releasing cubimals)
+		if (removed || this.deleted) ret.count = 0;
 		return ret;
 	}
 	ret.path_tsid = this.path;
