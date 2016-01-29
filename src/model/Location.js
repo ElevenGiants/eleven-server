@@ -12,6 +12,7 @@ var Item = require('model/Item');
 var IdObjRefMap = require('model/IdObjRefMap');
 var OrderedHash = require('model/OrderedHash');
 var pers = require('data/pers');
+var RC = require('data/RequestContext');
 var RQ = require('data/RequestQueue');
 var rpc = require('data/rpc');
 var util = require('util');
@@ -88,6 +89,17 @@ Location.prototype.gsOnLoad = function gsOnLoad() {
 	// initialize request queue (not strictly necessary b/c it would be created
 	// on demand, but this makes the logs easier to grok)
 	this.getRQ();
+	this.startUnloadInterval();
+};
+
+
+Location.prototype.gsOnCreate = function gsOnCreate() {
+	Location.super_.prototype.gsOnCreate.call(this);
+	this.startUnloadInterval();
+};
+
+
+Location.prototype.startUnloadInterval = function startUnloadInterval() {
 	// periodically check whether location can be released from memory
 	var unloadInt = config.get('pers:locUnloadInt', null);
 	if (unloadInt) {
@@ -114,7 +126,7 @@ Location.create = function create(geo, data) {
 
 
 /**
- * Creates a copy of a template location. Only works for instance templates.
+ * Creates a copy of a template location.
  *
  * @param {Location} src the location to copy
  * @param {object} options settings for the copied location
@@ -127,9 +139,8 @@ Location.create = function create(geo, data) {
  * @returns {Location} the copied location
  */
 Location.copy = function copy(src, options) {
-	if (!src.instance_me) {
-		log.debug('not copying %s (not an instance template)', src);
-		return;
+	if (options.isInstance) {
+		assert(src.instance_me, src + ' is not an instance template');
 	}
 	var geo = Geo.copy(src.geometry, options.label);
 	var ret = Location.create(geo, {
@@ -301,9 +312,7 @@ Location.prototype.serialize = function serialize() {
  */
 Location.prototype.updateGeo = function updateGeo(data) {
 	log.debug('%s.updateGeo', this);
-	// optional parameter handling
-	if (!data) data = this.geometry;
-	this.geometry = data;
+	if (data) this.geometry = data;
 	// workaround for GSJS functions that replace the whole geometry property
 	if (!(this.geometry instanceof Geo)) {
 		this.geometry.tsid = this.getGeoTsid();  // make sure new data does not have a template TSID
@@ -314,6 +323,9 @@ Location.prototype.updateGeo = function updateGeo(data) {
 	// initialize/update clientGeometry and geo properties
 	this.clientGeometry = this.geometry.getClientGeo(this);
 	this.geo = this.geometry.getGeo();
+	// when called through apiGeometryUpdated, assume geo data was manipulated
+	// by GSJS, so make sure the current state is persisted
+	if (!data) RC.setDirty(this.geometry);
 };
 
 

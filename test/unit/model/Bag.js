@@ -95,8 +95,10 @@ suite('Bag', function () {
 			var i3 = new Item({tsid: 'I3', class_tsid: 'apple', count: 5});
 			var i4 = new Item({tsid: 'I4', class_tsid: 'banana', count: 7});
 			var i5 = new Item({tsid: 'I5', class_tsid: 'apple', count: 3});
-			var b = new Bag({tsid: 'B1', items: [i1, i2, i3, i4, i5]});
-			assert.deepEqual(b.getClassItems('apple'), {I1: i1, I3: i3, I5: i5});
+			var i6 = new Item({tsid: 'I6', class_tsid: 'apple', count: 1});
+			var b = new Bag({tsid: 'B1', items: [i1, i2, i3, i4, i5, i6]});
+			assert.deepEqual(b.getClassItems('apple'),
+				{I1: i1, I3: i3, I5: i5, I6: i6});
 			assert.deepEqual(b.getClassItems('apple', 13), {I1: i1, I3: i3});
 			assert.deepEqual(b.getClassItems('banana'), {I4: i4});
 			assert.deepEqual(b.getClassItems('rhubarb'), {});

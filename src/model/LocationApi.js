@@ -77,8 +77,8 @@ LocationApi.prototype.apiAddStackAnywhere =
  *
  * @param {number} x x coordinate of the requested point
  * @param {number} y y coordinate of the requested point
- * @returns {object|undefined} the resulting point, or `undefined` if
- *          no platform could be found.
+ * @returns {object|undefined} the resulting point (e.g. `{x: 12, y: -50}`), or
+ *          `undefined` if no platform could be found.
  */
 LocationApi.prototype.apiGetPointOnTheClosestPlatformLineBelow =
 	function apiGetPointOnTheClosestPlatformLineBelow(x, y) {
@@ -95,8 +95,8 @@ LocationApi.prototype.apiGetPointOnTheClosestPlatformLineBelow =
  *
  * @param {number} x x coordinate of the requested point
  * @param {number} y y coordinate of the requested point
- * @returns {object|undefined} the resulting point, or `undefined` if
- *          no platform could be found.
+ * @returns {object|undefined} the resulting point (e.g. `{x: 12, y: -50}`), or
+ *          `undefined` if no platform could be found.
  */
 LocationApi.prototype.apiGetPointOnTheClosestPlatformLineAbove =
 	function apiGetPointOnTheClosestPlatformLineAbove(x, y) {
@@ -113,15 +113,19 @@ LocationApi.prototype.apiGetPointOnTheClosestPlatformLineAbove =
  *
  * @param {number} x x coordinate of the requested point
  * @param {number} y y coordinate of the requested point
- * @returns {object|undefined} the resulting platform, or `undefined`
- *          if no platform could be found.
+ * @returns {object|undefined} the resulting platform (e.g.
+ *          `{x1: 0, y1: -10, x2: 100, y2: -40}`), or `undefined` if no
+ *          platform could be found.
  */
 LocationApi.prototype.apiGetClosestPlatformLineBelow =
 	function apiGetClosestPlatformLineBelow(x, y) {
 	log.debug('%s.apiGetClosestPlatformLineBelow(%s, %s)', this, x, y);
 	var ret = this.geometry.getClosestPlatPoint(x, y, -1);
-	if (ret) {
-		return ret.plat;
+	if (ret && ret.plat) {
+		return {
+			x1: ret.plat.start.x, y1: ret.plat.start.y,
+			x2: ret.plat.end.x, y2: ret.plat.end.y,
+		};
 	}
 };
 
@@ -131,15 +135,19 @@ LocationApi.prototype.apiGetClosestPlatformLineBelow =
  *
  * @param {number} x x coordinate of the requested point
  * @param {number} y y coordinate of the requested point
- * @returns {object|undefined} the resulting platform, or `undefined`
- *          if no platform could be found.
+ * @returns {object|undefined} the resulting platform (e.g.
+ *          `{x1: 0, y1: -10, x2: 100, y2: -40}`), or `undefined` if no
+ *          platform could be found.
  */
 LocationApi.prototype.apiGetClosestPlatformLineAbove =
 	function apiGetClosestPlatformLineAbove(x, y) {
 	log.debug('%s.apiGetClosestPlatformLineAbove(%s, %s)', this, x, y);
 	var ret = this.geometry.getClosestPlatPoint(x, y, 1);
-	if (ret) {
-		return ret.plat;
+	if (ret && ret.plat) {
+		return {
+			x1: ret.plat.start.x, y1: ret.plat.start.y,
+			x2: ret.plat.end.x, y2: ret.plat.end.y,
+		};
 	}
 };
 
@@ -352,7 +360,7 @@ LocationApi.prototype.apiGetActivePlayersInTheRadiusX =
 
 
 /**
- * Creates a copy of the location. Only works for instance templates.
+ * Creates a copy of the location.
  *
  * @param {string} label label for new location
  * @param {string} moteId mote ID for new location
@@ -369,8 +377,8 @@ LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId,
 	var options = {
 		classTsid: altClassTsid,
 		label: label,
-		moteid: moteId,
-		hubid: hubId,
+		moteId: moteId,
+		hubId: hubId,
 		isInstance: isInstance,
 	};
 	return Location.copy(this, options);

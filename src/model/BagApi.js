@@ -24,6 +24,21 @@ BagApi.prototype.apiGetAllItems = function apiGetAllItems() {
 
 
 /**
+ * Gets a list of items of a particular type from this bag's contents.
+ *
+ * @param {string} classTsid class ID of the items to return
+ * @param {number} [minCount] when given, only items with a combined stack size
+ *        of at least this number are returned (i.e. not necessarily all
+ *        available items)
+ * @returns {object} a hash with the matching items
+ */
+BagApi.prototype.apiBagGetItems = function apiBagGetItems(classTsid, minCount) {
+	log.debug('%s.apiBagGetItems(%s, %s)', this, classTsid, minCount);
+	return this.getClassItems(classTsid, minCount > 0 ? minCount : undefined);
+};
+
+
+/**
  * Add an item to the bag's hidden items list, making it "invisible"
  * for other API functions working on the bag contents. It can still be
  * accessed through the `hiddenItems` property.

@@ -6,6 +6,8 @@ var rpc = rewire('data/rpc');
 var persMock = require('../../mock/pers');
 var orProxy = require('data/objrefProxy');
 var RQ = require('data/RequestQueue');
+var Bag = require('model/Bag');
+var DC = require('model/DataContainer');
 var Geo = require('model/Geo');
 var Location = require('model/Location');
 var Player = require('model/Player');
@@ -92,12 +94,19 @@ suite('rpc', function () {
 			q.owner = l;
 			assert.strictEqual(rpc.getGsid(q), 'gs-L2');
 			assert.strictEqual(rpc.getGsid('Q1'), 'gs-L2');
-			// ...or group
+			// ...or group...
 			var g = new Group({tsid: 'RX'});
 			persMock.preAdd(g);
 			q.owner = g;
 			assert.strictEqual(rpc.getGsid(q), 'gs-RX');
 			assert.strictEqual(rpc.getGsid('Q1'), 'gs-RX');
+			// ...or bag (butler)
+			var b = new Bag({class_tsid: 'bag_butler', container: 'L1', tcont: 'L1'});
+			var dc = new DC({tsid: 'DC'});
+			dc.owner = b;
+			persMock.preAdd(b, dc);
+			assert.strictEqual(rpc.getGsid(dc), 'gs-L1');
+			assert.strictEqual(rpc.getGsid('DC'), 'gs-L1');
 		});
 	});
 

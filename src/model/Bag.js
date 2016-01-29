@@ -6,6 +6,7 @@ module.exports = Bag;
 var assert = require('assert');
 var IdObjRefMap = require('model/IdObjRefMap');
 var Item = require('model/Item');
+var lodash = require('lodash');
 var pers = require('data/pers');
 var util = require('util');
 var utils = require('utils');
@@ -181,22 +182,28 @@ Bag.prototype.getAllItems = function getAllItems(includeHidden, sort, aggregate,
 
 /**
  * Gets a list of (non-hidden) items of a particular type from this
- * bag's direct content (i.e. not recursively).
+ * bag's contents.
  *
  * @param {string} classTsid item class ID to filter for
- * @param {number} [max] combined stack size limit
+ * @param {number} [minCount] only return items with a combined stack size of at
+ *        least this number (i.e. not necessarily all available items)
  * @returns {object} found matching items (with TSIDs as keys)
  */
-Bag.prototype.getClassItems = function getClassItems(classTsid, max) {
+Bag.prototype.getClassItems = function getClassItems(classTsid, minCount) {
 	var ret = {};
 	var count = 0;
 	for (var k in this.items) {
-		if (max && count >= max) break;
 		var it = this.items[k];
 		if (it.class_tsid === classTsid) {
 			ret[k] = it;
 			count += it.count;
 		}
+		if (utils.isBag(it)) {
+			var inBag = it.getClassItems(classTsid, minCount - count);
+			lodash.merge(ret, inBag);
+			count += lodash.sum(inBag, 'count');
+		}
+		if (minCount && count >= minCount) break;
 	}
 	return ret;
 };

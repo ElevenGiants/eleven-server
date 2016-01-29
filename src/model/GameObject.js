@@ -65,6 +65,15 @@ GameObject.prototype.gsOnLoad = function gsOnLoad() {
 
 
 /**
+ * Called by the persistence layer when (and only when) an object is initially
+ * created.
+ */
+GameObject.prototype.gsOnCreate = function gsOnCreate() {
+	if (this.onCreate) this.onCreate();
+};
+
+
+/**
  * Creates a processed shallow copy of this game object's data,
  * prepared for serialization.
  *

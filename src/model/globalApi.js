@@ -16,11 +16,13 @@ var Item = require('model/Item');
 var Bag = require('model/Bag');
 var Group = require('model/Group');
 var config = require('config');
+var Geo = require('model/Geo');
 var rpc = require('data/rpc');
 var sessionMgr = require('comm/sessionMgr');
 var pers = require('data/pers');
 var orProxy = require('data/objrefProxy');
 var utils = require('utils');
+var Location = require('model/Location');
 var logging = require('logging');
 var lodash = require('lodash');
 var slackChat = require('comm/slackChat');
@@ -43,12 +45,20 @@ function isPlayerOnline(tsid) {
  * and not following objref proxies in the process.
  *
  * @param {object} obj object to copy
+ * @param {boolean} cloneGameObjects if `true`, referenced `GameObject`s are
+ *        cloned (resulting in non-functional plain object copies); otherwise,
+ *        they are copied by reference
  * @returns {object} copy of the given object
  */
-function safeClone(obj) {
-	var ret = lodash.clone(obj, true, function handleObjRefs(val) {
-		if (typeof val === 'object' && val !== null && val.__isORP) {
-			return orProxy.refify(val);
+function safeClone(obj, cloneGameObjects) {
+	var ret = lodash.clone(obj, true, function customizer(val) {
+		if (typeof val === 'object' && val !== null) {
+			if (val.__isORP) {
+				return orProxy.refify(val);
+			}
+			else if (val.__isGO && !cloneGameObjects) {
+				return val;
+			}
 		}
 	});
 	orProxy.proxify(ret);
@@ -74,10 +84,10 @@ function safeClone(obj) {
  *            <li>`{ok: 0, offline: true}` if the respective player is
  *              not currently online (only possible when `onlineOnly`
  *              is `true`)</li>
- *            <li>`{ok: 1, res: <return value>}` if the call was
+ *            <li>`{ok: 1, tsid: <TSID>, res: <return value>}` if the call was
  *              successful and returned a primitive value</li>
- *            <li>`{ok: 1, <properties of return value...>}` if the
- *              call was successful and returned an object</li>
+ *            <li>`{ok: 1, tsid: <TSID>, <properties of return value...>}` if
+ *              the call was successful and returned an object</li>
  *          </ul>
  */
 function callFor(fname, targets, args, onlineOnly) {
@@ -97,6 +107,7 @@ function callFor(fname, targets, args, onlineOnly) {
 			var obj = pers.get(tsid);
 			var res = obj[fname].apply(obj, args);
 			ret[tsid] = (typeof res !== 'object' || res === null) ? {res: res} : res;
+			ret[tsid].tsid = tsid;
 			ret[tsid].ok = 1;
 		}
 		catch (e) {
@@ -243,6 +254,26 @@ exports.apiNewItemStackFromXY = function apiNewItemStackFromXY(
 	var ret = getItemType(classTsid).create(classTsid, count);
 	ret.setXY(x, y);
 	return ret;
+};
+
+
+/**
+ * Creates a new, empty location.
+ *
+ * @param {string} label label for new location
+ * @param {string} moteId mote ID for new location
+ * @param {string} hubId hub ID for new location
+ * @param {string} classTsid class of new location
+ * @returns {Location} the new location
+ */
+exports.apiNewLocation = function apiNewLocation(label, moteId, hubId, classTsid) {
+	log.debug('global.apiNewLocation(%s, %s, %s, %s)', arguments);
+	var data = {
+		class_tsid: classTsid,
+		moteid: moteId,
+		hubid: hubId,
+	};
+	return Location.create(Geo.create(), data);
 };
 
 
@@ -396,7 +427,7 @@ exports.apiCopyHash = function apiCopyHash(obj) {
  */
 exports.apiGetObjectContent = function apiGetObjectContent(tsid) {
 	log.debug('global.apiGetObjectContent(%s)', tsid);
-	return safeClone(pers.get(tsid));
+	return safeClone(pers.get(tsid), true);
 };
 
 

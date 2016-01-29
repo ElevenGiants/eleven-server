@@ -31,7 +31,6 @@
 module.exports = {
 	init: init,
 	shutdown: shutdown,
-	exists: exists,
 	get: get,
 	create: create,
 	registerProxy: registerProxy,
@@ -117,23 +116,6 @@ function shutdown(done) {
 		log.info('persistence layer shutdown complete');
 		done();
 	});
-}
-
-
-/**
- * Checks if the persistence layer contains an object with the given
- * TSID, *without actually loading the object*. This should not be used
- * to test if an object exists before reading or writing it
- * (anti-pattern, potential race condition), only for specific cases
- * where it is necessary to perform distinct actions based on the
- * existence of an object.
- *
- * @param {string} tsid TSID to check
- * @returns {boolean} `true` if the object exists, `false` otherwise
- */
-function exists(tsid) {
-	assert(pbe, 'persistence back-end not set');
-	return pbe.read(tsid) !== null;
 }
 
 
@@ -249,19 +231,20 @@ function get(tsid, noProxy) {
  * @param {function} modelType the desired game object model type (i.e.
  *        a constructor like `Player` or `Geo`)
  * @param {object} [data] additional properties for the object
+ * @param {boolean} [upsert] when `true`, allows replacing existing objects
  * @returns {object} the new object, wrapped in a persistence proxy
  */
-function create(modelType, data) {
+function create(modelType, data, upsert) {
 	log.debug('pers.create: %s%s', modelType.name,
 		(typeof data === 'object' && data.tsid) ? ('#' + data.tsid) : '');
 	data = data || {};
 	var obj = gsjsBridge.create(data, modelType);
-	assert(!(obj.tsid in cache), 'object already exists: ' + obj.tsid);
+	if (!upsert) {
+		assert(!(obj.tsid in cache), 'object already exists: ' + obj.tsid);
+	}
 	cache[obj.tsid] = obj;
 	RC.getContext().setDirty(obj);
-	if (typeof obj.onCreate === 'function') {
-		obj.onCreate();
-	}
+	obj.gsOnCreate();
 	metrics.increment('pers.create');
 	return obj;
 }
@@ -501,8 +484,5 @@ function unload(tsid, logmsg) {
 		// suspend timers/intervals
 		cache[tsid].suspendGsTimers();
 		delete cache[tsid];
-	}
-	if (tsid in proxyCache) {
-		delete proxyCache[tsid];
 	}
 }

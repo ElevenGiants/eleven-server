@@ -263,7 +263,7 @@ function loadProto(group, klass) {
 	var proto = ctor.prototype;
 	// copy over props from group base class (if applicable)
 	var baseName = group.slice(0, -1);
-	if (group !== 'achievements' &&
+	if (group !== 'achievements' && group !== 'players' &&
 		(group !== 'items' || klass.substr(0, 7) !== 'catalog')) {
 		compose(group, baseName, proto);
 	}
@@ -274,6 +274,7 @@ function loadProto(group, klass) {
 	if (group === 'players') {
 		compose('items', 'item', proto);
 		compose('items', 'bag', proto);
+		compose('players', 'player', proto);
 	}
 	// copy over props from object class itself
 	if (klass !== baseName) {

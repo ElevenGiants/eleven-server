@@ -30,7 +30,9 @@ Geo.prototype.TSID_INITIAL = 'G';
 function Geo(data) {
 	data = data || {};
 	if (!data.tsid) data.tsid = rpc.makeLocalTsid(Geo.prototype.TSID_INITIAL);
-	if (!data.layers) data.layers = {middleground: {}};
+	if (!data.layers) {
+		data.layers = {middleground: {decos: {}, doors: {}, signposts: {}}};
+	}
 	Geo.super_.call(this, data);
 	this.prepConnects();
 }
@@ -43,7 +45,7 @@ function Geo(data) {
  * @returns {object} a `Geo` object
  */
 Geo.create = function create(data) {
-	return pers.create(Geo, data);
+	return pers.create(Geo, data, true);
 };
 
 
@@ -101,10 +103,6 @@ Geo.prototype.prepConnects = function prepConnects() {
 				signpost.connects[i] = prepConnect(signpost.connects[i]);
 				// remove links to unavailable locations:
 				tsid = signpost.connects[i].street_tsid;
-				if (tsid && !pers.exists(tsid)) {
-					log.info('%s: removing unavailable signpost connect %s', this, tsid);
-					delete signpost.connects[i];
-				}
 			}
 		}
 		for (k in mg.doors) {
@@ -114,10 +112,6 @@ Geo.prototype.prepConnects = function prepConnects() {
 			door.connect = prepConnect(door.connect);
 			// remove links to unavailable locations:
 			tsid = door.connect.street_tsid;
-			if (tsid && !pers.exists(tsid)) {
-				log.info('%s: removing unavailable door connect %s', this, tsid);
-				delete mg.doors[k];
-			}
 		}
 	}
 };

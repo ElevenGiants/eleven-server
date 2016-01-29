@@ -51,7 +51,7 @@ suite('Quest', function () {
 					var db = pbeMock.getDB();
 					assert.strictEqual(pbeMock.getCounts().write, 3);
 					assert.strictEqual(Object.keys(db).length, 3);
-					done();
+					return done();
 				}
 			);
 		});
@@ -63,6 +63,76 @@ suite('Quest', function () {
 					Quest.create('beer_guzzle', geo);
 				});
 			}, assert.AssertionError);
+		});
+	});
+
+
+	suite('del', function () {
+
+		test('flags owner/quest DCs as dirty', function (done) {
+			var db = pbeMock.getDB();
+			db.G1 = {
+				tsid: 'G1',
+			};
+			db.L1 = {
+				tsid: 'L1',
+				players: ['P1'],
+				jobs: {
+					'proto-IDOOR': {
+						class_ids: {
+							job_proto_door: {
+								class_id: 'job_proto_door',
+								label:  'Build a New Floor',
+								instance: {objref: true, tsid: 'Q2'},
+							},
+						},
+					},
+				},
+			};
+			db.P1 = {
+				tsid: 'P1',
+				label: 'a player',
+				location: {objref: true, tsid: 'L1'},
+				quests: {
+					todo: {objref: true, label: 'To Do', tsid: 'D1'},
+					done: {objref: true, label: 'Done', tsid: 'D2'},
+				},
+			};
+			db.D1 = {
+				tsid: 'D1',
+				owner: {objref: true, label: 'a player', tsid: 'P1'},
+				quests: {
+					beer_guzzle: {objref: true, tsid: 'Q1'},
+				},
+			};
+			db.D2 = {
+				tsid: 'D2',
+				owner: {objref: true, label: 'a player', tsid: 'P1'},
+				quests: {},
+			};
+			db.Q1 = {
+				tsid: 'Q1',
+				owner: {objref: true, label: 'a player', tsid: 'P1'},
+				class_tsid: 'beer_guzzle',
+			};
+			db.Q2 = {
+				tsid: 'Q2',
+				owner: {objref: true, label: 'a player\'s house', tsid: 'L1'},
+				class_tsid: 'job_proto_door',
+			};
+			new RC().run(
+				function () {
+					pers.get('P1').quests.todo.quests.beer_guzzle.del();
+					var locJobs = pers.get('L1').jobs['proto-IDOOR'].class_ids;
+					locJobs.job_proto_door.instance.del();
+				},
+				function cb(err) {
+					if (err) return done(err);
+					assert.sameMembers(pbeMock.getDeletes(), ['Q1', 'Q2']);
+					assert.includeMembers(pbeMock.getWrites(), ['D1', 'L1']);
+					return done();
+				}
+			);
 		});
 	});
 });

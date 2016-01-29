@@ -133,5 +133,13 @@ suite('gsjsBridge', function () {
 			var human = gsjsBridge.create({class_tsid: 'human'}, Player);
 			human.isOnline();
 		});
+
+		test('composes hierarchical base classes in the right order', function () {
+			var human = gsjsBridge.create({
+				class_tsid: 'human',
+				location: 'dummylocationproperty',
+			}, Player);
+			assert.strictEqual(human.getLocation(), 'dummylocationproperty');
+		});
 	});
 });

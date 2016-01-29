@@ -86,6 +86,22 @@ PlayerApi.prototype.apiAddStackAnywhere =
 
 
 /**
+ * Gets a list of items of a particular type from the player's inventory.
+ *
+ * @param {string} classTsid class ID of the items to return
+ * @param {number} [minCount] when given, only items with a combined stack size
+ *        of at least this number are returned (i.e. not necessarily all
+ *        available items)
+ * @returns {object} a hash with the matching items
+ */
+PlayerApi.prototype.apiInventoryGetItems =
+	function apiInventoryGetItems(classTsid, minCount) {
+	log.debug('%s.apiInventoryGetItems(%s, %s)', this, classTsid, minCount);
+	return this.getClassItems(classTsid, minCount > 0 ? minCount : undefined);
+};
+
+
+/**
  * Sends a message to the player's client.
  *
  * @param {object} msg the message to send
