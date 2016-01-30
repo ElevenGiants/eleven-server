@@ -451,7 +451,7 @@ function pointOnPlat(plat, x) {
 	if (plat.start.x <= x && plat.end.x >= x) {
 		var fraction = (x - plat.start.x) / (plat.end.x - plat.start.x);
 		var y = plat.start.y + fraction * (plat.end.y - plat.start.y);
-		ret = {x: x, y: Math.floor(y)};
+		ret = {x: x, y: Math.ceil(y)};
 	}
 	return ret;
 }
