@@ -79,6 +79,8 @@ function Item(data) {
 	}
 	this.patchFuncStatsUpdate('use');
 	this.patchFuncStatsUpdate('updateState');
+	this.patchFuncStatsUpdate('broadcastState');
+	this.patchFuncStatsUpdate('setInstanceProp');
 }
 
 utils.copyProps(require('model/ItemApi').prototype, Item.prototype);

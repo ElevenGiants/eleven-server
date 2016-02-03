@@ -273,8 +273,12 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
 	var dtsids = Object.keys(dlist);
 	var utsids = [];
 	for (var k in ulist) {
-		if (k in cache) {
+		if (!(k in cache)) continue;
+		if (utils.isPlayer(k) || utils.isLoc(k) || utils.isGroup(k)) {
 			utsids = utsids.concat(getLoadedRefs(cache[k]));
+		}
+		else {
+			utsids = utsids.concat(k);
 		}
 	}
 	if (!dtsids.length && !utsids.length) {
