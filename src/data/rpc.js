@@ -427,7 +427,7 @@ function objectRequest(callerId, tsid, tag, fname, args, callback) {
 		callback = args;
 		args = fname;
 		fname = tag;
-		tag = null;
+		tag = util.format('%s.%s.%s', callerId, tsid, fname);
 	}
 	RQ.getGlobal('persget').push('rpc.get.' + tsid,
 		pers.get.bind(null, tsid),

@@ -136,11 +136,16 @@ Location.create = function create(geo, data) {
  * @param {boolean} options.isInstance is the copied location an instance
  * @param {string} [options.classTsid] alternate class of new location (source
  *        location class by default)
- * @returns {Location} the copied location
+ * @returns {Location|null} the copied location, or `null` if an instance copy
+ *          was requested, but the given source is not an instance template
  */
 Location.copy = function copy(src, options) {
-	if (options.isInstance) {
-		assert(src.instance_me, src + ' is not an instance template');
+	if (options.isInstance && !src.instance_me) {
+		// temporarily fail gracefully/return null here because of the door to
+		// GG in the placeholder location, otherwise instancing fails when quest
+		// locations are instanced with `preserve_links` === false
+		log.warn('not copying %s (not an instance template)', src);
+		return null;
 	}
 	var geo = Geo.copy(src.geometry, options.label);
 	var ret = Location.create(geo, {
