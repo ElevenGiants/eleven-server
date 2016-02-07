@@ -70,6 +70,10 @@ var TSID_INITIALS_MAP = {
 	Q: 'quests',
 };
 
+// list of GSJS item functions to be patched (see patchItemGsjsFunc function)
+var PATCHED_ITEM_GSJS_FUNCS = ['use', 'updateState', 'broadcastState',
+	'setInstanceProp', 'onInputBoxResponse'];
+
 // container for loaded game object prototypes
 var prototypes = {};
 // dependencies provided to GSJS files on import (initialized in init())
@@ -256,6 +260,7 @@ function loadProto(group, klass) {
 			}\
 		});\
 	');
+	/*jslint evil: false */
 	// inherit from appropriate model class
 	if (getModelClass(group, klass)) {
 		util.inherits(ctor, getModelClass(group, klass));
@@ -279,6 +284,10 @@ function loadProto(group, klass) {
 	// copy over props from object class itself
 	if (klass !== baseName) {
 		compose(group, klass, proto);
+	}
+	// patch a few GSJS functions for items
+	if (group === 'items') {
+		PATCHED_ITEM_GSJS_FUNCS.forEach(patchItemGsjsFunc.bind(null, proto));
 	}
 	prototypes[group][klass] = proto;
 }
@@ -307,6 +316,33 @@ function getModelClass(group, klass) {
 			return Player;
 		case 'quests':
 			return Quest;
+	}
+}
+
+
+/**
+ * Patches a GSJS function to force sending state change updates to the client
+ * after being called.
+ * This is very hacky and most probably not doing it the "right" way; see
+ * {@link https://trello.com/c/7JCrUaal}.
+ *
+ * @param {object} proto prototype object whose functions to patch
+ * @param {string} fname name of the function to patch
+ * @private
+ */
+function patchItemGsjsFunc(proto, fname) {
+	if (typeof proto[fname] === 'function') {
+		// dirty tricks so we can generate a custom function name
+		/*jslint evil: true */
+		var gsjsFunc = proto[fname]; // jshint ignore:line
+		proto[fname] = eval('(\
+			function ' + fname + '__patched() {\
+				var ret = gsjsFunc.apply(this, arguments);\
+				this.queueChanges();\
+				return ret;\
+			}\
+		);');
+		/*jslint evil: false */
 	}
 }
 

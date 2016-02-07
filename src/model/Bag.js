@@ -31,7 +31,6 @@ function Bag(data) {
 	if (!('capacity' in this)) this.capacity = 16;
 	this.items = new IdObjRefMap(this.items);
 	this.hiddenItems = new IdObjRefMap(this.hiddenItems);
-	this.patchFuncStatsUpdate('onInputBoxResponse');
 }
 
 utils.copyProps(require('model/BagApi').prototype, Bag.prototype);
