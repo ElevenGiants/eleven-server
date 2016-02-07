@@ -481,13 +481,15 @@ Item.prototype.merge = function merge(that, n) {
 	if (this.class_tsid !== that.class_tsid) return 0;
 	if (this.soulbound_to !== that.soulbound_to) return 0;
 	var moved = Math.min(n, this.stackmax - this.count);
-	RC.setDirty(this);
-	RC.setDirty(that);
-	that.count -= moved;
-	this.count += moved;
-	if (that.count <= 0) that.del();
-	else that.queueChanges();
-	this.queueChanges();
+	if (moved) {
+		RC.setDirty(this);
+		RC.setDirty(that);
+		that.count -= moved;
+		this.count += moved;
+		if (that.count <= 0) that.del();
+		else that.queueChanges();
+		this.queueChanges();
+	}
 	return moved;
 };
 
