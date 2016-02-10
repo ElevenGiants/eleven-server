@@ -198,7 +198,10 @@ function resetPlayer(tsid) {
 
 // temporary adjustments for alpha players that should be removed at some point (TODO...)
 function makeAlphaAdjustments(pc) {
-	pc.stats.currants.setVal(100000);
+	// give the player a long subscription and some credits
+	pc.stats.has_subscription = true;
+	pc.stats.subscription_end = 9999999999;
+	pc.stats.credits.setVal(23);
 	pc.createItem('tester_widget', 1);
 	delete pc.use_img;
 	pc.adminBackfillNewxpPhysics();
