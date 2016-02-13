@@ -397,8 +397,8 @@ Item.prototype.getChangeData = function getChangeData(pc, removed, compact) {
 	if (this.is_tool) ret.tool_state = this.get_tool_state();
 	if (this.is_consumable) ret.consumable_state = this.get_consumable_state();
 	if (this.getTooltipLabel) ret.tooltip_label = this.getTooltipLabel();
-	if (this.make_config) ret.config = this.make_config();
 	if (!this.deleted) {
+		if (this.make_config) ret.config = this.make_config();
 		if (this.isSelectable && !this.isSelectable(pc)) ret.not_selectable = true;
 		if (this.onStatus) ret.status = this.onStatus(pc);
 	}
