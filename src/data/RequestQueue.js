@@ -138,6 +138,17 @@ RequestQueue.getGlobal = function getGlobal(id) {
 };
 
 
+/**
+ * Returns the request queue the current request is being executed in.
+ *
+ * @returns {RequestQueue} the request queue
+ * @throws {AssertionError} when called outside a request scope
+ */
+RequestQueue.getCurrent = function getCurrent() {
+	return RC.getContext().rq;
+};
+
+
 RequestQueue.prototype.toString = function toString() {
 	return '[rq:' + this.id + ']';
 };
@@ -241,7 +252,7 @@ RequestQueue.prototype.handle = function handle(req) {
 	log.trace('handling %s request', req.tag);
 	if (!req.nested) this.inProgress = req;
 	var self = this;
-	var rc = new RC(req.tag, this.id, options.session);
+	var rc = new RC(req.tag, this.id, options.session, this);
 	rc.run(
 		req.func,
 		function callback(err, res) {

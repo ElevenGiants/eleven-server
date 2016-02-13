@@ -18,6 +18,7 @@ var Bag = require('model/Bag');
 var Group = require('model/Group');
 var config = require('config');
 var Geo = require('model/Geo');
+var RQ = require('data/RequestQueue');
 var rpc = require('data/rpc');
 var sessionMgr = require('comm/sessionMgr');
 var pers = require('data/pers');
@@ -463,10 +464,13 @@ exports.apiSendToGroup = function apiSendToGroup(msg, recipients) {
 	log.debug('global.apiSendToGroup(%s, %s)', msg, recipients);
 	slackChat.handleGroupMsg(msg);
 	var tsids = utils.playersArgToList(recipients);
+	var rq = RQ.getCurrent();
 	tsids.forEach(function iter(tsid) {
-		if (isPlayerOnline(tsid)) {
-			pers.get(tsid).send(msg);
-		}
+		rq.push('apiSendToGroup', function send() {
+			if (isPlayerOnline(tsid)) {
+				pers.get(tsid).send(msg);
+			}
+		});
 	});
 };
 
