@@ -8,6 +8,7 @@
 
 var _ = require('lodash');
 var assert = require('assert');
+var async = require('async');
 var gsjsBridge = require('model/gsjsBridge');
 var Property = require('model/Property');
 var OrderedHash = require('model/OrderedHash');
@@ -18,7 +19,6 @@ var Bag = require('model/Bag');
 var Group = require('model/Group');
 var config = require('config');
 var Geo = require('model/Geo');
-var RQ = require('data/RequestQueue');
 var rpc = require('data/rpc');
 var sessionMgr = require('comm/sessionMgr');
 var pers = require('data/pers');
@@ -463,14 +463,15 @@ exports.apiSendToAll = function apiSendToAll(msg) {
 exports.apiSendToGroup = function apiSendToGroup(msg, recipients) {
 	log.debug('global.apiSendToGroup(%s, %s)', msg, recipients);
 	slackChat.handleGroupMsg(msg);
-	var tsids = utils.playersArgToList(recipients);
-	var rq = RQ.getCurrent();
-	tsids.forEach(function iter(tsid) {
-		rq.push('apiSendToGroup', function send() {
-			if (isPlayerOnline(tsid)) {
-				pers.get(tsid).send(msg);
-			}
-		});
+	recipients = _.map(utils.playersArgToList(recipients), pers.get);
+	async.each(recipients, function send(recipient, cb) {
+		try {
+			recipient.send(msg, true);
+		}
+		catch (err) {
+			log.error(err, 'error delivering group message to %s', recipient.tsid);
+		}
+		return cb();
 	});
 };
 
