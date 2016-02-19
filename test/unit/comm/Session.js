@@ -1,6 +1,6 @@
 'use strict';
 
-var amf = require('node_amf_cc');
+var amf = require('amflib/node-amf/amf');
 var config = require('config');
 var Session = require('comm/Session');
 var helpers = require('../../helpers');
@@ -264,7 +264,8 @@ suite('Session', function () {
 			var s = helpers.getTestSession('test', socket);
 			socket.write = function (data) {
 				data = data.slice(4);  // snip length header
-				var res = amf.deserialize(data.toString('binary')).value;
+				var deser = amf.deserializer(data.toString('binary'));
+				var res = deser.readValue(amf.AMF3);
 				assert.notStrictEqual(res.type, 'foo1');
 				if (res.type === 'foo2') {
 					done();
