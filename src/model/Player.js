@@ -14,7 +14,6 @@ var rpc = require('data/rpc');
 var RQ = require('data/RequestQueue');
 var util = require('util');
 var utils = require('utils');
-var DummyError = require('errors').DummyError;
 
 
 util.inherits(Player, Bag);
@@ -527,8 +526,7 @@ Player.prototype.queueAnnc = function queueAnnc(annc) {
  */
 Player.prototype.send = function send(msg, skipChanges, flushOnly) {
 	if (!this.session) {
-		log.info(new DummyError(),
-			'trying to send message to offline player %s', this);
+		log.info('dropping message to offline player %s', this);
 		return;
 	}
 	// generage "changes" segment

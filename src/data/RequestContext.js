@@ -30,13 +30,15 @@ var pers = require('data/pers');
  *        Group}), respecively their TSID (just for logging)
  * @param {Session} [session] client session where the request
  *        originated (if applicable)
+ * @param {RequestQueue} [queue] the RQ this request is being processed in
  *
  * @constructor
  */
-function RequestContext(tag, owner, session) {
+function RequestContext(tag, owner, session, queue) {
 	this.tag = tag;
 	this.owner = owner;
 	this.session = session;
+	this.rq = queue;
 	// request-local game object cache
 	this.cache = {};
 	// dirty object collector for persistence
