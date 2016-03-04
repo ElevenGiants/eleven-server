@@ -35,6 +35,7 @@ module.exports = {
 	create: create,
 	registerProxy: registerProxy,
 	postRequestProc: postRequestProc,
+	clearStaleRefs: clearStaleRefs,
 };
 
 
@@ -407,6 +408,27 @@ function getLoadedRefs(obj, root, ret) {
 		log.trace('loaded referenced objects for %s: %s', root.tsid, ret);
 	}
 	return ret;
+}
+
+
+/**
+ * Clear missing references from a list (array or object) in a game object.
+ * This is a hack/workaround; those references should really have been removed
+ * when the referenced objects were deleted.
+ *
+ * @param {GameObject} obj object to check/clean up
+ * @param {string} path property path (may be nested, dot-separated) to the
+ *        array/hash containing references to check
+ */
+function clearStaleRefs(obj, path) {
+	var refs = _.get(obj, path);
+	for (var k in refs) {
+		var tsid = refs[k].tsid;
+		if (!get(tsid, true)) {
+			log.warn('removing broken ref %s from %s.%s', tsid, obj, path);
+			delete refs[k];
+		}
+	}
 }
 
 

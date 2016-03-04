@@ -116,6 +116,27 @@ suite('Location', function () {
 	});
 
 
+	suite('gsOnLoad', function () {
+
+		this.slow(1000);
+
+		test('removes broken instance group references', function (done) {
+			pbeMock.getDB().L1 = {tsid: 'L1', instances: {
+				instances: {
+					missing: {objref: true, tsid: 'R1', label: 'bad instance group'},
+					notmissing: {objref: true, tsid: 'R2', label: 'good instance group'},
+				},
+			}};
+			pbeMock.getDB().G1 = {tsid: 'G1'};
+			pbeMock.getDB().R2 = {tsid: 'R2', label: 'good instance group'};
+			new RC().run(function () {
+				var l = pers.get('L1');
+				assert.deepEqual(Object.keys(l.instances.instances), ['notmissing']);
+			}, done);
+		});
+	});
+
+
 	suite('addItem', function () {
 
 		test('does its job', function (done) {

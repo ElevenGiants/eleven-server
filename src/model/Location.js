@@ -90,6 +90,8 @@ Location.prototype.gsOnLoad = function gsOnLoad() {
 	// on demand, but this makes the logs easier to grok)
 	this.getRQ();
 	this.startUnloadInterval();
+	// clean up stale instance group references
+	pers.clearStaleRefs(this, 'instances.instances');
 };
 
 
