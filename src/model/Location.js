@@ -257,14 +257,21 @@ Location.prototype.removePlayer = function removePlayer(player, newLoc) {
  * @private
  */
 Location.prototype.checkUnload = function checkUnload() {
-	// trivial heuristic for now - may become more complex in the future
-	// (e.g. minimum empty period before unloading)
-	if (this.players.length === 0) {
-		var self = this;
-		this.unload(function cb(err) {
-			if (err) log.error(err, 'failed to unload %s', self);
-		});
+	// don't unload if there are people around
+	if (this.players.length) return;
+	// don't unload if anything is busy growing (e.g. jellisacs, barnacles)
+	for (var k in this.items) {
+		var it = this.items[k];
+		if (it.gsTimers.onGrow) {
+			log.debug('not unloading %s, %s is still growing here', this, it);
+			return;
+		}
 	}
+	// still here? go ahead, then
+	var self = this;
+	this.unload(function cb(err) {
+		if (err) log.error(err, 'failed to unload %s', self);
+	});
 };
 
 
