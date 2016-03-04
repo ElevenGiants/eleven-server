@@ -178,7 +178,7 @@ suite('GameObject', function () {
 				assert.notProperty(go.gsTimers, 'key', 'gsTimers entry removed');
 				done();
 			};
-			go.gsTimers.key = 'dummy';  // dummy gsTimers entry, just to check whether it is removed
+			go.gsTimers.key = {};  // dummy gsTimers entry, just to check whether it is removed
 			go.scheduleTimer({fname: 'foo', args: [3], delay: 30}, 'key');
 		});
 

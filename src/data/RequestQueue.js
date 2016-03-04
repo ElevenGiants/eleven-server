@@ -185,6 +185,7 @@ RequestQueue.prototype.getLength = function getLength() {
  *        operations to finish before invoking callback
  * @param {GameObject} [options.obj] game object that is the subject of the
  *        request (for logging)
+ * @returns {object} the resulting request queue entry
  */
 RequestQueue.prototype.push = function push(tag, func, callback, options) {
 	if (this.closing) {
@@ -213,6 +214,7 @@ RequestQueue.prototype.push = function push(tag, func, callback, options) {
 		log.info('request queue flagged for shutdown: %s', this);
 	}
 	setImmediate(this.next.bind(this));
+	return entry;
 };
 
 
@@ -250,6 +252,10 @@ RequestQueue.prototype.handle = function handle(req) {
 	var options = req.options || {};
 	if (req.waitTimer) req.waitTimer.stop();
 	log.trace('handling %s request', req.tag);
+	if (req.canceled) {
+		log.debug('not handling %s request (canceled)', req.tag);
+		return setImmediate(this.next.bind(this));
+	}
 	if (!req.nested) this.inProgress = req;
 	var self = this;
 	var rc = new RC(req.tag, this.id, options.session, this);

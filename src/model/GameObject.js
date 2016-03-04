@@ -316,12 +316,13 @@ GameObject.prototype.scheduleTimer = function scheduleTimer(options, key) {
 			log.error(e, 'could not get RQ for %s.%s', self.tsid, options.fname);
 			return;
 		}
-		rq.push(options.fname, timerCall, function callback(e) {
+		var rqEntry = rq.push(options.fname, timerCall, function callback(e) {
 			if (e) {
 				log.error(e, 'error calling %s.%s (interval: %s)', self,
 					options.fname, !!options.interval);
 			}
 		}, {obj: self});
+		if (self.gsTimers[key]) self.gsTimers[key].handle = rqEntry;
 	};
 	return setTimeout(execTimer, options.delay);
 };
@@ -449,7 +450,14 @@ GameObject.prototype.cancelGsTimer = function cancelGsTimer(fname, interval) {
 	if (entry && !!entry.options.interval === !!interval) {
 		/*jshint +W018 */
 		if (entry.handle) {
-			clearTimeout(entry.handle);
+			if (entry.handle.tag && entry.handle.func) {
+				// already a request queue entry; flag it as canceled
+				entry.handle.canceled = true;
+			}
+			else {
+				// still a pending timeout, so just clear it
+				clearTimeout(entry.handle);
+			}
 			ret = true;
 		}
 		delete this.gsTimers[fname];
