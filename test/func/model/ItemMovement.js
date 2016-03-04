@@ -74,8 +74,8 @@ function addToTestLoc(it, x, y, geo) {
 
 suite('ItemMovement', function () {
 
-	this.timeout(10000);
-	this.slow(10000);
+	this.timeout(5000);
+	this.slow(5000);
 
 	setup(function () {
 		RQ.init();
@@ -88,7 +88,7 @@ suite('ItemMovement', function () {
 
 	suite('platform walking movement', function () {
 
-		test('does not start if the item is already at the given destionation',
+		test('does not start if the item is already at the given destination',
 			function (done) {
 			var i1 = newItem({tsid: 'I1', npc_walk_speed: 10});
 			i1.doneMoving = function doneMoving(args) {

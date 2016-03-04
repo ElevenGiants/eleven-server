@@ -793,7 +793,8 @@ ItemMovement.prototype.moveStep = function moveStep() {
 		}
 	}
 	else if (nextStep && nextStep.forceStop) {
-		return this.stopMove(nextStep.forceStop, true);
+		return this.item.setGsTimer({fname: 'gsStopMoving', delay: 1,
+			internal: true, args: [nextStep.forceStop, true]});
 	}
 	else {
 		// fallback (transport method failed to process path segment properly)
@@ -804,7 +805,8 @@ ItemMovement.prototype.moveStep = function moveStep() {
 	if (this.path.length === 0) {
 		var status = MOVE_CB_STATUS.ARRIVED;
 		if (nextStep && nextStep.status) status = nextStep.status;
-		return this.stopMove(status, true);
+		return this.item.setGsTimer({fname: 'gsStopMoving', delay: 1,
+			internal: true, args: [status, true]});
 	}
 	// Set the timer for the next movement step
 	this.item.setGsTimer({fname: 'movementTimer', delay: 333, internal: true});
