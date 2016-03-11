@@ -434,7 +434,12 @@ function objectRequest(callerId, tsid, tag, fname, args, callback) {
 		function cb(err, obj) {
 			if (err) {
 				log.error(err, 'error loading %s for RPC', tsid);
-				return;
+				return callback(err);
+			}
+			if (obj.__isRP) {
+				var msg = 'RPC for object not handled by this GS: ' + tsid;
+				log.error(msg);
+				return callback(new Error(msg));
 			}
 			handleRequest(callerId, obj, tag, fname, args, callback);
 		}
