@@ -5,6 +5,7 @@ module.exports = Item;
 
 var _ = require('lodash');
 var assert = require('assert');
+var config = require('config');
 var GameObject = require('model/GameObject');
 var OrderedHash = require('model/OrderedHash');
 var pers = require('data/pers');
@@ -96,7 +97,10 @@ Item.prototype.gsOnLoad = function gsOnLoad() {
 			break;
 	}
 	Item.super_.prototype.gsOnLoad.call(this);
-	if (utils.isLoc(this.container) && _.get(this, 'gsMovement.path.length')) {
+	if (!config.get('debug:npcMovement', true)) {
+		log.debug('not resuming NPC movement for %s (disabled)', this);
+	}
+	else if (utils.isLoc(this.container) && _.get(this, 'gsMovement.path.length')) {
 		log.info('resuming NPC movement for %s', this);
 		this.gsMovement.moveStep();
 	}
@@ -524,6 +528,10 @@ Item.prototype.movementTimer = function movementTimer() {
  * @returns {boolean} true if movement is possible and started
  */
 Item.prototype.gsStartMoving = function gsStartMoving(transport, dest, options) {
+	if (!config.get('debug:npcMovement', true)) {
+		log.debug('not starting NPC movement for %s (disabled)', this);
+		return false;
+	}
 	if (!this.gsMovement) this.gsMovement = new ItemMovement(this);
 	return this.gsMovement.startMove(transport, dest, options);
 };

@@ -86,6 +86,8 @@ module.exports = {
 			basePort: 7200,
 		},
 		stackTraceLimit: 20,
+		// set to false to disable all NPC movement:
+		npcMovement: true,
 	},
 	gsjs: {
 		// the GSJS configuration variant to load
