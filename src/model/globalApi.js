@@ -22,7 +22,6 @@ var Geo = require('model/Geo');
 var rpc = require('data/rpc');
 var sessionMgr = require('comm/sessionMgr');
 var pers = require('data/pers');
-var orProxy = require('data/objrefProxy');
 var utils = require('utils');
 var Location = require('model/Location');
 var logging = require('logging');
@@ -54,15 +53,11 @@ function isPlayerOnline(tsid) {
 function safeClone(obj, cloneGameObjects) {
 	var ret = _.clone(obj, true, function customizer(val) {
 		if (typeof val === 'object' && val !== null) {
-			if (val.__isORP) {
-				return orProxy.refify(val);
-			}
-			else if (val.__isGO && !cloneGameObjects) {
+			if (val.__isORP || val.__isGO && !cloneGameObjects) {
 				return val;
 			}
 		}
 	});
-	orProxy.proxify(ret);
 	return ret;
 }
 
@@ -268,7 +263,8 @@ exports.apiNewItemStackFromXY = function apiNewItemStackFromXY(
  * @returns {Location} the new location
  */
 exports.apiNewLocation = function apiNewLocation(label, moteId, hubId, classTsid) {
-	log.debug('global.apiNewLocation(%s, %s, %s, %s)', arguments);
+	log.debug('global.apiNewLocation(%s, %s, %s, %s)', label, moteId, hubId,
+		classTsid);
 	var data = {
 		class_tsid: classTsid,
 		moteid: moteId,
