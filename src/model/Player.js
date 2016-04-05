@@ -632,8 +632,9 @@ Player.prototype.setXY = function setXY(x, y, noCD) {
 	var actuallyMoved = Player.super_.prototype.setXY.call(this, x, y);
 	// if the player actually moved we may have to handle a collision
 	if (actuallyMoved && !noCD) {
+		var it;
 		for (var k in this.location.items) {
-			var it = this.location.items[k];
+			it = this.location.items[k];
 			if (!it || !it.collDet) continue;
 			// test default hitbox of this item
 			this.handleCollision(it, it.hitBox);
@@ -641,6 +642,14 @@ Player.prototype.setXY = function setXY(x, y, noCD) {
 			for (var b in it.hitBoxes) {
 				this.handleCollision(it, it.hitBoxes[b], b);
 			}
+		}
+		for (var l in this.location.players) {
+			it = this.location.players[l];
+			if (!it || !it.collDet || it.tsid === this.tsid ||
+				!it.hasPlayerCollisions()) continue;
+			// test default hitbox of this player
+			this.handleCollision(it, {w: it.w * it.stacked_physics_cache.pc_scale,
+				h: it.h * it.stacked_physics_cache.pc_scale});
 		}
 		if (this.active) {  // if we haven't been teleported away yet
 			// test all hitboxes defined in the geometry of the current location
@@ -659,14 +668,14 @@ Player.prototype.setXY = function setXY(x, y, noCD) {
  * Collision detection handler for collision-enabled items and location
  * hitboxes.
  *
- * @param {Item|object} it item to check for collisions, or a location
- *        hitbox (must have at least `x` and `y` properties)
+ * @param {Item|Player|object} it item or player to check for collisions,
+ *        or a location hitbox (must have at least `x` and `y` properties)
  * @param {object} [hitBox] hitbox to test (must have `w` and `h`
  *        properties); if `undefined`, the default 60*60px hitbox
  *        configuration is assumed
  * @param {string} [hitBoxName] ID of the hitbox to test; mandatory for
- *        location hitboxes, in case of items `undefined` indicates the
- *        item's default (unnamed) hitbox
+ *        location hitboxes, in case of items or players `undefined` indicates
+ *        the item's or player's default (unnamed) hitbox
  */
 Player.prototype.handleCollision = function handleCollision(it, hitBox, hitBoxName) {
 	if (!hitBox) hitBox = {w: 60, h: 60};  // default radius 60px
@@ -686,12 +695,13 @@ Player.prototype.handleCollision = function handleCollision(it, hitBox, hitBoxNa
 			}
 		}
 		else {
-			// if we just entered a named hitbox or an item's default hitbox
+			// if we just entered a named hitbox, an item's default hitbox or a player's
+			// default hitbox
 			if (hitBoxName || !it['!colliders'][this.tsid]) {
 				log.trace('%s entered/inside hitbox "%s" of %s', this, hitBoxName, it);
-				// call item's collision handler
+				// call item's or player's collision handler
 				it.rqPush(it.onPlayerCollision, this, hitBoxName);
-				// keep track of player in the item's hitbox
+				// keep track of player in the item's or player's hitbox
 				if (!hitBoxName) {
 					it['!colliders'][this.tsid] = t;
 				}

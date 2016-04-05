@@ -37,6 +37,9 @@ suite('Player', function () {
 		p.stacked_physics_cache = {pc_scale: 1};
 		p.location = new Location({tsid: 'L'}, new Geo());
 		p.active = true;
+		p.hasPlayerCollisions = function mockHasPlayerCollisions() {
+			return true;
+		};
 		return p;
 	}
 
@@ -627,6 +630,25 @@ suite('Player', function () {
 			collDetDefaultHitBox = false;
 			p.setXY(20, 20);
 			assert.isTrue(collDetDefaultHitBox, 'handleCollision with geo hitBox');
+		});
+
+		test('handles collisions with other players', function () {
+			var p = getCDTestPlayer();
+			var collObj, collHitBox;
+			p.handleCollision = function (obj, hitBox) {
+				collObj = obj;
+				collHitBox = hitBox;
+			};
+			var p2 = getCDTestPlayer();
+			p2.tsid = 'P2';
+			p.location.players = [p2];
+			p.setXY(25, 25);
+			assert.isUndefined(collObj, 'no handleCollision');
+
+			p2.collDet = true;
+			p.setXY(30, 30);
+			assert.strictEqual(collObj, p2, 'handleCollision with p2');
+			assert.deepEqual(collHitBox, {w: 50, h: 100});
 		});
 
 		test('does not set position while player is changing location', function () {
