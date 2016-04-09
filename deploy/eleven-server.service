@@ -1,7 +1,7 @@
 [Unit]
 Description=Eleven Giants Game Server
-Requires=rethinkdb.service
-After=rethinkdb.service
+Requires=rethinkdb@eleven.service
+After=rethinkdb@eleven.service
 
 [Service]
 WorkingDirectory=/eleven/eleven-server
