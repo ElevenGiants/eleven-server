@@ -421,12 +421,16 @@ function getLoadedRefs(obj, root, ret) {
  *        array/hash containing references to check
  */
 function clearStaleRefs(obj, path) {
+	log.debug('clearing stale refs for %s.%s', obj. path);
 	var refs = _.get(obj, path);
-	for (var k in refs) {
-		var tsid = refs[k].tsid;
-		if (!get(tsid, true)) {
+	var keys = Object.keys(refs);
+	for (var i = keys.length - 1; i >= 0; i--) {
+		var k = keys[i];
+		var tsid = _.isObject(refs[k]) ? refs[k].tsid : null;
+		if (!tsid || !get(tsid, true)) {
 			log.warn('removing broken ref %s from %s.%s', tsid, obj, path);
-			delete refs[k];
+			if (_.isArray(refs)) refs.splice(i, 1);
+			else delete refs[k];
 		}
 	}
 }

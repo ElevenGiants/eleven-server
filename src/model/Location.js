@@ -3,6 +3,7 @@
 module.exports = Location;
 
 
+var _ = require('lodash');
 var assert = require('assert');
 var config = require('config');
 var GameObject = require('model/GameObject');
@@ -91,7 +92,11 @@ Location.prototype.gsOnLoad = function gsOnLoad() {
 	this.getRQ();
 	this.startUnloadInterval();
 	// clean up stale instance group references
-	pers.clearStaleRefs(this, 'instances.instances');
+	var instances = _.get(this, 'instances.instances', {});
+	for (var k in instances) {
+		pers.clearStaleRefs(instances, k);
+		if (!instances[k].length) delete instances[k];
+	}
 };
 
 

@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var path = require('path');
 var pers = require('data/pers');
 var RC = require('data/RequestContext');
@@ -123,15 +124,44 @@ suite('Location', function () {
 		test('removes broken instance group references', function (done) {
 			pbeMock.getDB().L1 = {tsid: 'L1', instances: {
 				instances: {
-					missing: {objref: true, tsid: 'R1', label: 'bad instance group'},
-					notmissing: {objref: true, tsid: 'R2', label: 'good instance group'},
+					missing: [
+						{objref: true, tsid: 'R0', label: 'bad instance group'},
+					],
+					somemissing: [
+						{objref: true, tsid: 'R1', label: 'bad instance group'},
+						{objref: true, tsid: 'R2', label: 'good instance group'},
+					],
+					notmissing: [
+						{objref: true, tsid: 'R3', label: 'good instance group'},
+					],
 				},
 			}};
 			pbeMock.getDB().G1 = {tsid: 'G1'};
 			pbeMock.getDB().R2 = {tsid: 'R2', label: 'good instance group'};
+			pbeMock.getDB().R3 = {tsid: 'R3', label: 'good instance group'};
 			new RC().run(function () {
-				var l = pers.get('L1');
-				assert.deepEqual(Object.keys(l.instances.instances), ['notmissing']);
+				var inst = pers.get('L1').instances.instances;
+				assert.deepEqual(Object.keys(inst), ['somemissing', 'notmissing']);
+				assert.deepEqual(_.map(inst.somemissing, 'tsid'), ['R2']);
+				assert.deepEqual(_.map(inst.notmissing, 'tsid'), ['R3']);
+			}, done);
+		});
+
+		test('handles invalid/null references gracefully', function (done) {
+			pbeMock.getDB().L1 = {tsid: 'L1', instances: {
+				instances: {
+					somebroken: [
+						{objref: true, tsid: 'R0', label: 'good instance group'},
+						null,
+					],
+				},
+			}};
+			pbeMock.getDB().G1 = {tsid: 'G1'};
+			pbeMock.getDB().R0 = {tsid: 'R0', label: 'good instance group'};
+			new RC().run(function () {
+				var inst = pers.get('L1').instances.instances;
+				assert.deepEqual(Object.keys(inst), ['somebroken']);
+				assert.deepEqual(_.map(inst.somebroken, 'tsid'), ['R0']);
 			}, done);
 		});
 	});

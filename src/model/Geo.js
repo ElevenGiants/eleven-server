@@ -95,14 +95,12 @@ Geo.prototype.prepConnects = function prepConnects() {
 	}
 	if (this.layers && this.layers.middleground) {
 		var mg = this.layers.middleground;
-		var i, k, tsid;
+		var i, k;
 		for (k in mg.signposts) {
 			var signpost = mg.signposts[k];
 			utils.addNonEnumerable(signpost, 'toJSON', getSignpostToJSON(signpost));
 			for (i in signpost.connects) {
 				signpost.connects[i] = prepConnect(signpost.connects[i]);
-				// remove links to unavailable locations:
-				tsid = signpost.connects[i].street_tsid;
 			}
 		}
 		for (k in mg.doors) {
@@ -110,8 +108,6 @@ Geo.prototype.prepConnects = function prepConnects() {
 			utils.addNonEnumerable(door, 'toJSON', getDoorToJSON(door));
 			if (!door.connect) continue;
 			door.connect = prepConnect(door.connect);
-			// remove links to unavailable locations:
-			tsid = door.connect.street_tsid;
 		}
 	}
 };

@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var config = require('config');
 var path = require('path');
 var pers = require('data/pers');
@@ -206,6 +207,39 @@ suite('pers', function () {
 			setTimeout(function () {
 				done(err);
 			}, 100);
+		});
+	});
+
+
+	suite('clearStaleRefs', function () {
+
+		test('works with reference hashes as well as arrays', function (done) {
+			pbeMock.getDB().L1 = {tsid: 'L1', label: 'dummyLoc'};
+			pbeMock.getDB().R2 = {tsid: 'R2', label: 'exists'};
+			pbeMock.getDB().R3 = {tsid: 'R3', label: 'exists'};
+			pbeMock.getDB().D1 = {
+				owner: {objref: true, tsid: 'L1'},
+				tsid: 'D1',
+				instances: {
+					hashes: {
+						paradise_radial_heights: {objref: true, tsid: 'R1'},
+						foo: {objref: true, tsid: 'R2'},
+					},
+					arrays: {
+						room: [
+							{objref: true, tsid: 'R3'},
+							{objref: true, tsid: 'R4'},
+						],
+					},
+				},
+			};
+			new RC().run(function () {
+				var dc = pers.get('D1');
+				pers.clearStaleRefs(dc, 'instances.hashes');
+				pers.clearStaleRefs(dc, 'instances.arrays.room');
+				assert.deepEqual(_.map(dc.instances.hashes, 'tsid'), ['R2']);
+				assert.deepEqual(_.map(dc.instances.arrays.room, 'tsid'), ['R3']);
+			}, done);
 		});
 	});
 });
