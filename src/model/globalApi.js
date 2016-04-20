@@ -415,16 +415,17 @@ exports.apiCopyHash = function apiCopyHash(obj) {
 
 
 /**
- * Returns a copy of the data of a game object, specified by TSID.
- * The returned data may (by nature of being a copy) quickly get out of
- * sync with the original object.
+ * Returns a serialized copy of the data of a game object, specified by TSID.
+ * The returned data may (by nature of being a copy) quickly get out of sync
+ * with the original object.
  *
  * @param {string} tsid TSID of the object to retrieve
  * @returns {object} a copy of the desired object's data
  */
 exports.apiGetObjectContent = function apiGetObjectContent(tsid) {
 	log.debug('global.apiGetObjectContent(%s)', tsid);
-	return safeClone(pers.get(tsid), true);
+	var obj = pers.get(tsid);
+	return obj ? obj.serialize() : null;
 };
 
 
