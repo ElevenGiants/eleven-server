@@ -16,6 +16,7 @@ module.exports = {
 	get: get,
 	getGsid: getGsid,
 	getMasterGsid: getMasterGsid,
+	isGsid: isGsid,
 	getGSConf: getGSConf,
 	forEachGS: forEachGS,
 	forEachLocalGS: forEachLocalGS,
@@ -190,6 +191,17 @@ function getGsid() {
 function getMasterGsid() {
 	if (gsid.indexOf('-') === -1) return gsid;  // master process itself
 	return gsid.substr(0, gsid.lastIndexOf('-'));
+}
+
+
+/**
+ * Checks whether a given ID identifies a configured game server.
+ *
+ * @param {string} id the ID to check
+ * @returns {boolean} `true` if a valid game server ID was supplied
+ */
+function isGsid(id) {
+	return id in Object.keys(gameServers);
 }
 
 

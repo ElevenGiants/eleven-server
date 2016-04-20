@@ -436,7 +436,7 @@ function objectRequest(callerId, tsid, tag, fname, args, callback) {
 				log.error(err, 'error loading %s for RPC', tsid);
 				return callback(err);
 			}
-			if (obj.__isRP) {
+			if (obj.__isRP && config.isGsid(callerId)) {
 				var msg = 'RPC for object not handled by this GS: ' + tsid;
 				log.error(msg);
 				return callback(new Error(msg));
