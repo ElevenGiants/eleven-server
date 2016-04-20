@@ -84,6 +84,17 @@ utils.copyProps(require('model/ItemApi').prototype, Item.prototype);
 
 Item.prototype.gsOnLoad = function gsOnLoad() {
 	this.updatePath();
+	// clean up stale references for specific non-standard cases (before
+	// timers/intervals are resumed in the super class)
+	switch (this.class_tsid) {
+		case 'piggy_feeder':
+		case 'meat_collector':
+			pers.clearStaleRefs(this, 'piggies');
+			break;
+		case 'butterfly_milker':
+			pers.clearStaleRefs(this, 'butterflies');
+			break;
+	}
 	Item.super_.prototype.gsOnLoad.call(this);
 	if (utils.isLoc(this.container) && _.get(this, 'gsMovement.path.length')) {
 		log.info('resuming NPC movement for %s', this);
