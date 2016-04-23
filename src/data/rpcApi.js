@@ -297,14 +297,19 @@ function getSessionInfo(locally) {
  * { 'gs01-01': { ok: true },
  *   'gs01-02': { ok: false, error: 'RPC timeout' },
  *   'gs01-03': { ok: false, error: 'PANIQUE' },
- *   ok: false }
+ *   ok: false, error: 'RPC timeout' }
  * ```
  * For a simple binary "server available?" decision, it is sufficient
  * to just examine the root `ok` property.
  */
 function getGSStatus(locally) {
+	var local = {ok: true};
+	var maxSessions = config.get('limits:maxSessions', Number.MAX_SAFE_INTEGER);
+	if (sessionMgr.getSessionCount() >= maxSessions) {
+		local = {ok: false, error: 'connection limit reached'};
+	}
 	if (locally) {
-		return {ok: true};
+		return local;
 	}
 	// somewhat complicated setup to be able to put a timeout around the RPC
 	// calls in this special case (we want to return quickly even in case
@@ -313,7 +318,7 @@ function getGSStatus(locally) {
 		var gsid = gsconf.gsid;
 		// this GS instance - since we're running this, we're probably ok
 		if (gsid === config.getGsid()) {
-			return statusCB(null, {ok: true});
+			return statusCB(null, local);
 		}
 		// foward call to other workers; set up a timer that will invoke the
 		// callback if the RPC does not return within a certain period
@@ -343,6 +348,7 @@ function getGSStatus(locally) {
 	for (var k in ret) {
 		if (typeof ret[k] === 'object' && !ret[k].ok) {
 			ret.ok = false;
+			ret.error = ret[k].error;
 			break;
 		}
 	}
