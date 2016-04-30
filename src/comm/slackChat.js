@@ -18,7 +18,7 @@ module.exports = {
 };
 
 
-var Slack = require('slack-client');
+var Slack = require('@slack/client');
 var config = require('config');
 var pers = require('data/pers');
 var RQ = require('data/RequestQueue');
@@ -42,13 +42,52 @@ function init() {
 		log.info('Slack integration not configured (no token)');
 		return;
 	}
+	var logger = getSlackLogger();
 	log.debug('connecting to Slack');
-	slack = new Slack(token);
-	slack.logger = log.child({lib: 'slack-client'});
-	slack.on('open', onSlackOpen);
+	slack = new Slack.RtmClient(token, {
+		autoReconnect: true,
+		autoMark: true,
+		logLevel: 'silly',
+		logger: logger,
+		dataStore: new Slack.MemoryDataStore({
+			logLevel: 'silly',
+			logger: logger,
+		}),
+	});
+	slack.on(Slack.CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, onSlackOpen);
+	slack.on(Slack.RTM_EVENTS.MESSAGE, onSlackMessage);
 	slack.on('error', onSlackError);
-	slack.on('message', onSlackMessage);
 	slack.login();
+}
+
+
+function getSlackLogger() {
+	var logger = log.child({lib: 'slack-client'});
+	return function slackLogger(level, msg) {
+		switch (level) {
+			case 'error':
+				logger.error(msg);
+				break;
+			case 'warn':
+				logger.warn(msg);
+				break;
+			case 'info':
+				logger.info(msg);
+				break;
+			case 'verbose':
+			case 'debug':
+				logger.debug(msg);
+				break;
+			case 'silly':
+				logger.trace(msg);
+				break;
+			default:
+				// just to be on the safe side in case we get something
+				// unexpected; should be categorized more appropriately then
+				logger.fatal(msg);
+				break;
+		}
+	};
 }
 
 
@@ -70,15 +109,16 @@ function shutdown(done) {
  * @private
  */
 function onSlackOpen() {
-	log.info('connected to Slack as %s', slack.self.name);
+	var user = slack.dataStore.getUserById(slack.activeUserId);
+	log.info('connected to Slack as %s', user.name);
 	var groups = config.get('slack:chat:groups', {});
 	for (var tsid in groups) {
 		var chanName = groups[tsid];
 		log.debug('hooking up group %s to Slack channel #%s', tsid, chanName);
-		connectGroup(tsid, chanName, slack.channels);
+		connectGroup(tsid, chanName, slack.dataStore.channels);
 		// no channel found? try groups, then
 		if (!groupToChannel[tsid]) {
-			connectGroup(tsid, chanName, slack.groups);
+			connectGroup(tsid, chanName, slack.dataStore.groups);
 		}
 		if (!groupToChannel[tsid]) {
 			log.error('channel/group %s not found', chanName);
@@ -112,6 +152,7 @@ function connectGroup(groupTsid, cogName, cogs) {
 				if (rpc.isLocal(groupTsid)) {
 					channelToGroup[k] = groupTsid;
 				}
+				log.info('connected %s to %s', cog.name, groupTsid);
 				break;
 			}
 		}
@@ -149,7 +190,7 @@ function onSlackMessage(msg) {
 		msg.text = '[EDIT] ' + msg.text;
 	}
 	// prepare message payload
-	var user = slack.getUserByID(msg.user);
+	var user = slack.dataStore.getUserById(msg.user);
 	if (!user) {
 		log.error({data: msg}, 'could not retrieve Slack user');
 		return;
@@ -204,16 +245,17 @@ function processMsgText(text) {
 		var prefix = tokens[1] ? tokens[1] : '';
 		var label = tokens[3];
 		if (!label) {
+			var ds = slack.dataStore;
 			var id = tokens[2];
 			switch (id[0]) {
 				case 'U':
-					label = slack.getUserByID(id) ? slack.getUserByID(id).name : id;
+					label = ds.getUserById(id) ? ds.getUserById(id).name : id;
 					break;
 				case 'C':
-					label = slack.getChannelByID(id) ? slack.getChannelByID(id).name : id;
+					label = ds.getChannelById(id) ? ds.getChannelById(id).name : id;
 					break;
 				case 'G':
-					label = slack.getGroupByID(id) ? slack.getGroupByID(id).name : id;
+					label = ds.getGroupById(id) ? ds.getGroupById(id).name : id;
 					break;
 				default:
 					label = id;
@@ -247,7 +289,8 @@ function handleGroupMsg(msg) {
 	if (msg.type === 'pc_groups_chat' && !msg.fromSlack) {
 		var channel = groupToChannel[msg.tsid];
 		if (channel) {
-			channel.send(util.format('*[%s]* %s', msg.pc.label, msg.txt));
+			slack.sendMessage(util.format('*[%s]* %s', msg.pc.label, msg.txt),
+				channel.id);
 		}
 	}
 }
@@ -269,8 +312,8 @@ function patchGroup(group) {
 			var channel = groupToChannel[group.tsid];
 			var roster = utils.shallowCopy(group.chat_roster);
 			for (var i = 0; i < channel.members.length; i++) {
-				var user = slack.getUserByID(channel.members[i]);
-				if (user.presence === 'active' && user.id !== slack.self.id) {
+				var user = slack.dataStore.getUserById(channel.members[i]);
+				if (user.presence === 'active' && user.id !== slack.activeUserId) {
 					roster[user.id] = {label: user.name + ' (Slack)'};
 				}
 			}
