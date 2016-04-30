@@ -1,6 +1,6 @@
 'use strict';
 
-var amf = require('amflib/node-amf/amf');
+var amf = require('eleven-node-amf/node-amf/amf');
 var config = require('config');
 var Session = require('comm/Session');
 var helpers = require('../../helpers');
@@ -9,7 +9,8 @@ var gsjsBridge = require('model/gsjsBridge');
 
 var TEST_AMF3_MSG = ('0a 0b 01 09 74 79 70 65 06 09 74 65 73 74 0d 6d 73 67 ' +
 	'5f 69 64 06 03 31 01').replace(/ /g, '');
-
+var TEST_AMF3_MSG_MOVE_XY = '0a0b01037306052d37037804fffffdfc0974797065060f6d' +
+	'6f76655f7879037904ffffff7701';
 
 suite('Session', function () {
 
@@ -93,6 +94,7 @@ suite('Session', function () {
 			var socket = helpers.getDummySocket();
 			socket.destroy = function () {
 				// this should be called by the domain error handler
+				s.dom.exit();  // clean up (otherwise this domain affects other tests)
 				done();
 			};
 			var s = new Session('test', socket);
@@ -149,6 +151,17 @@ suite('Session', function () {
 			var s = helpers.getTestSession('test');
 			s.buffer = new Buffer(new Array(config.get('net:maxMsgSize') + 2).join('X'));
 			assert.throw(s.checkForMessages.bind(s), Error);
+		});
+
+		test('deserializes negative numbers correctly', function (done) {
+			var s = helpers.getTestSession('test');
+			s.buffer = new Buffer(TEST_AMF3_MSG_MOVE_XY, 'hex');
+			s.enqueueMessage = function (msg) {
+				assert.strictEqual(msg.type, 'move_xy');
+				assert.strictEqual(msg.x, -516);
+				done();
+			};
+			s.checkForMessages();
 		});
 	});
 
