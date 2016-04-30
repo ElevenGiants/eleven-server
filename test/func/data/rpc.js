@@ -163,7 +163,7 @@ suite('rpc', function () {
 					assert.strictEqual(s.length, length);
 					var res = JSON.parse(s);
 					assert.strictEqual(res.id, 123);
-					assert.isNull(res.error, 'no error occurred');
+					assert.isUndefined(res.error, 'no error occurred');
 					assert.isNull(res.result,
 						'response contains result property with value null');
 					done();

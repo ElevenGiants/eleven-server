@@ -250,8 +250,7 @@ function startSystemMetrics() {
 		});
 	}, undefined, 1000);
 	// GC events
-	var gcStats = new GCStats();
-	gcStats.on('stats', function afterGC(stats) {
+	GCStats().on('stats', function afterGC(stats) {
 		if (stats.gctype === 1) {  // scavenge
 			increment('process.memory.gc.minor');
 			lynx.timing('process.memory.gc.minor', stats.pauseMS);
