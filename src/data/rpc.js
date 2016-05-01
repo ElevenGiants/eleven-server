@@ -129,7 +129,7 @@ function initServer(callback) {
 	server = new jrpc.server(
 		new jrpc.transports.server.tcp(port, {
 			logger: getJrpcLogger('server'),
-		})
+		}), {}
 	);
 	if (callback) server.transport.on('listening', callback);
 	server.transport.on('connection', onServerConnection);

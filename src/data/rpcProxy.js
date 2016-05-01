@@ -17,7 +17,6 @@ module.exports = {
 };
 
 
-require('harmony-reflect');
 var assert = require('assert');
 var rpc = require('data/rpc');
 

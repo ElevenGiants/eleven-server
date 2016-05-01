@@ -4,9 +4,6 @@ var rewire = require('rewire');
 var GameObject = require('model/GameObject');
 var orproxy = rewire('data/objrefProxy');
 var persMock = require('../../mock/pers');
-// workaround to make Proxy available in orproxy module after rewiring:
-require('harmony-reflect');
-orproxy.__set__('Proxy', Proxy);
 
 
 suite('objrefProxy', function () {

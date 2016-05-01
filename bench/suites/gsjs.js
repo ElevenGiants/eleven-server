@@ -28,11 +28,18 @@ RC.getContext = function getContext() {
 
 suite.asyncSetup = function (done) {
 	pers.init(pbeMock);
-	config.init(true, {
+	// spoof a GS worker config (so location gets properly initialized)
+	config.init(false, {
+		gsid: 'gs01-01',
+		net: {
+			gameServers: {
+				gs01: {host: '127.0.0.1', ports: [3000]},
+			},
+		},
 		gsjs: {
 			config: 'config_prod',
 		},
-	});
+	}, {});
 	gsjsBridge.init(true, function cb() {
 		// hi variants tracker group required for pc login:
 		pers.create(Group, {tsid: 'RIFUKAGPIJC358O', class_tsid: 'hi_variants_tracker'});
@@ -41,7 +48,9 @@ suite.asyncSetup = function (done) {
 				start: {x: -100, y: 0}, end: {x: 100, y: 0},
 				platform_item_perm: -1, platform_pc_perm: -1,
 		}}}}});
+		pbeMock.getDB()[geo.tsid] = geo;
 		loc = Location.create(geo);
+		pbeMock.getDB()[loc.tsid] = loc;
 		pc = Player.create({
 			tsid: 'PXYYZ',
 			label: 'Chuck',
@@ -51,11 +60,14 @@ suite.asyncSetup = function (done) {
 			x: 0, y: -100,
 			last_location: {},
 		});
+		pbeMock.getDB()[pc.tsid] = pc;
 		trant = Item.create('trant_bean');
 		trant.setContainer(loc, 12, 34);
 		trant.die = function () {};  // prevent dying
+		pbeMock.getDB()[trant.tsid] = trant;
 		apple = Item.create('apple');
 		apple.setContainer(pc, 0);
+		pbeMock.getDB()[apple.tsid] = apple;
 		done();
 	});
 };

@@ -2,10 +2,10 @@
 This is the game server for [Eleven Giants](http://elevengiants.com/).
 
 **Work in progress disclaimer:**
-*The server is currently only able to run a very limited portion of the game. To
+_The server is currently only able to run a limited portion of the game. To
 actually start up the client with it, additional components are required, which
 are not publicly available at this time. If you want to get involved in the
-development process, please [let us know!](http://elevengiants.com/contact.php)*
+development process, please [let us know!](http://elevengiants.com/contact.php)_
 
 
 ## Prerequisites ##
@@ -14,19 +14,18 @@ is probably the least painful way to get up and running. Setup instructions for
 the VM can be found in our internal wiki.
 
 For the adventurous, it should be possible to run the server on most platforms
-that support [Node.js](http://nodejs.org/) v0.10.x (though it may be more
-painful on Windows). At the moment you also need
+that support [Node.js](http://nodejs.org/) v6. At the moment you also need
 [Python 2.7](https://www.python.org/download/releases/2.7/) for the GSJS
 preprocessor script.
 
 
 ## Setup ##
-**Note:** *The following setup steps are **not** necessary if you are using the
-Vagrant box and created the VM with the `eleven-server` and `eleven-gsjs` repos
-already present.*
+**Note:** _The following setup steps are **not** necessary if you are using the
+Vagrant box and created the VM with the _`eleven-server`_ and _`eleven-gsjs`_
+repos already present._
 
 Clone this repository and [`eleven-gsjs`](https://github.com/ElevenGiants/eleven-gsjs)
-in the same parent directory. Directory names are assumed to equal the Git
+in the same parent directory. Directory names are assumed to match the Git
 repository names. Call
 ```bash
 npm -s run preproc
@@ -36,7 +35,7 @@ game server.
 
 Once that has finished successfully, compile the required non-JS npm packages:
 ```bash
-npm rebuild
+npm install
 ```
 If you are running the Vagrant VM on Windows, add `--no-bin-links` as an
 argument (necessary because symlinks cannot be created in folders shared between

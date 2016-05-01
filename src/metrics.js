@@ -23,7 +23,6 @@ module.exports = {
 };
 
 
-require('harmony-reflect');
 var config = require('config');
 var Lynx = require('lynx');
 var GCStats = require('gc-stats');

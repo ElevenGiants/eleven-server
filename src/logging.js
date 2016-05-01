@@ -16,7 +16,6 @@ module.exports = {
 };
 
 
-require('harmony-reflect');
 var _ = require('lodash');
 var assert = require('assert');
 var bunyan = require('bunyan');

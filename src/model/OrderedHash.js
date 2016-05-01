@@ -3,7 +3,6 @@
 module.exports = OrderedHash;
 
 
-require('harmony-reflect');
 var orProxy = require('data/objrefProxy');
 var utils = require('utils');
 
@@ -43,6 +42,7 @@ function OrderedHash(data) {
 		},
 		get: function get(target, name, receiver) {
 			if (name === 'toJSON') {
+				// TODO: check if this is still necessary
 				// required to prevent weird context-less "illegal access"
 				// errors when stringifying proxied objects (or objects with
 				// proxied children)

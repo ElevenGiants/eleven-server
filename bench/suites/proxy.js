@@ -4,9 +4,6 @@ require('../setup');
 var suite = new (require('benchmark')).Suite;
 module.exports = suite;
 
-// Testing "old" Harmony proxies as implemented by current V8; see
-// http://wiki.ecmascript.org/doku.php?id=harmony:proxies
-
 // The "noop" benchmark is included as a point of reference, to check how many
 // ops/sec an entirely empty benchmark yields. Since there is no measurable
 // difference between that and a benchmark with a single property get/set
@@ -17,17 +14,28 @@ module.exports = suite;
 
 var o = {};
 
-var getSetProxy = Proxy.create(function (obj) {
-	return {
-		get: function get(receiver, name) {
-			return obj[name];
-		},
-		set: function set(receiver, name, val) {
-			obj[name] = val;
-			return true;
-		},
-	};
-}({}));
+Object.defineProperty(o, 'y', {
+	configurable: true,
+	enumerable: true,
+	get: function get() {
+		return o.x;
+	},
+	set: function set(val) {
+		o.x = val;
+	},
+});
+
+var passthroughProxy = new Proxy(o, {});
+
+var getSetProxy = new Proxy(o, {
+	get: function get(target, name, receiver) {
+		return target[name];
+	},
+	set: function set(target, name, val, receiver) {
+		target[name] = val;
+		return true;
+	},
+});
 
 
 suite.add('noop', function() {
@@ -2052,6 +2060,16 @@ suite.add('1000x plain object property read access', function() {
 });
 
 
+suite.add('plain object setter access', function() {
+	o.y = 14;
+});
+
+
+suite.add('plain object getter access', function() {
+	return o.y;
+});
+
+
 suite.add('getSetProxy object property write access', function() {
 	getSetProxy.x = 15;
 });
@@ -4067,4 +4085,14 @@ suite.add('1000x getSetProxy object property read access', function() {
 	getSetProxy.prop997;
 	getSetProxy.prop998;
 	getSetProxy.prop999;
+});
+
+
+suite.add('passthroughProxy object property write access', function() {
+	passthroughProxy.x = 15;
+});
+
+
+suite.add('passthroughProxy object property read access', function() {
+	return passthroughProxy.x;
 });

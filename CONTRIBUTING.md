@@ -10,7 +10,7 @@ to propose changes if you think something should be improved.
 Work on the game server is managed on [Trello](https://trello.com/b/ZdLBfI1l/game-server).
 Tasks waiting to be picked up by somebody are in the **To Do** list, and
 generally roughly sorted by priority (decreasing from top to bottom).
-Relatively easy tasks that might be a good start point for contributing to the
+Relatively easy tasks that might be a good starting point for contributing to the
 GS are tagged `low hanging fruit`.
 The **TBD** list is also pending, but those topics are waiting on more concrete
 specs, further discussion or similar.

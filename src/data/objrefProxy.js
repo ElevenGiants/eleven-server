@@ -42,7 +42,6 @@ module.exports = {
 };
 
 
-require('harmony-reflect');
 var pers = require('data/pers');
 var utils = require('utils');
 
@@ -86,7 +85,8 @@ function makeProxy(objref) {
 					return '^O[' + target.tsid + '|' + target.label + ']';
 				};
 			}
-			if (name === 'valueOf' || name === 'toString') {
+			if (name === 'valueOf' || name === 'toString' ||
+				name === Symbol.toPrimitive) {
 				return function () {
 					return '^O[' + target.tsid + ']';
 				};
@@ -109,6 +109,7 @@ function makeProxy(objref) {
 				target[name] = val;
 			}
 			resolve(target)[name] = val;
+			return true;
 		},
 		has: function has(target, name) {
 			return name in resolve(target);

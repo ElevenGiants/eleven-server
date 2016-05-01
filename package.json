@@ -44,6 +44,9 @@
   "directories": {
     "test": "test"
   },
+  "engines": {
+    "node": "6.x"
+  },
   "dependencies": {
     "@slack/client": "^3.0.0",
     "async": "^0.9.0",
@@ -51,7 +54,6 @@
     "eleven-node-amf": "https://github.com/ElevenGiants/eleven-node-amf/tarball/v1.0.0",
     "fibers": "^1.0.10",
     "gc-stats": "^1.0.0",
-    "harmony-reflect": "^1.3.0",
     "lodash": "^3.10.1",
     "lynx": "^0.2.0",
     "multitransport-jsonrpc": "^0.9.3",
@@ -76,14 +78,14 @@
   },
   "scripts": {
     "preproc": "python tools/gsjs-preproc.py",
-    "start": "NODE_PATH=src node --harmony_proxies --expose-gc ./src/server.js | node_modules/bunyan/bin/bunyan -o short",
-    "test": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony_proxies test/unit",
-    "functest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony_proxies test/func",
-    "inttest": "NODE_PATH=src node_modules/mocha/bin/mocha --harmony_proxies test/int",
+    "start": "NODE_PATH=src node --expose-gc ./src/server.js | node_modules/bunyan/bin/bunyan -o short",
+    "test": "NODE_PATH=src node_modules/mocha/bin/mocha test/unit",
+    "functest": "NODE_PATH=src node_modules/mocha/bin/mocha test/func",
+    "inttest": "NODE_PATH=src node_modules/mocha/bin/mocha test/int",
     "alltests": "NODE_PATH=src sh -c 'npm run lint && npm run test -- -R progress && npm run functest -- -R progress && npm run inttest -- -R progress'",
-    "coverage": "NODE_PATH=src node --harmony_proxies node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- --harmony_proxies -R progress test/unit test/func",
-    "coveralls": "NODE_PATH=src node --harmony_proxies node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha --report lcovonly -- --harmony_proxies -R progress test/unit test/func && cat coverage/lcov.info | node_modules/coveralls/bin/coveralls.js",
-    "bench": "NODE_PATH=src node --harmony_proxies bench/runner.js",
+    "coverage": "NODE_PATH=src node node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R progress test/unit test/func",
+    "coveralls": "NODE_PATH=src node node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha --report lcovonly -- -R progress test/unit test/func && cat coverage/lcov.info | node_modules/coveralls/bin/coveralls.js",
+    "bench": "NODE_PATH=src node bench/runner.js",
     "lint": "node_modules/jshint/bin/jshint --verbose --exclude src/gsjs src test tools && node_modules/jscs/bin/jscs --verbose --reporter inline src test tools",
     "docs": "node node_modules/jsdoc/jsdoc.js --destination docs --configure jsdoc-conf.json src",
     "repl": "node tools/repl-client.js 7201"

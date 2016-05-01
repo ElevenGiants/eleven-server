@@ -371,8 +371,7 @@ Session.prototype.handleAmfReqError = function handleAmfReqError(req, err) {
 	if (!err) return;
 	if (typeof req !== 'object') req = {};
 	if (typeof err === 'string') {
-		// catch malcontents throwing strings instead of Errors, e.g.
-		// https://github.com/tvcutsem/harmony-reflect/issues/38
+		// catch malcontents throwing strings instead of Errors
 		err = new Error(err);
 	}
 	log.error(err, 'error processing %s request for %s', req.type, this.pc);

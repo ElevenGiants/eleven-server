@@ -65,7 +65,8 @@ function runSuite(suitePath) {
 
 
 function onError(event) {
-	console.log('\terror running %s: %s', event.target.name, event.target.error);
+	console.log('\terror running %s: %s', event.target.name,
+		event.target.error.stack);
 }
 
 
