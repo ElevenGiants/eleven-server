@@ -597,11 +597,12 @@ suite('Player', function () {
 			assert.isFalse(result, 'returned false as player was not moved');
 		});
 
+		/* jshint -W071 */
 		test('calls collision detection handling', function () {
 			var p = getCDTestPlayer();
 			var collDetDefaultHitBox = false;
 			var collDetNamedHitBox = false;
-			p.handleCollision = function (item, hitBox, hitBoxName) {
+			p.handleCollision = function (object, hitBox, hitBoxName) {
 				collDetDefaultHitBox = true;
 				if (hitBoxName) {
 					collDetNamedHitBox = true;
@@ -630,7 +631,21 @@ suite('Player', function () {
 			collDetDefaultHitBox = false;
 			p.setXY(20, 20);
 			assert.isTrue(collDetDefaultHitBox, 'handleCollision with geo hitBox');
+
+			var p2 = getCDTestPlayer();
+			p2.tsid = 'P2';
+			p.location.players = [p2];
+			p.location.geometry.layers.middleground.boxes = [];
+			collDetDefaultHitBox = false;
+			p.setXY(25, 25);
+			assert.isFalse(collDetDefaultHitBox, 'still false, no collDet');
+
+			p2.collDet = true;
+			p2.hasPlayerCollisions = true;
+			p.setXY(30, 30);
+			assert.isTrue(collDetDefaultHitBox, 'handleCollision with default hitBox');
 		});
+		/* jshint +W071 */
 
 		test('handles collisions with other players', function () {
 			var p = getCDTestPlayer();
