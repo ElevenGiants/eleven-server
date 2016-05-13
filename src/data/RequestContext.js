@@ -6,7 +6,7 @@ module.exports = RequestContext;
 var assert = require('assert');
 var util = require('util');
 var wait = require('wait.for');
-var Fiber = require('wait.for/node_modules/fibers');
+var Fiber = require('fibers');
 var pers = require('data/pers');
 
 

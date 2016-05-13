@@ -423,8 +423,7 @@ function handleRequest(callerId, obj, tag, fname, args, callback) {
  */
 function objectRequest(callerId, tsid, tag, fname, args, callback) {
 	// backwards compatibility with external components
-	if (arguments.length === 5) {
-		callback = args;
+	if (typeof fname !== 'string') {
 		args = fname;
 		fname = tag;
 		tag = util.format('%s.%s.%s', callerId, tsid, fname);

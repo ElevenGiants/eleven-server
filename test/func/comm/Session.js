@@ -61,7 +61,7 @@ suite('Session', function () {
 				function iterator(i, cb) {
 					net.connect(cfg.port, cfg.host)
 						.on('data', function (data) {
-							assert.deepEqual(JSON.parse(data.toString()), {msg_id: i});
+							assert.strictEqual(JSON.parse(data.toString()).msg_id, i);
 							this.end();
 						})
 						.on('close', function (hadError) {

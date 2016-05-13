@@ -1,6 +1,6 @@
 'use strict';
 
-var amf = require('amflib/node-amf/amf');
+var amf = require('eleven-node-amf/node-amf/amf');
 var events = require('events');
 var Player = require('model/Player');
 var Session = require('comm/Session');

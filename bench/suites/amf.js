@@ -6,7 +6,7 @@ module.exports = suite;
 
 
 var fs = require('fs');
-var amflib = require('amflib/node-amf/amf');
+var amflib = require('eleven-node-amf/node-amf/amf');
 
 
 // load test fixtures

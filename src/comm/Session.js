@@ -3,7 +3,7 @@
 module.exports = Session;
 
 
-var amf = require('amflib/node-amf/amf');
+var amf = require('eleven-node-amf/node-amf/amf');
 var assert = require('assert');
 var auth = require('comm/auth');
 var config = require('config');

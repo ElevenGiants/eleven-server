@@ -19,7 +19,6 @@ before_script:
 - cd ..
 - git clone https://github.com/ElevenGiants/eleven-gsjs.git
 - cd eleven-server
-- npm rebuild
 - npm run preproc
 
 script:
