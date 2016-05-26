@@ -423,7 +423,7 @@ function getLoadedRefs(obj, root, ret) {
 function clearStaleRefs(obj, path) {
 	log.debug('clearing stale refs for %s.%s', obj. path);
 	var refs = _.get(obj, path);
-	var keys = Object.keys(refs);
+	var keys = _.keys(refs);
 	for (var i = keys.length - 1; i >= 0; i--) {
 		var k = keys[i];
 		var tsid = _.isObject(refs[k]) ? refs[k].tsid : null;

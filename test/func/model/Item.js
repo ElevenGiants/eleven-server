@@ -491,4 +491,16 @@ suite('Item', function () {
 			}, done);
 		});
 	});
+
+
+	suite('gsOnLoad', function () {
+
+		test('handles edge cases gracefully', function (done) {
+			new RC().run(function () {
+				var it = Item.create('butterfly_milker');
+				// no butterflies assigned, `butterflies` property doesn't exist yet
+				it.gsOnLoad();  // should just not do anything
+			}, done);
+		});
+	});
 });
