@@ -195,6 +195,17 @@ suite('rpc', function () {
 				});
 			});
 		});
+
+		test('handles calls on nonexistent game objects gracefully', function (done) {
+			rcMock.run(function () {
+				rpc.__get__('objectRequest')('caller', 'IMISSING', null, 'func', null,
+					function cb(err, res) {
+					assert.instanceOf(err, Error);
+					assert.strictEqual(err.message, 'object not found: IMISSING');
+					return done();
+				});
+			});
+		});
 	});
 
 
