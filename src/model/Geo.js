@@ -3,6 +3,7 @@
 module.exports = Geo;
 
 
+var _ = require('lodash');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
 var RQ = require('data/RequestQueue');
@@ -162,35 +163,29 @@ function connectToJSON(connect) {
 
 
 /**
- * Creates a processed shallow copy of this geometry object, prepared
- * for serialization. The `connect` objects in doors and signposts are
- * converted back to their "persistence form" here (cf. {@link
- * Geo|constructor}).
+ * Creates a processed deep copy of this geometry object, prepared for
+ * serialization. The `connect` objects in doors and signposts are converted
+ * back to their "persistence form" here (cf. {@link Geo|constructor}).
  *
  * @see {@link GameObject#serialize|GameObject.serialize}
  */
 Geo.prototype.serialize = function serialize() {
 	var ret = Geo.super_.prototype.serialize.call(this);
+	ret = _.cloneDeep(ret, function customizer(val, key) {
+		if (key === 'target' && utils.isLoc(val)) {
+			return {};  // populated later by revertConnect
+		}
+	});
 	if (ret.layers && ret.layers.middleground) {
-		// make sure we're not modifying the actual object data (ret is just a
-		// shallow copy so far)
-		ret.layers = utils.shallowCopy(ret.layers);
-		ret.layers.middleground = utils.shallowCopy(ret.layers.middleground);
 		var mg = ret.layers.middleground;
-		mg.signposts = utils.shallowCopy(mg.signposts);
 		var i, k;
 		for (k in mg.signposts) {
-			mg.signposts[k] = utils.shallowCopy(mg.signposts[k]);
-			var signpost = mg.signposts[k];
-			var connects = signpost.connects;
-			signpost.connects = {};
-			for (i in connects) {
-				signpost.connects[i] = revertConnect(connects[i]);
+			for (i in mg.signposts[k].connects) {
+				mg.signposts[k].connects[i] = revertConnect(
+					mg.signposts[k].connects[i]);
 			}
 		}
-		mg.doors = utils.shallowCopy(mg.doors);
 		for (k in mg.doors) {
-			mg.doors[k] = utils.shallowCopy(mg.doors[k]);
 			if (mg.doors[k].connect) {
 				mg.doors[k].connect = revertConnect(mg.doors[k].connect);
 			}

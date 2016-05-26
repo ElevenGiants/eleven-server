@@ -151,6 +151,20 @@ suite('Geo', function () {
 			assert.property(dc, 'target');
 			assert.isFalse(dc.propertyIsEnumerable('target'));
 		});
+
+		test('makes a deep copy of the geo data', function () {
+			// relevant for POL modifications, e.g. house expansion
+			var src = new Geo(getSampleData());
+			var ser = src.serialize();
+			ser.layers.middleground.platform_lines.plat_SOMEFURNITUREITEM = {
+				start: {x: 100, y: -123},
+				emd: {x: 200, y: -123},
+			};
+			ser.layers.sky.w = -123;
+			assert.notProperty(src.layers.middleground.platform_lines,
+				'plat_SOMEFURNITUREITEM');
+			assert.strictEqual(src.layers.sky.w, 4500);
+		});
 	});
 
 
