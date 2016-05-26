@@ -321,7 +321,7 @@ function sendRequest(gsid, rpcFunc, args, callback) {
 	args = orProxy.refify(args);
 	var logmsg = util.format('%s(%s) @%s', rpcFunc, args.join(', '), gsid);
 	log.debug('calling %s', logmsg);
-	metrics.increment('net.rpc.tx', 0.01);
+	metrics.increment('net.rpc.tx');
 	var rpcArgs = [config.getGsid()].concat(args);
 	if (callback) {
 		client.request(rpcFunc, rpcArgs, function cb(err, res) {
@@ -367,7 +367,7 @@ function sendRequest(gsid, rpcFunc, args, callback) {
  * the remote caller
  */
 function handleRequest(callerId, obj, tag, fname, args, callback) {
-	metrics.increment('net.rpc.rx', 0.01);
+	metrics.increment('net.rpc.rx');
 	if (!obj || typeof obj[fname] !== 'function') {
 		var msg = util.format('no such function: %s.%s', obj, fname);
 		return callback(new RpcError(msg));
