@@ -240,7 +240,7 @@ Location.prototype.gsOnPlayerEnter = function gsOnPlayerEnter(player) {
 Location.prototype.removePlayer = function removePlayer(player, newLoc) {
 	delete this.players[player.tsid];
 	if (this.onPlayerExit) {
-		this.rqPush(this.onPlayerExit, player, newLoc);
+		this.onPlayerExit(player, newLoc);
 	}
 	for (var k in this.items) {
 		var it = this.items[k];
