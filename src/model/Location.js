@@ -239,8 +239,10 @@ Location.prototype.gsOnPlayerEnter = function gsOnPlayerEnter(player) {
  */
 Location.prototype.removePlayer = function removePlayer(player, newLoc) {
 	delete this.players[player.tsid];
+	// handle exit from location immediately,
+	// then allow items to handle it in queue
 	if (this.onPlayerExit) {
-		this.rqPush(this.onPlayerExit, player, newLoc);
+		this.onPlayerExit(player, newLoc);
 	}
 	for (var k in this.items) {
 		var it = this.items[k];
