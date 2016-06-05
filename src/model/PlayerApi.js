@@ -27,6 +27,31 @@ PlayerApi.prototype.apiPlayerHasLockForCurrentLocation =
 
 
 /**
+ * Acquires an editing lock for the player's current location.
+ *
+ * @returns {boolean} `true` if the current location was locked successfully,
+ *          `false` otherwise
+ */
+PlayerApi.prototype.apiLockCurrentLocationForEditing =
+	function apiLockCurrentLocationForEditing() {
+	log.info('%s.apiLockCurrentLocationForEditing()', this);
+	//TODO: implement location locking
+	return true;
+};
+
+
+/**
+ * Releases an editing lock for the player's current location. Does nothing if
+ * the player does not hold a lock.
+ */
+PlayerApi.prototype.apiUnlockCurrentLocationForEditing =
+	function apiUnlockCurrentLocationForEditing() {
+	log.info('%s.apiUnlockCurrentLocationForEditing()', this);
+	//TODO: implement location locking
+};
+
+
+/**
  * Tries to acquire an exclusive access lock on an item in the player's
  * inventory (e.g. for item verb processing). The lock is released
  * automatically at the end of the current request.
