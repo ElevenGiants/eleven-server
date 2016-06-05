@@ -27,6 +27,34 @@ PlayerApi.prototype.apiPlayerHasLockForCurrentLocation =
 
 
 /**
+ * Locks location for current user
+ *
+ * @returns {boolean} `true` if the current location is locked by the
+ *          player
+ */
+PlayerApi.prototype.apiLockCurrentLocationForEditing =
+	function apiLockCurrentLocationForEditing() {
+	log.trace('%s.apiLockCurrentLocationForEditing()', this);
+	//TODO: implement location locking
+	return true;
+};
+
+
+/**
+ * Unlocks location for current user
+ *
+ * @returns {boolean} `true` if the current location is locked by the
+ *          player
+ */
+PlayerApi.prototype.apiUnlockCurrentLocationForEditing =
+	function apiUnlockCurrentLocationForEditing() {
+	log.trace('%s.apiUnlockCurrentLocationForEditing()', this);
+	//TODO: implement location locking
+	return true;
+};
+
+
+/**
  * Tries to acquire an exclusive access lock on an item in the player's
  * inventory (e.g. for item verb processing). The lock is released
  * automatically at the end of the current request.
