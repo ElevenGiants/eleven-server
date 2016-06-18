@@ -262,6 +262,7 @@ suite('Location', function () {
 				assert.strictEqual(copy.hubid, 'Hub Test');
 				assert.isTrue(copy.is_instance);
 				assert.strictEqual(copy.class_tsid, 'home');
+				assert.strictEqual(copy.instance_of, src.tsid);
 			}, done);
 		});
 

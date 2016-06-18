@@ -162,6 +162,9 @@ Location.copy = function copy(src, options) {
 		hubid: options.hubId,
 		is_instance: options.isInstance,
 	});
+	if (options.isInstance) {
+		ret.instance_of = src.tsid;
+	}
 	ret.copyProps(src, ['class_tsid', 'label', 'moteid', 'hubid', 'instance_me',
 		'is_instance', 'instances', 'players', 'items']);
 	for (var k in src.items) {
