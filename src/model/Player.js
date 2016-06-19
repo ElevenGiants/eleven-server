@@ -397,6 +397,8 @@ Player.prototype.gsMoveCheck = function gsMoveCheck(newLocId) {
 	this.getRQ().push('unload', this.unload.bind(this),
 		function triggerReconnect() {
 			if (self.isConnected()) {
+				// make sure remaining announcements are sent to client
+				self.send({type: 'location_event'}, true, true);
 				self.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
 				self.session = null;  // cut the cord
 			}
