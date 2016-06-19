@@ -3,7 +3,10 @@
 module.exports = Session;
 
 
-var amf = require('eleven-node-amf/node-amf/amf');
+var amf = {
+	js: require('eleven-node-amf/node-amf/amf'),
+	cc: require('node_amf_cc'),
+};
 var assert = require('assert');
 var auth = require('comm/auth');
 var config = require('config');
@@ -61,6 +64,7 @@ function Session(id, socket) {
 	this.socket = socket;
 	this.ts = new Date().getTime();
 	this.maxMsgSize = config.get('net:maxMsgSize');
+	this.amfjs = config.get('net:amflib') === 'js';
 	// disable Nagle's algorithm (we need all messages delivered as quickly as possible)
 	this.socket.setNoDelay(true);
 	// set up domain for low-level issue handling (networking and
@@ -209,13 +213,20 @@ Session.prototype.checkForMessages = function checkForMessages() {
 	// buffer can contain multiple messages (and the last one may be incomplete);
 	// since we don't have message length data, all we can do is try parsing
 	// messages repeatedly until all data is consumed, or deserialization fails
-	var index = 0;  // AMF deserializer index
+	var deser, index = 0;  // AMF deserializer and index
+	if (this.jsamf) deser = amf.js.deserializer(bufstr);
 	var bufstr = this.buffer.toString('binary');
-	var deser = amf.deserializer(bufstr);
 	while (index < bufstr.length) {
 		var msg;
 		try {
-			msg = deser.readValue(amf.AMF3);
+			if (this.jsamf) {
+				msg = deser.readValue(amf.js.AMF3);
+			}
+			else {
+				deser = amf.cc.deserialize(bufstr);
+				msg = deser.value;
+				bufstr = bufstr.substr(deser.consumed);
+			}
 		}
 		catch (e) {
 			// incomplete message; abort and preserve remaining (unparsed) data
@@ -225,7 +236,7 @@ Session.prototype.checkForMessages = function checkForMessages() {
 			break;
 		}
 		// still here? then update index and schedule message handling
-		index = deser.i;
+		if (this.jsamf) index = deser.i;
 		setImmediate(this.enqueueMessage.bind(this), msg);
 	}
 	if (index >= bufstr.length) {
@@ -416,7 +427,13 @@ Session.prototype.send = function send(msg) {
 		log.trace({data: msg, to: this.pc ? this.pc.tsid : undefined},
 			'sending %s message', msg.type);
 	}
-	var data = amf.serializer().writeObject(msg);
+	var data;
+	if (this.jsamf) {
+		data = amf.js.serializer().writeObject(msg);
+	}
+	else {
+		data = amf.cc.serialize(msg);
+	}
 	var size = Buffer.byteLength(data, 'binary');
 	var buf = new Buffer(4 + size);
 	buf.writeUInt32BE(size, 0);

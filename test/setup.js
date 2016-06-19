@@ -38,6 +38,7 @@ function initConfig() {
 			rpc: {
 				timeout: 10000,
 			},
+			amflib: 'cc',
 		},
 		pers: {
 			backEnd: {

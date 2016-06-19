@@ -41,6 +41,8 @@ module.exports = {
 			basePort: 7000,
 			timeout: 10000,  // ms
 		},
+		// AMF library to use ('js' or 'cc')
+		amflib: 'js',
 		// incoming AMF messages bigger than this are considered invalid
 		maxMsgSize: 131072,
 		heartbeat: {

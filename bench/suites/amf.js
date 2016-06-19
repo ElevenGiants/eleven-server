@@ -6,7 +6,10 @@ module.exports = suite;
 
 
 var fs = require('fs');
-var amflib = require('eleven-node-amf/node-amf/amf');
+var amf = {
+	js: require('eleven-node-amf/node-amf/amf'),
+	cc: require('node_amf_cc'),
+};
 
 
 // load test fixtures
@@ -33,15 +36,21 @@ var jsonData = {};
 
 
 Object.keys(amfData).forEach(function iter(type) {
-	suite.add('amflib/deserialize ' + type, function () {
-		var deser = amflib.deserializer(amfDataStr[type]);
-		deser.readValue(amflib.AMF3);
+	suite.add('amflib-js/deserialize ' + type, function () {
+		var deser = amf.js.deserializer(amfDataStr[type]);
+		deser.readValue(amf.js.AMF3);
+	});
+	suite.add('amflib-cc/deserialize ' + type, function () {
+		amf.cc.deserialize(amfDataStr[type]);
 	});
 });
 
 
 Object.keys(jsonData).forEach(function iter(type) {
-	suite.add('amflib/serialize ' + type, function () {
-		amflib.serializer().writeObject(jsonData[type]);
+	suite.add('amflib-js/serialize ' + type, function () {
+		amf.js.serializer().writeObject(jsonData[type]);
+	});
+	suite.add('amflib-cc/serialize ' + type, function () {
+		amf.cc.serialize(jsonData[type]);
 	});
 });
