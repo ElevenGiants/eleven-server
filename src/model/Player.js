@@ -265,6 +265,7 @@ Player.prototype.onDisconnect = function onDisconnect() {
 	if (rpc.isLocal(this.location)) {
 		// clear intervals
 		this.cancelGsTimer('onTimePlaying', true);
+		this.cancelGsTimer('onPlayTimeCheck', false);
 		this.cancelGsTimer('refreshToken', true);
 		// remove from location, onExit callbacks etc.
 		this.startMove();
