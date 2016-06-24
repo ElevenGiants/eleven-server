@@ -335,10 +335,12 @@ Session.prototype.postRequestProc = function postRequestProc(req) {
 			break;
 		case 'relogin_end':
 			this.pc.location.gsOnPlayerEnter(this.pc);
-			// call Location.onPlayerReconnect event (necessary to make client
-			// hide hidden decos after reconnecting; relogin_start is too early
-			// for this)
-			this.pc.location.onPlayerReconnect(this.pc);
+			if (req.relogin_type === 'relogin') {
+				// call Location.onPlayerReconnect event (necessary to make client
+				// hide hidden decos after reconnecting; relogin_start is too early
+				// for this)
+				this.pc.location.onPlayerReconnect(this.pc);
+			}
 			this.flushPreLoginBuffer();
 			break;
 		case 'signpost_move_end':
