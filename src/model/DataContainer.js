@@ -73,7 +73,7 @@ DataContainer.prototype.getRQ = function getRQ() {
  */
 DataContainer.prototype.removeInstance = function removeInstance(instId, instTsid) {
 	var instanceList = this.instances ? this.instances[instId] : [];
-	for (var i = 0; i < instanceList.length; i++) {
+	for (var i = 0; instanceList && i < instanceList.length; i++) {
 		if (instanceList[i].tsid === instTsid) {
 			instanceList.splice(i, 1);
 			log.debug('instance %s removed from %s instance list in %s',

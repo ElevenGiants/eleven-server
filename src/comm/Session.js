@@ -300,7 +300,7 @@ Session.prototype.preRequestProc = function preRequestProc(req) {
 				// this should not happen (client should get correct connect
 				// data from webapp/HTTP API), so don't try to fix it here
 				log.warn('%s trying to log in on wrong GS', tsid);
-				this.socket.end();
+				if (this.socket) this.socket.end();
 				return true;
 			}
 			this.pc = pers.get(tsid, true);
@@ -310,7 +310,7 @@ Session.prototype.preRequestProc = function preRequestProc(req) {
 			break;
 		case 'logout':
 			if (this.pc) this.pc.onDisconnect();
-			this.socket.end();
+			if (this.socket) this.socket.end();
 			return true;
 		case 'ping':
 			this.send({
@@ -324,7 +324,7 @@ Session.prototype.preRequestProc = function preRequestProc(req) {
 			if (!this.pc) {
 				log.info({session: this}, 'closing session after unexpected' +
 					' %s request in pre-auth session', req.type);
-				this.socket.destroy();
+				if (this.socket) this.socket.destroy();
 				return true;
 			}
 	}
