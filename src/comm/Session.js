@@ -64,7 +64,7 @@ function Session(id, socket) {
 	this.socket = socket;
 	this.ts = new Date().getTime();
 	this.maxMsgSize = config.get('net:maxMsgSize');
-	this.amfjs = config.get('net:amflib') === 'js';
+	this.jsamf = config.get('net:amflib') === 'js';
 	// disable Nagle's algorithm (we need all messages delivered as quickly as possible)
 	this.socket.setNoDelay(true);
 	// set up domain for low-level issue handling (networking and
@@ -214,8 +214,8 @@ Session.prototype.checkForMessages = function checkForMessages() {
 	// since we don't have message length data, all we can do is try parsing
 	// messages repeatedly until all data is consumed, or deserialization fails
 	var deser, index = 0;  // AMF deserializer and index
-	if (this.jsamf) deser = amf.js.deserializer(bufstr);
 	var bufstr = this.buffer.toString('binary');
+	if (this.jsamf) deser = amf.js.deserializer(bufstr);
 	while (index < bufstr.length) {
 		var msg;
 		try {
