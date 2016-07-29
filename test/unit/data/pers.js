@@ -79,6 +79,19 @@ suite('pers', function () {
 			assert.isTrue(onLoadCalled);
 		});
 
+		test('handles errors thrown in gsOnLoad', function () {
+			var o = {
+				tsid: 'ITEM',
+				gsOnLoad: function gsOnLoad() {
+					throw new Error('boo!');
+				},
+			};
+			pbeMock.write(o);
+			var loaded = load(o.tsid);
+			assert.isNull(loaded);
+			assert.notProperty(pers.__get__('cache'), o.tsid);
+		});
+
 		test('does not choke on objref cycles', function () {
 			var a = {
 				tsid: 'IA',

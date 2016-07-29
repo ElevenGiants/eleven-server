@@ -158,8 +158,13 @@ function load(tsid) {
 		}
 		cache[tsid] = obj;
 		// post-construction operations (resume timers/intervals, GSJS onLoad etc.)
-		if (obj.gsOnLoad) {
-			obj.gsOnLoad();
+		try {
+			if (obj.gsOnLoad) obj.gsOnLoad();
+		}
+		catch (err) {
+			log.error(err, 'failed to process onLoad event');
+			delete cache[tsid];
+			return null;
 		}
 		metrics.increment('pers.load.local');
 	}

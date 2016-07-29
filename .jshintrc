@@ -10,7 +10,7 @@
 	"immed": true,
 	"maxdepth": 4,
 	"maxparams": 5,
-	"maxstatements": 25,
+	"maxstatements": 30,
 	"multistr": true,
 	"node": true,
 	"quotmark": "single",
