@@ -330,5 +330,19 @@ suite('ItemMovement', function () {
 				{callback: 'doneMoving', speed: 60});
 			assert.isTrue(moveStarted);
 		});
+
+		test('respects geo boundaries', function (done) {
+			var i1 = newItem({tsid: 'I1'});
+			i1.doneMoving = function doneMoving(args) {
+				assert.strictEqual(args.status, STATUS.ARRIVED);
+				assert.strictEqual(this.x, 100);
+				assert.strictEqual(this.y, -25);
+				done();
+			};
+			addToTestLoc(i1, 50, -20, new Geo({l: 0, r: 100, t: -50, b: 0}));
+			var moveStarted = i1.gsStartMoving('direct', {x: 150, y: -30},
+				{callback: 'doneMoving', speed: 100});
+			assert.isTrue(moveStarted);
+		});
 	});
 });

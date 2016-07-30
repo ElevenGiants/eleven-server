@@ -424,6 +424,7 @@ ItemMovement.prototype.moveFlying = function moveFlying(nextPath) {
  * @returns {object} the next step toward the destination
  */
 ItemMovement.prototype.moveDirect = function moveDirect(nextPath) {
+	this.getGeo().limitPath(this.item, nextPath);
 	var nextStep = {dx: 0, dy: 0, finished: false};
 	// check if we're already there
 	if (this.item.x === nextPath.x && this.item.y === nextPath.y) {

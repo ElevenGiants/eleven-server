@@ -317,4 +317,41 @@ suite('Geo', function () {
 			assert.isTrue(isNaN(g.limitY(NaN)), 'not trying to "fix" NaN here');
 		});
 	});
+
+
+	suite('limitPath', function () {
+
+		test('does its job', function () {
+			var g = new Geo({l: 0, r: 200, b: 0, t: -100});
+			var i = {x: 100, y: -10};  // mock item
+			var p = {x: 300, y: -20};
+			g.limitPath(i, p);
+			assert.deepEqual(p, {x: 200, y: -15});
+			p = {x: 201, y: 1};
+			g.limitPath(i, p);
+			assert.deepEqual(p, {x: 192, y: 0});
+			p = {x: 110, y: 100};
+			g.limitPath(i, p);
+			assert.deepEqual(p, {x: 101, y: 0});
+			p = {x: -100, y: 100};
+			g.limitPath(i, p);
+			assert.deepEqual(p, {x: 82, y: 0});
+			p = {x: -1000, y: -50};
+			g.limitPath(i, p);
+			assert.deepEqual(p, {x: 0, y: -14});
+			p = {x: -1, y: -1000};
+			g.limitPath(i, p);
+			assert.deepEqual(p, {x: 91, y: -100});
+			p = {x: 101, y: -10000};
+			g.limitPath(i, p);
+			assert.deepEqual(p, {x: 100, y: -100});
+			p = {x: 301, y: -999};
+			g.limitPath(i, p);
+			assert.deepEqual(p, {x: 118, y: -100});
+			// inside geo boundaries, unchanged:
+			p = {x: 150, y: -99};
+			g.limitPath(i, p);
+			assert.deepEqual(p, {x: 150, y: -99});
+		});
+	});
 });

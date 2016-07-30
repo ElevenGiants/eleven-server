@@ -183,6 +183,11 @@
       "from": "comment-parser@0.2.4",
       "resolved": "https://registry.npmjs.org/comment-parser/-/comment-parser-0.2.4.tgz"
     },
+    "complex.js": {
+      "version": "2.0.1",
+      "from": "complex.js@2.0.1",
+      "resolved": "https://registry.npmjs.org/complex.js/-/complex.js-2.0.1.tgz"
+    },
     "concat-map": {
       "version": "0.0.1",
       "from": "concat-map@0.0.1",
@@ -234,6 +239,11 @@
       "version": "1.2.0",
       "from": "decamelize@>=1.1.1 <2.0.0",
       "resolved": "https://registry.npmjs.org/decamelize/-/decamelize-1.2.0.tgz"
+    },
+    "decimal.js": {
+      "version": "5.0.8",
+      "from": "decimal.js@5.0.8",
+      "resolved": "https://registry.npmjs.org/decimal.js/-/decimal.js-5.0.8.tgz"
     },
     "deep-eql": {
       "version": "0.1.3",
@@ -385,6 +395,11 @@
           "resolved": "https://registry.npmjs.org/async/-/async-1.5.2.tgz"
         }
       }
+    },
+    "fraction.js": {
+      "version": "3.3.1",
+      "from": "fraction.js@3.3.1",
+      "resolved": "https://registry.npmjs.org/fraction.js/-/fraction.js-3.3.1.tgz"
     },
     "gc-stats": {
       "version": "1.0.0",
@@ -696,6 +711,11 @@
       "version": "0.3.5",
       "from": "marked@>=0.3.4 <0.4.0",
       "resolved": "https://registry.npmjs.org/marked/-/marked-0.3.5.tgz"
+    },
+    "mathjs": {
+      "version": "3.3.0",
+      "from": "mathjs@latest",
+      "resolved": "https://registry.npmjs.org/mathjs/-/mathjs-3.3.0.tgz"
     },
     "mersenne": {
       "version": "0.0.3",
@@ -1057,6 +1077,11 @@
       "from": "https://github.com/hegemonic/taffydb/tarball/7d100bcee0e997ee4977e273cdce60bd8933050e",
       "resolved": "https://github.com/hegemonic/taffydb/tarball/7d100bcee0e997ee4977e273cdce60bd8933050e"
     },
+    "tiny-emitter": {
+      "version": "1.0.2",
+      "from": "tiny-emitter@1.0.2",
+      "resolved": "https://registry.npmjs.org/tiny-emitter/-/tiny-emitter-1.0.2.tgz"
+    },
     "to-iso-string": {
       "version": "0.0.2",
       "from": "to-iso-string@0.0.2",
@@ -1086,6 +1111,11 @@
       "version": "0.1.1",
       "from": "type-detect@0.1.1",
       "resolved": "https://registry.npmjs.org/type-detect/-/type-detect-0.1.1.tgz"
+    },
+    "typed-function": {
+      "version": "0.10.4",
+      "from": "typed-function@0.10.4",
+      "resolved": "https://registry.npmjs.org/typed-function/-/typed-function-0.10.4.tgz"
     },
     "ultron": {
       "version": "1.0.2",

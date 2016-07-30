@@ -4,6 +4,7 @@ module.exports = Geo;
 
 
 var _ = require('lodash');
+var math = require('mathjs');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
 var RQ = require('data/RequestQueue');
@@ -320,6 +321,42 @@ Geo.prototype.limitX = function limitX(x) {
  */
 Geo.prototype.limitY = function limitY(y) {
 	return Math.min(this.b, Math.max(this.t, y));
+};
+
+
+Geo.prototype.limitPath = function limitPath(item, path) {
+	// early-exit check if destination is within geo boundaries anyway
+	if (path.x >= this.l && path.x <= this.r &&
+		path.y >= this.t && path.y <= this.b) {
+		return;
+	}
+	// no? then change it to the intersection of intended path and geo boundaries
+	var pos = [item.x, item.y];
+	var dest = [path.x, path.y];
+	var bl = [this.l, this.b];
+	var tl = [this.l, this.t];
+	var br = [this.r, this.b];
+	var tr = [this.r, this.t];
+	var hit;
+	if (dest[0] < this.l) {  // test intersection with left border
+		hit = math.intersect(pos, dest, bl, tl);
+		if (hit[1] <= this.b && hit[1] >= this.t) dest = hit;
+	}
+	if (dest[0] > this.r) {  // test intersection with right border
+		hit = math.intersect(pos, dest, br, tr);
+		if (hit[1] <= this.b && hit[1] >= this.t) dest = hit;
+	}
+	if (dest[1] > this.b) {  // test intersection with bottom border
+		hit = math.intersect(pos, dest, bl, br);
+		if (hit[0] >= this.l && hit[0] <= this.r) dest = hit;
+	}
+	if (dest[1] < this.t) {  // test intersection with top border
+		hit = math.intersect(pos, dest, tl, tr);
+		if (hit[0] >= this.l && hit[0] <= this.r) dest = hit;
+	}
+	// update path segment destination coordinates
+	path.x = Math.round(dest[0]);
+	path.y = Math.round(dest[1]);
 };
 
 
