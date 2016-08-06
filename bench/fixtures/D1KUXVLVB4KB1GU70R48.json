@@ -1,0 +1,7925 @@
+{
+	"achievements": {
+		"able_chopper": 1465086375,
+		"about_average_irrigationist": 1465759120,
+		"ace_propagationist": 1466811011,
+		"advanced_spice_collector": 1466876429,
+		"aggressive_agrarian": 1465579535,
+		"alakol_completist": 1466807993,
+		"all_giant_emblems": 1464553928,
+		"all_right_hatcher": 1465450795,
+		"amateur_agronomist": 1464895981,
+		"amateur_bean_tree_fondler": 1465234389,
+		"amateur_decrustifier": 1465338056,
+		"andra_completist": 1468955285,
+		"apprentice_lepidopteral_manipulator": 1465254482,
+		"aspirational_home_improver": 1465249284,
+		"assistant_spice_manager": 1468102401,
+		"awesome_apothecary": 1467068161,
+		"barman_of_death": 1465334482,
+		"basic_beangrower": 1464908213,
+		"basic_larva_lover": 1465751260,
+		"bean_counter": 1466794981,
+		"beginner_decoctifier": 1465067763,
+		"beginner_drizzler": 1464908101,
+		"besara_completist": 1468018272,
+		"better_bubble_farmer": 1466024828,
+		"better_homes_and_gardens": 1468361515,
+		"betterthanmediocre_fruit_tree_pettifier": 1465070623,
+		"big_spender": 1464541470,
+		"big_splasher": 1465928273,
+		"bortola_completist": 1466806411,
+		"bounder_untenured": 1464908707,
+		"brazier_apprentice": 1466359905,
+		"bubble_coaxer": 1465598059,
+		"bush_whacker": 1466540942,
+		"butterfly_whisperer": 1464554201,
+		"callopee_completist": 1468785357,
+		"captain_tchotchke": 1469763631,
+		"chairman_of_the_board": 1465322719,
+		"chakra_phool_completist": 1469296047,
+		"chatterbox": 1467655694,
+		"cheesemongerer": 1465065032,
+		"chicken_tender": 1465451170,
+		"chief_of_tinkering_operations": 1465755506,
+		"chowhound": 1465086621,
+		"clumsy1": 1465249719,
+		"collection_all_emblems": 1464974553,
+		"collection_bubbles": 1465450280,
+		"collection_cubimals": 1466206205,
+		"collection_cubimals_2": 1466208553,
+		"collection_gasses": 1465597066,
+		"collection_gems": 1467668227,
+		"collection_musicblocks_bb": 1465441562,
+		"collection_musicblocks_db": 1466200373,
+		"collection_musicblocks_dg": 1466200326,
+		"collection_musicblocks_dr": 1466200235,
+		"collection_musicblocks_xs": 1466056660,
+		"collection_spices": 1465750248,
+		"confident_petter": 1466193070,
+		"court_hoarder": 1466979861,
+		"creditable_delver": 1465250632,
+		"crucible_jockey": 1467667223,
+		"daily_hi_skipper": 1467406856,
+		"darwin_award_winner": 1468171652,
+		"decent_citizen": 1464576358,
+		"decent_hash_slinger": 1465687935,
+		"decent_tree_hugger": 1464749470,
+		"decrustifying_enthusiast": 1466057108,
+		"dedicated_meataterian": 1465071449,
+		"definitelymuchbetter_tree_hugger": 1467308655,
+		"drifa_completist": 1467145527,
+		"egg_aficianado": 1466699831,
+		"egg_enthusiast": 1465065335,
+		"egg_plant_coddler": 1464624216,
+		"egg_poacher": 1465770588,
+		"el_big_spenderino": 1464543218,
+		"eleven_secret_locations": 1468017577,
+		"emblem_skill_unlock_alph_1": 1464543945,
+		"emblem_skill_unlock_cosma_1": 1464543607,
+		"emblem_skill_unlock_friendly_1": 1464544111,
+		"emblem_skill_unlock_grendaline_1": 1464543288,
+		"emblem_skill_unlock_humbaba_1": 1464542220,
+		"emblem_skill_unlock_lem_1": 1464543515,
+		"emblem_skill_unlock_mab_1": 1464544050,
+		"emblem_skill_unlock_pot_1": 1464552912,
+		"emblem_skill_unlock_spriggan_1": 1464553937,
+		"emblem_skill_unlock_ti_1": 1464541776,
+		"emblem_skill_unlock_zille_1": 1464552783,
+		"entrylevel_fruit_tree_harvester": 1464886817,
+		"exceptionally_fine_refiner_red_class": 1468437075,
+		"executive_flunky_tinkering_ops": 1465446735,
+		"extremely_promising_tree_hugger": 1465759150,
+		"fancy_medal_fancier": 1465517387,
+		"fertilivert": 1465449089,
+		"fine_friend": 1464542262,
+		"fine_mincer": 1465086540,
+		"fine_refiner_blue_class": 1465690616,
+		"fine_refiner_green_class": 1467666993,
+		"fine_refiner_red_class": 1465690291,
+		"fine_refiner_shiny_class": 1467666993,
+		"firefly_whistling": 1465238903,
+		"firozi_completist": 1467141695,
+		"first_alph_emblem": 1464543937,
+		"first_cosma_emblem": 1464543581,
+		"first_eleven_skills": 1464545154,
+		"first_friendly_emblem": 1464544103,
+		"first_grendaline_emblem": 1464543264,
+		"first_humbaba_emblem": 1464542210,
+		"first_lem_emblem": 1464543506,
+		"first_mab_emblem": 1464544042,
+		"first_pot_emblem": 1464552898,
+		"first_spriggan_emblem": 1464553928,
+		"first_ti_emblem": 1464541522,
+		"first_zille_emblem": 1464552771,
+		"firstrate_rainmaker": 1465085375,
+		"fledgling_crest_collector": 1464543581,
+		"folivoria_completist": 1468610478,
+		"forgey_laforge": 1465931901,
+		"fox_brushing_license": 1465772685,
+		"gastro_gnome": 1465236784,
+		"gettingthere_tree_hugger": 1465088232,
+		"giant_lover": 1467142023,
+		"glutton_for_nourishment": 1466358559,
+		"goo_getter": 1465928556,
+		"good_bubble_farmer": 1465085549,
+		"good_buddy": 1464794968,
+		"good_neighbour": 1464632667,
+		"gravy_maven": 1466447840,
+		"grease_monkey": 1466195187,
+		"grill_jockey": 1466360049,
+		"groddle_forest_completist": 1464574985,
+		"groddle_heights_completist": 1469633410,
+		"groddle_meadows_completist": 1464625004,
+		"gumflapper": 1464751540,
+		"h2oh_award": 1465701611,
+		"hardcore_carnivore": 1465323947,
+		"healthy_img_turnover": 1464983562,
+		"hen_hugger": 1465067385,
+		"hen_hugger_deluxe": 1465578136,
+		"hi_flyer": 1467405047,
+		"highranking_supplicant": 1466203552,
+		"hobbyist_gas_fancier": 1466193070,
+		"hollow_leg_award": 1465167154,
+		"honourable_chairperson": 1465333407,
+		"hoochhawker": 1466304826,
+		"humble_bragger": 1466209220,
+		"ilmenskie_caverns_completist": 1465339099,
+		"ilmenskie_deeps_completist": 1466703834,
+		"inspirational_home_improver": 1465314173,
+		"intermediate_spice_collector": 1465928273,
+		"ix_completist": 1465085488,
+		"jal_completist": 1468010600,
+		"jethimadh_completist": 1469240540,
+		"junior_dough_puncher": 1466286141,
+		"junior_irrigationist": 1464624186,
+		"junior_ok_explorer": 1464542997,
+		"kajuu_completist": 1466626368,
+		"kalavana_completist": 1469298062,
+		"landgrabber": 1464891249,
+		"lanternerer": 1468084572,
+		"lida_completist": 1468013267,
+		"little_squirt": 1465085405,
+		"lovable_skinflint": 1464541276,
+		"major_player": 1464621257,
+		"massadoe_completist": 1468793909,
+		"master_lepidopteral_manipulator": 1468430113,
+		"masterful_fruit_tree_pettifier": 1467051012,
+		"midlevel_bubble_tree_cuddler": 1465771723,
+		"midmanagement_fruit_tree_harvester": 1465560077,
+		"minor_refiner_blue_class": 1465690207,
+		"minor_refiner_green_class": 1465690291,
+		"minor_refiner_red_class": 1465690127,
+		"minor_refiner_shiny_class": 1465690207,
+		"mixed_herbalist": 1465335199,
+		"moneybags": 1464541266,
+		"moneybags_magoo": 1464544501,
+		"moonshiner": 1465230235,
+		"mulcher": 1464908213,
+		"multi_cultivator": 1466463523,
+		"muufo_completist": 1468015199,
+		"naraka_completist": 1466030233,
+		"newbie_fruit_tree_pettifier": 1464885993,
+		"nice_dicer": 1465687847,
+		"noisebringer": 1468438615,
+		"notsogrim_reaper": 1465595346,
+		"nottis_completist": 1467144523,
+		"nouveau_whack_job": 1469121446,
+		"novice_fruit_metamorphosizer": 1465068868,
+		"novice_furniturer": 1465316654,
+		"novice_novitiate": 1464573820,
+		"novice_precipitator": 1464556742,
+		"novice_spice_collector": 1465336330,
+		"occasional_gas_fancier": 1465231088,
+		"ok_hewer": 1464898293,
+		"ok_soaker": 1464885923,
+		"okbutneedsimprovement_tree_hugger": 1464572414,
+		"ormonos_completist": 1468007906,
+		"overpaid_executive_fruit_tree_harvester": 1466278267,
+		"participant_award__bean_division": 1465234389,
+		"pennypincher": 1464541266,
+		"pollokoo_completist": 1468769820,
+		"pork_fondler": 1464890443,
+		"potion_patron": 1468617977,
+		"practical_lepidopteral_manipulator": 1465495979,
+		"pretty_fine_refiner_blue_class": 1468436717,
+		"pretty_fine_refiner_green_class": 1468431909,
+		"pretty_fine_refiner_red_class": 1465690291,
+		"pretty_fine_refiner_shiny_class": 1468436853,
+		"pretty_good_griddler": 1466193704,
+		"pretty_good_samaritan": 1465239347,
+		"professional_furniturerer": 1466545416,
+		"promising_lush": 1464556629,
+		"protein_time": 1465067355,
+		"pulse_frappe_mix_blend": 1468195246,
+		"pumpkin_carver": 1468086249,
+		"quiet_tragedy": 1465249719,
+		"rainmaking_noob": 1465234389,
+		"raking_in_the_img": 1467132760,
+		"rambler_first_class": 1465584033,
+		"rambler_second_class": 1464792357,
+		"rambler_third_class": 1464573967,
+		"rasana_completist": 1468444389,
+		"rolling_boiler": 1465232241,
+		"rookie_bubble_tree_cuddler": 1464887420,
+		"roux_guru": 1466285257,
+		"rumrunner": 1465601611,
+		"sac_bagger": 1467048728,
+		"salatu_completist": 1468442454,
+		"samudra_completist": 1468011781,
+		"saute_savant": 1466195524,
+		"seamster": 1468361425,
+		"secondbest_bubble_farmer": 1466544485,
+		"secondrate_rainmaker": 1464748885,
+		"self_sufficientiser": 1464908560,
+		"semi_pro_decrustifier": 1467154992,
+		"senior_dough_puncher": 1468273953,
+		"senior_ok_explorer": 1464553225,
+		"senor_sprinkles": 1465759055,
+		"serious_scrabbler": 1465690740,
+		"shimla_mirch_completist": 1469242143,
+		"showered_with_sloth_dribble": 1468953218,
+		"significant_insignia_collector": 1464636784,
+		"silver_cleaver_award": 1466360079,
+		"silver_gristle_award": 1466353560,
+		"sizzler_supreme": 1466360181,
+		"slime_harvester": 1465338212,
+		"sociable_susan": 1468524919,
+		"soso_sower": 1464638518,
+		"soso_supplicator": 1465562256,
+		"special_agent_tinkering_ops": 1469591246,
+		"spice_intern": 1465450728,
+		"sprout_stroker": 1465085405,
+		"starter_for_tinsmithery": 1468438740,
+		"string_practicioner": 1469556527,
+		"super_duper_soaker": 1467049016,
+		"super_saucier": 1468102746,
+		"super_soaker": 1465070548,
+		"superior_irrigationist": 1467049016,
+		"supreme_egg_plant_coddler": 1465770558,
+		"swine_snuggler": 1466283945,
+		"tahli_completist": 1468955599,
+		"tamila_completist": 1468016851,
+		"tentative_petter": 1465071479,
+		"unconfounded_compounder": 1468434099,
+		"uralia_completist": 1465614864,
+		"vantalu_completist": 1469111861,
+		"wanderer": 1467142023,
+		"wannabe_fly_flycatcher": 1468097979,
+		"water_wings": 1464887420,
+		"wet_william": 1466540942,
+		"whizbang_plantifier": 1465332397,
+		"wood_wacker": 1465493303,
+		"world_class_traveler": 1468608336
+	},
+	"callback_queue": {
+		"increment": {
+			"focusing_orb": {
+				"meditation_time": 0.3666666666666667
+			}
+		}
+	},
+	"counters": {
+		"VERB:accept_gift": {
+			"bag_butler": 14
+		},
+		"VERB:activate": {
+			"bubble_tuner": 20,
+			"paradise_ticket_bippity_bop": 2,
+			"spinach": 186
+		},
+		"VERB:add_chassis": {
+			"machine_stand": 4
+		},
+		"VERB:add_note": {
+			"bag_notice_board": 1,
+			"fortune_cookie": 1
+		},
+		"VERB:admire": {
+			"special_item_that_only_beta_testers_get": 4
+		},
+		"VERB:age": {
+			"cheese": 1
+		},
+		"VERB:aggressive_hoeing_off": {
+			"hoe": 2
+		},
+		"VERB:aggressive_hoeing_on": {
+			"hoe": 1
+		},
+		"VERB:anthropomorphize": {
+			"emotional_bear": 26
+		},
+		"VERB:assemble": {
+			"machine_stand": 4
+		},
+		"VERB:beam_up": {
+			"light_beam": 7
+		},
+		"VERB:begrudge": {
+			"special_item_that_only_beta_testers_get": 1
+		},
+		"VERB:bestow": {
+			"random_kindness": 2
+		},
+		"VERB:blend": {
+			"blender": 28
+		},
+		"VERB:buffs": {
+			"tester_widget": 3
+		},
+		"VERB:build_tower": {
+			"proto_furniture_tower_chassis": 10
+		},
+		"VERB:bundle": {
+			"grain": 1
+		},
+		"VERB:butter_up": {
+			"npc_chicken": 58
+		},
+		"VERB:buy_sell": {
+			"npc_cooking_vendor": 3,
+			"npc_gardening_vendor": 2,
+			"npc_jabba1": 6,
+			"npc_jabba2": 5,
+			"npc_sno_cone_vending_machine": 3,
+			"npc_tool_vendor": 5,
+			"street_spirit_firebog": 6,
+			"street_spirit_groddle": 193,
+			"street_spirit_zutto": 3
+		},
+		"VERB:buy_wine": {
+			"hell_bartender": 3
+		},
+		"VERB:capture": {
+			"npc_piggy": 13
+		},
+		"VERB:carve": {
+			"pumpkin": 53
+		},
+		"VERB:cash": {
+			"tester_widget": 49
+		},
+		"VERB:change_style": {
+			"bag_furniture_sdb": 1,
+			"bag_furniture_smallcabinet": 2,
+			"bag_furniture_wallcabinet": 2,
+			"furniture_armchair": 2,
+			"furniture_bed": 2,
+			"furniture_bench": 2,
+			"furniture_ceilingdeco": 1,
+			"furniture_ceilinglamp": 2,
+			"furniture_chair": 3,
+			"furniture_coffeetable": 4,
+			"furniture_counter": 1,
+			"furniture_desk": 1,
+			"furniture_door": 7,
+			"furniture_fireplace": 3,
+			"furniture_floorlamp": 3,
+			"furniture_loveseat": 7,
+			"furniture_roomdeco": 8,
+			"furniture_shelf": 6,
+			"furniture_sidetable": 3,
+			"furniture_stool": 1,
+			"furniture_table": 3,
+			"furniture_tabledeco": 5,
+			"furniture_walldeco": 7,
+			"magic_rock": 1
+		},
+		"VERB:check_favor": {
+			"npc_shrine_alph": 3,
+			"npc_shrine_cosma": 3,
+			"npc_shrine_firebog_grendaline": 1,
+			"npc_shrine_firebog_mab": 1,
+			"npc_shrine_friendly": 6,
+			"npc_shrine_grendaline": 3,
+			"npc_shrine_humbaba": 8,
+			"npc_shrine_lem": 7,
+			"npc_shrine_pot": 18,
+			"npc_shrine_spriggan": 1,
+			"npc_shrine_ti": 1,
+			"npc_shrine_uralia_friendly": 1,
+			"npc_shrine_uralia_grendaline": 1,
+			"npc_shrine_uralia_humbaba": 2,
+			"npc_shrine_uralia_lem": 57,
+			"npc_shrine_uralia_mab": 4,
+			"npc_shrine_uralia_pot": 2,
+			"npc_shrine_uralia_zille": 9,
+			"npc_shrine_zille": 4
+		},
+		"VERB:clear": {
+			"trant_bean_dead": 2,
+			"trant_bubble_dead": 3,
+			"trant_egg_dead": 1,
+			"trant_fruit_dead": 2,
+			"trant_gas_dead": 1,
+			"trant_spice_dead": 2
+		},
+		"VERB:collect": {
+			"butterfly_milker": 39,
+			"fuelmaker": 1,
+			"meat_collector": 13,
+			"metalmaker": 4,
+			"pile_of_currants": 4,
+			"woodworker": 11
+		},
+		"VERB:collect_currants": {
+			"bag_furniture_sdb": 15
+		},
+		"VERB:compress": {
+			"butterfly_butter": 9
+		},
+		"VERB:consider": {
+			"emblem_mab": 1
+		},
+		"VERB:contemplate": {
+			"emblem_lem": 1,
+			"emblem_mab": 1
+		},
+		"VERB:convert": {
+			"fruit_changing_machine": 35
+		},
+		"VERB:craft": {
+			"tinkertool": 11
+		},
+		"VERB:create": {
+			"furniture_door": 1
+		},
+		"VERB:create_script": {
+			"paper": 46
+		},
+		"VERB:credits": {
+			"tester_widget": 19
+		},
+		"VERB:crush": {
+			"beryl": 17,
+			"dullite": 17,
+			"grand_ol_grinder": 3,
+			"ore_grinder": 17,
+			"sparkly": 20
+		},
+		"VERB:cultivate_land": {
+			"magic_rock": 1
+		},
+		"VERB:customize": {
+			"furniture_chassis": 16,
+			"furniture_tower_chassis": 14,
+			"magic_rock": 6
+		},
+		"VERB:deposit": {
+			"bag_furniture_sdb": 525,
+			"piggy_feeder": 18
+		},
+		"VERB:dig": {
+			"dirt_pile": 12,
+			"patch": 2,
+			"patch_dark": 1
+		},
+		"VERB:disperse": {
+			"element_red": 2,
+			"fertilidust": 7,
+			"powder_of_mild_fecundity": 3
+		},
+		"VERB:distill": {
+			"still": 8
+		},
+		"VERB:donate_to": {
+			"npc_shrine_alph": 27,
+			"npc_shrine_cosma": 149,
+			"npc_shrine_firebog_friendly": 6,
+			"npc_shrine_firebog_mab": 1,
+			"npc_shrine_friendly": 20,
+			"npc_shrine_grendaline": 24,
+			"npc_shrine_humbaba": 67,
+			"npc_shrine_lem": 50,
+			"npc_shrine_mab": 3,
+			"npc_shrine_pot": 38,
+			"npc_shrine_spriggan": 85,
+			"npc_shrine_ti": 18,
+			"npc_shrine_uralia_friendly": 16,
+			"npc_shrine_uralia_grendaline": 2,
+			"npc_shrine_uralia_lem": 66,
+			"npc_shrine_uralia_mab": 13,
+			"npc_shrine_uralia_pot": 1,
+			"npc_shrine_uralia_zille": 65,
+			"npc_shrine_zille": 19
+		},
+		"VERB:dont_sell": {
+			"bag_furniture_sdb": 2,
+			"bag_furniture_smallcabinet": 2,
+			"bag_furniture_wallcabinet": 4,
+			"furniture_bed": 2,
+			"furniture_bench": 1,
+			"furniture_ceilinglamp": 1,
+			"furniture_chair": 6,
+			"furniture_counter": 1,
+			"furniture_desk": 1,
+			"furniture_fireplace": 1,
+			"furniture_floorlamp": 2,
+			"furniture_loveseat": 4,
+			"furniture_roomdeco": 6,
+			"furniture_shelf": 5,
+			"furniture_sidetable": 1,
+			"furniture_stool": 1,
+			"furniture_tabledeco": 7,
+			"furniture_walldeco": 1
+		},
+		"VERB:doquests": {
+			"tester_widget": 35
+		},
+		"VERB:drink": {
+			"beer": 13,
+			"bubble_tea": 3,
+			"coffee": 1,
+			"crabato_juice": 2,
+			"creamy_martini": 4,
+			"earthshaker": 2,
+			"face_smelter": 4,
+			"flaming_humbaba": 5,
+			"fruity_juice": 1,
+			"gurly_drink": 1,
+			"hooch": 1,
+			"lemon_juice": 1,
+			"mega_healthy_veggie_juice": 6,
+			"milk_butterfly": 10,
+			"orange_juice": 1,
+			"savory_smoothie": 1,
+			"slow_gin_fizz": 1,
+			"spicy_grog": 1,
+			"tooberry_shake": 2,
+			"wine_of_the_dead": 1
+		},
+		"VERB:drop": {
+			"abbasid_ribs": 1,
+			"alchemical_tongs": 1,
+			"all_spice": 35,
+			"apple": 1,
+			"applejack": 1,
+			"artifact_butterfly_hair_clip": 1,
+			"awesome_pot": 3,
+			"bacon": 2,
+			"bag_alchemistry_kit": 4,
+			"bag_bigger_blue": 889,
+			"bag_bigger_gray": 27,
+			"bag_bigger_green": 14,
+			"bag_bigger_pink": 1,
+			"bag_elemental_pouch": 9,
+			"bag_generic": 4,
+			"bag_generic_green": 2,
+			"bag_gift_box": 3,
+			"bag_spicerack": 13,
+			"bag_toolbox_green": 2,
+			"bag_toolbox_red": 4,
+			"banana": 2,
+			"banana_no_names": 1,
+			"barnacle": 21,
+			"beaker": 1,
+			"bean_plain": 22,
+			"bean_seasoner": 9,
+			"beer": 13,
+			"birch_candy": 5,
+			"birch_syrup": 1,
+			"blender": 1,
+			"blockmaker_chassis": 1,
+			"blockmaker_plates": 4,
+			"board": 2,
+			"broccoli": 2,
+			"bubble_tea": 2,
+			"bubble_tuner": 1,
+			"bun": 1,
+			"butterfly_egg": 3,
+			"butterfly_lotion": 6,
+			"butterfly_milker": 7,
+			"cabbage": 3,
+			"carobish_treats": 1,
+			"carrot": 4,
+			"carrot_margarita": 1,
+			"cauldron": 1,
+			"cheese_very_very_stinky": 1,
+			"cherry": 71,
+			"chick": 4,
+			"chicken_egg": 1,
+			"chillybusting_chili": 2,
+			"cloud_11_smoothie": 3,
+			"cloudberry": 1,
+			"cloudberry_daiquiri": 3,
+			"cocktail_shaker": 1,
+			"coffee": 7,
+			"collectors_edition_2010_glitchmas_yeti": 3,
+			"common_crudites": 1,
+			"construction_tool": 1,
+			"corn": 3,
+			"corn_off_the_cob": 1,
+			"corn_syrup_squares": 3,
+			"corny_fritter": 1,
+			"cosmapolitan": 1,
+			"crabato_juice": 1,
+			"crabphones": 3,
+			"creamy_martini": 1,
+			"crystallizer": 1,
+			"cubimal_package": 3,
+			"cubimal_package_2": 1,
+			"cucumber": 2,
+			"death_to_veg": 1,
+			"dice": 1,
+			"dice_12sided": 2,
+			"divine_crepes": 2,
+			"doll_wittgenstein": 1,
+			"door_key_2": 2,
+			"door_key_3": 1,
+			"door_key_9": 7,
+			"dusty_stick": 7,
+			"earth": 3,
+			"earthshaker": 6,
+			"egg_plain": 57,
+			"egg_seasoner": 9,
+			"eggy_scramble": 1,
+			"emblem_alph": 2,
+			"emblem_cosma": 2,
+			"emblem_friendly": 3,
+			"emblem_grendaline": 3,
+			"emblem_humbaba": 3,
+			"emblem_lem": 30,
+			"emblem_mab": 6,
+			"emblem_pot": 1,
+			"emblem_spriggan": 1,
+			"emblem_ti": 2,
+			"emblem_zille": 10,
+			"emotional_bear": 7,
+			"essence_of_gandlevery": 1,
+			"essence_of_hairball": 1,
+			"essence_of_purple": 1,
+			"essence_of_rookswort": 1,
+			"essence_of_silvertongue": 1,
+			"essence_of_yellow_crumb": 1,
+			"exotic_juice": 2,
+			"expensive_grilled_cheese": 1,
+			"face_smelter": 7,
+			"fancy_pick": 1,
+			"fertilidust": 9,
+			"fertilidust_lite": 3,
+			"fiber": 9,
+			"firefly_jar": 91,
+			"flaming_humbaba": 3,
+			"flummery": 1,
+			"focusing_orb": 2,
+			"fried_egg": 2,
+			"fried_noodles": 1,
+			"fruit_changing_machine": 1,
+			"frying_pan": 1,
+			"fuel_cell": 2,
+			"fuelmaker_case": 1,
+			"game_box": 2,
+			"gameshow_ticket": 1,
+			"gandlevery": 1,
+			"gassifier": 2,
+			"gem_amber": 11,
+			"gem_diamond": 5,
+			"gem_moonstone": 3,
+			"gem_ruby": 17,
+			"gem_sapphire": 10,
+			"general_vapour": 14,
+			"girder": 15,
+			"glitchepoix": 1,
+			"grade_aa_earth_block": 1,
+			"grain": 3,
+			"grain_bushel": 2,
+			"green": 1,
+			"green_eggs": 1,
+			"grilled_cheese": 1,
+			"guano": 10,
+			"gurly_drink": 2,
+			"hash": 3,
+			"hatchet": 3,
+			"heavy_gas": 1,
+			"herb_seed_gandlevery": 4,
+			"herb_seed_hairball_flower": 3,
+			"herb_seed_purple_flower": 2,
+			"herb_seed_rookswort": 1,
+			"herb_seed_rubeweed": 1,
+			"herb_seed_silvertongue": 1,
+			"high_class_hoe": 1,
+			"hoe": 9,
+			"hooch": 12,
+			"humbabol": 1,
+			"irrigator_9000": 1,
+			"jellisac_clump": 22,
+			"kind_breakfurst_burrito": 3,
+			"knife_and_board": 1,
+			"lazy_salad": 1,
+			"lips": 22,
+			"loam": 5,
+			"mabbish_coffee": 1,
+			"maburger_royale": 1,
+			"magic_butterfly_stick": 4,
+			"magic_chicken_stick": 4,
+			"magic_pig_stick": 2,
+			"meat": 14,
+			"meat_collector": 3,
+			"mega_healthy_veggie_juice": 13,
+			"metal_rock": 1,
+			"metalmaker_mechanism": 1,
+			"mike_tyson_grill": 1,
+			"milk_butterfly": 14,
+			"million_currant_trophy": 7,
+			"moon": 2,
+			"mushroom": 1,
+			"musicblock_b_brown_01": 3,
+			"musicblock_b_brown_02": 2,
+			"musicblock_b_brown_03": 8,
+			"musicblock_b_brown_04": 2,
+			"musicblock_b_brown_05": 3,
+			"musicblock_d_blue_01": 6,
+			"musicblock_d_blue_02": 2,
+			"musicblock_d_blue_03": 9,
+			"musicblock_d_blue_04": 6,
+			"musicblock_d_blue_05": 4,
+			"musicblock_d_green_01": 8,
+			"musicblock_d_green_02": 3,
+			"musicblock_d_green_03": 4,
+			"musicblock_d_green_04": 4,
+			"musicblock_d_green_05": 2,
+			"musicblock_d_red_01": 11,
+			"musicblock_d_red_02": 6,
+			"musicblock_d_red_03": 4,
+			"musicblock_d_red_04": 6,
+			"musicblock_d_red_05": 4,
+			"musicblock_goodnight_groddle": 2,
+			"musicblock_x_shiny_01": 3,
+			"musicblock_x_shiny_02": 6,
+			"musicblock_x_shiny_03": 1,
+			"musicblock_x_shiny_04": 1,
+			"musicblock_x_shiny_05": 3,
+			"note": 36,
+			"npc_crafty_bot": 2,
+			"npc_cubimal_batterfly": 15,
+			"npc_cubimal_bureaucrat": 6,
+			"npc_cubimal_butler": 7,
+			"npc_cubimal_butterfly": 24,
+			"npc_cubimal_cactus": 6,
+			"npc_cubimal_chick": 38,
+			"npc_cubimal_crab": 18,
+			"npc_cubimal_craftybot": 8,
+			"npc_cubimal_deimaginator": 6,
+			"npc_cubimal_dustbunny": 2,
+			"npc_cubimal_emobear": 14,
+			"npc_cubimal_firebogstreetspirit": 13,
+			"npc_cubimal_firefly": 15,
+			"npc_cubimal_fox": 22,
+			"npc_cubimal_foxranger": 13,
+			"npc_cubimal_frog": 18,
+			"npc_cubimal_gardeningtoolsvendor": 3,
+			"npc_cubimal_gnome": 15,
+			"npc_cubimal_greeterbot": 10,
+			"npc_cubimal_groddlestreetspirit": 14,
+			"npc_cubimal_gwendolyn": 4,
+			"npc_cubimal_hellbartender": 1,
+			"npc_cubimal_ilmenskiejones": 5,
+			"npc_cubimal_juju": 4,
+			"npc_cubimal_magicrock": 2,
+			"npc_cubimal_mealvendor": 1,
+			"npc_cubimal_phantom": 10,
+			"npc_cubimal_piggy": 39,
+			"npc_cubimal_rube": 1,
+			"npc_cubimal_senorfunpickle": 4,
+			"npc_cubimal_sloth": 31,
+			"npc_cubimal_smuggler": 2,
+			"npc_cubimal_snoconevendor": 11,
+			"npc_cubimal_squid": 7,
+			"npc_cubimal_toolvendor": 3,
+			"npc_cubimal_trisor": 4,
+			"npc_cubimal_unclefriendly": 4,
+			"npc_cubimal_uraliastreetspirit": 13,
+			"npc_cubimal_yeti": 4,
+			"oats": 1,
+			"obvious_panini": 1,
+			"oily_dressing": 1,
+			"olive_oil": 1,
+			"onion": 2,
+			"orange": 1,
+			"orange_juice": 1,
+			"paper": 3,
+			"papl_upside_down_pizza": 1,
+			"paradise_ticket_arbor_hollow": 1,
+			"paradise_ticket_mountain_scaling": 1,
+			"paradise_ticket_sky_plunge": 1,
+			"paradise_ticket_starlit_night": 1,
+			"parsnip": 5,
+			"peat": 1,
+			"pick": 1,
+			"pickle": 1,
+			"piggy_feeder": 5,
+			"piglet": 5,
+			"plain_bubble": 41,
+			"plain_crystal": 5,
+			"plain_metal": 2,
+			"plank": 32,
+			"plop": 1,
+			"potato": 7,
+			"potians_feast": 3,
+			"potion_amorous_philtre": 5,
+			"potion_chris": 1,
+			"potion_trantsformation_fluid": 1,
+			"potion_tree_poison": 1,
+			"powder_of_mild_fecundity": 4,
+			"proper_rice": 2,
+			"pumpkin": 4,
+			"pumpkin_carved_1": 10,
+			"pumpkin_carved_2": 6,
+			"pumpkin_carved_3": 8,
+			"pumpkin_carved_4": 13,
+			"pumpkin_carved_5": 9,
+			"pumpkin_lit_1": 5,
+			"pumpkin_lit_2": 5,
+			"pumpkin_lit_3": 6,
+			"pumpkin_lit_4": 9,
+			"pumpkin_lit_5": 13,
+			"pumpkin_pie": 1,
+			"purple_flower": 5,
+			"quill": 3,
+			"race_ticket_hogtie_piggy": 1,
+			"random_kindness": 11,
+			"rice": 1,
+			"rich_tagine": 1,
+			"rookswort": 1,
+			"rubeweed": 1,
+			"salmon_jaella": 1,
+			"sammich": 1,
+			"saucepan": 1,
+			"savory_smoothie": 3,
+			"scraper": 3,
+			"scrumptious_frittata": 2,
+			"seed_carrot": 1,
+			"seed_corn": 11,
+			"seed_pumpkin": 1,
+			"seed_spinach": 2,
+			"sesame_oil": 1,
+			"shovel": 1,
+			"silvertongue": 1,
+			"slow_gin_fizz": 7,
+			"small_worthless": 1,
+			"sno_cone_blue": 4,
+			"sno_cone_purple": 1,
+			"sno_cone_red": 1,
+			"sparkly": 4,
+			"special_item_that_only_beta_testers_get": 5,
+			"spice_mill": 1,
+			"spicy_grog": 1,
+			"spinach": 46,
+			"spindle": 1,
+			"still": 11,
+			"super_scraper": 1,
+			"swank_zucchini_loaf": 7,
+			"swf_1": 1,
+			"swf_2": 2,
+			"swf_3": 7,
+			"swing_batter": 1,
+			"test_tube": 1,
+			"tinkertool": 2,
+			"tomato": 5,
+			"tooberry_shake": 1,
+			"tortilla": 2,
+			"turmeric": 1,
+			"upgrade_card_reshuffle": 1,
+			"watering_can": 2,
+			"whortleberry": 1,
+			"wine_of_the_dead": 7,
+			"woodworker_fuser": 1,
+			"yellow_crumb_flower": 2,
+			"zucchini": 3
+		},
+		"VERB:eat": {
+			"cherry": 2,
+			"divine_crepes": 1,
+			"grain": 2,
+			"meat": 49,
+			"sno_cone_blue": 2,
+			"sno_cone_green": 2,
+			"sno_cone_orange": 1,
+			"spinach": 6,
+			"swank_zucchini_loaf": 1
+		},
+		"VERB:enjoy": {
+			"special_item_that_only_beta_testers_get": 2
+		},
+		"VERB:examine": {
+			"plop": 62
+		},
+		"VERB:expand": {
+			"magic_rock": 47
+		},
+		"VERB:experiment": {
+			"test_tube": 42
+		},
+		"VERB:extract_seeds": {
+			"gandlevery": 14,
+			"hairball_flower": 13,
+			"purple_flower": 12,
+			"rookswort": 16,
+			"rubeweed": 9,
+			"silvertongue": 8,
+			"yellow_crumb_flower": 12
+		},
+		"VERB:feed": {
+			"caterpillar": 11,
+			"chick": 50,
+			"npc_batterfly": 26,
+			"npc_piggy": 37,
+			"npc_sloth": 9,
+			"piglet": 6
+		},
+		"VERB:flatter": {
+			"npc_crab": 12
+		},
+		"VERB:flip": {
+			"bag_furniture_sdb": 1,
+			"bag_furniture_wallcabinet": 1,
+			"furniture_armchair": 9,
+			"furniture_bench": 1,
+			"furniture_chair": 12,
+			"furniture_coffeetable": 1,
+			"furniture_desk": 1,
+			"furniture_floorlamp": 1,
+			"furniture_loveseat": 12,
+			"furniture_roomdeco": 18,
+			"furniture_sofa": 1,
+			"furniture_tabledeco": 4,
+			"furniture_walldeco": 3
+		},
+		"VERB:fry": {
+			"frying_pan": 86
+		},
+		"VERB:gassify": {
+			"gassifier": 16
+		},
+		"VERB:get_emblem": {
+			"npc_shrine_zille": 1
+		},
+		"VERB:get_tips": {
+			"npc_fox_ranger": 1
+		},
+		"VERB:give": {
+			"beer": 1,
+			"birch_candy": 2,
+			"cloud_11_smoothie": 1,
+			"dusty_stick": 2,
+			"lips": 36,
+			"npc_cubimal_unclefriendly": 1,
+			"plank": 6,
+			"potion_avatar_small": 3,
+			"random_kindness": 8,
+			"slow_gin_fizz": 1,
+			"sneezing_powder": 1
+		},
+		"VERB:grind": {
+			"spice_mill": 30
+		},
+		"VERB:harvest": {
+			"paper_tree": 8,
+			"peat_1": 1,
+			"peat_3": 5,
+			"trant_bean": 54,
+			"trant_bubble": 124,
+			"trant_egg": 140,
+			"trant_fruit": 240,
+			"trant_gas": 67,
+			"trant_spice": 89,
+			"wood_tree": 72
+		},
+		"VERB:harvest_clear": {
+			"wood_tree": 2
+		},
+		"VERB:house_keys": {
+			"magic_rock": 18
+		},
+		"VERB:hug": {
+			"npc_crab": 7
+		},
+		"VERB:hum_to": {
+			"piglet": 4
+		},
+		"VERB:iconize": {
+			"emblem_alph": 1,
+			"emblem_cosma": 1,
+			"emblem_friendly": 1,
+			"emblem_grendaline": 1,
+			"emblem_humbaba": 1,
+			"emblem_lem": 1,
+			"emblem_mab": 1,
+			"emblem_pot": 1,
+			"emblem_spriggan": 1,
+			"emblem_ti": 1,
+			"emblem_zille": 1
+		},
+		"VERB:ignite": {
+			"fox_bait": 3
+		},
+		"VERB:img": {
+			"tester_widget": 105
+		},
+		"VERB:incubate": {
+			"npc_chicken": 15
+		},
+		"VERB:infer": {
+			"special_item_that_only_beta_testers_get": 1
+		},
+		"VERB:inspect": {
+			"graveside_marker": 5
+		},
+		"VERB:install": {
+			"blockmaker": 3,
+			"fuelmaker": 3,
+			"metalmaker": 3,
+			"woodworker": 3
+		},
+		"VERB:insult": {
+			"npc_crab": 7
+		},
+		"VERB:items": {
+			"tester_widget": 22
+		},
+		"VERB:learn": {
+			"tester_widget": 40
+		},
+		"VERB:leave_message": {
+			"bag_butler": 8
+		},
+		"VERB:light": {
+			"pumpkin_carved_1": 4,
+			"pumpkin_carved_2": 4,
+			"pumpkin_carved_3": 6,
+			"pumpkin_carved_4": 5,
+			"pumpkin_carved_5": 8
+		},
+		"VERB:make_eye_contact": {
+			"npc_jabba1": 3
+		},
+		"VERB:massage": {
+			"npc_butterfly": 168
+		},
+		"VERB:max": {
+			"tester_widget": 593
+		},
+		"VERB:meditate": {
+			"focusing_orb": 7
+		},
+		"VERB:milk": {
+			"npc_butterfly": 97
+		},
+		"VERB:mine": {
+			"rock_beryl_1": 9,
+			"rock_beryl_2": 89,
+			"rock_dullite_1": 77,
+			"rock_dullite_2": 14,
+			"rock_dullite_3": 25,
+			"rock_metal_1": 25,
+			"rock_metal_2": 79,
+			"rock_metal_3": 15,
+			"rock_sparkly_1": 1,
+			"rock_sparkly_2": 13,
+			"rock_sparkly_3": 133
+		},
+		"VERB:mourn": {
+			"graveside_marker": 2
+		},
+		"VERB:munch": {
+			"hairball_flower": 1
+		},
+		"VERB:name": {
+			"bag_butler": 4,
+			"npc_butterfly": 8,
+			"npc_chicken": 4,
+			"npc_piggy": 7
+		},
+		"VERB:nibble": {
+			"npc_piggy": 16
+		},
+		"VERB:open": {
+			"bag_furniture_cabinet": 792,
+			"bag_furniture_smallcabinet": 143,
+			"bag_furniture_wallcabinet": 177,
+			"cubimal_package": 361,
+			"cubimal_package_2": 150,
+			"firefly_jar": 83
+		},
+		"VERB:party_scraping_on": {
+			"scraper": 1
+		},
+		"VERB:pet": {
+			"npc_kitty_chicken": 73,
+			"npc_piggy": 47,
+			"paper_tree": 8,
+			"patch_seedling": 79,
+			"trant_bean": 35,
+			"trant_bubble": 81,
+			"trant_egg": 88,
+			"trant_fruit": 166,
+			"trant_gas": 46,
+			"trant_spice": 59,
+			"wood_tree": 98
+		},
+		"VERB:pickup": {
+			"abbasid_ribs": 2,
+			"alchemical_tongs": 1,
+			"all_spice": 88,
+			"apple": 2,
+			"applejack": 3,
+			"artifact_butterfly_hair_clip": 1,
+			"awesome_pot": 2,
+			"awesome_stew": 1,
+			"bacon": 2,
+			"bag_alchemistry_kit": 4,
+			"bag_bigger_blue": 865,
+			"bag_bigger_gray": 29,
+			"bag_bigger_green": 13,
+			"bag_bigger_pink": 1,
+			"bag_elemental_pouch": 10,
+			"bag_furniture_sdb": 4,
+			"bag_generic": 4,
+			"bag_generic_green": 2,
+			"bag_gift_box": 3,
+			"bag_gift_box_wrapped": 1,
+			"bag_spicerack": 13,
+			"bag_toolbox_green": 2,
+			"bag_toolbox_red": 4,
+			"banana": 2,
+			"banana_no_names": 2,
+			"barnacle": 13,
+			"basic_omelet": 1,
+			"beaker": 1,
+			"bean_plain": 63,
+			"bean_seasoner": 9,
+			"bean_spice": 1,
+			"beer": 4,
+			"berry_bowl": 1,
+			"beryl": 1,
+			"best_bean_dip": 1,
+			"big_salad": 2,
+			"birch_candy": 4,
+			"birch_syrup": 1,
+			"blender": 1,
+			"blockmaker_chassis": 1,
+			"blockmaker_plates": 4,
+			"board": 3,
+			"broccoli": 2,
+			"bubble_and_squeak": 1,
+			"bubble_tea": 3,
+			"bubble_tuner": 1,
+			"butterfly_egg": 3,
+			"butterfly_lotion": 10,
+			"butterfly_milker": 7,
+			"cabbage": 3,
+			"camphor": 17,
+			"cardamom": 2,
+			"carobish_treats": 2,
+			"carrot": 4,
+			"cauldron": 1,
+			"cedar_plank_salmon": 1,
+			"cheese_plate": 1,
+			"cheezy_sauce": 1,
+			"cherry": 54,
+			"chick": 1,
+			"chicken_egg": 1,
+			"chillybusting_chili": 3,
+			"choice_crudites": 1,
+			"cloud_11_smoothie": 1,
+			"cloudberry": 3,
+			"cloudberry_daiquiri": 3,
+			"cloudberry_jam": 1,
+			"cocktail_shaker": 1,
+			"coffee": 7,
+			"cold_taco": 2,
+			"collectors_edition_2010_glitchmas_yeti": 1,
+			"common_crudites": 3,
+			"construction_tool": 1,
+			"corn": 3,
+			"corn_off_the_cob": 2,
+			"corn_syrup_squares": 3,
+			"corny_fritter": 2,
+			"cosmapolitan": 2,
+			"crabato_juice": 7,
+			"crabphones": 3,
+			"creamy_martini": 1,
+			"crying_gas": 1,
+			"crystallizer": 1,
+			"cubimal_package": 3,
+			"cucumber": 2,
+			"death_to_veg": 1,
+			"desssert_rub": 1,
+			"diabolic_acid": 5,
+			"dice_12sided": 1,
+			"divine_crepes": 3,
+			"door_key_1": 4,
+			"door_key_10": 1,
+			"door_key_11": 2,
+			"door_key_12": 8,
+			"door_key_2": 4,
+			"door_key_3": 1,
+			"door_key_4": 1,
+			"door_key_5": 2,
+			"door_key_7": 4,
+			"door_key_8": 1,
+			"door_key_9": 32,
+			"dusty_stick": 2,
+			"earth": 14,
+			"earthshaker": 7,
+			"egg_plain": 52,
+			"egg_seasoner": 6,
+			"eggy_scramble": 2,
+			"emblem_alph": 3,
+			"emblem_cosma": 4,
+			"emblem_friendly": 4,
+			"emblem_grendaline": 4,
+			"emblem_humbaba": 3,
+			"emblem_lem": 24,
+			"emblem_mab": 8,
+			"emblem_pot": 2,
+			"emblem_spriggan": 4,
+			"emblem_ti": 4,
+			"emblem_zille": 10,
+			"emotional_bear": 8,
+			"essence_of_gandlevery": 1,
+			"essence_of_hairball": 2,
+			"essence_of_purple": 2,
+			"essence_of_rookswort": 1,
+			"essence_of_rubeweed": 2,
+			"essence_of_silvertongue": 1,
+			"essence_of_yellow_crumb": 2,
+			"exotic_fruit_salad": 1,
+			"expensive_grilled_cheese": 1,
+			"face_smelter": 11,
+			"fancy_pick": 1,
+			"fertilidust": 10,
+			"fertilidust_lite": 5,
+			"fiber": 12,
+			"firefly_jar": 88,
+			"flaming_humbaba": 4,
+			"flummery": 2,
+			"focusing_orb": 1,
+			"fortifying_gruel": 1,
+			"fried_egg": 2,
+			"fried_noodles": 3,
+			"fried_rice": 1,
+			"friendly_acid": 1,
+			"frog_in_a_hole": 1,
+			"fruit_changing_machine": 1,
+			"fruit_salad": 1,
+			"frying_pan": 1,
+			"fuel_cell": 1,
+			"furniture_ceilinglamp": 1,
+			"furniture_chair": 3,
+			"furniture_desk": 1,
+			"furniture_fireplace": 1,
+			"furniture_roomdeco": 3,
+			"furniture_rug": 1,
+			"furniture_tabledeco": 2,
+			"game_box": 3,
+			"gameshow_ticket": 6,
+			"gammas_pancakes": 1,
+			"gandlevery": 2,
+			"garlic": 1,
+			"gassifier": 1,
+			"gem_amber": 13,
+			"gem_diamond": 5,
+			"gem_moonstone": 4,
+			"gem_ruby": 18,
+			"gem_sapphire": 11,
+			"general_vapour": 14,
+			"girder": 15,
+			"glitchepoix": 1,
+			"grade_aa_earth_block": 1,
+			"grain": 9,
+			"grain_bushel": 3,
+			"greasy_frybread": 1,
+			"green": 4,
+			"green_eggs": 2,
+			"grilled_cheese": 1,
+			"guano": 177,
+			"gurly_drink": 3,
+			"hash": 4,
+			"hatchet": 3,
+			"heavy_gas": 2,
+			"helium": 1,
+			"herb_seed_gandlevery": 4,
+			"herb_seed_hairball_flower": 3,
+			"herb_seed_purple_flower": 3,
+			"herb_seed_rookswort": 1,
+			"herb_seed_rubeweed": 1,
+			"herb_seed_silvertongue": 1,
+			"herb_seed_yellow_crumb_flower": 1,
+			"high_class_hoe": 1,
+			"hoe": 10,
+			"hooch": 12,
+			"hototot_rub": 1,
+			"humbabol": 2,
+			"hungry_nachos": 1,
+			"icon_alph": 3,
+			"icon_cosma": 4,
+			"icon_friendly": 7,
+			"icon_grendaline": 4,
+			"icon_humbaba": 3,
+			"icon_lem": 4,
+			"icon_mab": 3,
+			"icon_pot": 2,
+			"icon_spriggan": 5,
+			"icon_tii": 6,
+			"icon_zille": 3,
+			"irrigator_9000": 1,
+			"jellisac_clump": 17,
+			"juicy_carpaccio": 2,
+			"kind_breakfurst_burrito": 3,
+			"knife_and_board": 1,
+			"laughing_gas": 3,
+			"lazy_salad": 2,
+			"legumes_parisienne": 2,
+			"lips": 28,
+			"loam": 4,
+			"lotsa_lox": 1,
+			"luxury_tortellini": 1,
+			"maburger_royale": 1,
+			"meat": 75,
+			"meat_collector": 3,
+			"meat_gumbo": 1,
+			"meat_tetrazzini": 1,
+			"mega_healthy_veggie_juice": 11,
+			"messy_fry_up": 1,
+			"metal_rock": 2,
+			"mexicali_eggs": 1,
+			"mike_tyson_grill": 1,
+			"mild_sauce": 1,
+			"milk_butterfly": 31,
+			"million_currant_trophy": 6,
+			"musicblock_b_brown_01": 2,
+			"musicblock_b_brown_02": 3,
+			"musicblock_b_brown_03": 5,
+			"musicblock_b_brown_04": 2,
+			"musicblock_b_brown_05": 3,
+			"musicblock_d_blue_01": 8,
+			"musicblock_d_blue_02": 3,
+			"musicblock_d_blue_03": 6,
+			"musicblock_d_blue_04": 6,
+			"musicblock_d_blue_05": 4,
+			"musicblock_d_green_01": 6,
+			"musicblock_d_green_02": 5,
+			"musicblock_d_green_03": 4,
+			"musicblock_d_green_04": 4,
+			"musicblock_d_green_05": 1,
+			"musicblock_d_red_01": 7,
+			"musicblock_d_red_02": 6,
+			"musicblock_d_red_03": 3,
+			"musicblock_d_red_04": 7,
+			"musicblock_d_red_05": 4,
+			"musicblock_goodnight_groddle": 2,
+			"musicblock_x_shiny_01": 3,
+			"musicblock_x_shiny_02": 5,
+			"musicblock_x_shiny_03": 1,
+			"musicblock_x_shiny_04": 1,
+			"musicblock_x_shiny_05": 2,
+			"note": 22,
+			"note_pole": 31,
+			"npc_crafty_bot": 2,
+			"npc_cubimal_batterfly": 16,
+			"npc_cubimal_bureaucrat": 4,
+			"npc_cubimal_butler": 5,
+			"npc_cubimal_butterfly": 34,
+			"npc_cubimal_cactus": 2,
+			"npc_cubimal_chick": 33,
+			"npc_cubimal_crab": 24,
+			"npc_cubimal_craftybot": 4,
+			"npc_cubimal_deimaginator": 9,
+			"npc_cubimal_dustbunny": 6,
+			"npc_cubimal_emobear": 7,
+			"npc_cubimal_firebogstreetspirit": 9,
+			"npc_cubimal_firefly": 23,
+			"npc_cubimal_fox": 25,
+			"npc_cubimal_foxranger": 12,
+			"npc_cubimal_frog": 18,
+			"npc_cubimal_gardeningtoolsvendor": 2,
+			"npc_cubimal_gnome": 11,
+			"npc_cubimal_greeterbot": 7,
+			"npc_cubimal_groddlestreetspirit": 12,
+			"npc_cubimal_gwendolyn": 1,
+			"npc_cubimal_hellbartender": 2,
+			"npc_cubimal_ilmenskiejones": 4,
+			"npc_cubimal_juju": 2,
+			"npc_cubimal_magicrock": 1,
+			"npc_cubimal_maintenancebot": 1,
+			"npc_cubimal_mealvendor": 2,
+			"npc_cubimal_phantom": 5,
+			"npc_cubimal_piggy": 41,
+			"npc_cubimal_rube": 2,
+			"npc_cubimal_senorfunpickle": 5,
+			"npc_cubimal_sloth": 20,
+			"npc_cubimal_smuggler": 5,
+			"npc_cubimal_snoconevendor": 10,
+			"npc_cubimal_squid": 2,
+			"npc_cubimal_toolvendor": 3,
+			"npc_cubimal_trisor": 2,
+			"npc_cubimal_unclefriendly": 2,
+			"npc_cubimal_uraliastreetspirit": 13,
+			"npc_cubimal_yeti": 2,
+			"npc_garden_gnome": 10,
+			"npc_piggy_explorer": 1,
+			"oats": 1,
+			"oaty_cake": 2,
+			"obvious_panini": 1,
+			"oily_dressing": 1,
+			"older_spice": 42,
+			"olive_oil": 1,
+			"onion": 2,
+			"onion_rings": 2,
+			"orange": 1,
+			"orange_juice": 2,
+			"pad_tii": 1,
+			"paper": 6,
+			"papl_upside_down_pizza": 2,
+			"paradise_ticket_arbor_hollow": 2,
+			"paradise_ticket_bippity_bop": 1,
+			"paradise_ticket_mountain_scaling": 1,
+			"paradise_ticket_starlit_night": 2,
+			"parsnip": 5,
+			"peat": 2,
+			"pick": 1,
+			"piggy_feeder": 5,
+			"piglet": 4,
+			"plain_bubble": 41,
+			"plain_crystal": 5,
+			"plain_metal": 2,
+			"plank": 27,
+			"plop": 4,
+			"potato": 7,
+			"potato_patty": 1,
+			"potcorn": 2,
+			"potians_feast": 3,
+			"potion_amorous_philtre": 4,
+			"potion_chris": 2,
+			"potion_garden_fertilize": 2,
+			"potion_garden_water": 1,
+			"potion_rainbow_juice": 1,
+			"potion_trantsformation_fluid": 1,
+			"potion_tree_poison": 3,
+			"pottine": 1,
+			"powder_of_mild_fecundity": 4,
+			"precious_potato_salad": 1,
+			"proper_rice": 5,
+			"pumpkin": 4,
+			"pumpkin_ale": 1,
+			"pumpkin_carved_1": 10,
+			"pumpkin_carved_2": 7,
+			"pumpkin_carved_3": 9,
+			"pumpkin_carved_4": 12,
+			"pumpkin_carved_5": 10,
+			"pumpkin_lit_1": 5,
+			"pumpkin_lit_2": 4,
+			"pumpkin_lit_3": 6,
+			"pumpkin_lit_4": 9,
+			"pumpkin_lit_5": 10,
+			"pumpkin_pie": 6,
+			"pungent_sunrise": 1,
+			"purple_flower": 8,
+			"quill": 5,
+			"race_ticket_hogtie_piggy": 2,
+			"random_kindness": 10,
+			"rice": 1,
+			"rich_tagine": 2,
+			"rookswort": 1,
+			"rubeweed": 2,
+			"salmon_jaella": 2,
+			"sammich": 2,
+			"saucepan": 1,
+			"savory_smoothie": 4,
+			"scraper": 4,
+			"scrumptious_frittata": 2,
+			"seed_carrot": 1,
+			"seed_corn": 67,
+			"seed_potato": 2,
+			"seed_pumpkin": 1,
+			"seed_spinach": 5,
+			"sesame_oil": 1,
+			"shovel": 1,
+			"silvertongue": 2,
+			"simple_bbq": 1,
+			"simple_slaw": 1,
+			"slow_gin_fizz": 6,
+			"small_worthless": 1,
+			"snack_pack": 1,
+			"snail": 8,
+			"sneezing_powder": 1,
+			"sparkle_powder": 1,
+			"sparkly": 4,
+			"special_item_that_only_beta_testers_get": 2,
+			"spice_mill": 1,
+			"spicy_grog": 3,
+			"spicy_quesadilla": 2,
+			"spinach": 45,
+			"spinach_salad": 1,
+			"still": 9,
+			"super_scraper": 1,
+			"super_veggie_kebabs": 1,
+			"swank_zucchini_loaf": 7,
+			"swf_1": 2,
+			"swf_2": 1,
+			"swf_3": 4,
+			"swing_batter": 1,
+			"tangy_noodles": 1,
+			"tangy_sauce": 1,
+			"tasty_pasta": 1,
+			"teleportation_script": 9,
+			"test_tube": 1,
+			"thread": 1,
+			"tinkertool": 2,
+			"tomato": 21,
+			"tooberry_shake": 1,
+			"tortilla": 2,
+			"trophy_bubble": 1,
+			"trophy_cubimal": 2,
+			"trophy_cubimal_2": 2,
+			"trophy_emblems": 2,
+			"trophy_gas": 1,
+			"trophy_music_b_brown": 1,
+			"trophy_music_d_blue": 1,
+			"trophy_music_d_green": 1,
+			"trophy_music_d_red": 1,
+			"trophy_music_x_shiny": 2,
+			"trophy_spice": 2,
+			"turmeric": 16,
+			"upgrade_card_reshuffle": 1,
+			"urfu": 1,
+			"waffles": 1,
+			"watering_can": 2,
+			"white_gas": 1,
+			"whortleberry": 1,
+			"wine_of_the_dead": 6,
+			"woodworker_fuser": 1,
+			"yellow_crumb_flower": 2,
+			"yummy_gruel": 1,
+			"zucchini": 2
+		},
+		"VERB:pinch": {
+			"npc_crab": 7
+		},
+		"VERB:place": {
+			"blockmaker": 2,
+			"fuelmaker": 2,
+			"icon_alph": 4,
+			"icon_cosma": 5,
+			"icon_friendly": 8,
+			"icon_grendaline": 5,
+			"icon_humbaba": 4,
+			"icon_lem": 5,
+			"icon_mab": 4,
+			"icon_pot": 4,
+			"icon_spriggan": 6,
+			"icon_tii": 7,
+			"icon_zille": 4,
+			"machine_stand": 4,
+			"metalmaker": 2,
+			"note_pole": 55,
+			"npc_garden_gnome": 12,
+			"woodworker": 2
+		},
+		"VERB:plant": {
+			"bean_bean": 2,
+			"bean_bubble": 1,
+			"patch": 23
+		},
+		"VERB:play": {
+			"game_box": 1,
+			"musicblock_d_red_04": 3,
+			"musicblock_goodnight_groddle": 1
+		},
+		"VERB:pocket": {
+			"npc_salmon": 5
+		},
+		"VERB:post": {
+			"note_pole": 18
+		},
+		"VERB:pour": {
+			"potion_chris": 2,
+			"potion_garden_fertilize": 1,
+			"wine_of_the_dead": 42
+		},
+		"VERB:press": {
+			"wall_button": 28
+		},
+		"VERB:pull_string": {
+			"collectors_edition_2010_glitchmas_yeti": 1,
+			"doll_nietzsche": 1,
+			"doll_wittgenstein": 1,
+			"stoot_barfield_pullstring_doll": 2
+		},
+		"VERB:push": {
+			"subway_gate": 1
+		},
+		"VERB:quaff": {
+			"potion_amorous_philtre": 2,
+			"potion_keycutter_tonic": 5
+		},
+		"VERB:race": {
+			"npc_cubimal_phantom": 1,
+			"npc_cubimal_unclefriendly": 1
+		},
+		"VERB:read": {
+			"note": 157,
+			"note_pole": 82,
+			"teleportation_script": 223
+		},
+		"VERB:read_oneclick": {
+			"note_pole": 18
+		},
+		"VERB:record_info": {
+			"bag_butler": 1
+		},
+		"VERB:redeal": {
+			"tester_widget": 178
+		},
+		"VERB:reflect": {
+			"icon_friendly": 1
+		},
+		"VERB:refuel": {
+			"blockmaker": 1,
+			"fuelmaker": 1,
+			"metalmaker": 1,
+			"woodworker": 5
+		},
+		"VERB:release": {
+			"hogtied_piggy": 13,
+			"hogtied_piggy_explorer": 1
+		},
+		"VERB:reminisce": {
+			"emotional_bear": 1
+		},
+		"VERB:remove": {
+			"bag_furniture_sdb": 202
+		},
+		"VERB:rename": {
+			"bag_bigger_blue": 269,
+			"bag_bigger_gray": 14,
+			"bag_bigger_green": 3,
+			"bag_bigger_pink": 2,
+			"npc_chicken": 2,
+			"npc_kitty_chicken": 9
+		},
+		"VERB:repair": {
+			"alchemical_tongs": 1,
+			"blender": 2,
+			"construction_tool": 17,
+			"fancy_pick": 3,
+			"frying_pan": 1,
+			"grand_ol_grinder": 3,
+			"hatchet": 4,
+			"hoe": 68,
+			"ore_grinder": 6,
+			"saucepan": 1,
+			"scraper": 10,
+			"shovel": 2,
+			"smelter": 2,
+			"spindle": 4,
+			"tinkertool": 13,
+			"watering_can": 21
+		},
+		"VERB:reshuffle": {
+			"upgrade_card_reshuffle": 61
+		},
+		"VERB:respect": {
+			"special_item_that_only_beta_testers_get": 2
+		},
+		"VERB:restore": {
+			"proto_herb_garden_large": 1,
+			"proto_jellisac_mound": 1,
+			"proto_patch": 1
+		},
+		"VERB:resurrect": {
+			"tester_widget": 1,
+			"upgrade_card_instant_resurrection": 12
+		},
+		"VERB:revere": {
+			"icon_friendly": 1
+		},
+		"VERB:rub": {
+			"alchemical_tongs": 18
+		},
+		"VERB:ruminate": {
+			"icon_friendly": 1
+		},
+		"VERB:scoop": {
+			"jellisac": 360
+		},
+		"VERB:scrape": {
+			"ice_knob": 4,
+			"mortar_barnacle": 382
+		},
+		"VERB:set_sale_price": {
+			"bag_furniture_sdb": 3,
+			"bag_furniture_smallcabinet": 2,
+			"bag_furniture_wallcabinet": 6,
+			"furniture_armchair": 1,
+			"furniture_bed": 4,
+			"furniture_bench": 5,
+			"furniture_ceilingdeco": 2,
+			"furniture_ceilinglamp": 4,
+			"furniture_chair": 11,
+			"furniture_coffeetable": 1,
+			"furniture_counter": 2,
+			"furniture_desk": 2,
+			"furniture_fireplace": 3,
+			"furniture_floorlamp": 5,
+			"furniture_loveseat": 7,
+			"furniture_roomdeco": 19,
+			"furniture_rug": 2,
+			"furniture_shelf": 10,
+			"furniture_sidetable": 3,
+			"furniture_sofa": 1,
+			"furniture_stool": 3,
+			"furniture_table": 2,
+			"furniture_tabledeco": 22,
+			"furniture_walldeco": 7,
+			"furniture_walllamp": 1
+		},
+		"VERB:set_selling_price": {
+			"bag_furniture_sdb": 37
+		},
+		"VERB:shake": {
+			"cocktail_shaker": 9,
+			"milk_butterfly": 14
+		},
+		"VERB:shop": {
+			"npc_fox_ranger": 2
+		},
+		"VERB:sing_to": {
+			"npc_butterfly": 74
+		},
+		"VERB:smash": {
+			"white_gas": 1
+		},
+		"VERB:smelt": {
+			"smelter": 16
+		},
+		"VERB:smile_at": {
+			"chick": 2
+		},
+		"VERB:sniff": {
+			"cheese": 1,
+			"no_no_powder": 2
+		},
+		"VERB:spend": {
+			"emblem_alph": 1,
+			"emblem_cosma": 1,
+			"emblem_friendly": 3,
+			"emblem_grendaline": 2,
+			"emblem_humbaba": 3,
+			"emblem_lem": 2,
+			"emblem_mab": 2,
+			"emblem_pot": 1,
+			"emblem_spriggan": 2,
+			"emblem_ti": 2,
+			"emblem_zille": 1
+		},
+		"VERB:spin": {
+			"npc_spinning_wheel": 111,
+			"spindle": 19
+		},
+		"VERB:sprinkle": {
+			"fertilidust_lite": 4
+		},
+		"VERB:squeeze": {
+			"npc_chicken": 93
+		},
+		"VERB:stir": {
+			"beaker": 13
+		},
+		"VERB:stop_selling": {
+			"bag_furniture_sdb": 1
+		},
+		"VERB:stubway": {
+			"tester_widget": 2
+		},
+		"VERB:talk_to": {
+			"icon_lem": 1,
+			"magic_rock": 114,
+			"npc_chicken": 1,
+			"npc_fox_ranger": 1,
+			"npc_piggy": 6,
+			"npc_rube": 24,
+			"npc_smuggler": 2,
+			"peat_1": 1,
+			"rock_beryl_2": 1,
+			"rock_dullite_2": 1,
+			"street_spirit_firebog": 1,
+			"street_spirit_groddle": 16,
+			"trant_bubble": 1,
+			"trant_egg": 1,
+			"trant_fruit": 2,
+			"trant_gas": 1,
+			"trant_spice": 2
+		},
+		"VERB:teach": {
+			"npc_garden_gnome": 7,
+			"pumpkin_lit_1": 1,
+			"pumpkin_lit_4": 2
+		},
+		"VERB:teleport": {
+			"tester_widget": 172
+		},
+		"VERB:tend": {
+			"patch": 34,
+			"patch_dark": 1
+		},
+		"VERB:unbundle": {
+			"grain_bushel": 4
+		},
+		"VERB:unleash": {
+			"dusty_stick": 2
+		},
+		"VERB:upgrade": {
+			"bag_furniture_cabinet": 2,
+			"bag_furniture_sdb": 88,
+			"bag_furniture_smallcabinet": 1,
+			"bag_furniture_wallcabinet": 2,
+			"furniture_armchair": 7,
+			"furniture_bed": 2,
+			"furniture_bench": 5,
+			"furniture_ceilingdeco": 4,
+			"furniture_ceilinglamp": 5,
+			"furniture_chair": 7,
+			"furniture_coffeetable": 1,
+			"furniture_counter": 1,
+			"furniture_desk": 2,
+			"furniture_door": 5,
+			"furniture_fireplace": 1,
+			"furniture_floorlamp": 2,
+			"furniture_loveseat": 3,
+			"furniture_roomdeco": 20,
+			"furniture_rug": 2,
+			"furniture_shelf": 8,
+			"furniture_sidetable": 5,
+			"furniture_sofa": 2,
+			"furniture_stool": 3,
+			"furniture_table": 2,
+			"furniture_tabledeco": 27,
+			"furniture_walldeco": 17,
+			"furniture_walllamp": 4
+		},
+		"VERB:upgrade_lips": {
+			"emotional_bear": 4
+		},
+		"VERB:upgrade_moon": {
+			"emotional_bear": 4
+		},
+		"VERB:use": {
+			"awesome_pot": 15,
+			"bean_seasoner": 6,
+			"blockmaker": 3,
+			"cauldron": 53,
+			"construction_tool": 224,
+			"egg_seasoner": 47,
+			"fuelmaker": 5,
+			"gameshow_ticket": 111,
+			"knife_and_board": 23,
+			"loomer": 22,
+			"metalmaker": 13,
+			"mike_tyson_grill": 14,
+			"saucepan": 69,
+			"tincturing_kit": 23,
+			"woodworker": 12
+		},
+		"VERB:view": {
+			"bag_notice_board": 3
+		},
+		"VERB:view_inbox": {
+			"npc_mailbox": 6
+		},
+		"VERB:visit": {
+			"visiting_stone": 5
+		},
+		"VERB:visitors": {
+			"bag_butler": 3
+		},
+		"VERB:watch": {
+			"cardamom": 1
+		},
+		"VERB:water": {
+			"paper_tree": 7,
+			"trant_bean": 35,
+			"trant_bubble": 85,
+			"trant_egg": 90,
+			"trant_fruit": 166,
+			"trant_gas": 46,
+			"trant_spice": 64,
+			"wood_tree": 98
+		},
+		"VERB:whistle": {
+			"tester_widget": 3
+		},
+		"VERB:wrangle": {
+			"swf_3": 1
+		},
+		"VERB:write_on": {
+			"note": 3,
+			"paper": 50
+		},
+		"abbasid_ribs": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"alchemical_tongs": {
+			"drop": 1,
+			"pickup": 1,
+			"repair": 1,
+			"rub": 18
+		},
+		"all_spice": {
+			"drop": 35,
+			"pickup": 88
+		},
+		"animals_fed": {
+			"npc_batterfly": 26,
+			"npc_piggy": 37
+		},
+		"animals_grown": {
+			"caterpillar": 11,
+			"chick": 5,
+			"piglet": 2
+		},
+		"animals_named": {
+			"npc_butterfly": 8,
+			"npc_chicken": 4,
+			"npc_kitty_chicken": 1,
+			"npc_piggy": 7
+		},
+		"animals_nibbled": {
+			"npc_piggy": 16
+		},
+		"animals_petted": {
+			"npc_piggy": 47
+		},
+		"apple": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"applejack": {
+			"drop": 1,
+			"pickup": 3
+		},
+		"artifact_butterfly_hair_clip": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"awesome_pot": {
+			"drop": 3,
+			"pickup": 2,
+			"use": 15
+		},
+		"awesome_stew": {
+			"pickup": 1
+		},
+		"bacon": {
+			"drop": 2,
+			"pickup": 2
+		},
+		"bag_alchemistry_kit": {
+			"drop": 4,
+			"pickup": 4
+		},
+		"bag_bigger_blue": {
+			"drop": 889,
+			"pickup": 865,
+			"rename": 269
+		},
+		"bag_bigger_gray": {
+			"drop": 27,
+			"pickup": 29,
+			"rename": 14
+		},
+		"bag_bigger_green": {
+			"drop": 14,
+			"pickup": 13,
+			"rename": 3
+		},
+		"bag_bigger_pink": {
+			"drop": 1,
+			"pickup": 1,
+			"rename": 2
+		},
+		"bag_butler": {
+			"accept_gift": 14,
+			"leave_message": 8,
+			"name": 4,
+			"record_info": 1,
+			"visitors": 3
+		},
+		"bag_elemental_pouch": {
+			"drop": 9,
+			"pickup": 10
+		},
+		"bag_furniture_cabinet": {
+			"open": 792,
+			"upgrade": 2
+		},
+		"bag_furniture_sdb": {
+			"change_style": 1,
+			"collect_currants": 15,
+			"deposit": 525,
+			"dont_sell": 2,
+			"flip": 1,
+			"pickup": 4,
+			"remove": 202,
+			"set_sale_price": 3,
+			"set_selling_price": 37,
+			"stop_selling": 1,
+			"upgrade": 88
+		},
+		"bag_furniture_smallcabinet": {
+			"change_style": 2,
+			"dont_sell": 2,
+			"open": 143,
+			"set_sale_price": 2,
+			"upgrade": 1
+		},
+		"bag_furniture_wallcabinet": {
+			"change_style": 2,
+			"dont_sell": 4,
+			"flip": 1,
+			"open": 177,
+			"set_sale_price": 6,
+			"upgrade": 2
+		},
+		"bag_generic": {
+			"drop": 4,
+			"pickup": 4
+		},
+		"bag_generic_green": {
+			"drop": 2,
+			"pickup": 2
+		},
+		"bag_gift_box": {
+			"drop": 3,
+			"pickup": 3
+		},
+		"bag_gift_box_wrapped": {
+			"pickup": 1
+		},
+		"bag_notice_board": {
+			"add_note": 1,
+			"view": 3
+		},
+		"bag_spicerack": {
+			"drop": 13,
+			"pickup": 13
+		},
+		"bag_toolbox_green": {
+			"drop": 2,
+			"pickup": 2
+		},
+		"bag_toolbox_red": {
+			"drop": 4,
+			"pickup": 4
+		},
+		"banana": {
+			"drop": 2,
+			"pickup": 2
+		},
+		"banana_no_names": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"barnacle": {
+			"drop": 21,
+			"pickup": 13
+		},
+		"basic_omelet": {
+			"pickup": 1
+		},
+		"beaker": {
+			"drop": 1,
+			"pickup": 1,
+			"stir": 13
+		},
+		"bean_bean": {
+			"plant": 2
+		},
+		"bean_bubble": {
+			"plant": 1
+		},
+		"bean_plain": {
+			"drop": 22,
+			"pickup": 63
+		},
+		"bean_seasoner": {
+			"drop": 9,
+			"pickup": 9,
+			"use": 6
+		},
+		"bean_spice": {
+			"pickup": 1
+		},
+		"beans_planted": {
+			"bean_bean": 3,
+			"bean_bubble": 4,
+			"bean_egg": 2,
+			"bean_fruit": 8,
+			"bean_gas": 2,
+			"bean_spice": 2,
+			"bean_wood": 5
+		},
+		"been_kissed": {
+			"P1KUXVLVAS43IUYANK84": 1,
+			"P1KUXVLVAS43J7LSG7K8": 1,
+			"P1KUXVLVAVP5GKE368OC": 2,
+			"P1KUXVLVAVP5HIUAA74G": 1,
+			"P1KUXVLVAVP5HRYAC7SC": 1,
+			"P1KUXVLVAXZC1FFG4AW4": 2,
+			"P1KUXVLVAXZC3P78Q0SK": 1,
+			"P1KUXVLVB11UPNKE3OOO": 3,
+			"P1KUXVLVB13UVWU1L2GO": 1,
+			"P1KUXVLVB2G5ZDGWCI88": 2,
+			"P1KUXVLVB4729YK5WJ4S": 2,
+			"P1KUXVLVB4S7CVPUA884": 2
+		},
+		"beer": {
+			"drink": 13,
+			"drop": 13,
+			"give": 1,
+			"pickup": 4
+		},
+		"berry_bowl": {
+			"pickup": 1
+		},
+		"beryl": {
+			"crush": 17,
+			"pickup": 1
+		},
+		"best_bean_dip": {
+			"pickup": 1
+		},
+		"big_salad": {
+			"pickup": 2
+		},
+		"birch_candy": {
+			"drop": 5,
+			"give": 2,
+			"pickup": 4
+		},
+		"birch_syrup": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"blender": {
+			"blend": 28,
+			"drop": 1,
+			"pickup": 1,
+			"repair": 2
+		},
+		"blockmaker": {
+			"install": 3,
+			"place": 2,
+			"refuel": 1,
+			"use": 3
+		},
+		"blockmaker_chassis": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"blockmaker_plates": {
+			"drop": 4,
+			"pickup": 4
+		},
+		"board": {
+			"drop": 2,
+			"pickup": 3
+		},
+		"broccoli": {
+			"drop": 2,
+			"pickup": 2
+		},
+		"bubble_and_squeak": {
+			"pickup": 1
+		},
+		"bubble_tea": {
+			"drink": 3,
+			"drop": 2,
+			"pickup": 3
+		},
+		"bubble_tuner": {
+			"activate": 20,
+			"drop": 1,
+			"pickup": 1
+		},
+		"buff_times": {
+			"buzzed": 0
+		},
+		"bun": {
+			"drop": 1
+		},
+		"butterflies": {
+			"massaged": 168,
+			"milked": 97,
+			"sung_to": 74
+		},
+		"butterfly_butter": {
+			"compress": 9
+		},
+		"butterfly_egg": {
+			"drop": 3,
+			"pickup": 3
+		},
+		"butterfly_lotion": {
+			"drop": 6,
+			"pickup": 10
+		},
+		"butterfly_milker": {
+			"collect": 39,
+			"drop": 7,
+			"pickup": 7
+		},
+		"cabbage": {
+			"drop": 3,
+			"pickup": 3
+		},
+		"camphor": {
+			"pickup": 17
+		},
+		"cardamom": {
+			"pickup": 2,
+			"watch": 1
+		},
+		"carobish_treats": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"carrot": {
+			"drop": 4,
+			"pickup": 4
+		},
+		"carrot_margarita": {
+			"drop": 1
+		},
+		"caterpillar": {
+			"feed": 11
+		},
+		"cauldron": {
+			"drop": 1,
+			"pickup": 1,
+			"use": 53
+		},
+		"cedar_plank_salmon": {
+			"pickup": 1
+		},
+		"cheese": {
+			"age": 1,
+			"sniff": 1
+		},
+		"cheese_plate": {
+			"pickup": 1
+		},
+		"cheese_very_very_stinky": {
+			"drop": 1
+		},
+		"cheezy_sauce": {
+			"pickup": 1
+		},
+		"cherry": {
+			"drop": 71,
+			"eat": 2,
+			"pickup": 54
+		},
+		"chick": {
+			"drop": 4,
+			"feed": 50,
+			"pickup": 1,
+			"smile_at": 2
+		},
+		"chicken": {
+			"squoze": 93
+		},
+		"chicken_egg": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"chickens": {
+			"scared": 318
+		},
+		"chillybusting_chili": {
+			"drop": 2,
+			"pickup": 3
+		},
+		"choice_crudites": {
+			"pickup": 1
+		},
+		"cloud_11_smoothie": {
+			"drop": 3,
+			"give": 1,
+			"pickup": 1
+		},
+		"cloudberry": {
+			"drop": 1,
+			"pickup": 3
+		},
+		"cloudberry_daiquiri": {
+			"drop": 3,
+			"pickup": 3
+		},
+		"cloudberry_jam": {
+			"pickup": 1
+		},
+		"cocktail_shaker": {
+			"drop": 1,
+			"pickup": 1,
+			"shake": 9
+		},
+		"coffee": {
+			"drink": 1,
+			"drop": 7,
+			"pickup": 7
+		},
+		"coin_count": {
+			"days_maxed": 0
+		},
+		"cold_taco": {
+			"pickup": 2
+		},
+		"collectors_edition_2010_glitchmas_yeti": {
+			"drop": 3,
+			"pickup": 1,
+			"pull_string": 1
+		},
+		"common_crudites": {
+			"drop": 1,
+			"pickup": 3
+		},
+		"completed_harvest": {
+			"peat_bog": 21,
+			"wood_tree": 73
+		},
+		"construction_tool": {
+			"drop": 1,
+			"pickup": 1,
+			"repair": 17,
+			"use": 224
+		},
+		"cookingtools_repaired": {
+			"frying_pan": 1,
+			"saucepan": 1
+		},
+		"corn": {
+			"drop": 3,
+			"pickup": 3
+		},
+		"corn_off_the_cob": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"corn_syrup_squares": {
+			"drop": 3,
+			"pickup": 3
+		},
+		"corny_fritter": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"cosmapolitan": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"crabato_juice": {
+			"drink": 2,
+			"drop": 1,
+			"pickup": 7
+		},
+		"crabphones": {
+			"drop": 3,
+			"pickup": 3
+		},
+		"creamy_martini": {
+			"drink": 4,
+			"drop": 1,
+			"pickup": 1
+		},
+		"croaked": {
+			"at_home": 6
+		},
+		"crying_gas": {
+			"pickup": 1
+		},
+		"crystallizer": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"cubimal_package": {
+			"drop": 3,
+			"open": 361,
+			"pickup": 3
+		},
+		"cubimal_package_2": {
+			"drop": 1,
+			"open": 150
+		},
+		"cucumber": {
+			"drop": 2,
+			"pickup": 2
+		},
+		"cultivation_items": {
+			"has": 13
+		},
+		"daily_evasion_record": {
+			"held": 2
+		},
+		"daily_img": {
+			"five_hundred_three": 77,
+			"one_thousand_nine": 7
+		},
+		"dead_trants_cleared": {
+			"trant_bean_dead": 2,
+			"trant_bubble_dead": 3,
+			"trant_egg_dead": 1,
+			"trant_fruit_dead": 2,
+			"trant_gas_dead": 1,
+			"trant_spice_dead": 2
+		},
+		"death_to_veg": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"desssert_rub": {
+			"pickup": 1
+		},
+		"diabolic_acid": {
+			"pickup": 5
+		},
+		"dice": {
+			"drop": 1
+		},
+		"dice_12sided": {
+			"drop": 2,
+			"pickup": 1
+		},
+		"dirt_pile": {
+			"dig": 12
+		},
+		"divine_crepes": {
+			"drop": 2,
+			"eat": 1,
+			"pickup": 3
+		},
+		"doll_nietzsche": {
+			"pull_string": 1
+		},
+		"doll_wittgenstein": {
+			"drop": 1,
+			"pull_string": 1
+		},
+		"door_key_1": {
+			"pickup": 4
+		},
+		"door_key_10": {
+			"pickup": 1
+		},
+		"door_key_11": {
+			"pickup": 2
+		},
+		"door_key_12": {
+			"pickup": 8
+		},
+		"door_key_2": {
+			"drop": 2,
+			"pickup": 4
+		},
+		"door_key_3": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"door_key_4": {
+			"pickup": 1
+		},
+		"door_key_5": {
+			"pickup": 2
+		},
+		"door_key_7": {
+			"pickup": 4
+		},
+		"door_key_8": {
+			"pickup": 1
+		},
+		"door_key_9": {
+			"drop": 7,
+			"pickup": 32
+		},
+		"dug": {
+			"dirt": 15
+		},
+		"dullite": {
+			"crush": 17
+		},
+		"dust_trap": {
+			"trigger": 34
+		},
+		"dusty_stick": {
+			"drop": 7,
+			"give": 2,
+			"pickup": 2,
+			"unleash": 2
+		},
+		"earth": {
+			"drop": 3,
+			"pickup": 14
+		},
+		"earthshaker": {
+			"drink": 2,
+			"drop": 6,
+			"pickup": 7
+		},
+		"egg_plain": {
+			"drop": 57,
+			"pickup": 52
+		},
+		"egg_seasoner": {
+			"drop": 9,
+			"pickup": 6,
+			"use": 47
+		},
+		"eggs_incubated": {
+			"butterfly_egg": 10,
+			"chicken_egg": 4,
+			"piggy_egg": 1
+		},
+		"eggy_scramble": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"element_red": {
+			"disperse": 2
+		},
+		"elements_refined": {
+			"barnacle_talc": 76,
+			"element_blue": 5720,
+			"element_green": 8345,
+			"element_red": 20485,
+			"element_shiny": 4818
+		},
+		"eleven_secret_locations": {
+			"11spots_alakol_01": 1,
+			"11spots_besara_05": 1,
+			"11spots_bortola_01": 1,
+			"11spots_bortola_03": 1,
+			"11spots_groddleheights_04": 1,
+			"11spots_ilmenskie_caverns_03": 1,
+			"11spots_ilmenskie_caverns_05": 1,
+			"11spots_ilmenskie_deeps_03": 1,
+			"11spots_kajuu_03": 1,
+			"11spots_muufo_03": 1,
+			"11spots_salatu_06": 1
+		},
+		"emblem_alph": {
+			"drop": 2,
+			"iconize": 1,
+			"pickup": 3,
+			"spend": 1
+		},
+		"emblem_cosma": {
+			"drop": 2,
+			"iconize": 1,
+			"pickup": 4,
+			"spend": 1
+		},
+		"emblem_friendly": {
+			"drop": 3,
+			"iconize": 1,
+			"pickup": 4,
+			"spend": 3
+		},
+		"emblem_grendaline": {
+			"drop": 3,
+			"iconize": 1,
+			"pickup": 4,
+			"spend": 2
+		},
+		"emblem_humbaba": {
+			"drop": 3,
+			"iconize": 1,
+			"pickup": 3,
+			"spend": 3
+		},
+		"emblem_lem": {
+			"contemplate": 1,
+			"drop": 30,
+			"iconize": 1,
+			"pickup": 24,
+			"spend": 2
+		},
+		"emblem_mab": {
+			"consider": 1,
+			"contemplate": 1,
+			"drop": 6,
+			"iconize": 1,
+			"pickup": 8,
+			"spend": 2
+		},
+		"emblem_pot": {
+			"drop": 1,
+			"iconize": 1,
+			"pickup": 2,
+			"spend": 1
+		},
+		"emblem_spriggan": {
+			"drop": 1,
+			"iconize": 1,
+			"pickup": 4,
+			"spend": 2
+		},
+		"emblem_ti": {
+			"drop": 2,
+			"iconize": 1,
+			"pickup": 4,
+			"spend": 2
+		},
+		"emblem_zille": {
+			"drop": 10,
+			"iconize": 1,
+			"pickup": 10,
+			"spend": 1
+		},
+		"emblems_acquired": {
+			"alph": 11,
+			"cosma": 10,
+			"friendly": 13,
+			"grendaline": 12,
+			"humbaba": 13,
+			"lem": 19,
+			"mab": 11,
+			"pot": 11,
+			"spriggan": 10,
+			"ti": 11,
+			"zille": 11
+		},
+		"emotional_bear": {
+			"anthropomorphize": 26,
+			"drop": 7,
+			"pickup": 8,
+			"reminisce": 1,
+			"upgrade_lips": 4,
+			"upgrade_moon": 4
+		},
+		"essence_of_gandlevery": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"essence_of_hairball": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"essence_of_purple": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"essence_of_rookswort": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"essence_of_rubeweed": {
+			"pickup": 2
+		},
+		"essence_of_silvertongue": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"essence_of_yellow_crumb": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"exotic_fruit_salad": {
+			"pickup": 1
+		},
+		"exotic_juice": {
+			"drop": 2
+		},
+		"expensive_grilled_cheese": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"face_smelter": {
+			"drink": 4,
+			"drop": 7,
+			"pickup": 11
+		},
+		"fancy_pick": {
+			"drop": 1,
+			"pickup": 1,
+			"repair": 3
+		},
+		"favor_points": {
+			"alph": 17158,
+			"cosma": 14550,
+			"friendly": 21318,
+			"grendaline": 17956,
+			"humbaba": 23590,
+			"lem": 28958,
+			"mab": 15516,
+			"pot": 16428,
+			"spriggan": 14723,
+			"ti": 17350,
+			"zille": 18656
+		},
+		"fertilidust": {
+			"disperse": 7,
+			"drop": 9,
+			"pickup": 10
+		},
+		"fertilidust_lite": {
+			"drop": 3,
+			"pickup": 5,
+			"sprinkle": 4
+		},
+		"fiber": {
+			"drop": 9,
+			"pickup": 12
+		},
+		"firefly_jar": {
+			"drop": 91,
+			"fireflies_caught": 454,
+			"full": 54,
+			"open": 83,
+			"pickup": 88
+		},
+		"flaming_humbaba": {
+			"drink": 5,
+			"drop": 3,
+			"pickup": 4
+		},
+		"flummery": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"focusing_orb": {
+			"drop": 2,
+			"meditate": 7,
+			"meditation_time": 3,
+			"pickup": 1
+		},
+		"fortifying_gruel": {
+			"pickup": 1
+		},
+		"fortune_cookie": {
+			"add_note": 1
+		},
+		"fox_bait": {
+			"ignite": 3
+		},
+		"fried_egg": {
+			"drop": 2,
+			"pickup": 2
+		},
+		"fried_noodles": {
+			"drop": 1,
+			"pickup": 3
+		},
+		"fried_rice": {
+			"pickup": 1
+		},
+		"friendly_acid": {
+			"pickup": 1
+		},
+		"frog_in_a_hole": {
+			"pickup": 1
+		},
+		"fruit_changing_machine": {
+			"convert": 35,
+			"drop": 1,
+			"pickup": 1
+		},
+		"fruit_salad": {
+			"pickup": 1
+		},
+		"fruity_juice": {
+			"drink": 1
+		},
+		"frying_pan": {
+			"drop": 1,
+			"fry": 86,
+			"pickup": 1,
+			"repair": 1
+		},
+		"fuel_cell": {
+			"drop": 2,
+			"pickup": 1
+		},
+		"fuelmaker": {
+			"collect": 1,
+			"install": 3,
+			"place": 2,
+			"refuel": 1,
+			"use": 5
+		},
+		"fuelmaker_case": {
+			"drop": 1
+		},
+		"furniture_armchair": {
+			"change_style": 2,
+			"flip": 9,
+			"set_sale_price": 1,
+			"upgrade": 7
+		},
+		"furniture_bed": {
+			"change_style": 2,
+			"dont_sell": 2,
+			"set_sale_price": 4,
+			"upgrade": 2
+		},
+		"furniture_bench": {
+			"change_style": 2,
+			"dont_sell": 1,
+			"flip": 1,
+			"set_sale_price": 5,
+			"upgrade": 5
+		},
+		"furniture_cabinets": {
+			"made": 3
+		},
+		"furniture_ceilingdeco": {
+			"change_style": 1,
+			"set_sale_price": 2,
+			"upgrade": 4
+		},
+		"furniture_ceilinglamp": {
+			"change_style": 2,
+			"dont_sell": 1,
+			"pickup": 1,
+			"set_sale_price": 4,
+			"upgrade": 5
+		},
+		"furniture_chair": {
+			"change_style": 3,
+			"dont_sell": 6,
+			"flip": 12,
+			"pickup": 3,
+			"set_sale_price": 11,
+			"upgrade": 7
+		},
+		"furniture_chassis": {
+			"customize": 16
+		},
+		"furniture_coffeetable": {
+			"change_style": 4,
+			"flip": 1,
+			"set_sale_price": 1,
+			"upgrade": 1
+		},
+		"furniture_counter": {
+			"change_style": 1,
+			"dont_sell": 1,
+			"set_sale_price": 2,
+			"upgrade": 1
+		},
+		"furniture_decos": {
+			"made": 57
+		},
+		"furniture_desk": {
+			"change_style": 1,
+			"dont_sell": 1,
+			"flip": 1,
+			"pickup": 1,
+			"set_sale_price": 2,
+			"upgrade": 2
+		},
+		"furniture_door": {
+			"change_style": 7,
+			"create": 1,
+			"upgrade": 5
+		},
+		"furniture_fireplace": {
+			"change_style": 3,
+			"dont_sell": 1,
+			"pickup": 1,
+			"set_sale_price": 3,
+			"upgrade": 1
+		},
+		"furniture_floorlamp": {
+			"change_style": 3,
+			"dont_sell": 2,
+			"flip": 1,
+			"set_sale_price": 5,
+			"upgrade": 2
+		},
+		"furniture_items": {
+			"made": 213
+		},
+		"furniture_lamps": {
+			"made": 9
+		},
+		"furniture_loveseat": {
+			"change_style": 7,
+			"dont_sell": 4,
+			"flip": 12,
+			"set_sale_price": 7,
+			"upgrade": 3
+		},
+		"furniture_made": {
+			"bag_furniture_cabinet": 2,
+			"bag_furniture_sdb": 87,
+			"bag_furniture_wallcabinet": 1,
+			"furniture_armchair": 7,
+			"furniture_bed": 2,
+			"furniture_bench": 5,
+			"furniture_ceilingdeco": 3,
+			"furniture_ceilinglamp": 4,
+			"furniture_chair": 5,
+			"furniture_coffeetable": 1,
+			"furniture_counter": 1,
+			"furniture_desk": 2,
+			"furniture_door": 1,
+			"furniture_fireplace": 1,
+			"furniture_floorlamp": 1,
+			"furniture_loveseat": 3,
+			"furniture_roomdeco": 15,
+			"furniture_shelf": 4,
+			"furniture_sidetable": 5,
+			"furniture_sofa": 1,
+			"furniture_stool": 3,
+			"furniture_table": 1,
+			"furniture_tabledeco": 25,
+			"furniture_walldeco": 14,
+			"furniture_walllamp": 4,
+			"note_pole": 15
+		},
+		"furniture_roomdeco": {
+			"change_style": 8,
+			"dont_sell": 6,
+			"flip": 18,
+			"pickup": 3,
+			"set_sale_price": 19,
+			"upgrade": 20
+		},
+		"furniture_rug": {
+			"pickup": 1,
+			"set_sale_price": 2,
+			"upgrade": 2
+		},
+		"furniture_seats": {
+			"made": 24
+		},
+		"furniture_shelf": {
+			"change_style": 6,
+			"dont_sell": 5,
+			"set_sale_price": 10,
+			"upgrade": 8
+		},
+		"furniture_sidetable": {
+			"change_style": 3,
+			"dont_sell": 1,
+			"set_sale_price": 3,
+			"upgrade": 5
+		},
+		"furniture_sofa": {
+			"flip": 1,
+			"set_sale_price": 1,
+			"upgrade": 2
+		},
+		"furniture_stool": {
+			"change_style": 1,
+			"dont_sell": 1,
+			"set_sale_price": 3,
+			"upgrade": 3
+		},
+		"furniture_table": {
+			"change_style": 3,
+			"set_sale_price": 2,
+			"upgrade": 2
+		},
+		"furniture_tabledeco": {
+			"change_style": 5,
+			"dont_sell": 7,
+			"flip": 4,
+			"pickup": 2,
+			"set_sale_price": 22,
+			"upgrade": 27
+		},
+		"furniture_tower_chassis": {
+			"customize": 14
+		},
+		"furniture_walldeco": {
+			"change_style": 7,
+			"dont_sell": 1,
+			"flip": 3,
+			"set_sale_price": 7,
+			"upgrade": 17
+		},
+		"furniture_walllamp": {
+			"set_sale_price": 1,
+			"upgrade": 4
+		},
+		"game_box": {
+			"drop": 2,
+			"pickup": 3,
+			"play": 1
+		},
+		"gameshow_ticket": {
+			"drop": 1,
+			"pickup": 6,
+			"use": 111
+		},
+		"gammas_pancakes": {
+			"pickup": 1
+		},
+		"gandlevery": {
+			"drop": 1,
+			"extract_seeds": 14,
+			"pickup": 2
+		},
+		"garden_herb_plots_planted": {
+			"I1Q8BNQB4PUGXTXAFC4": 19,
+			"I1Q8BNQB4S9XEYK2I0O": 263,
+			"I1Q8BNQB4VUEDP5STKO": 36,
+			"I1Q8BNQB4VUHYLJGKWS": 306,
+			"I1Q8BNQB52N1S3BY6G4": 255,
+			"I1Q8BNQB53DWQ67H40G": 80,
+			"I1Q8BNQB58L3XWPO4GG": 165,
+			"I1Q8BNQB58L4CSEFNS4": 195,
+			"I1Q8BNQB58L5I20WBKG": 195,
+			"I1Q8BNQB591UL08M680": 30,
+			"I1Q8BNQB5A0EJEV6K8W": 150,
+			"I1Q8BNQB5A0GO9NHVK0": 135,
+			"I1Q8BNQB5A0QNOBOE80": 105,
+			"I1Q8BNQB5CO56EHSZCW": 234,
+			"I1Q8BNQB5COY0EID0WS": 90,
+			"I1Q8BNQB5F4STIDXWGK": 89,
+			"I1Q8BNQB5K8XMGS034S": 60,
+			"I1Q8BNQB5K92JMFXM8S": 60,
+			"IA9CJM126952ATR": 23,
+			"IA9CJT726952I7A": 3,
+			"IA9CK1826952VSE": 3,
+			"IA9CK7F269522SD": 5,
+			"IA9CK8G2695237M": 12
+		},
+		"garden_plots_fertilized": {
+			"I1Q8BNQB4LEOS2PRWO4": 2,
+			"I1Q8BNQB4S9XEYK2I0O": 36,
+			"I1Q8BNQB4VUHYLJGKWS": 34,
+			"I1Q8BNQB52N1S3BY6G4": 15,
+			"I1Q8BNQB53DWQ67H40G": 16,
+			"I1Q8BNQB5BPJTCKFC8O": 15,
+			"I1Q8BNQB5CO56EHSZCW": 15,
+			"I1Q8BNQB5F4STIDXWGK": 10,
+			"I1Q8BNQB5K92JMFXM8S": 15
+		},
+		"garden_plots_hoed": {
+			"I1Q8BNQB4LEOS2PRWO4": 298,
+			"I1Q8BNQB4PUGXTXAFC4": 18,
+			"I1Q8BNQB4S9XEYK2I0O": 263,
+			"I1Q8BNQB4VUEDP5STKO": 33,
+			"I1Q8BNQB4VUHYLJGKWS": 319,
+			"I1Q8BNQB52N1S3BY6G4": 255,
+			"I1Q8BNQB538T0LUX40G": 159,
+			"I1Q8BNQB53DWQ67H40G": 85,
+			"I1Q8BNQB58L3XWPO4GG": 164,
+			"I1Q8BNQB58L4CSEFNS4": 171,
+			"I1Q8BNQB58L5I20WBKG": 166,
+			"I1Q8BNQB591UL08M680": 33,
+			"I1Q8BNQB5A0EJEV6K8W": 150,
+			"I1Q8BNQB5A0GO9NHVK0": 120,
+			"I1Q8BNQB5A0QNOBOE80": 95,
+			"I1Q8BNQB5BPJTCKFC8O": 109,
+			"I1Q8BNQB5CO56EHSZCW": 219,
+			"I1Q8BNQB5COY0EID0WS": 75,
+			"I1Q8BNQB5F4STIDXWGK": 75,
+			"I1Q8BNQB5K8XMGS034S": 45,
+			"I1Q8BNQB5K92JMFXM8S": 45,
+			"I1Q8BNQB5K960X13HSS": 30,
+			"IA9CJM126952ATR": 24,
+			"IA9CJT726952I7A": 3,
+			"IA9CK1826952VSE": 3,
+			"IA9CK7F269522SD": 6,
+			"IA9CK8G2695237M": 12
+		},
+		"garden_plots_picked": {
+			"I1Q8BNQB4LEOS2PRWO4": 304,
+			"I1Q8BNQB4PUGXTXAFC4": 33,
+			"I1Q8BNQB4S9XEYK2I0O": 263,
+			"I1Q8BNQB4VUEDP5STKO": 32,
+			"I1Q8BNQB4VUHYLJGKWS": 306,
+			"I1Q8BNQB52N1S3BY6G4": 270,
+			"I1Q8BNQB538T0LUX40G": 159,
+			"I1Q8BNQB53DWQ67H40G": 80,
+			"I1Q8BNQB58L3XWPO4GG": 165,
+			"I1Q8BNQB58L4CSEFNS4": 195,
+			"I1Q8BNQB58L5I20WBKG": 195,
+			"I1Q8BNQB591UL08M680": 45,
+			"I1Q8BNQB5A0EJEV6K8W": 150,
+			"I1Q8BNQB5A0GO9NHVK0": 135,
+			"I1Q8BNQB5A0QNOBOE80": 105,
+			"I1Q8BNQB5BPJTCKFC8O": 109,
+			"I1Q8BNQB5CO56EHSZCW": 219,
+			"I1Q8BNQB5COY0EID0WS": 90,
+			"I1Q8BNQB5F4STIDXWGK": 90,
+			"I1Q8BNQB5K8XMGS034S": 45,
+			"I1Q8BNQB5K92JMFXM8S": 45,
+			"I1Q8BNQB5K960X13HSS": 30,
+			"IA9CJM126952ATR": 23,
+			"IA9CJT726952I7A": 3,
+			"IA9CK1826952VSE": 3,
+			"IA9CK7F269522SD": 4,
+			"IA9CK8G2695237M": 8
+		},
+		"garden_plots_planted": {
+			"I1Q8BNQB4LEOS2PRWO4": 288,
+			"I1Q8BNQB538T0LUX40G": 159,
+			"I1Q8BNQB5BPJTCKFC8O": 90,
+			"I1Q8BNQB5K960X13HSS": 30
+		},
+		"garden_plots_watered": {
+			"I1Q8BNQB4LEOS2PRWO4": 203,
+			"I1Q8BNQB4PUGXTXAFC4": 33,
+			"I1Q8BNQB4S9XEYK2I0O": 135,
+			"I1Q8BNQB4VUEDP5STKO": 31,
+			"I1Q8BNQB4VUHYLJGKWS": 250,
+			"I1Q8BNQB52N1S3BY6G4": 120,
+			"I1Q8BNQB538T0LUX40G": 106,
+			"I1Q8BNQB53DWQ67H40G": 54,
+			"I1Q8BNQB58L3XWPO4GG": 163,
+			"I1Q8BNQB58L4CSEFNS4": 176,
+			"I1Q8BNQB58L5I20WBKG": 180,
+			"I1Q8BNQB5A0EJEV6K8W": 117,
+			"I1Q8BNQB5A0GO9NHVK0": 120,
+			"I1Q8BNQB5A0QNOBOE80": 60,
+			"I1Q8BNQB5BPJTCKFC8O": 116,
+			"I1Q8BNQB5CO56EHSZCW": 165,
+			"I1Q8BNQB5COY0EID0WS": 90,
+			"I1Q8BNQB5F4STIDXWGK": 75,
+			"I1Q8BNQB5K8XMGS034S": 45,
+			"I1Q8BNQB5K92JMFXM8S": 45,
+			"I1Q8BNQB5K960X13HSS": 15,
+			"IA9CJM126952ATR": 18,
+			"IA9CJT726952I7A": 3,
+			"IA9CK1826952VSE": 3,
+			"IA9CK7F269522SD": 6,
+			"IA9CK8G2695237M": 12
+		},
+		"garlic": {
+			"pickup": 1
+		},
+		"gassifier": {
+			"drop": 2,
+			"gassify": 16,
+			"pickup": 1
+		},
+		"gem_amber": {
+			"drop": 11,
+			"pickup": 13
+		},
+		"gem_diamond": {
+			"drop": 5,
+			"pickup": 5
+		},
+		"gem_moonstone": {
+			"drop": 3,
+			"pickup": 4
+		},
+		"gem_ruby": {
+			"drop": 17,
+			"pickup": 18
+		},
+		"gem_sapphire": {
+			"drop": 10,
+			"pickup": 11
+		},
+		"general_vapour": {
+			"drop": 14,
+			"pickup": 14
+		},
+		"girder": {
+			"drop": 15,
+			"pickup": 15
+		},
+		"glitchepoix": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"grade_aa_earth_block": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"grain": {
+			"bundle": 1,
+			"drop": 3,
+			"eat": 2,
+			"pickup": 9
+		},
+		"grain_bushel": {
+			"drop": 2,
+			"pickup": 3,
+			"unbundle": 4
+		},
+		"grand_ol_grinder": {
+			"crush": 3,
+			"repair": 3
+		},
+		"graveside_marker": {
+			"inspect": 5,
+			"mourn": 2
+		},
+		"greasy_frybread": {
+			"pickup": 1
+		},
+		"green": {
+			"drop": 1,
+			"pickup": 4
+		},
+		"green_eggs": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"grilled_cheese": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"guano": {
+			"drop": 10,
+			"pickup": 177
+		},
+		"gurly_drink": {
+			"drink": 1,
+			"drop": 2,
+			"pickup": 3
+		},
+		"hairball_flower": {
+			"extract_seeds": 13,
+			"munch": 1
+		},
+		"hash": {
+			"drop": 3,
+			"pickup": 4
+		},
+		"hatchet": {
+			"drop": 3,
+			"pickup": 3,
+			"repair": 4
+		},
+		"heavy_gas": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"helium": {
+			"pickup": 1
+		},
+		"hell_bartender": {
+			"buy_wine": 3
+		},
+		"herb_seed_gandlevery": {
+			"drop": 4,
+			"pickup": 4
+		},
+		"herb_seed_hairball_flower": {
+			"drop": 3,
+			"pickup": 3
+		},
+		"herb_seed_purple_flower": {
+			"drop": 2,
+			"pickup": 3
+		},
+		"herb_seed_rookswort": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"herb_seed_rubeweed": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"herb_seed_silvertongue": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"herb_seed_yellow_crumb_flower": {
+			"pickup": 1
+		},
+		"hi_jackpot": {
+			"P1KUXVLVAS43IUYANK84": 1,
+			"P1KUXVLVAXZC1FFG4AW4": 1
+		},
+		"hi_variants": {
+			"butterflies": 3,
+			"hearts": 1,
+			"hi": 1,
+			"pigs": 1
+		},
+		"high_class_hoe": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"hoe": {
+			"aggressive_hoeing_off": 2,
+			"aggressive_hoeing_on": 1,
+			"drop": 9,
+			"pickup": 10,
+			"repair": 68
+		},
+		"hogtied_piggy": {
+			"release": 13
+		},
+		"hogtied_piggy_explorer": {
+			"release": 1
+		},
+		"hooch": {
+			"drink": 1,
+			"drop": 12,
+			"pickup": 12
+		},
+		"hototot_rub": {
+			"pickup": 1
+		},
+		"hubs_visited": {
+			"27": 80,
+			"40": 50,
+			"50": 73,
+			"51": 21,
+			"56": 147,
+			"58": 514,
+			"61": 2,
+			"63": 51,
+			"64": 41,
+			"66": 17,
+			"69": 3,
+			"71": 85,
+			"72": 57,
+			"75": 91,
+			"76": 80,
+			"77": 3,
+			"78": 208,
+			"85": 74,
+			"86": 8,
+			"89": 57,
+			"90": 5,
+			"91": 1,
+			"92": 71,
+			"93": 68,
+			"95": 25,
+			"97": 58,
+			"98": 52,
+			"99": 48,
+			"100": 73,
+			"101": 86,
+			"102": 62,
+			"105": 42,
+			"106": 70,
+			"107": 32,
+			"108": 1,
+			"109": 53,
+			"110": 36,
+			"113": 56,
+			"114": 52,
+			"119": 36,
+			"120": 1,
+			"121": 23,
+			"123": 1,
+			"125": 1,
+			"126": 1,
+			"128": 14,
+			"133": 1,
+			"136": 40,
+			"137": 44,
+			"140": 40,
+			"141": 23,
+			"142": 19,
+			"143": 33
+		},
+		"humbabol": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"hungry_nachos": {
+			"pickup": 1
+		},
+		"ice": {
+			"ice_received": 6
+		},
+		"ice_knob": {
+			"scrape": 4
+		},
+		"icon_alph": {
+			"pickup": 3,
+			"place": 4
+		},
+		"icon_cosma": {
+			"pickup": 4,
+			"place": 5
+		},
+		"icon_friendly": {
+			"pickup": 7,
+			"place": 8,
+			"reflect": 1,
+			"revere": 1,
+			"ruminate": 1
+		},
+		"icon_grendaline": {
+			"pickup": 4,
+			"place": 5
+		},
+		"icon_humbaba": {
+			"pickup": 3,
+			"place": 4
+		},
+		"icon_lem": {
+			"pickup": 4,
+			"place": 5,
+			"talk_to": 1
+		},
+		"icon_mab": {
+			"pickup": 3,
+			"place": 4
+		},
+		"icon_pot": {
+			"pickup": 2,
+			"place": 4
+		},
+		"icon_spriggan": {
+			"pickup": 5,
+			"place": 6
+		},
+		"icon_tii": {
+			"pickup": 6,
+			"place": 7
+		},
+		"icon_zille": {
+			"pickup": 3,
+			"place": 4
+		},
+		"infected_by_butler": {
+			"bats": 11,
+			"birds": 12,
+			"butterflies": 16,
+			"cubes": 10,
+			"flowers": 10,
+			"hands": 12,
+			"hearts": 16,
+			"hi": 8,
+			"pigs": 19,
+			"rocketships": 7,
+			"stars": 12
+		},
+		"infected_by_pc": {
+			"stars": 1
+		},
+		"irrigator_9000": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"items_bought": {
+			"alchemical_tongs": 1,
+			"awesome_pot": 2,
+			"bag_alchemistry_kit": 1,
+			"bag_bigger_blue": 60,
+			"bag_bigger_green": 1,
+			"bag_elemental_pouch": 1,
+			"bag_spicerack": 2,
+			"basic_omelet": 19,
+			"beaker": 2,
+			"bean_seasoner": 5,
+			"beer": 70,
+			"birch_syrup": 17,
+			"blender": 1,
+			"blockmaker_chassis": 1,
+			"blockmaker_engine": 5,
+			"blockmaker_plates": 3,
+			"bubble_tuner": 2,
+			"bulb": 23,
+			"bun": 35,
+			"butterfly_lotion": 6,
+			"butterfly_milker": 1,
+			"camera": 1,
+			"carrot_margarita": 15,
+			"cauldron": 1,
+			"cheezy_sammich": 25,
+			"chillybusting_chili": 51,
+			"cocktail_shaker": 1,
+			"coffee": 21,
+			"creamy_martini": 16,
+			"crystallizer": 1,
+			"cubimal_package": 342,
+			"cubimal_package_2": 145,
+			"divine_crepes": 12,
+			"earthshaker": 1,
+			"egg_seasoner": 4,
+			"emotional_bear": 4,
+			"exotic_fruit_salad": 23,
+			"exotic_juice": 12,
+			"face_smelter": 6,
+			"fancy_pick": 1,
+			"firefly_jar": 41,
+			"flaming_humbaba": 13,
+			"flummery": 17,
+			"focusing_orb": 1,
+			"fox_bait": 15,
+			"fox_brush": 2,
+			"fruit_changing_machine": 1,
+			"frying_pan": 1,
+			"fuelmaker_case": 2,
+			"fuelmaker_core": 1,
+			"garlic": 50,
+			"gassifier": 2,
+			"hash": 29,
+			"hatchet": 1,
+			"hoe": 1,
+			"honey": 184,
+			"knife_and_board": 1,
+			"lips": 42,
+			"loomer": 1,
+			"mabbish_coffee": 13,
+			"machine_stand": 4,
+			"magic_butterfly_stick": 3,
+			"magic_chicken_stick": 2,
+			"magic_pig_stick": 3,
+			"meat_collector": 1,
+			"meat_gumbo": 34,
+			"mega_healthy_veggie_juice": 15,
+			"metalmaker_mechanism": 2,
+			"metalmaker_tooler": 2,
+			"mike_tyson_grill": 1,
+			"million_currant_trophy": 1,
+			"moon": 6,
+			"mushroom": 22,
+			"mustard": 22,
+			"npc_garden_gnome": 2,
+			"oats": 31,
+			"obvious_panini": 20,
+			"oily_dressing": 7,
+			"olive_oil": 16,
+			"ore_grinder": 2,
+			"papl_upside_down_pizza": 38,
+			"pick": 1,
+			"pig_bait": 32,
+			"potato": 34,
+			"potato_patty": 14,
+			"quill": 2,
+			"rich_tagine": 29,
+			"saucepan": 1,
+			"savory_smoothie": 12,
+			"scraper": 1,
+			"scrumptious_frittata": 48,
+			"seed_broccoli": 58,
+			"seed_cabbage": 48,
+			"seed_carrot": 97,
+			"seed_corn": 74,
+			"seed_cucumber": 51,
+			"seed_onion": 64,
+			"seed_parsnip": 54,
+			"seed_potato": 81,
+			"seed_pumpkin": 271,
+			"seed_rice": 60,
+			"seed_spinach": 99,
+			"seed_tomato": 59,
+			"seed_zucchini": 49,
+			"sesame_oil": 16,
+			"shovel": 1,
+			"simple_bbq": 19,
+			"slow_gin_fizz": 39,
+			"smelter": 1,
+			"sno_cone_blue": 1,
+			"sno_cone_green": 10,
+			"sno_cone_orange": 8,
+			"sno_cone_purple": 9,
+			"sno_cone_red": 10,
+			"spice_mill": 1,
+			"spicy_grog": 12,
+			"spinach": 999,
+			"spindle": 3,
+			"still": 3,
+			"super_veggie_kebabs": 23,
+			"test_tube": 1,
+			"tincturing_kit": 1,
+			"tinkertool": 1,
+			"tooberry_shake": 15,
+			"woodworker_chassis": 1,
+			"woodworker_fuser": 2
+		},
+		"items_drank": {
+			"alcohol": 38,
+			"beer": 13,
+			"bubble_tea": 3,
+			"coffee": 1,
+			"crabato_juice": 2,
+			"creamy_martini": 6,
+			"earthshaker": 2,
+			"face_smelter": 4,
+			"flaming_humbaba": 5,
+			"fruity_juice": 2,
+			"gurly_drink": 1,
+			"hooch": 1,
+			"lemon_juice": 2,
+			"mega_healthy_veggie_juice": 11,
+			"milk_butterfly": 53,
+			"orange_juice": 1,
+			"savory_smoothie": 1,
+			"slow_gin_fizz": 1,
+			"spicy_grog": 5,
+			"tooberry_shake": 2
+		},
+		"items_eaten": {
+			"bubble_and_squeak": 1,
+			"cherry": 17,
+			"chillybusting_chili": 1,
+			"divine_crepes": 1,
+			"exotic_fruit_salad": 1,
+			"fried_egg": 1,
+			"grain": 46,
+			"maburger_royale": 1,
+			"meat": 287,
+			"papl_upside_down_pizza": 1,
+			"pumpkin_pie": 1,
+			"spinach": 38,
+			"swank_zucchini_loaf": 2
+		},
+		"items_given": {
+			"beer": 1,
+			"birch_candy": 2,
+			"cloud_11_smoothie": 1,
+			"dusty_stick": 2,
+			"lips": 36,
+			"npc_cubimal_unclefriendly": 1,
+			"plank": 6,
+			"potion_avatar_small": 3,
+			"random_kindness": 8,
+			"slow_gin_fizz": 1,
+			"sneezing_powder": 1
+		},
+		"items_received": {
+			"bacon": 1,
+			"beer": 1,
+			"birch_candy": 3,
+			"butterfly_lotion": 1,
+			"cheese_plate": 1,
+			"class_axe": 1,
+			"cloudberry_daiquiri": 1,
+			"crabato_juice": 1,
+			"door_key_9": 1,
+			"essence_of_rubeweed": 4,
+			"essence_of_silvertongue": 3,
+			"firefly_jar": 2,
+			"flaming_humbaba": 1,
+			"gem_diamond": 1,
+			"groddlene": 1,
+			"herb_seed_hairball_flower": 2,
+			"herb_seed_silvertongue": 2,
+			"hooch": 2,
+			"lips": 2,
+			"musicblock_d_blue_03": 1,
+			"note": 1,
+			"npc_cubimal_batterfly": 1,
+			"npc_cubimal_butler": 1,
+			"npc_cubimal_chick": 1,
+			"npc_cubimal_craftybot": 1,
+			"npc_cubimal_emobear": 1,
+			"npc_cubimal_firebogstreetspirit": 1,
+			"npc_cubimal_fox": 1,
+			"npc_cubimal_foxranger": 1,
+			"npc_cubimal_frog": 1,
+			"npc_cubimal_gardeningtoolsvendor": 1,
+			"npc_cubimal_gnome": 1,
+			"npc_cubimal_groddlestreetspirit": 2,
+			"npc_cubimal_helga": 1,
+			"npc_cubimal_magicrock": 1,
+			"npc_cubimal_mealvendor": 1,
+			"npc_cubimal_phantom": 1,
+			"npc_cubimal_snoconevendor": 1,
+			"npc_cubimal_toolvendor": 1,
+			"npc_cubimal_trisor": 1,
+			"npc_cubimal_unclefriendly": 1,
+			"npc_cubimal_uraliastreetspirit": 1,
+			"paradise_ticket_starlit_night": 1,
+			"plank": 1,
+			"potion_animal_youth": 2,
+			"potion_chris": 1,
+			"potion_elixir_of_avarice": 1,
+			"potion_garden_harvest": 1,
+			"potion_trantsformation_fluid": 1,
+			"pumpkin_ale": 2,
+			"purple_flower": 1,
+			"salmon": 1,
+			"sneezing_powder": 1,
+			"special_item_that_only_beta_testers_get": 1,
+			"spinach": 1
+		},
+		"jellisac": {
+			"scoop": 360
+		},
+		"jellisac_clump": {
+			"drop": 22,
+			"pickup": 17
+		},
+		"juicy_carpaccio": {
+			"pickup": 2
+		},
+		"juju_bandits": {
+			"escaped": 5
+		},
+		"kind_breakfurst_burrito": {
+			"drop": 3,
+			"pickup": 3
+		},
+		"knife_and_board": {
+			"drop": 1,
+			"pickup": 1,
+			"use": 23
+		},
+		"laughing_gas": {
+			"pickup": 3
+		},
+		"lazy_salad": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"legumes_parisienne": {
+			"pickup": 2
+		},
+		"lemon_juice": {
+			"drink": 1
+		},
+		"light_beam": {
+			"beam_up": 7
+		},
+		"lips": {
+			"drop": 22,
+			"give": 36,
+			"pickup": 28
+		},
+		"loam": {
+			"drop": 5,
+			"pickup": 4
+		},
+		"locations_visited": {
+			"L1Q8BNQB55UDWD8B1SS": 1,
+			"LA510OD56BH2CBJ": 2,
+			"LA512IH5226256P": 1,
+			"LA5134UPLRU29OH": 2,
+			"LA513ALBNM623UJ": 6,
+			"LA513PFS0J52F45": 1,
+			"LA51450HIC42Q4I": 4,
+			"LA51701PF262LC8": 4,
+			"LA517JJML262LT0": 2,
+			"LA517KBQL262H3U": 2,
+			"LA517L6UL262RHT": 1,
+			"LA517MT2M262D0F": 6,
+			"LA519RU9M462NJ1": 2,
+			"LA51A5VM3K62P49": 2,
+			"LA51AB6PCBH2A2V": 2,
+			"LA51B2OQAK623EF": 1,
+			"LA51BMHT2562Q3D": 2,
+			"LA51BNNOEK629KG": 1,
+			"LA51CAQQ55629QM": 1,
+			"LA51CGIGKK62NV8": 1,
+			"LA51DOIHSK626VM": 2,
+			"LA51IOM1PC62SPF": 3,
+			"LA51IVI7PC62L64": 1,
+			"LA51UU6VQAH21BE": 1,
+			"LA5215DAMMR2G95": 5,
+			"LA524M0OMOE2OGT": 5,
+			"LA52JSKF6BH2BPA": 3,
+			"LA52VVB0LDH23N7": 2,
+			"LA53D0DJQMB2B4S": 2,
+			"LA53N05IG9S2BLR": 2,
+			"LA54AT4AK613NBL": 2,
+			"LA54O13ELKR29I9": 4,
+			"LA55645B8O528MI": 1,
+			"LA55B5RDL7T2F00": 1,
+			"LA57DQKFHPB2EIS": 2,
+			"LA57FADCBN62PR0": 1,
+			"LA57S02C1BH2TP4": 1,
+			"LA58KK7B9O522PC": 1,
+			"LA58P18ELAH2ERI": 3,
+			"LA5AAB0VNKR2VRN": 5,
+			"LA5ATR2SUMB2FKP": 1,
+			"LA5C1CH8TDH277B": 1,
+			"LA5CSD7ERL13G16": 3,
+			"LA5D24IIRL13IIC": 1,
+			"LA5D59PVEL13KNQ": 2,
+			"LA5DGUEJ3PB2UE3": 2,
+			"LA5DVVGJQQ5237U": 5,
+			"LA5EPQG0FN62PCS": 1,
+			"LA5FIJ2LMPB2FVN": 1,
+			"LA5FPUNAI7P2NVF": 5,
+			"LA5FR0B3BUG27S7": 1,
+			"LA5FUB7R0N627KI": 2,
+			"LA5G15O4BUG2CVB": 1,
+			"LA5GBQ27BUG2FF9": 3,
+			"LA5GILERBSB25H2": 2,
+			"LA5GNCQ4T3137M7": 1,
+			"LA5GR516F3H2GUL": 3,
+			"LA5GRQJINPB2HS1": 4,
+			"LA5GTNUABUG2BP7": 1,
+			"LA5H2M7G7UB24FO": 2,
+			"LA5H8G00NUG2CRH": 1,
+			"LA5I10NJDL52TKD": 2,
+			"LA5I9D23ODH22M8": 1,
+			"LA5ICL7V9BH2LCA": 3,
+			"LA5IUQRKIMB2SGF": 2,
+			"LA5IVDTK1O13F5I": 2,
+			"LA5J0NEMIMB2OQ0": 3,
+			"LA5J5DGOIMB24LP": 1,
+			"LA5J7IB1HK42N3D": 4,
+			"LA5JAMFQIMB227E": 3,
+			"LA5JDUKSIMB207U": 3,
+			"LA5JGH5UIMB28BP": 1,
+			"LA5JI29VIMB2SDT": 4,
+			"LA5JN50RNAH27R9": 3,
+			"LA5NACEOCUG283E": 1,
+			"LA5NV05NFJS2NIF": 1,
+			"LA5OD66T5B13RKN": 1,
+			"LA5OSVV5LRB23BT": 2,
+			"LA5OUBP2SPB2MK2": 5,
+			"LA5P7O926NB2CFB": 1,
+			"LA5PPFP86NF2FOS": 15,
+			"LA5PV4T79OE2AOA": 5,
+			"LA5Q57C99OE2GNU": 4,
+			"LA5QAHLTB9S2C0F": 5,
+			"LA5QBAL9SL52I02": 2,
+			"LA5QLASKPD13NEM": 2,
+			"LA5REO5I9OE2KLS": 6,
+			"LA5RJRSOHJS2C95": 1,
+			"LA5RPAFK9OE28GN": 5,
+			"LA5S22147DH2QGH": 2,
+			"LA5S44RM9OE2416": 5,
+			"LA5T7SLLO3H2ERO": 1,
+			"LA5TBM8BIL5219R": 3,
+			"LA5VDIGU3G525F9": 1,
+			"LA5VOHQCROB2NSG": 4,
+			"LA910DULG012JIE": 9,
+			"LA9111H84492V1K": 1,
+			"LA9111M11LA2VAT": 1,
+			"LA91120N5LA249C": 1,
+			"LA9114MS8B32FB2": 12,
+			"LA91161VALA21D4": 3,
+			"LA9117J18492SRS": 1,
+			"LA9118S28492QCL": 1,
+			"LA91195E8492R4B": 1,
+			"LA911I05ILA2CQ5": 1,
+			"LA911J5DKLA20MS": 2,
+			"LA911QQIDI32J6R": 2,
+			"LA912LITC492EU2": 3,
+			"LA912MO0D49290D": 1,
+			"LA912PJ5D492UIL": 1,
+			"LA912TJ0KF328Q3": 4,
+			"LA912UEGE492F2G": 1,
+			"LA9143HLH4929K7": 2,
+			"LA9154LI9R22R7A": 6,
+			"LA918AIN63127HB": 30,
+			"LA91JU4QQ712DJN": 9,
+			"LA91JUQT2G82GUL": 3,
+			"LA91O38QQ192K8J": 1,
+			"LA91PK4T4292B0V": 2,
+			"LA91SD0IEQA24L5": 1,
+			"LA92VDUR8D82E3F": 1,
+			"LA931BPTNLD3E35": 3,
+			"LA931JPPT8A2LPU": 2,
+			"LA934IQQT8A26SV": 2,
+			"LA93B4PV0I82IH7": 2,
+			"LA93EC9GHI824JT": 3,
+			"LA94KO5CFQA2V4Q": 4,
+			"LA95G0P137927B4": 3,
+			"LA95U14319524O9": 1,
+			"LA960EK0JI82065": 1,
+			"LA961CLV4G8252G": 2,
+			"LA96CLEAK692K72": 2,
+			"LA96OS42D6F3M9P": 2,
+			"LA97L62229522GS": 4,
+			"LA97Q5LV0F92PU6": 2,
+			"LA97VMVOOG92JGT": 1,
+			"LA983PEN5DT21G9": 1,
+			"LA98V53GRQA2VTO": 2,
+			"LA996D5KMF82E41": 3,
+			"LA99CL11LSA2M35": 5,
+			"LA99NEQK1F92ICE": 3,
+			"LA99U5PI39524GN": 1,
+			"LA99VU1246A2VND": 3,
+			"LA9A9CGB9F824PK": 2,
+			"LA9B6PJ3NM22M0D": 16,
+			"LA9BRBV8Q492K6R": 2,
+			"LA9BSVRN5I82JIQ": 2,
+			"LA9BT2I0ILD340S": 7,
+			"LA9CO2B02OA2BG0": 1,
+			"LA9DNT3I2U22RS7": 6,
+			"LA9DURMSIAA2S1T": 1,
+			"LA9EAH3R8DT2R18": 1,
+			"LA9EBPF8M2031HB": 1,
+			"LA9ELDLMNE92JHO": 2,
+			"LA9ENT2CRE22NFB": 11,
+			"LA9FAG24PI828J7": 2,
+			"LA9FD1O7S492CCD": 1,
+			"LA9FDN44SG92SDQ": 1,
+			"LA9G6MA4P6923PH": 2,
+			"LA9GLRKMQF82961": 1,
+			"LA9GT0J87H92MPR": 1,
+			"LA9H1V6OGRU2FSB": 2,
+			"LA9HJCHM18A21B4": 1,
+			"LA9I4JIPBE92B8M": 2,
+			"LA9I8CS028A2O5F": 1,
+			"LA9I92MRBE92S8Q": 1,
+			"LA9IHQQSCF820VN": 2,
+			"LA9JJL6KCE924IK": 1,
+			"LA9KKVJDTC829U8": 2,
+			"LA9KL58B1D82CDV": 4,
+			"LA9KL68C1D825IA": 1,
+			"LA9KL77D1D829Q3": 4,
+			"LA9KL81E1D82ABT": 1,
+			"LA9KL9UE1D82RFO": 2,
+			"LA9KLA8H1D82JM3": 1,
+			"LA9KLB7I1D822OL": 1,
+			"LA9KLCKK1D82V3B": 3,
+			"LA9L02KJ2D829LS": 2,
+			"LA9L777SRI82T5F": 1,
+			"LA9LU1276F92KDP": 2,
+			"LA9M05J386A296V": 1,
+			"LA9MJQRNCDT23BP": 1,
+			"LA9N5MTRTF828OT": 2,
+			"LA9NRNJSB792OG4": 2,
+			"LA9NT2E8FF8243N": 2,
+			"LA9P334396A2GHP": 1,
+			"LA9PIEHVQ8A2H4S": 3,
+			"LA9Q4AL8DI82H2M": 2,
+			"LA9Q9EQ5V4F33RE": 4,
+			"LA9QKFSST732VNK": 6,
+			"LA9QMIMHV4F3RHN": 2,
+			"LA9QNMSIV4F3143": 1,
+			"LA9QOQAL96A2L2K": 1,
+			"LA9QQQ8LV4F3TJ2": 1,
+			"LA9QR2STO832N8E": 9,
+			"LA9QR9R40DT2A1D": 1,
+			"LA9QTSIOV4F31QH": 5,
+			"LA9R3FG405F3B9P": 2,
+			"LA9R4OR505F3PSL": 2,
+			"LA9R6BM705F3L3N": 2,
+			"LA9R9KCC05F3VOU": 1,
+			"LA9RFQBJ05F33D7": 1,
+			"LA9RKS1O05F33Q1": 1,
+			"LA9RM4IT05F3B4M": 1,
+			"LA9RMUNU05F3EI8": 4,
+			"LA9RPI1P1QA2IMQ": 1,
+			"LA9S04AB15F3H53": 2,
+			"LA9S09UB15F34AE": 2,
+			"LA9S90EJ0G8241N": 1,
+			"LA9S9DGPV692IU2": 1,
+			"LA9T11KPMD82B1S": 1,
+			"LA9T7IFRDIA2N0K": 2,
+			"LA9TCL1H7LD37DC": 2,
+			"LA9TDS1HSIA2RCO": 1,
+			"LA9TDT2BUIA2GMA": 3,
+			"LA9TEL683JA2JU0": 1,
+			"LA9TIJ7S4JA2CNF": 1,
+			"LA9U04T3OAA2R2L": 1,
+			"LA9U27HN7LD3FVE": 4,
+			"LA9UCEFP7LD3523": 1,
+			"LA9UIKNQ7LD3SN0": 2,
+			"LA9V2T5DH8A23JD": 1,
+			"LCR10157DMK1L0G": 1,
+			"LCR10199TPJ1DA3": 1,
+			"LCR101NQ4BU1SKS": 1,
+			"LCR101SU5VL1P09": 2,
+			"LCR101UN0NJ1QPQ": 2,
+			"LCR103T98QJ1SC9": 2,
+			"LCR103UREMK11MT": 3,
+			"LCR105E77812AEF": 2,
+			"LCR10B6U5NJ1VMA": 5,
+			"LCR10H9E3QJ1E2P": 3,
+			"LCR10K0NLRK1GKE": 3,
+			"LCR10K3BPJK1U6F": 13,
+			"LCR10K63BQL14PE": 2,
+			"LCR10M2FUJK177P": 2,
+			"LCR10NQRPKJ16H6": 1,
+			"LCR10S7GVKJ1ABI": 4,
+			"LCR10U5VHMK112O": 10,
+			"LCR10UJQ1922K16": 4,
+			"LCR111KI08O1HLB": 2,
+			"LCR113VN08O1116": 1,
+			"LCR117DK18O11FF": 2,
+			"LCR11CD34KK1AN1": 3,
+			"LCR11DNA3EL10TD": 9,
+			"LCR11EIB3EL15ID": 3,
+			"LCR11JA67NJ15N3": 5,
+			"LCR11SBEGQL13D9": 2,
+			"LCR12D911T12E57": 1,
+			"LCR12NU45AM12BB": 4,
+			"LCR12SD8J4K1PCV": 2,
+			"LCR1303AT622I0Q": 1,
+			"LCR131F8U1K1PF9": 1,
+			"LCR1356LOEM1NUI": 2,
+			"LCR137T2HK123RR": 3,
+			"LCR13974F4220EH": 2,
+			"LCR13CE52PK1L81": 5,
+			"LCR13JCI5MK1EF4": 3,
+			"LCR13KDF9MK1QJK": 1,
+			"LCR13L1JQEM1OSG": 1,
+			"LCR13M5UQEM15TA": 2,
+			"LCR13NMUQEM1A2R": 2,
+			"LCR13O9VQEM1M3P": 1,
+			"LCR13R31REM1A4S": 2,
+			"LCR13VM1REM1GHI": 5,
+			"LCR14062REM1QIR": 11,
+			"LCR143M18PK1774": 1,
+			"LCR144H8APK1OJS": 5,
+			"LCR1460502K1790": 2,
+			"LCR146VPNK12CTU": 1,
+			"LCR14HPKPBK1U25": 4,
+			"LCR14K7RQBK119B": 5,
+			"LCR14T7ECHM18G8": 1,
+			"LCR1516SFHM122V": 1,
+			"LCR15ST40FM1M1I": 2,
+			"LCR1664750O1D23": 3,
+			"LCR167RSRSL1VPP": 2,
+			"LCR168ITRSL1498": 2,
+			"LCR169AURSL1G9O": 1,
+			"LCR169OSLQL13JR": 6,
+			"LCR16AUURSL1KTM": 1,
+			"LCR16BA1SSL1P7K": 1,
+			"LCR16VUKOQL18DU": 1,
+			"LCR17BAC6OL11L8": 5,
+			"LCR195Q63RK143M": 2,
+			"LCR1985LIRK12N4": 10,
+			"LCR199KIJRK1I2B": 5,
+			"LCR1H8R9J62257C": 1,
+			"LCR1IDDEB2M17RC": 3,
+			"LCR1OU9H34K19OE": 3,
+			"LCR1UERKPIN1G7N": 1,
+			"LCR1UJAMSIN1D0G": 5,
+			"LCR202JSVIN1STL": 7,
+			"LCR241CP4Q129I1": 2,
+			"LCR29V8S4Q12IF4": 5,
+			"LCR3M699PP12F4A": 2,
+			"LCR3MQK9NPJ191K": 5,
+			"LCR4R7OEDS123M7": 2,
+			"LCR7C1EG6LL1197": 3,
+			"LCR7KJGL6LL1SSO": 1,
+			"LCR8F1FLBI12F2H": 2,
+			"LCRCDPP5AN12EK8": 2,
+			"LCRGEU0PUP12CLS": 2,
+			"LCRHITPKONL1T7J": 2,
+			"LCRHJHOFQNL1PHP": 2,
+			"LCRHSGTEION115H": 1,
+			"LCRL3F8I3L12O0J": 2,
+			"LCRMCBQCRN12OFL": 3,
+			"LCRO4M7LH5L1QOO": 8,
+			"LCRPA1RV1N12J4H": 1,
+			"LCRR4REARA12CM5": 3,
+			"LCRTAJK5UN124GG": 2,
+			"LCRTTKP69DO1MG0": 1,
+			"LCRVT5V0BDO1HLF": 6,
+			"LDO1OPGDSCD29NF": 3,
+			"LDO20OO2ETQ2EAG": 1,
+			"LDO3JFLC5TQ2NOR": 1,
+			"LDO4KOD692R2GQB": 1,
+			"LDO5CC4R1FD2SQG": 2,
+			"LDO5D2B1Q2R2M9S": 2,
+			"LDO8HM0S8DD240C": 1,
+			"LDO8NGHIFTQ21CQ": 1,
+			"LDO8SVSPPCD22ED": 1,
+			"LDO97PV01MQ236V": 1,
+			"LDOACFHG1DD26A5": 1,
+			"LDOAVTFUNTQ2EVU": 2,
+			"LDODG1KQLOS2GNO": 1,
+			"LDOE4V402DD2S3O": 1,
+			"LDOE67MFL6E2FBR": 1,
+			"LDOEDH6P6GC2R2T": 1,
+			"LDOEMNGFQCD2KI2": 2,
+			"LDOEP1822S03350": 1,
+			"LDOF2V2INVQ2M9D": 3,
+			"LDOFAE74UCD29PD": 5,
+			"LDOFQEEIHDT2QNS": 1,
+			"LDOGKA16T4R2NP1": 1,
+			"LDOGVQ4M32R2COS": 1,
+			"LDOHDJ84BST2UI2": 3,
+			"LDOIGN9B60R2LI4": 4,
+			"LDOIJ31100R2CQG": 1,
+			"LDOISPPQICD27RQ": 1,
+			"LDOJ3MELL2R23Q6": 2,
+			"LDOKTFQ22DT2OEL": 1,
+			"LDOKUS4M0TQ263H": 1,
+			"LDOM6B78RCD26TA": 1,
+			"LDONE5453DD2DHS": 3,
+			"LDONEDVHC4030KF": 2,
+			"LDOOD6S77DD228S": 2,
+			"LDOOF07GRCD2MAP": 1,
+			"LDOPA4JQBTQ2AA9": 1,
+			"LDOQRJELVCD285H": 1,
+			"LDORIA62TLQ2HOH": 4,
+			"LDORJMMHCDT2J08": 1,
+			"LDOS7IQJDEC2KHP": 1,
+			"LDOT3LP63TQ204B": 5,
+			"LDOTEUFUIVQ2F0S": 1,
+			"LDOTQ8JCOCD20TU": 2,
+			"LDOU5PQU0FD21PF": 1,
+			"LDOU6HOAO2R21Q1": 1,
+			"LDOUIB18JVQ2O16": 1,
+			"LDOVCSE5H2R2L24": 1,
+			"LDOVRMU9SCD2ASN": 1,
+			"LDOVUDD84DD2U4U": 1,
+			"LHF2KOKDR2D2EIU": 1,
+			"LHF468KKJGD3IMD": 1,
+			"LHF48S34D1J2F31": 3,
+			"LHF4QVGL7NI269C": 3,
+			"LHF583RFVLD3IUE": 1,
+			"LHF6E6PK0UC34J5": 1,
+			"LHF6MVO2G6J2F1F": 4,
+			"LHF6UMCMHOD387H": 1,
+			"LHF70EIUS0D3RDM": 1,
+			"LHF7DU3N0UC3DRA": 2,
+			"LHF893IMS2D2AKU": 2,
+			"LHF8B3B0S4D2L5U": 2,
+			"LHF8LE0Q0UC3QEF": 1,
+			"LHF8PTQ7RFB3PRB": 1,
+			"LHFA15VS0UC3ITS": 2,
+			"LHFATC8M4RD3E61": 1,
+			"LHFC3I4EKMI20JD": 1,
+			"LHFC6RU2F3J26ME": 1,
+			"LHFD24US63D2QO6": 1,
+			"LHFD81QMKMI2SSL": 1,
+			"LHFEKBJFP0J2J9Q": 2,
+			"LHFER9HGE3D2UPP": 3,
+			"LHFET4I773D2OUU": 1,
+			"LHFF2N2M36J2MG3": 1,
+			"LHFFH3GKN2D2BTS": 6,
+			"LHFFQ4KN29J2O0U": 2,
+			"LHFG6KGMV3J2OU9": 1,
+			"LHFGU9HJ81J2GGT": 4,
+			"LHFH7LJRA8D3QAR": 1,
+			"LHFHNQ3RFUC3JMI": 1,
+			"LHFHR6S923D2RL9": 1,
+			"LHFHTR4FSMI2MA2": 2,
+			"LHFHUF5304J2F70": 2,
+			"LHFIEG6R1JD30UH": 1,
+			"LHFIV4V8J6J2I7U": 1,
+			"LHFJ78CBJ6J2MLM": 1,
+			"LHFJGR1KH3J29IT": 2,
+			"LHFJR7H9R8J2SHM": 1,
+			"LHFK965MT8D3G9E": 1,
+			"LHFKT1LK83D2BAF": 9,
+			"LHFL23QTC2D21SF": 1,
+			"LHFL2SL1R0J2655": 1,
+			"LHFL7HBQO2D2B4H": 5,
+			"LHFL8M1IIPI2L46": 2,
+			"LHFM9ORBM1J2BS4": 2,
+			"LHFN5KCGS5D3IFC": 1,
+			"LHFNBKJMP4D2S9M": 2,
+			"LHFNDP1TKQD3V3O": 1,
+			"LHFNIVJNP4D2IM6": 2,
+			"LHFO1IFRP3J28EU": 2,
+			"LHFODV4KNLD3L8L": 3,
+			"LHFOE9L06OD3JR6": 1,
+			"LHFP8P54GMI2UCH": 1,
+			"LHFPD9KBT5J2D8M": 2,
+			"LHFR1N2PUMI2C7A": 3,
+			"LHFR6PV2Q2D24KJ": 4,
+			"LHFRAQFOGMI2QAI": 2,
+			"LHFRC7NQL4D2C59": 1,
+			"LHFRISNV5NI2580": 3,
+			"LHFS1L44SR53F5O": 2,
+			"LHFS40864GB396O": 1,
+			"LHFS76JAU5J2P90": 1,
+			"LHFS89VFIID3EB6": 2,
+			"LHFSH881K2D2GP9": 6,
+			"LHFSLPE6A3J2CFJ": 4,
+			"LHFTBK54M4D2JQA": 1,
+			"LHFTJK6IQ4D2R6M": 1,
+			"LHFTQ7GLV2D2GG1": 7,
+			"LHFU61GVLKI2ATQ": 2,
+			"LHFUE6UMQ4D2K42": 13,
+			"LHH1011JSO11ORS": 9,
+			"LHH101L162117H2": 7,
+			"LHH110KCF411NK6": 6,
+			"LHH112FHF411BUI": 5,
+			"LHH12E1QP611OPA": 10,
+			"LHV12AQNBB32CJ2": 4,
+			"LHV12H937T32BDS": 3,
+			"LHV140E5N352BGF": 2,
+			"LHV144684H42FI4": 1,
+			"LHV14CBAO352I1I": 5,
+			"LHV15B8HEQ32SN0": 4,
+			"LHV15C8IEQ322UG": 4,
+			"LHV15D5LEQ325BE": 2,
+			"LHV15EUNEQ32FCI": 3,
+			"LHV15KA8NE42GSP": 1,
+			"LHV17CFO5V327AJ": 3,
+			"LHV17T973F42GEP": 3,
+			"LHV1AMP8TL02B40": 5,
+			"LHV1BIOIL142P25": 3,
+			"LHV1CIQLVL02C6H": 4,
+			"LHV1E645M21278O": 2,
+			"LHV1EUUNP142EDF": 1,
+			"LHV1F2U5M212P9C": 2,
+			"LHV1FQN29442T03": 1,
+			"LHV1FUFU9442AKR": 7,
+			"LHV1H1EHOF32UJM": 4,
+			"LHV1H71LPKA2P7G": 2,
+			"LHV1HKHRSKA2CR9": 3,
+			"LHV1HLGUT212JNT": 1,
+			"LHV1HO45PQA2QJS": 1,
+			"LHV1HT5F4D32GNM": 1,
+			"LHV1IHMG1312A0S": 3,
+			"LHV1IM9C23124HD": 3,
+			"LHV1KT9J0LA2IIA": 3,
+			"LHV1L41MCD32O4A": 3,
+			"LHV1OOC40U42TKA": 3,
+			"LHV1PHOQH442RKT": 3,
+			"LHV1U1OJ7DB3RGF": 2,
+			"LHV1VI5GPD32VAN": 3,
+			"LHV21H2S5DT2VF8": 1,
+			"LHV23IAU9LA2E7A": 4,
+			"LHV245SVALA2ST5": 7,
+			"LHV253Q5BLA2TTI": 2,
+			"LHV2547JP9B2AG0": 2,
+			"LHV254FHBLA2F5N": 5,
+			"LHV27JP91G321HQ": 3,
+			"LHV2CGP55U22T4Q": 2,
+			"LHV2CQPL1E32QM8": 1,
+			"LHV2JBHA9152QAS": 1,
+			"LHV2SQS7ENA25BL": 1,
+			"LHV2SR7FENA29JQ": 8,
+			"LHV36AG0LO2208L": 4,
+			"LHV3ISF18352QIP": 2,
+			"LHV43I0BI352TG6": 1,
+			"LHV4AC2C3C42172": 2,
+			"LHV4U1QMFC42NBP": 2,
+			"LHV4U509S9B2MRV": 1,
+			"LHV51JE5JC42VP2": 2,
+			"LHV5B9093K42J9S": 5,
+			"LHV5TFKNF0320GQ": 4,
+			"LHV73IC58DT2RO7": 1,
+			"LHV7EKEL4MA3L56": 3,
+			"LHV7LLAAIDB35G2": 1,
+			"LHV7RGKN4MA33RT": 2,
+			"LHV7VE7O4MA35H6": 2,
+			"LHV88RQU60B3Q0G": 9,
+			"LHV894HP4MA3ME7": 1,
+			"LHV8E39Q4MA3CMV": 1,
+			"LHV8H4NQ4MA316V": 1,
+			"LHV8KV9R4MA3JLS": 4,
+			"LHV8NMVAGE228A2": 3,
+			"LHV9BF0AUJ42CLQ": 1,
+			"LHVAKM1MR032IGJ": 1,
+			"LHVAP821MDT2L85": 1,
+			"LHVB16RSG652GJ4": 2,
+			"LHVB9CAE6032G6S": 2,
+			"LHVBSCOFMDT2VE0": 1,
+			"LHVC7554ADT2VA1": 1,
+			"LHVCJB2OMDT2VD8": 1,
+			"LHVCUKA1I0B3UE8": 1,
+			"LHVD0VVK8U2262J": 2,
+			"LHVDGF0JMQ7299V": 1,
+			"LHVDH0710RA3812": 3,
+			"LHVDIELDQQ7228K": 6,
+			"LHVE9CULH652BV2": 3,
+			"LHVEI9NVJ203LRO": 2,
+			"LHVFCFD8FRA37T6": 1,
+			"LHVFUCU92TA26BJ": 4,
+			"LHVGSE15MQA2OGE": 3,
+			"LHVH2BF13132CUF": 2,
+			"LHVHMCSV0QA2JET": 6,
+			"LHVHP2BJI652O9S": 4,
+			"LHVII3H61QA2C21": 3,
+			"LHVK0T750DT2D3K": 1,
+			"LHVL2NDFT732BK3": 3,
+			"LHVLCNLR783251B": 1,
+			"LHVLG51LV6B22AO": 2,
+			"LHVLJEBAJ832SJA": 1,
+			"LHVM1R8OA7B2IRT": 5,
+			"LHVM50PPD7B2EEU": 1,
+			"LHVMCDF3LA32K2R": 1,
+			"LHVMF8SSJ7B2DV2": 3,
+			"LHVMHDIBNA32QPF": 3,
+			"LHVMK86NP7B26E6": 1,
+			"LHVMSAEVLFB39K2": 1,
+			"LHVN4R7V7OA3MFN": 2,
+			"LHVNJNP4MAB3JI5": 2,
+			"LHVO8GQFVAB33C9": 2,
+			"LHVPJPLE4TA27LD": 3,
+			"LHVPOOR1LTA3NJ2": 2,
+			"LHVQ1AS19UA3O3T": 2,
+			"LHVQ48MA5GB39HE": 2,
+			"LHVQM0MUB032B5S": 3,
+			"LHVQMS17V813FN7": 1,
+			"LHVQU18N3O021A5": 5,
+			"LHVRJLV2UOA3EMR": 2,
+			"LHVSP6MKGDT2VUK": 1,
+			"LHVSU0QSQIA2TIM": 2,
+			"LHVT0JVHRIA2IE9": 5,
+			"LHVT10TNRIA23L2": 4,
+			"LHVT4C9KSIA2UMG": 6,
+			"LHVT7SA9QT221J2": 3,
+			"LHVTUCELRV02V9I": 2,
+			"LHVUR3UKGRU2SD2": 2,
+			"LHVVLBM1VL22A6Q": 5,
+			"LIF101NCNU112O2": 8,
+			"LIF101O8CDQ1AMU": 3,
+			"LIF102FDNU11314": 6,
+			"LIF102S56SV16TJ": 1,
+			"LIF103GH4C72BHJ": 4,
+			"LIF1077T5TU16I9": 2,
+			"LIF10HE4JTU1S7P": 3,
+			"LIF10O20NQU1B2P": 1,
+			"LIF10P7CR622E3R": 1,
+			"LIF10RP1DBU11NU": 1,
+			"LIF113PVOQU1UE5": 2,
+			"LIF11LLL5KV1CUG": 1,
+			"LIF126GSMBU1V2Q": 3,
+			"LIF12EQUGVU1RPI": 1,
+			"LIF12PMQ5121D68": 5,
+			"LIF12UPTEUV14ON": 1,
+			"LIF12VEKFAV1D67": 3,
+			"LIF13FGQHKV1E72": 1,
+			"LIF13QL5IG02UAI": 4,
+			"LIF149EVS2A22H1": 4,
+			"LIF14KB3T872MAH": 3,
+			"LIF14N6MU872GGI": 3,
+			"LIF14OKTU8722CQ": 6,
+			"LIF14PFVU872CSG": 3,
+			"LIF14QE5V872L2E": 6,
+			"LIF14RQ7V872TPR": 2,
+			"LIF14S69V872E2N": 3,
+			"LIF14TS9V872U9I": 4,
+			"LIF14ULAV8720HD": 2,
+			"LIF14VBBV872N2I": 2,
+			"LIF1502CV8729RP": 2,
+			"LIF152TCV8720Q6": 1,
+			"LIF153KDV872SE5": 7,
+			"LIF154IEV872JTD": 1,
+			"LIF15OTSM102353": 4,
+			"LIF15S7VPRV1DIP": 17,
+			"LIF160988972VND": 2,
+			"LIF1609JRKV151E": 2,
+			"LIF163TJHQU191C": 3,
+			"LIF1662B8972C00": 2,
+			"LIF1687ILK12R66": 2,
+			"LIF16CPE89723EI": 1,
+			"LIF16GDJ89724E3": 2,
+			"LIF16IHL8972EAC": 2,
+			"LIF16PJS9972LC8": 3,
+			"LIF16SBFB972GLK": 1,
+			"LIF16TPLB972GKV": 2,
+			"LIF16U5HC972SNC": 1,
+			"LIF177DTS6T1KFG": 1,
+			"LIF17GAI3VV1C1F": 2,
+			"LIF18TO5NB72AMR": 1,
+			"LIF18V95I972R96": 1,
+			"LIF19BFUG922N84": 4,
+			"LIF19MQDQB725HT": 3,
+			"LIF1AJ58K972JHJ": 2,
+			"LIF1AQ6CK972734": 2,
+			"LIF1AUQNSDU1UFL": 3,
+			"LIF1CI1RSB72BCA": 1,
+			"LIF1DI4GH4E2JB7": 1,
+			"LIF1F3IM11020RB": 1,
+			"LIF1FHVC1C72HEJ": 3,
+			"LIF1GTHPO9V14NG": 1,
+			"LIF1LG3FA9E23A6": 1,
+			"LIF1NMGHH4E2OA1": 2,
+			"LIF1Q3IQM7122SP": 1,
+			"LIF1Q48RM712F87": 1,
+			"LIF1QBNPP7123J0": 1,
+			"LIF1SGGD7EU12T5": 1,
+			"LIF1TOD6F8C21NS": 4,
+			"LIF209RIH4E2JCP": 3,
+			"LIF25C8OJSV19UJ": 1,
+			"LIF26IOMR8C2GBF": 2,
+			"LIF26JLSR8C261S": 1,
+			"LIF28GT9KE72QQG": 1,
+			"LIF28P8KH4E2U7M": 1,
+			"LIF2AUKEAT72DU9": 1,
+			"LIF2E3LVGK82J7Q": 1,
+			"LIF2I10MEOE2CRA": 1,
+			"LIF2IUQJQ571TFL": 2,
+			"LIF2KRHMH4E24QU": 2,
+			"LIF2T8VNH4E2DRK": 2,
+			"LIF308SGODC2TRS": 2,
+			"LIF35OFPH4E21T2": 2,
+			"LIF38KRD8S12HAR": 7,
+			"LIF3I4MK96E26KF": 1,
+			"LIF3IFLRH4E2D6G": 4,
+			"LIF3NBOHV8E20DR": 1,
+			"LIF3VMSMT0H2NKE": 1,
+			"LIF48OQC9DH2014": 6,
+			"LIF4CVKKD082IRH": 3,
+			"LIF4SAD3FGU1NJ4": 1,
+			"LIF57HKSG9E2FSO": 2,
+			"LIF5JTDA5EC2A02": 1,
+			"LIF5UU8FO3029OK": 7,
+			"LIF6APMFJUG2AK5": 3,
+			"LIF79EICMU7312E": 1,
+			"LIF7SHGS3E72T8L": 2,
+			"LIF85V4ON6E2UVV": 1,
+			"LIF8I91P8J02A85": 2,
+			"LIF8TUJ3HGU1G3J": 2,
+			"LIF992JCSAH29T1": 4,
+			"LIF9N8QU1PG2CN8": 2,
+			"LIF9NRCLF273JBA": 1,
+			"LIF9UI391Q62CIC": 1,
+			"LIFAGDB0IGU1BCK": 1,
+			"LIFBD8FM0UG2QCR": 1,
+			"LIFBSQJTGME2KRH": 1,
+			"LIFC768I7UG2F88": 1,
+			"LIFCLLMITT727LH": 2,
+			"LIFCNFNEJRG2ON4": 3,
+			"LIFD854FO6E2UO7": 1,
+			"LIFD8KDI3BH2UAF": 4,
+			"LIFDB8NGF282H0Q": 1,
+			"LIFDIDJT0GU1CR8": 3,
+			"LIFDS8H7KBC2B2U": 1,
+			"LIFDTKVOMQE2SPB": 1,
+			"LIFE0QTCG3H2QU2": 3,
+			"LIFE9GRB8S62L1H": 4,
+			"LIFEL8CPH08259V": 1,
+			"LIFEMMLM17E2540": 1,
+			"LIFF11B2RE72HMI": 1,
+			"LIFF6BQE33H26JC": 6,
+			"LIFF72DU3O727EA": 3,
+			"LIFF7Q3H9O7222R": 1,
+			"LIFF7V2R9O72MUP": 1,
+			"LIFF81JT9O72F60": 1,
+			"LIFF829V9O7221M": 1,
+			"LIFF83D0AO72SUG": 1,
+			"LIFF85Q3AO72TIV": 1,
+			"LIFF86N5AO72UVT": 1,
+			"LIFF88AAAO72MQ9": 1,
+			"LIFF892CAO72FUN": 1,
+			"LIFF8A7EAO72NPH": 3,
+			"LIFF8D0JAO72UM0": 1,
+			"LIFF8JAQAO72U81": 1,
+			"LIFF8NE0BO72CNQ": 1,
+			"LIFF8P93BO72VKV": 1,
+			"LIFF8R57BO72VDS": 2,
+			"LIFF949JBO728GK": 2,
+			"LIFF95RKBO72R2Q": 5,
+			"LIFFBC4MNO72556": 10,
+			"LIFFGUFIABH2D6F": 3,
+			"LIFFHFT5UO72FC2": 1,
+			"LIFFIRQ00P729BS": 1,
+			"LIFFUV4ATQ72I6D": 2,
+			"LIFG1L8GLGE2HIA": 4,
+			"LIFGECSJLGE25UP": 3,
+			"LIFGR46M8RE2RC7": 1,
+			"LIFGR4QG5IV1QPI": 1,
+			"LIFHEL95TME269I": 1,
+			"LIFHGPDRLLE275R": 1,
+			"LIFHR02K9S62Q72": 2,
+			"LIFI1K1IRJE2VTS": 1,
+			"LIFI8QG9A093USI": 2,
+			"LIFI9G70SV72H3C": 4,
+			"LIFID13EDG725C2": 1,
+			"LIFIDIQ4NGC2U1Q": 4,
+			"LIFIECSPJ082A49": 3,
+			"LIFIEGBN9E72ILT": 1,
+			"LIFII3UBRFB3KBE": 1,
+			"LIFJ5ECMA3H2OIV": 2,
+			"LIFJ9M178082JAO": 1,
+			"LIFJBNJ589E2BNK": 1,
+			"LIFJJRJ23PE224C": 1,
+			"LIFJP2UC80820D3": 3,
+			"LIFJVV332JC2M0S": 3,
+			"LIFK06CR2JC2K51": 2,
+			"LIFK0P9Q6JC2MEF": 4,
+			"LIFKPQEDFG722M5": 2,
+			"LIFLPK2J9UG2AV1": 3,
+			"LIFLRSGG7952SBS": 4,
+			"LIFME5D0K0H2EGC": 2,
+			"LIFMGTCIQGU13TS": 3,
+			"LIFMOLVTLHV1RAR": 1,
+			"LIFMVP96ONU12CO": 1,
+			"LIFN23NRGG72NRR": 2,
+			"LIFN3FI0TNU10PS": 1,
+			"LIFN5CQH1OU1P61": 3,
+			"LIFNEU3LGUG2BMK": 2,
+			"LIFNG7GD8OU17BO": 1,
+			"LIFNG8EK8OU1A8D": 1,
+			"LIFNH08K9OU1SAB": 6,
+			"LIFNIC9JFOU1B2S": 3,
+			"LIFNNL3OJG52OKJ": 1,
+			"LIFNRF3P0E02J90": 1,
+			"LIFNU7T73U722U5": 1,
+			"LIFP35VRDTC2JVA": 1,
+			"LIFQMHF4MT72V9Q": 1,
+			"LIFQRA323ME2GCO": 1,
+			"LIFQS2GE6BH21V9": 1,
+			"LIFR1RLV0G43647": 1,
+			"LIFR3G1FFE72K0S": 1,
+			"LIFSLDITPAH2CHG": 8,
+			"LIFTGHSRLDH2LDE": 2,
+			"LIFTPARUOOG2TEB": 1,
+			"LIFU3VBO31H28F0": 1,
+			"LIFU7EN0HN12ETM": 3,
+			"LIFU9C04IE72O8K": 2,
+			"LIFUKF4FNRG2JT0": 1,
+			"LIFUNGIBHQ1243A": 2,
+			"LIFV6DIGKVC21D0": 1,
+			"LIFVST7DH4E2CCO": 1,
+			"LIFVTRAAJE72GHD": 1,
+			"LIFVV1VA9RG2ISF": 1,
+			"LLI101QQRA211SM": 6,
+			"LLI107JLRU11EM2": 6,
+			"LLI14TT8T921J21": 5,
+			"LLI17P0T8J029N7": 1,
+			"LLI17VIKLJ02BSV": 2,
+			"LLI1BQA9PUH16A0": 2,
+			"LLI1C5DJ2Q12O21": 1,
+			"LLI1D2QFT571VQT": 6,
+			"LLI1D3B2U5715LL": 6,
+			"LLI1D5DO1671QPA": 7,
+			"LLI23D3LDHD1FQA": 11,
+			"LLI23FELDHD1O3C": 4,
+			"LLI23Q4NDHD11EK": 2,
+			"LLI23TBNDHD19F2": 2,
+			"LLI23UJNDHD1A4V": 6,
+			"LLI2HHRC84F1TJ6": 3,
+			"LLI2HVHUM4F16B0": 5,
+			"LLI2V0UN7RD1T2J": 6,
+			"LLI2V30ECRD1GAU": 12,
+			"LLI2VDR4JRD1AEG": 5,
+			"LLI3272LOTD1B1F": 10,
+			"LLI32G3NUTD100I": 140,
+			"LLI32HBOUTD1GQV": 9,
+			"LLI32IDPUTD1F2R": 65,
+			"LLI32J0SVTD114U": 3,
+			"LLI32KHF0UD1AOK": 30,
+			"LLI32N0F1UD114O": 5,
+			"LLI334UG2UD1IKQ": 2,
+			"LLI33CQJ3UD1G5J": 15,
+			"LLI3ABTPR2J1SH9": 2,
+			"LLI4HC7IO2E1U31": 4,
+			"LLI4HJ9GRLI1C4E": 3,
+			"LLI57DI72HI153U": 2,
+			"LLI57EKC2HI1EH8": 2,
+			"LLI57FTH2HI17PN": 3,
+			"LLI57G8I2HI1CSO": 2,
+			"LLI599R12JI1216": 3,
+			"LLICF642CTI16R1": 1,
+			"LLICFILAMTI11QV": 3,
+			"LLID3PL336E1RN1": 14,
+			"LLIE7307LTG11T2": 12,
+			"LLIERMJ93DE1H25": 21,
+			"LLIF37ASJFE1AVQ": 2,
+			"LLIF3AQTOFE19OR": 5,
+			"LLIF6R3R9GE1GQB": 5,
+			"LLIFIG7BP8G1MU9": 27,
+			"LLIFINFQT8G13OU": 1,
+			"LM112V6OCA126K1": 11,
+			"LM113FUK5422FVO": 13,
+			"LM113VSD6922MRJ": 25,
+			"LM11E7ODKHO1QJE": 7,
+			"LM11HIDASHO1THR": 2,
+			"LM169I1E0C226G1": 8,
+			"LM1TS65LBN12EIV": 31,
+			"LM4109NI2R640": 17,
+			"LM410QQ0CHARO": 11,
+			"LM410TMR0S2S1": 5,
+			"LM4115NJ46G8M": 5,
+			"LM4118MEHFDMM": 6,
+			"LM413RQ6LRG9N": 11,
+			"LM413SQ6LRN58": 11,
+			"LM416LNIKVLM1": 14,
+			"LNV4R9D5ADT2NP1": 1,
+			"LNV9O6NVFCD2SFS": 1,
+			"LNVCJKCAHCD2660": 1,
+			"LNVEC8L1DDT2F20": 1,
+			"LNVIABSR3M139C7": 5,
+			"LNVKEU5TKG33K7L": 2,
+			"LNVVEB4M8DT2JUB": 1,
+			"LTJ1013E97K17P1": 1,
+			"LTJ101FB0SO17JK": 1,
+			"LTJ101I3KSO1JQS": 1,
+			"LTJ101PRVCQ1RN0": 1,
+			"LTJ1024R2DQ1B5S": 2,
+			"LTJ102C4FFQ1Q6O": 1,
+			"LTJ102GGGJK1VDO": 2,
+			"LTJ102LVLDQ1NGH": 1,
+			"LTJ103NK29K1TNJ": 1,
+			"LTJ103U2KJK1BLG": 3,
+			"LTJ1057EEQU17G1": 3,
+			"LTJ105NEFDQ1H97": 1,
+			"LTJ108JAODQ11KH": 2,
+			"LTJ10B0UHQQ172V": 2,
+			"LTJ10HO3FAV1HDD": 1,
+			"LTJ10KOCHTU1N89": 2,
+			"LTJ112E9DIO1BPE": 1,
+			"LTJ11BUJ57K1VUV": 1,
+			"LTJ11HQLJUV1R15": 3,
+			"LTJ11KEKAKO196V": 2,
+			"LTJ11TPQUMO197U": 1,
+			"LTJ12E6VSFQ1V4E": 1,
+			"LTJ12G0H5KV10GH": 1,
+			"LTJ12O0H7AO1IBS": 1,
+			"LTJ12PGU9KV1MGI": 1,
+			"LTJ12SJ2RUV1N6R": 1,
+			"LTJ135JKNQU113D": 5,
+			"LTJ13ELOLPQ1DP3": 1,
+			"LTJ13T0J2VV1A4N": 1,
+			"LTJ13TRDHKV1970": 1,
+			"LTJ13VTR2RU14QO": 4,
+			"LTJ1539P8102B2F": 1,
+			"LTJ154SP8102KIG": 1,
+			"LTJ168OVQRV1TQA": 2,
+			"LTJ16T2SURV19NT": 1,
+			"LTJ17MOFE6P1NJ3": 2,
+			"LTJ18J9ASDU1UPS": 2,
+			"LTJ1F3AER9V139B": 1,
+			"LTJ1FR102AV17DP": 3,
+			"LTJ1KOM8N2O1EFS": 1,
+			"LTJ1PV6RLCV1L08": 2,
+			"LTJ2S0EVDSV1HQ0": 3,
+			"LTJ34OO4UHV1NLQ": 1,
+			"LTJ3PGOAMIQ1QDS": 1,
+			"LTJ7GRG1VCV1VJD": 2,
+			"LTJ8GSQV1IV1FBE": 3,
+			"LTJ9IM9AFAO1C44": 1,
+			"LTJLTCN21IQ1URB": 1,
+			"LTJOCVQUMHV1K83": 2,
+			"LUV10AGQOOA3MOE": 2,
+			"LUV13UHOH3D3V3S": 3,
+			"LUV174V0QUB3JT4": 3,
+			"LUV1BKIJU8A3VL1": 1,
+			"LUV1D5ROINF2MDO": 1,
+			"LUV1JGGKU8A3NHG": 1,
+			"LUV1RBFLU8A3LR9": 1,
+			"LUV1RMOG91L2F6G": 1,
+			"LUV1V6AR27G26QO": 1,
+			"LUV22FOR7AF2TIE": 1,
+			"LUV270LMU8A3UCB": 4,
+			"LUV2ERENU8A30JC": 1,
+			"LUV2LJJO5UC30B2": 1,
+			"LUV2M7GCJ8D3878": 1,
+			"LUV2M85OU8A39GS": 4,
+			"LUV2SS9BHDT2I85": 1,
+			"LUV2SSTOU8A30RS": 5,
+			"LUV2UE4DCMA3RLS": 2,
+			"LUV3TN6CIDF2DL5": 3,
+			"LUV483AL8JL28J2": 2,
+			"LUV4RLT53QK2GUF": 1,
+			"LUV528DLLJL23MB": 3,
+			"LUV5DRKRFNF2BNO": 1,
+			"LUV5I1CTIEA3DT0": 2,
+			"LUV681KDSQL2PST": 2,
+			"LUV7MEQ2P5F2LOG": 1,
+			"LUV81B4FPCF2QOL": 1,
+			"LUV8H510J7K2DQS": 1,
+			"LUV8KVC0JDT2N8E": 1,
+			"LUV8TSS9Q5D308S": 1,
+			"LUV9CALK9MC3MGA": 2,
+			"LUVA5LSLC0D3VCR": 1,
+			"LUVAPJARHHC3H1I": 1,
+			"LUVBP2STKQJ24PT": 1,
+			"LUVBQFC4NJL2093": 2,
+			"LUVC8S7H3AK2JPD": 1,
+			"LUVCFATLK1L21R1": 1,
+			"LUVCHLO06EA3VBC": 3,
+			"LUVCIHEQCAF28NR": 1,
+			"LUVCLS8RV5D3VGT": 3,
+			"LUVCMP7BM7F2JET": 3,
+			"LUVE3K14D3D314I": 2,
+			"LUVEAFOJ4LF23HV": 1,
+			"LUVEDNPVFJC3UIQ": 2,
+			"LUVEJ2PKGAF2771": 1,
+			"LUVFGT16B7G240H": 3,
+			"LUVG9L7NOLA3CEB": 4,
+			"LUVGG7RFV2D3L0U": 1,
+			"LUVGL5C7BJL2V4U": 2,
+			"LUVGS4ELCPK2EJI": 2,
+			"LUVGTE14OSF23D5": 2,
+			"LUVH137RPTC3IJ6": 4,
+			"LUVIAI9LFBL2TRO": 6,
+			"LUVIEBL289L21A2": 4,
+			"LUVIIL1P65F22NC": 1,
+			"LUVINN2QDSF265I": 2,
+			"LUVIOOG33CL26FM": 3,
+			"LUVITGLVQOA3H34": 2,
+			"LUVK3V3GUKF2K88": 1,
+			"LUVKHENRO0D3MJ8": 2,
+			"LUVKM04MB9G2I53": 1,
+			"LUVL2G4TQ7F2L1T": 2,
+			"LUVL8CLKD5F2TNB": 1,
+			"LUVLGC15RKF2L68": 1,
+			"LUVLL5M2V9G24MD": 2,
+			"LUVLLA752MA3R76": 2,
+			"LUVLN7FNEJJ2NOQ": 1,
+			"LUVM9R39TBA362T": 1,
+			"LUVMBSKJQ5F289H": 1,
+			"LUVMF06N99A3U2B": 1,
+			"LUVN6H8QIJL250Q": 2,
+			"LUVNHLCRGEA3VAS": 1,
+			"LUVNNQQ9AOJ253J": 2,
+			"LUVNUGNGN5F2BOT": 1,
+			"LUVO4MCSNPK2P6J": 1,
+			"LUVP2B2ITBL2DIF": 2,
+			"LUVP6OB76JL27S1": 4,
+			"LUVPOEQCV9G2JEL": 1,
+			"LUVQ4HDKLSF274K": 2,
+			"LUVQ7T6QICK2S0Q": 1,
+			"LUVQCRVPBKR2T5H": 1,
+			"LUVQD7K50HL25GG": 1,
+			"LUVQMVII88F2O29": 1,
+			"LUVS3QBDOBL2HMO": 2,
+			"LUVSBGGQCHC386B": 5,
+			"LUVSCDSTRAF2EOF": 2,
+			"LUVSMJ94HKF2V3J": 1,
+			"LUVST31K7MA369P": 1,
+			"LUVT92Q1PNF23GR": 1,
+			"LUVTEIMAL2F2UMM": 1,
+			"LUVTHO9HPSF2GJA": 1,
+			"LUVTKP64DEA3D31": 1,
+			"LUVTKR868NF27QG": 2,
+			"LUVTLIP0SIJ2DQG": 1,
+			"LUVTV2TR28F23GO": 2,
+			"LUVUETG9K6G2HAO": 2,
+			"LUVUKCOSE793PHI": 2,
+			"LUVUMTSQ2FC34ES": 1,
+			"LUVUVJBM5DF2UR6": 2,
+			"LUVV0NRR2FC3D3D": 2,
+			"LUVV8SDGGDT2QOH": 1,
+			"LUVVASOS2FC3J3Q": 2,
+			"LUVVL8J088D3QVT": 2,
+			"LUVVMMKT2FC3V5B": 1,
+			"LUVVSU5NCBA3KOS": 1,
+			"LUVVV3FU2FC38SK": 3
+		},
+		"loomer": {
+			"use": 22
+		},
+		"lotsa_lox": {
+			"pickup": 1
+		},
+		"luxury_tortellini": {
+			"pickup": 1
+		},
+		"mabbish_coffee": {
+			"drop": 1
+		},
+		"maburger_royale": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"machine_stand": {
+			"add_chassis": 4,
+			"assemble": 4,
+			"place": 4
+		},
+		"machines": {
+			"refueled": 8
+		},
+		"machines_assembled": {
+			"blockmaker": 1,
+			"fuelmaker": 1,
+			"metalmaker": 1,
+			"woodworker": 1
+		},
+		"magic_butterfly_stick": {
+			"drop": 4
+		},
+		"magic_chicken_stick": {
+			"drop": 4
+		},
+		"magic_pig_stick": {
+			"drop": 2
+		},
+		"magic_rock": {
+			"change_style": 1,
+			"cultivate_land": 1,
+			"customize": 6,
+			"expand": 47,
+			"house_keys": 18,
+			"talk_to": 114
+		},
+		"making_food": {
+			"applejack": 1,
+			"banana_no_names": 1,
+			"basic_omelet": 3,
+			"best_bean_dip": 1,
+			"birch_candy": 10,
+			"bubble_and_squeak": 8,
+			"bubble_tea": 1,
+			"bun": 9,
+			"cheese_plate": 1,
+			"cheezy_sammich": 3,
+			"cheezy_sauce": 2,
+			"cloudberry_jam": 4,
+			"cold_taco": 1,
+			"corn_off_the_cob": 1,
+			"corny_fritter": 12,
+			"creamy_catsup": 5,
+			"creamy_martini": 6,
+			"death_to_veg": 2,
+			"desssert_rub": 2,
+			"divine_crepes": 1,
+			"earthshaker": 1,
+			"eggy_scramble": 18,
+			"flour": 100,
+			"fried_egg": 4,
+			"fried_noodles": 2,
+			"fruity_juice": 2,
+			"gammas_pancakes": 1,
+			"glitchepoix": 9,
+			"green": 31,
+			"green_eggs": 35,
+			"grilled_cheese": 3,
+			"hash": 1,
+			"hot_n_fizzy_sauce": 2,
+			"hot_potatoes": 1,
+			"hototot_rub": 4,
+			"kind_breakfurst_burrito": 1,
+			"kings_of_condiments": 7,
+			"lazy_salad": 1,
+			"legumes_parisienne": 6,
+			"lemburger": 3,
+			"lemon_juice": 2,
+			"meat_gumbo": 1,
+			"messy_fry_up": 1,
+			"mexicali_eggs": 7,
+			"mild_sauce": 2,
+			"onion_rings": 1,
+			"orange_juice": 8,
+			"pickle": 1,
+			"plain_noodles": 6,
+			"proper_rice": 5,
+			"pumpkin_pie": 1,
+			"red": 31,
+			"roux": 18,
+			"salmon_jaella": 1,
+			"sammich": 3,
+			"scrumptious_frittata": 1,
+			"secret_sauce": 5,
+			"simple_bbq": 1,
+			"sno_cone_rainbow": 5,
+			"spicy_quesadilla": 1,
+			"stock_sauce": 6,
+			"sweet_n_sour_sauce": 11,
+			"swing_batter": 8,
+			"tangy_noodles": 1,
+			"tangy_sauce": 4,
+			"tooberry_shake": 1,
+			"tortilla": 27,
+			"urfu": 1,
+			"wavy_gravy": 3,
+			"wicked_bolognese_sauce": 9
+		},
+		"making_known_recipe": {
+			"2": 1,
+			"5": 1,
+			"6": 1,
+			"10": 1,
+			"12": 3,
+			"14": 1,
+			"17": 4,
+			"18": 3,
+			"19": 1,
+			"20": 1,
+			"21": 3,
+			"22": 5,
+			"23": 1,
+			"35": 1,
+			"36": 3,
+			"41": 2,
+			"42": 2,
+			"44": 3,
+			"45": 5,
+			"46": 9,
+			"48": 2,
+			"49": 4,
+			"50": 11,
+			"51": 5,
+			"52": 2,
+			"53": 2,
+			"54": 8,
+			"58": 1,
+			"60": 1,
+			"61": 1,
+			"64": 6,
+			"72": 13,
+			"73": 6,
+			"74": 3,
+			"77": 1,
+			"81": 18,
+			"82": 7,
+			"83": 12,
+			"84": 1,
+			"86": 1,
+			"87": 2,
+			"88": 1,
+			"89": 35,
+			"90": 1,
+			"92": 8,
+			"94": 1,
+			"97": 3,
+			"99": 1,
+			"102": 1,
+			"105": 193,
+			"106": 225,
+			"107": 54,
+			"108": 18,
+			"109": 10,
+			"111": 59,
+			"112": 20,
+			"113": 49,
+			"114": 15,
+			"115": 7,
+			"116": 298,
+			"117": 19,
+			"118": 105,
+			"119": 26,
+			"120": 11,
+			"121": 113,
+			"122": 4,
+			"123": 9,
+			"124": 10,
+			"125": 8,
+			"126": 17,
+			"127": 4,
+			"128": 2,
+			"129": 14,
+			"130": 1,
+			"131": 1,
+			"133": 3,
+			"134": 7,
+			"135": 8,
+			"136": 11,
+			"137": 3,
+			"138": 100,
+			"139": 9,
+			"140": 27,
+			"141": 6,
+			"142": 32,
+			"143": 1,
+			"144": 53,
+			"145": 4,
+			"148": 12,
+			"153": 22,
+			"154": 273,
+			"158": 21,
+			"172": 51,
+			"173": 1,
+			"174": 41,
+			"175": 27,
+			"176": 22,
+			"182": 1,
+			"187": 2,
+			"192": 1,
+			"223": 10,
+			"227": 1,
+			"228": 21,
+			"229": 1,
+			"230": 2,
+			"231": 1,
+			"232": 5,
+			"233": 1,
+			"234": 1,
+			"235": 2,
+			"238": 3,
+			"239": 1,
+			"240": 2,
+			"242": 4,
+			"252": 5,
+			"253": 240,
+			"255": 87,
+			"256": 5,
+			"257": 7,
+			"258": 2,
+			"259": 1,
+			"260": 1,
+			"262": 2,
+			"264": 1,
+			"265": 4,
+			"266": 3,
+			"267": 1,
+			"268": 1,
+			"269": 2,
+			"270": 1,
+			"271": 5,
+			"272": 15,
+			"273": 3,
+			"274": 14,
+			"275": 25,
+			"276": 3,
+			"279": 29,
+			"290": 4,
+			"291": 4,
+			"292": 1,
+			"295": 28,
+			"296": 2,
+			"303": 15,
+			"319": 5,
+			"321": 1,
+			"322": 7,
+			"323": 6,
+			"324": 4,
+			"325": 8,
+			"326": 2,
+			"329": 2,
+			"330": 9,
+			"331": 1,
+			"332": 1,
+			"333": 1,
+			"334": 18,
+			"335": 31,
+			"336": 6,
+			"337": 31,
+			"341": 1,
+			"350": 1
+		},
+		"making_known_tool": {
+			"alchemical_tongs": 90,
+			"awesome_pot": 9,
+			"beaker": 2,
+			"bean_seasoner": 1,
+			"blender": 20,
+			"bubble_tuner": 472,
+			"cauldron": 10,
+			"cocktail_shaker": 6,
+			"construction_tool": 213,
+			"egg_seasoner": 22,
+			"fruit_changing_machine": 315,
+			"frying_pan": 157,
+			"fuelmaker": 1,
+			"gassifier": 32,
+			"knife_and_board": 136,
+			"loomer": 30,
+			"metalmaker": 29,
+			"mike_tyson_grill": 38,
+			"saucepan": 112,
+			"spice_mill": 642,
+			"test_tube": 328,
+			"tincturing_kit": 32,
+			"tinkertool": 3,
+			"woodworker": 240
+		},
+		"making_tool": {
+			"alchemical_tongs": 90,
+			"awesome_pot": 9,
+			"beaker": 2,
+			"bean_seasoner": 1,
+			"blender": 20,
+			"bubble_tuner": 472,
+			"cauldron": 10,
+			"cocktail_shaker": 6,
+			"construction_tool": 213,
+			"egg_seasoner": 22,
+			"fruit_changing_machine": 315,
+			"frying_pan": 157,
+			"fuelmaker": 1,
+			"gassifier": 32,
+			"knife_and_board": 136,
+			"loomer": 30,
+			"metalmaker": 29,
+			"mike_tyson_grill": 38,
+			"saucepan": 112,
+			"spice_mill": 642,
+			"test_tube": 341,
+			"tincturing_kit": 32,
+			"tinkertool": 3,
+			"woodworker": 240
+		},
+		"making_unknown_recipe": {
+			"146": 1,
+			"148": 1,
+			"149": 1,
+			"150": 1,
+			"151": 1,
+			"152": 1,
+			"153": 1,
+			"154": 1,
+			"156": 1,
+			"157": 1,
+			"158": 1,
+			"159": 1,
+			"160": 1
+		},
+		"making_unknown_tool": {
+			"test_tube": 13
+		},
+		"making_unknown_tool_fail": {
+			"test_tube": 7
+		},
+		"max_expansions": {
+			"street": 813,
+			"yard": 507
+		},
+		"meals_eaten": {
+			"bubble_and_squeak": 1,
+			"cherry": 1,
+			"chillybusting_chili": 1,
+			"divine_crepes": 1,
+			"exotic_fruit_salad": 1,
+			"fried_egg": 1,
+			"grain": 2,
+			"maburger_royale": 1,
+			"meat": 37,
+			"papl_upside_down_pizza": 1,
+			"pumpkin_pie": 1,
+			"spinach": 2,
+			"swank_zucchini_loaf": 2
+		},
+		"meat": {
+			"drop": 14,
+			"eat": 49,
+			"pickup": 75
+		},
+		"meat_collector": {
+			"collect": 13,
+			"drop": 3,
+			"pickup": 3
+		},
+		"meat_gumbo": {
+			"pickup": 1
+		},
+		"meat_tetrazzini": {
+			"pickup": 1
+		},
+		"mega_healthy_veggie_juice": {
+			"drink": 6,
+			"drop": 13,
+			"pickup": 11
+		},
+		"messy_fry_up": {
+			"pickup": 1
+		},
+		"metal_rock": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"metalmaker": {
+			"collect": 4,
+			"install": 3,
+			"place": 2,
+			"refuel": 1,
+			"use": 13
+		},
+		"metalmaker_mechanism": {
+			"drop": 1
+		},
+		"mexicali_eggs": {
+			"pickup": 1
+		},
+		"mike_tyson_grill": {
+			"drop": 1,
+			"pickup": 1,
+			"use": 14
+		},
+		"mild_sauce": {
+			"pickup": 1
+		},
+		"milk_butterfly": {
+			"drink": 10,
+			"drop": 14,
+			"pickup": 31,
+			"shake": 14
+		},
+		"million_currant_trophy": {
+			"drop": 7,
+			"pickup": 6
+		},
+		"moon": {
+			"drop": 2
+		},
+		"mortar_barnacle": {
+			"scrape": 382
+		},
+		"mushroom": {
+			"drop": 1
+		},
+		"musicblock_b_brown_01": {
+			"drop": 3,
+			"pickup": 2
+		},
+		"musicblock_b_brown_02": {
+			"drop": 2,
+			"pickup": 3
+		},
+		"musicblock_b_brown_03": {
+			"drop": 8,
+			"pickup": 5
+		},
+		"musicblock_b_brown_04": {
+			"drop": 2,
+			"pickup": 2
+		},
+		"musicblock_b_brown_05": {
+			"drop": 3,
+			"pickup": 3
+		},
+		"musicblock_d_blue_01": {
+			"drop": 6,
+			"pickup": 8
+		},
+		"musicblock_d_blue_02": {
+			"drop": 2,
+			"pickup": 3
+		},
+		"musicblock_d_blue_03": {
+			"drop": 9,
+			"pickup": 6
+		},
+		"musicblock_d_blue_04": {
+			"drop": 6,
+			"pickup": 6
+		},
+		"musicblock_d_blue_05": {
+			"drop": 4,
+			"pickup": 4
+		},
+		"musicblock_d_green_01": {
+			"drop": 8,
+			"pickup": 6
+		},
+		"musicblock_d_green_02": {
+			"drop": 3,
+			"pickup": 5
+		},
+		"musicblock_d_green_03": {
+			"drop": 4,
+			"pickup": 4
+		},
+		"musicblock_d_green_04": {
+			"drop": 4,
+			"pickup": 4
+		},
+		"musicblock_d_green_05": {
+			"drop": 2,
+			"pickup": 1
+		},
+		"musicblock_d_red_01": {
+			"drop": 11,
+			"pickup": 7
+		},
+		"musicblock_d_red_02": {
+			"drop": 6,
+			"pickup": 6
+		},
+		"musicblock_d_red_03": {
+			"drop": 4,
+			"pickup": 3
+		},
+		"musicblock_d_red_04": {
+			"drop": 6,
+			"pickup": 7,
+			"play": 3
+		},
+		"musicblock_d_red_05": {
+			"drop": 4,
+			"pickup": 4
+		},
+		"musicblock_goodnight_groddle": {
+			"drop": 2,
+			"pickup": 2,
+			"play": 1
+		},
+		"musicblock_x_shiny_01": {
+			"drop": 3,
+			"pickup": 3
+		},
+		"musicblock_x_shiny_02": {
+			"drop": 6,
+			"pickup": 5
+		},
+		"musicblock_x_shiny_03": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"musicblock_x_shiny_04": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"musicblock_x_shiny_05": {
+			"drop": 3,
+			"pickup": 2
+		},
+		"musicblocks_heard": {
+			"musicblock_d_red_04": 3,
+			"musicblock_goodnight_groddle": 1
+		},
+		"musicblocks_played": {
+			"musicblock_d_red_04": 3,
+			"musicblock_goodnight_groddle": 1
+		},
+		"no_no_powder": {
+			"sniff": 2
+		},
+		"nodes_mined": {
+			"beryl": 98,
+			"dullite": 116,
+			"metal_rock": 118,
+			"sparkly": 147
+		},
+		"note": {
+			"drop": 36,
+			"pickup": 22,
+			"read": 157,
+			"write_on": 3
+		},
+		"note_pole": {
+			"pickup": 31,
+			"place": 55,
+			"post": 18,
+			"read": 82,
+			"read_oneclick": 18
+		},
+		"npc_batterfly": {
+			"feed": 26
+		},
+		"npc_butterfly": {
+			"massage": 168,
+			"milk": 97,
+			"name": 8,
+			"sing_to": 74
+		},
+		"npc_chicken": {
+			"butter_up": 58,
+			"incubate": 15,
+			"name": 4,
+			"rename": 2,
+			"squeeze": 93,
+			"talk_to": 1
+		},
+		"npc_cooking_vendor": {
+			"buy_sell": 3
+		},
+		"npc_crab": {
+			"flatter": 12,
+			"hug": 7,
+			"insult": 7,
+			"pinch": 7
+		},
+		"npc_crafty_bot": {
+			"drop": 2,
+			"pickup": 2
+		},
+		"npc_cubimal_batterfly": {
+			"drop": 15,
+			"pickup": 16
+		},
+		"npc_cubimal_bureaucrat": {
+			"drop": 6,
+			"pickup": 4
+		},
+		"npc_cubimal_butler": {
+			"drop": 7,
+			"pickup": 5
+		},
+		"npc_cubimal_butterfly": {
+			"drop": 24,
+			"pickup": 34
+		},
+		"npc_cubimal_cactus": {
+			"drop": 6,
+			"pickup": 2
+		},
+		"npc_cubimal_chick": {
+			"drop": 38,
+			"pickup": 33
+		},
+		"npc_cubimal_crab": {
+			"drop": 18,
+			"pickup": 24
+		},
+		"npc_cubimal_craftybot": {
+			"drop": 8,
+			"pickup": 4
+		},
+		"npc_cubimal_deimaginator": {
+			"drop": 6,
+			"pickup": 9
+		},
+		"npc_cubimal_dustbunny": {
+			"drop": 2,
+			"pickup": 6
+		},
+		"npc_cubimal_emobear": {
+			"drop": 14,
+			"pickup": 7
+		},
+		"npc_cubimal_firebogstreetspirit": {
+			"drop": 13,
+			"pickup": 9
+		},
+		"npc_cubimal_firefly": {
+			"drop": 15,
+			"pickup": 23
+		},
+		"npc_cubimal_fox": {
+			"drop": 22,
+			"pickup": 25
+		},
+		"npc_cubimal_foxranger": {
+			"drop": 13,
+			"pickup": 12
+		},
+		"npc_cubimal_frog": {
+			"drop": 18,
+			"pickup": 18
+		},
+		"npc_cubimal_gardeningtoolsvendor": {
+			"drop": 3,
+			"pickup": 2
+		},
+		"npc_cubimal_gnome": {
+			"drop": 15,
+			"pickup": 11
+		},
+		"npc_cubimal_greeterbot": {
+			"drop": 10,
+			"pickup": 7
+		},
+		"npc_cubimal_groddlestreetspirit": {
+			"drop": 14,
+			"pickup": 12
+		},
+		"npc_cubimal_gwendolyn": {
+			"drop": 4,
+			"pickup": 1
+		},
+		"npc_cubimal_hellbartender": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"npc_cubimal_ilmenskiejones": {
+			"drop": 5,
+			"pickup": 4
+		},
+		"npc_cubimal_juju": {
+			"drop": 4,
+			"pickup": 2
+		},
+		"npc_cubimal_magicrock": {
+			"drop": 2,
+			"pickup": 1
+		},
+		"npc_cubimal_maintenancebot": {
+			"pickup": 1
+		},
+		"npc_cubimal_mealvendor": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"npc_cubimal_phantom": {
+			"drop": 10,
+			"pickup": 5,
+			"race": 1
+		},
+		"npc_cubimal_piggy": {
+			"drop": 39,
+			"pickup": 41
+		},
+		"npc_cubimal_rube": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"npc_cubimal_senorfunpickle": {
+			"drop": 4,
+			"pickup": 5
+		},
+		"npc_cubimal_sloth": {
+			"drop": 31,
+			"pickup": 20
+		},
+		"npc_cubimal_smuggler": {
+			"drop": 2,
+			"pickup": 5
+		},
+		"npc_cubimal_snoconevendor": {
+			"drop": 11,
+			"pickup": 10
+		},
+		"npc_cubimal_squid": {
+			"drop": 7,
+			"pickup": 2
+		},
+		"npc_cubimal_toolvendor": {
+			"drop": 3,
+			"pickup": 3
+		},
+		"npc_cubimal_trisor": {
+			"drop": 4,
+			"pickup": 2
+		},
+		"npc_cubimal_unclefriendly": {
+			"drop": 4,
+			"give": 1,
+			"pickup": 2,
+			"race": 1
+		},
+		"npc_cubimal_uraliastreetspirit": {
+			"drop": 13,
+			"pickup": 13
+		},
+		"npc_cubimal_yeti": {
+			"drop": 4,
+			"pickup": 2
+		},
+		"npc_fox_ranger": {
+			"get_tips": 1,
+			"shop": 2,
+			"talk_to": 1
+		},
+		"npc_garden_gnome": {
+			"pickup": 10,
+			"place": 12,
+			"teach": 7
+		},
+		"npc_gardening_vendor": {
+			"buy_sell": 2
+		},
+		"npc_jabba1": {
+			"buy_sell": 6,
+			"make_eye_contact": 3
+		},
+		"npc_jabba2": {
+			"buy_sell": 5
+		},
+		"npc_kitty_chicken": {
+			"pet": 73,
+			"rename": 9
+		},
+		"npc_mailbox": {
+			"view_inbox": 6
+		},
+		"npc_piggy": {
+			"capture": 13,
+			"feed": 37,
+			"name": 7,
+			"nibble": 16,
+			"pet": 47,
+			"talk_to": 6
+		},
+		"npc_piggy_explorer": {
+			"pickup": 1
+		},
+		"npc_rube": {
+			"talk_to": 24
+		},
+		"npc_salmon": {
+			"pocket": 5
+		},
+		"npc_shrine_alph": {
+			"check_favor": 3,
+			"donate_to": 27
+		},
+		"npc_shrine_cosma": {
+			"check_favor": 3,
+			"donate_to": 149
+		},
+		"npc_shrine_firebog_friendly": {
+			"donate_to": 6
+		},
+		"npc_shrine_firebog_grendaline": {
+			"check_favor": 1
+		},
+		"npc_shrine_firebog_mab": {
+			"check_favor": 1,
+			"donate_to": 1
+		},
+		"npc_shrine_friendly": {
+			"check_favor": 6,
+			"donate_to": 20
+		},
+		"npc_shrine_grendaline": {
+			"check_favor": 3,
+			"donate_to": 24
+		},
+		"npc_shrine_humbaba": {
+			"check_favor": 8,
+			"donate_to": 67
+		},
+		"npc_shrine_lem": {
+			"check_favor": 7,
+			"donate_to": 50
+		},
+		"npc_shrine_mab": {
+			"donate_to": 3
+		},
+		"npc_shrine_pot": {
+			"check_favor": 18,
+			"donate_to": 38
+		},
+		"npc_shrine_spriggan": {
+			"check_favor": 1,
+			"donate_to": 85
+		},
+		"npc_shrine_ti": {
+			"check_favor": 1,
+			"donate_to": 18
+		},
+		"npc_shrine_uralia_friendly": {
+			"check_favor": 1,
+			"donate_to": 16
+		},
+		"npc_shrine_uralia_grendaline": {
+			"check_favor": 1,
+			"donate_to": 2
+		},
+		"npc_shrine_uralia_humbaba": {
+			"check_favor": 2
+		},
+		"npc_shrine_uralia_lem": {
+			"check_favor": 57,
+			"donate_to": 66
+		},
+		"npc_shrine_uralia_mab": {
+			"check_favor": 4,
+			"donate_to": 13
+		},
+		"npc_shrine_uralia_pot": {
+			"check_favor": 2,
+			"donate_to": 1
+		},
+		"npc_shrine_uralia_zille": {
+			"check_favor": 9,
+			"donate_to": 65
+		},
+		"npc_shrine_zille": {
+			"check_favor": 4,
+			"donate_to": 19,
+			"get_emblem": 1
+		},
+		"npc_sloth": {
+			"feed": 9
+		},
+		"npc_smuggler": {
+			"talk_to": 2
+		},
+		"npc_sno_cone_vending_machine": {
+			"buy_sell": 3
+		},
+		"npc_spinning_wheel": {
+			"spin": 111
+		},
+		"npc_tool_vendor": {
+			"buy_sell": 5
+		},
+		"oats": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"oaty_cake": {
+			"pickup": 2
+		},
+		"obvious_panini": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"oily_dressing": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"older_spice": {
+			"pickup": 42
+		},
+		"olive_oil": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"onion": {
+			"drop": 2,
+			"pickup": 2
+		},
+		"onion_rings": {
+			"pickup": 2
+		},
+		"orange": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"orange_juice": {
+			"drink": 1,
+			"drop": 1,
+			"pickup": 2
+		},
+		"ore_grinder": {
+			"crush": 17,
+			"repair": 6
+		},
+		"pad_tii": {
+			"pickup": 1
+		},
+		"paper": {
+			"create_script": 46,
+			"drop": 3,
+			"pickup": 6,
+			"write_on": 50
+		},
+		"paper_tree": {
+			"harvest": 8,
+			"pet": 8,
+			"water": 7
+		},
+		"papl_upside_down_pizza": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"paradise_ticket_arbor_hollow": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"paradise_ticket_bippity_bop": {
+			"activate": 2,
+			"pickup": 1
+		},
+		"paradise_ticket_mountain_scaling": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"paradise_ticket_sky_plunge": {
+			"drop": 1
+		},
+		"paradise_ticket_starlit_night": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"parsnip": {
+			"drop": 5,
+			"pickup": 5
+		},
+		"patch": {
+			"dig": 2,
+			"plant": 23,
+			"tend": 34
+		},
+		"patch_dark": {
+			"dig": 1,
+			"tend": 1
+		},
+		"patch_seedling": {
+			"pet": 79
+		},
+		"patches": {
+			"dug": 3,
+			"planted": 26,
+			"tended": 35
+		},
+		"peat": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"peat_1": {
+			"harvest": 1,
+			"talk_to": 1
+		},
+		"peat_3": {
+			"harvest": 5
+		},
+		"pick": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"pickle": {
+			"drop": 1
+		},
+		"piggies_captured": {
+			"npc_piggy": 13
+		},
+		"piggy_feeder": {
+			"deposit": 18,
+			"drop": 5,
+			"pickup": 5
+		},
+		"piglet": {
+			"drop": 5,
+			"feed": 6,
+			"hum_to": 4,
+			"pickup": 4
+		},
+		"pile_of_currants": {
+			"collect": 4
+		},
+		"plain_bubble": {
+			"drop": 41,
+			"pickup": 41
+		},
+		"plain_crystal": {
+			"drop": 5,
+			"pickup": 5
+		},
+		"plain_metal": {
+			"drop": 2,
+			"pickup": 2
+		},
+		"plank": {
+			"drop": 32,
+			"give": 6,
+			"pickup": 27
+		},
+		"player": {
+			"buddies_count": 40,
+			"deaths": 16
+		},
+		"player_streets_visited": {
+			"L1Q8BNQB4KB4PFBGMOS": 88,
+			"L1Q8BNQB4KG1WP9KU80": 20,
+			"L1Q8BNQB4KGHNTRS408": 3,
+			"L1Q8BNQB4KGNYO1EL4C": 12,
+			"L1Q8BNQB4KGO7YYX88W": 4,
+			"L1Q8BNQB4KGOPKUFA8K": 13,
+			"L1Q8BNQB4KGPICQZHCG": 12,
+			"L1Q8BNQB4KGXR5Z69S0": 46,
+			"L1Q8BNQB4KKU1W1L7KK": 1,
+			"L1Q8BNQB4KKWW9X940K": 7,
+			"L1Q8BNQB4KKXZK4BKG8": 1,
+			"L1Q8BNQB4KMDX2FU0GS": 2,
+			"L1Q8BNQB4KPKHYC3LKW": 15,
+			"L1Q8BNQB4KRDC146V40": 102,
+			"L1Q8BNQB4KTGXIMSPSG": 2,
+			"L1Q8BNQB4L3DUYSCP44": 3,
+			"L1Q8BNQB4L3EKVHO80K": 5,
+			"L1Q8BNQB4LDKGLY6WW0": 4,
+			"L1Q8BNQB4LDS1NMJTSK": 1,
+			"L1Q8BNQB4LJHH0RPX4W": 2,
+			"L1Q8BNQB4LP7YV1QQ88": 1,
+			"L1Q8BNQB4MJZG97ZCGS": 9,
+			"L1Q8BNQB4MK3P5JF2G4": 1,
+			"L1Q8BNQB4MK3X7S7KWG": 3,
+			"L1Q8BNQB4OUGZVTTI0C": 1,
+			"L1Q8BNQB4S9LFG7BCOW": 8,
+			"L1Q8BNQB4SAFMXM0NK8": 15,
+			"L1Q8BNQB4SJ7CKMMAOK": 4,
+			"L1Q8BNQB4TB8QHMJKWG": 2
+		},
+		"players_traded": {
+			"P1KUXVLVB11UPNKE3OOO": 2
+		},
+		"plop": {
+			"drop": 1,
+			"examine": 62,
+			"pickup": 4
+		},
+		"pols": {
+			"bought": 2
+		},
+		"potato": {
+			"drop": 7,
+			"pickup": 7
+		},
+		"potato_patty": {
+			"pickup": 1
+		},
+		"potcorn": {
+			"pickup": 2
+		},
+		"potians_feast": {
+			"drop": 3,
+			"pickup": 3
+		},
+		"potion_amorous_philtre": {
+			"drop": 5,
+			"pickup": 4,
+			"quaff": 2
+		},
+		"potion_avatar_small": {
+			"give": 3
+		},
+		"potion_chris": {
+			"drop": 1,
+			"pickup": 2,
+			"pour": 2
+		},
+		"potion_garden_fertilize": {
+			"pickup": 2,
+			"pour": 1
+		},
+		"potion_garden_water": {
+			"pickup": 1
+		},
+		"potion_keycutter_tonic": {
+			"quaff": 5
+		},
+		"potion_rainbow_juice": {
+			"pickup": 1
+		},
+		"potion_trantsformation_fluid": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"potion_tree_poison": {
+			"drop": 1,
+			"pickup": 3
+		},
+		"potions_used": {
+			"potion_amorous_philtre": 2,
+			"potion_chris": 2,
+			"potion_garden_fertilize": 1,
+			"potion_keycutter_tonic": 5
+		},
+		"pottine": {
+			"pickup": 1
+		},
+		"powder_of_mild_fecundity": {
+			"disperse": 3,
+			"drop": 4,
+			"pickup": 4
+		},
+		"powders": {
+			"fertilivert": 7
+		},
+		"precious_potato_salad": {
+			"pickup": 1
+		},
+		"proper_rice": {
+			"drop": 2,
+			"pickup": 5
+		},
+		"proto_furniture_tower_chassis": {
+			"build_tower": 10
+		},
+		"proto_herb_garden_large": {
+			"restore": 1
+		},
+		"proto_jellisac_mound": {
+			"restore": 1
+		},
+		"proto_patch": {
+			"restore": 1
+		},
+		"pumpkin": {
+			"carve": 53,
+			"drop": 4,
+			"pickup": 4
+		},
+		"pumpkin_ale": {
+			"pickup": 1
+		},
+		"pumpkin_carved_1": {
+			"drop": 10,
+			"light": 4,
+			"pickup": 10
+		},
+		"pumpkin_carved_2": {
+			"drop": 6,
+			"light": 4,
+			"pickup": 7
+		},
+		"pumpkin_carved_3": {
+			"drop": 8,
+			"light": 6,
+			"pickup": 9
+		},
+		"pumpkin_carved_4": {
+			"drop": 13,
+			"light": 5,
+			"pickup": 12
+		},
+		"pumpkin_carved_5": {
+			"drop": 9,
+			"light": 8,
+			"pickup": 10
+		},
+		"pumpkin_lit_1": {
+			"drop": 5,
+			"pickup": 5,
+			"teach": 1
+		},
+		"pumpkin_lit_2": {
+			"drop": 5,
+			"pickup": 4
+		},
+		"pumpkin_lit_3": {
+			"drop": 6,
+			"pickup": 6
+		},
+		"pumpkin_lit_4": {
+			"drop": 9,
+			"pickup": 9,
+			"teach": 2
+		},
+		"pumpkin_lit_5": {
+			"drop": 13,
+			"pickup": 10
+		},
+		"pumpkin_pie": {
+			"drop": 1,
+			"pickup": 6
+		},
+		"pumpkins_carved": {
+			"number_1": 10,
+			"number_2": 7,
+			"number_3": 12,
+			"number_4": 12,
+			"number_5": 12
+		},
+		"pumpkins_placed": {
+			"carved": 46,
+			"lit": 38
+		},
+		"pungent_sunrise": {
+			"pickup": 1
+		},
+		"purple_flower": {
+			"drop": 5,
+			"extract_seeds": 12,
+			"pickup": 8
+		},
+		"quill": {
+			"drop": 3,
+			"pickup": 5
+		},
+		"race_ticket_hogtie_piggy": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"random_kindness": {
+			"bestow": 2,
+			"drop": 11,
+			"give": 8,
+			"pickup": 10
+		},
+		"rice": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"rich_tagine": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"rock_beryl_1": {
+			"mine": 9
+		},
+		"rock_beryl_2": {
+			"mine": 89,
+			"talk_to": 1
+		},
+		"rock_dullite_1": {
+			"mine": 77
+		},
+		"rock_dullite_2": {
+			"mine": 14,
+			"talk_to": 1
+		},
+		"rock_dullite_3": {
+			"mine": 25
+		},
+		"rock_metal_1": {
+			"mine": 25
+		},
+		"rock_metal_2": {
+			"mine": 79
+		},
+		"rock_metal_3": {
+			"mine": 15
+		},
+		"rock_sparkly_1": {
+			"mine": 1
+		},
+		"rock_sparkly_2": {
+			"mine": 13
+		},
+		"rock_sparkly_3": {
+			"mine": 133
+		},
+		"rocks_mined": {
+			"beryl": 686,
+			"dullite": 920,
+			"metal_rock": 797,
+			"sparkly": 807
+		},
+		"rookswort": {
+			"drop": 1,
+			"extract_seeds": 16,
+			"pickup": 1
+		},
+		"rube_trades": {
+			"51-03-02": 1,
+			"51-03-14": 1,
+			"51-03-21": 1,
+			"51-05-05": 1,
+			"51-05-27": 1,
+			"51-05-41": 1,
+			"51-05-58": 1,
+			"51-05-59": 1,
+			"51-05-64": 1,
+			"51-10-07": 1,
+			"51-10-19": 1,
+			"51-10-32": 1,
+			"51-10-42": 1,
+			"52-01-08": 1
+		},
+		"rubeweed": {
+			"drop": 1,
+			"extract_seeds": 9,
+			"pickup": 2
+		},
+		"salmon_jaella": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"sammich": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"saucepan": {
+			"drop": 1,
+			"pickup": 1,
+			"repair": 1,
+			"use": 69
+		},
+		"savory_smoothie": {
+			"drink": 1,
+			"drop": 3,
+			"pickup": 4
+		},
+		"scraper": {
+			"drop": 3,
+			"party_scraping_on": 1,
+			"pickup": 4,
+			"repair": 10
+		},
+		"scrumptious_frittata": {
+			"drop": 2,
+			"pickup": 2
+		},
+		"seed_carrot": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"seed_corn": {
+			"drop": 11,
+			"pickup": 67
+		},
+		"seed_potato": {
+			"pickup": 2
+		},
+		"seed_pumpkin": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"seed_spinach": {
+			"drop": 2,
+			"pickup": 5
+		},
+		"seedlings_petted": {
+			"trant_bean": 9,
+			"trant_bubble": 12,
+			"trant_egg": 6,
+			"trant_fruit": 25,
+			"trant_gas": 6,
+			"trant_spice": 6,
+			"wood_tree": 15
+		},
+		"seeds_got": {
+			"herb_seed_gandlevery": 738,
+			"herb_seed_hairball_flower": 874,
+			"herb_seed_purple_flower": 674,
+			"herb_seed_rookswort": 906,
+			"herb_seed_rubeweed": 638,
+			"herb_seed_silvertongue": 369,
+			"herb_seed_yellow_crumb_flower": 494
+		},
+		"sesame_oil": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"shovel": {
+			"drop": 1,
+			"pickup": 1,
+			"repair": 2
+		},
+		"shrines_donated": {
+			"alph": 26,
+			"cosma": 153,
+			"friendly": 42,
+			"grendaline": 26,
+			"humbaba": 67,
+			"lem": 116,
+			"mab": 17,
+			"pot": 38,
+			"spriggan": 86,
+			"ti": 18,
+			"zille": 84
+		},
+		"signpost": {
+			"num_neighbors": 5
+		},
+		"silvertongue": {
+			"drop": 1,
+			"extract_seeds": 8,
+			"pickup": 2
+		},
+		"simple_bbq": {
+			"pickup": 1
+		},
+		"simple_slaw": {
+			"pickup": 1
+		},
+		"sloth": {
+			"got_bonus_snails": 13,
+			"snails_received": 99
+		},
+		"sloths": {
+			"played_music_for": 4
+		},
+		"slow_gin_fizz": {
+			"drink": 1,
+			"drop": 7,
+			"give": 1,
+			"pickup": 6
+		},
+		"small_worthless": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"smelter": {
+			"ingots_created": 170,
+			"metal_smelted": 850,
+			"repair": 2,
+			"smelt": 16
+		},
+		"snack_pack": {
+			"pickup": 1
+		},
+		"snail": {
+			"pickup": 8
+		},
+		"sneezing_powder": {
+			"give": 1,
+			"pickup": 1
+		},
+		"sno_cone_blue": {
+			"drop": 4,
+			"eat": 2
+		},
+		"sno_cone_green": {
+			"eat": 2
+		},
+		"sno_cone_orange": {
+			"eat": 1
+		},
+		"sno_cone_purple": {
+			"drop": 1
+		},
+		"sno_cone_red": {
+			"drop": 1
+		},
+		"sparkle_powder": {
+			"pickup": 1
+		},
+		"sparkly": {
+			"crush": 20,
+			"drop": 4,
+			"pickup": 4
+		},
+		"special_item_that_only_beta_testers_get": {
+			"admire": 4,
+			"begrudge": 1,
+			"drop": 5,
+			"enjoy": 2,
+			"infer": 1,
+			"pickup": 2,
+			"respect": 2
+		},
+		"spice_mill": {
+			"drop": 1,
+			"grind": 30,
+			"pickup": 1
+		},
+		"spicy_grog": {
+			"drink": 1,
+			"drop": 1,
+			"pickup": 3
+		},
+		"spicy_quesadilla": {
+			"pickup": 2
+		},
+		"spinach": {
+			"activate": 186,
+			"drop": 46,
+			"eat": 6,
+			"pickup": 45
+		},
+		"spinach_salad": {
+			"pickup": 1
+		},
+		"spindle": {
+			"drop": 1,
+			"repair": 4,
+			"spin": 19
+		},
+		"spun": {
+			"straight_to_string": 1
+		},
+		"still": {
+			"collected_in_pol": 371,
+			"distill": 8,
+			"drop": 11,
+			"pickup": 9
+		},
+		"stoot_barfield_pullstring_doll": {
+			"pull_string": 2
+		},
+		"street_spirit_firebog": {
+			"buy_sell": 6,
+			"talk_to": 1
+		},
+		"street_spirit_groddle": {
+			"buy_sell": 193,
+			"talk_to": 16
+		},
+		"street_spirit_zutto": {
+			"buy_sell": 3
+		},
+		"streets_visited_in_hub": {
+			"number_100": 29,
+			"number_101": 25,
+			"number_102": 28,
+			"number_105": 27,
+			"number_106": 21,
+			"number_107": 20,
+			"number_108": 1,
+			"number_109": 37,
+			"number_110": 20,
+			"number_113": 28,
+			"number_114": 26,
+			"number_119": 21,
+			"number_120": 1,
+			"number_121": 7,
+			"number_123": 1,
+			"number_125": 1,
+			"number_126": 1,
+			"number_128": 8,
+			"number_133": 1,
+			"number_136": 20,
+			"number_137": 20,
+			"number_140": 20,
+			"number_141": 18,
+			"number_142": 6,
+			"number_143": 16,
+			"number_27": 7,
+			"number_40": 7,
+			"number_50": 11,
+			"number_51": 4,
+			"number_56": 41,
+			"number_58": 42,
+			"number_63": 33,
+			"number_64": 22,
+			"number_66": 4,
+			"number_71": 32,
+			"number_72": 31,
+			"number_75": 37,
+			"number_76": 37,
+			"number_77": 3,
+			"number_78": 17,
+			"number_85": 28,
+			"number_86": 2,
+			"number_89": 27,
+			"number_90": 2,
+			"number_91": 1,
+			"number_92": 31,
+			"number_93": 32,
+			"number_95": 17,
+			"number_97": 32,
+			"number_98": 34,
+			"number_99": 28
+		},
+		"streets_visited_in_hub_100": {
+			"LIF3VMSMT0H2NKE": 1,
+			"LIF48OQC9DH2014": 6,
+			"LIF6APMFJUG2AK5": 3,
+			"LIF992JCSAH29T1": 4,
+			"LIF9N8QU1PG2CN8": 2,
+			"LIFBD8FM0UG2QCR": 1,
+			"LIFC768I7UG2F88": 1,
+			"LIFCNFNEJRG2ON4": 3,
+			"LIFD8KDI3BH2UAF": 4,
+			"LIFE0QTCG3H2QU2": 3,
+			"LIFF6BQE33H26JC": 6,
+			"LIFFGUFIABH2D6F": 3,
+			"LIFJ5ECMA3H2OIV": 2,
+			"LIFJBNJ589E2BNK": 1,
+			"LIFJVV332JC2M0S": 3,
+			"LIFK06CR2JC2K51": 2,
+			"LIFK0P9Q6JC2MEF": 4,
+			"LIFLPK2J9UG2AV1": 3,
+			"LIFME5D0K0H2EGC": 2,
+			"LIFNEU3LGUG2BMK": 2,
+			"LIFP35VRDTC2JVA": 1,
+			"LIFQS2GE6BH21V9": 1,
+			"LIFSLDITPAH2CHG": 8,
+			"LIFTGHSRLDH2LDE": 2,
+			"LIFTPARUOOG2TEB": 1,
+			"LIFU3VBO31H28F0": 1,
+			"LIFUKF4FNRG2JT0": 1,
+			"LIFV6DIGKVC21D0": 1,
+			"LIFVV1VA9RG2ISF": 1
+		},
+		"streets_visited_in_hub_101": {
+			"LHV1H71LPKA2P7G": 2,
+			"LHV1HKHRSKA2CR9": 3,
+			"LHV1HO45PQA2QJS": 1,
+			"LHV1KT9J0LA2IIA": 3,
+			"LHV23IAU9LA2E7A": 4,
+			"LHV245SVALA2ST5": 7,
+			"LHV253Q5BLA2TTI": 2,
+			"LHV2547JP9B2AG0": 2,
+			"LHV254FHBLA2F5N": 5,
+			"LHV2SR7FENA29JQ": 8,
+			"LHV4U509S9B2MRV": 1,
+			"LHVFUCU92TA26BJ": 4,
+			"LHVGSE15MQA2OGE": 3,
+			"LHVHMCSV0QA2JET": 6,
+			"LHVII3H61QA2C21": 3,
+			"LHVLG51LV6B22AO": 2,
+			"LHVM1R8OA7B2IRT": 5,
+			"LHVM50PPD7B2EEU": 1,
+			"LHVMF8SSJ7B2DV2": 3,
+			"LHVMK86NP7B26E6": 1,
+			"LHVPJPLE4TA27LD": 3,
+			"LHVSU0QSQIA2TIM": 2,
+			"LHVT0JVHRIA2IE9": 5,
+			"LHVT10TNRIA23L2": 4,
+			"LHVT4C9KSIA2UMG": 6
+		},
+		"streets_visited_in_hub_102": {
+			"LA53D0DJQMB2B4S": 2,
+			"LA57DQKFHPB2EIS": 2,
+			"LA5ATR2SUMB2FKP": 1,
+			"LA5DGUEJ3PB2UE3": 2,
+			"LA5FIJ2LMPB2FVN": 1,
+			"LA5GILERBSB25H2": 2,
+			"LA5GRQJINPB2HS1": 4,
+			"LA5H2M7G7UB24FO": 2,
+			"LA5IUQRKIMB2SGF": 2,
+			"LA5J0NEMIMB2OQ0": 3,
+			"LA5J5DGOIMB24LP": 1,
+			"LA5JAMFQIMB227E": 3,
+			"LA5JDUKSIMB207U": 3,
+			"LA5JGH5UIMB28BP": 1,
+			"LA5JI29VIMB2SDT": 4,
+			"LA5OSVV5LRB23BT": 2,
+			"LA5OUBP2SPB2MK2": 5,
+			"LA5P7O926NB2CFB": 1,
+			"LA5VOHQCROB2NSG": 4,
+			"LDOEDH6P6GC2R2T": 1,
+			"LDOS7IQJDEC2KHP": 1,
+			"LIF1TOD6F8C21NS": 4,
+			"LIF26IOMR8C2GBF": 2,
+			"LIF26JLSR8C261S": 1,
+			"LIF308SGODC2TRS": 2,
+			"LIF5JTDA5EC2A02": 1,
+			"LIFDS8H7KBC2B2U": 1,
+			"LIFIDIQ4NGC2U1Q": 4
+		},
+		"streets_visited_in_hub_105": {
+			"LIF1DI4GH4E2JB7": 1,
+			"LIF1LG3FA9E23A6": 1,
+			"LIF1NMGHH4E2OA1": 2,
+			"LIF209RIH4E2JCP": 3,
+			"LIF28P8KH4E2U7M": 1,
+			"LIF2I10MEOE2CRA": 1,
+			"LIF2KRHMH4E24QU": 2,
+			"LIF2T8VNH4E2DRK": 2,
+			"LIF35OFPH4E21T2": 2,
+			"LIF3I4MK96E26KF": 1,
+			"LIF3IFLRH4E2D6G": 4,
+			"LIF3NBOHV8E20DR": 1,
+			"LIF57HKSG9E2FSO": 2,
+			"LIF85V4ON6E2UVV": 1,
+			"LIFBSQJTGME2KRH": 1,
+			"LIFD854FO6E2UO7": 1,
+			"LIFDTKVOMQE2SPB": 1,
+			"LIFEMMLM17E2540": 1,
+			"LIFG1L8GLGE2HIA": 4,
+			"LIFGECSJLGE25UP": 3,
+			"LIFGR46M8RE2RC7": 1,
+			"LIFHEL95TME269I": 1,
+			"LIFHGPDRLLE275R": 1,
+			"LIFI1K1IRJE2VTS": 1,
+			"LIFJJRJ23PE224C": 1,
+			"LIFQRA323ME2GCO": 1,
+			"LIFVST7DH4E2CCO": 1
+		},
+		"streets_visited_in_hub_106": {
+			"LHF2KOKDR2D2EIU": 1,
+			"LHF893IMS2D2AKU": 2,
+			"LHF8B3B0S4D2L5U": 2,
+			"LHFD24US63D2QO6": 1,
+			"LHFER9HGE3D2UPP": 3,
+			"LHFET4I773D2OUU": 1,
+			"LHFFH3GKN2D2BTS": 6,
+			"LHFHR6S923D2RL9": 1,
+			"LHFIV4V8J6J2I7U": 1,
+			"LHFKT1LK83D2BAF": 9,
+			"LHFL23QTC2D21SF": 1,
+			"LHFL7HBQO2D2B4H": 5,
+			"LHFNBKJMP4D2S9M": 2,
+			"LHFNIVJNP4D2IM6": 2,
+			"LHFR6PV2Q2D24KJ": 4,
+			"LHFRC7NQL4D2C59": 1,
+			"LHFSH881K2D2GP9": 6,
+			"LHFTBK54M4D2JQA": 1,
+			"LHFTJK6IQ4D2R6M": 1,
+			"LHFTQ7GLV2D2GG1": 7,
+			"LHFUE6UMQ4D2K42": 13
+		},
+		"streets_visited_in_hub_107": {
+			"LDO1OPGDSCD29NF": 3,
+			"LDO5CC4R1FD2SQG": 2,
+			"LDO8HM0S8DD240C": 1,
+			"LDO8SVSPPCD22ED": 1,
+			"LDOACFHG1DD26A5": 1,
+			"LDOE4V402DD2S3O": 1,
+			"LDOEMNGFQCD2KI2": 2,
+			"LDOFAE74UCD29PD": 5,
+			"LDOISPPQICD27RQ": 1,
+			"LDOM6B78RCD26TA": 1,
+			"LDONE5453DD2DHS": 3,
+			"LDOOD6S77DD228S": 2,
+			"LDOOF07GRCD2MAP": 1,
+			"LDOQRJELVCD285H": 1,
+			"LDOTQ8JCOCD20TU": 2,
+			"LDOU5PQU0FD21PF": 1,
+			"LDOVRMU9SCD2ASN": 1,
+			"LDOVUDD84DD2U4U": 1,
+			"LNV9O6NVFCD2SFS": 1,
+			"LNVCJKCAHCD2660": 1
+		},
+		"streets_visited_in_hub_108": {
+			"LDOE67MFL6E2FBR": 1
+		},
+		"streets_visited_in_hub_109": {
+			"LUV1D5ROINF2MDO": 1,
+			"LUV1V6AR27G26QO": 1,
+			"LUV22FOR7AF2TIE": 1,
+			"LUV2SS9BHDT2I85": 1,
+			"LUV3TN6CIDF2DL5": 3,
+			"LUV5DRKRFNF2BNO": 1,
+			"LUV7MEQ2P5F2LOG": 1,
+			"LUV81B4FPCF2QOL": 1,
+			"LUV8KVC0JDT2N8E": 1,
+			"LUVCIHEQCAF28NR": 1,
+			"LUVCMP7BM7F2JET": 3,
+			"LUVEAFOJ4LF23HV": 1,
+			"LUVEJ2PKGAF2771": 1,
+			"LUVFGT16B7G240H": 3,
+			"LUVGTE14OSF23D5": 2,
+			"LUVIIL1P65F22NC": 1,
+			"LUVINN2QDSF265I": 2,
+			"LUVK3V3GUKF2K88": 1,
+			"LUVKM04MB9G2I53": 1,
+			"LUVL2G4TQ7F2L1T": 2,
+			"LUVL8CLKD5F2TNB": 1,
+			"LUVLGC15RKF2L68": 1,
+			"LUVLL5M2V9G24MD": 2,
+			"LUVMBSKJQ5F289H": 1,
+			"LUVNUGNGN5F2BOT": 1,
+			"LUVPOEQCV9G2JEL": 1,
+			"LUVQ4HDKLSF274K": 2,
+			"LUVQMVII88F2O29": 1,
+			"LUVSCDSTRAF2EOF": 2,
+			"LUVSMJ94HKF2V3J": 1,
+			"LUVT92Q1PNF23GR": 1,
+			"LUVTEIMAL2F2UMM": 1,
+			"LUVTHO9HPSF2GJA": 1,
+			"LUVTKR868NF27QG": 2,
+			"LUVTV2TR28F23GO": 2,
+			"LUVUETG9K6G2HAO": 2,
+			"LUVUVJBM5DF2UR6": 2
+		},
+		"streets_visited_in_hub_110": {
+			"LA510OD56BH2CBJ": 2,
+			"LA51AB6PCBH2A2V": 2,
+			"LA51UU6VQAH21BE": 1,
+			"LA52JSKF6BH2BPA": 3,
+			"LA52VVB0LDH23N7": 2,
+			"LA57S02C1BH2TP4": 1,
+			"LA58P18ELAH2ERI": 3,
+			"LA5C1CH8TDH277B": 1,
+			"LA5FR0B3BUG27S7": 1,
+			"LA5G15O4BUG2CVB": 1,
+			"LA5GBQ27BUG2FF9": 3,
+			"LA5GR516F3H2GUL": 3,
+			"LA5GTNUABUG2BP7": 1,
+			"LA5H8G00NUG2CRH": 1,
+			"LA5I9D23ODH22M8": 1,
+			"LA5ICL7V9BH2LCA": 3,
+			"LA5JN50RNAH27R9": 3,
+			"LA5NACEOCUG283E": 1,
+			"LA5S22147DH2QGH": 2,
+			"LA5T7SLLO3H2ERO": 1
+		},
+		"streets_visited_in_hub_113": {
+			"LHF48S34D1J2F31": 3,
+			"LHF4QVGL7NI269C": 3,
+			"LHF6MVO2G6J2F1F": 4,
+			"LHFC3I4EKMI20JD": 1,
+			"LHFC6RU2F3J26ME": 1,
+			"LHFD81QMKMI2SSL": 1,
+			"LHFEKBJFP0J2J9Q": 2,
+			"LHFF2N2M36J2MG3": 1,
+			"LHFFQ4KN29J2O0U": 2,
+			"LHFG6KGMV3J2OU9": 1,
+			"LHFGU9HJ81J2GGT": 4,
+			"LHFHTR4FSMI2MA2": 2,
+			"LHFHUF5304J2F70": 2,
+			"LHFJ78CBJ6J2MLM": 1,
+			"LHFJGR1KH3J29IT": 2,
+			"LHFJR7H9R8J2SHM": 1,
+			"LHFL2SL1R0J2655": 1,
+			"LHFL8M1IIPI2L46": 2,
+			"LHFM9ORBM1J2BS4": 2,
+			"LHFO1IFRP3J28EU": 2,
+			"LHFP8P54GMI2UCH": 1,
+			"LHFPD9KBT5J2D8M": 2,
+			"LHFR1N2PUMI2C7A": 3,
+			"LHFRAQFOGMI2QAI": 2,
+			"LHFRISNV5NI2580": 3,
+			"LHFS76JAU5J2P90": 1,
+			"LHFSLPE6A3J2CFJ": 4,
+			"LHFU61GVLKI2ATQ": 2
+		},
+		"streets_visited_in_hub_114": {
+			"LUV174V0QUB3JT4": 3,
+			"LUV1RMOG91L2F6G": 1,
+			"LUV483AL8JL28J2": 2,
+			"LUV4RLT53QK2GUF": 1,
+			"LUV528DLLJL23MB": 3,
+			"LUV681KDSQL2PST": 2,
+			"LUV8H510J7K2DQS": 1,
+			"LUVBP2STKQJ24PT": 1,
+			"LUVBQFC4NJL2093": 2,
+			"LUVC8S7H3AK2JPD": 1,
+			"LUVCFATLK1L21R1": 1,
+			"LUVGL5C7BJL2V4U": 2,
+			"LUVGS4ELCPK2EJI": 2,
+			"LUVIAI9LFBL2TRO": 6,
+			"LUVIEBL289L21A2": 4,
+			"LUVIOOG33CL26FM": 3,
+			"LUVLN7FNEJJ2NOQ": 1,
+			"LUVN6H8QIJL250Q": 2,
+			"LUVNNQQ9AOJ253J": 2,
+			"LUVO4MCSNPK2P6J": 1,
+			"LUVP2B2ITBL2DIF": 2,
+			"LUVP6OB76JL27S1": 4,
+			"LUVQ7T6QICK2S0Q": 1,
+			"LUVQD7K50HL25GG": 1,
+			"LUVS3QBDOBL2HMO": 2,
+			"LUVTLIP0SIJ2DQG": 1
+		},
+		"streets_visited_in_hub_119": {
+			"LDO20OO2ETQ2EAG": 1,
+			"LDO3JFLC5TQ2NOR": 1,
+			"LDO4KOD692R2GQB": 1,
+			"LDO5D2B1Q2R2M9S": 2,
+			"LDO8NGHIFTQ21CQ": 1,
+			"LDO97PV01MQ236V": 1,
+			"LDOAVTFUNTQ2EVU": 2,
+			"LDOF2V2INVQ2M9D": 3,
+			"LDOGKA16T4R2NP1": 1,
+			"LDOGVQ4M32R2COS": 1,
+			"LDOIGN9B60R2LI4": 4,
+			"LDOIJ31100R2CQG": 1,
+			"LDOJ3MELL2R23Q6": 2,
+			"LDOKUS4M0TQ263H": 1,
+			"LDOPA4JQBTQ2AA9": 1,
+			"LDORIA62TLQ2HOH": 4,
+			"LDOT3LP63TQ204B": 5,
+			"LDOTEUFUIVQ2F0S": 1,
+			"LDOU6HOAO2R21Q1": 1,
+			"LDOUIB18JVQ2O16": 1,
+			"LDOVCSE5H2R2L24": 1
+		},
+		"streets_visited_in_hub_120": {
+			"LUVQCRVPBKR2T5H": 1
+		},
+		"streets_visited_in_hub_121": {
+			"LA5215DAMMR2G95": 5,
+			"LA53N05IG9S2BLR": 2,
+			"LA54O13ELKR29I9": 4,
+			"LA5AAB0VNKR2VRN": 5,
+			"LA5NV05NFJS2NIF": 1,
+			"LA5QAHLTB9S2C0F": 5,
+			"LA5RJRSOHJS2C95": 1
+		},
+		"streets_visited_in_hub_123": {
+			"LA55B5RDL7T2F00": 1
+		},
+		"streets_visited_in_hub_125": {
+			"LHVQMS17V813FN7": 1
+		},
+		"streets_visited_in_hub_126": {
+			"LDOEP1822S03350": 1
+		},
+		"streets_visited_in_hub_128": {
+			"LA54AT4AK613NBL": 2,
+			"LA5CSD7ERL13G16": 3,
+			"LA5D24IIRL13IIC": 1,
+			"LA5D59PVEL13KNQ": 2,
+			"LA5GNCQ4T3137M7": 1,
+			"LA5IVDTK1O13F5I": 2,
+			"LA5OD66T5B13RKN": 1,
+			"LA5QLASKPD13NEM": 2
+		},
+		"streets_visited_in_hub_133": {
+			"LIFR1RLV0G43647": 1
+		},
+		"streets_visited_in_hub_136": {
+			"LUV10AGQOOA3MOE": 2,
+			"LUV1BKIJU8A3VL1": 1,
+			"LUV1JGGKU8A3NHG": 1,
+			"LUV1RBFLU8A3LR9": 1,
+			"LUV270LMU8A3UCB": 4,
+			"LUV2ERENU8A30JC": 1,
+			"LUV2M85OU8A39GS": 4,
+			"LUV2SSTOU8A30RS": 5,
+			"LUV2UE4DCMA3RLS": 2,
+			"LUV5I1CTIEA3DT0": 2,
+			"LUVCHLO06EA3VBC": 3,
+			"LUVG9L7NOLA3CEB": 4,
+			"LUVITGLVQOA3H34": 2,
+			"LUVLLA752MA3R76": 2,
+			"LUVM9R39TBA362T": 1,
+			"LUVMF06N99A3U2B": 1,
+			"LUVNHLCRGEA3VAS": 1,
+			"LUVST31K7MA369P": 1,
+			"LUVTKP64DEA3D31": 1,
+			"LUVVSU5NCBA3KOS": 1
+		},
+		"streets_visited_in_hub_137": {
+			"LHV1U1OJ7DB3RGF": 2,
+			"LHV7EKEL4MA3L56": 3,
+			"LHV7LLAAIDB35G2": 1,
+			"LHV7RGKN4MA33RT": 2,
+			"LHV7VE7O4MA35H6": 2,
+			"LHV88RQU60B3Q0G": 9,
+			"LHV894HP4MA3ME7": 1,
+			"LHV8E39Q4MA3CMV": 1,
+			"LHV8H4NQ4MA316V": 1,
+			"LHV8KV9R4MA3JLS": 4,
+			"LHVCUKA1I0B3UE8": 1,
+			"LHVDH0710RA3812": 2,
+			"LHVFCFD8FRA37T6": 1,
+			"LHVN4R7V7OA3MFN": 2,
+			"LHVNJNP4MAB3JI5": 2,
+			"LHVO8GQFVAB33C9": 2,
+			"LHVPOOR1LTA3NJ2": 2,
+			"LHVQ1AS19UA3O3T": 2,
+			"LHVQ48MA5GB39HE": 2,
+			"LHVRJLV2UOA3EMR": 2
+		},
+		"streets_visited_in_hub_140": {
+			"LUV13UHOH3D3V3S": 3,
+			"LUV2LJJO5UC30B2": 1,
+			"LUV2M7GCJ8D3878": 1,
+			"LUV8TSS9Q5D308S": 1,
+			"LUV9CALK9MC3MGA": 2,
+			"LUVA5LSLC0D3VCR": 1,
+			"LUVAPJARHHC3H1I": 1,
+			"LUVCLS8RV5D3VGT": 3,
+			"LUVE3K14D3D314I": 2,
+			"LUVEDNPVFJC3UIQ": 2,
+			"LUVGG7RFV2D3L0U": 1,
+			"LUVH137RPTC3IJ6": 4,
+			"LUVKHENRO0D3MJ8": 2,
+			"LUVSBGGQCHC386B": 5,
+			"LUVUMTSQ2FC34ES": 1,
+			"LUVV0NRR2FC3D3D": 2,
+			"LUVVASOS2FC3J3Q": 2,
+			"LUVVL8J088D3QVT": 2,
+			"LUVVMMKT2FC3V5B": 1,
+			"LUVVV3FU2FC38SK": 3
+		},
+		"streets_visited_in_hub_141": {
+			"LHF468KKJGD3IMD": 1,
+			"LHF583RFVLD3IUE": 1,
+			"LHF6E6PK0UC34J5": 1,
+			"LHF6UMCMHOD387H": 1,
+			"LHF70EIUS0D3RDM": 1,
+			"LHF7DU3N0UC3DRA": 2,
+			"LHF8LE0Q0UC3QEF": 1,
+			"LHFA15VS0UC3ITS": 2,
+			"LHFATC8M4RD3E61": 1,
+			"LHFH7LJRA8D3QAR": 1,
+			"LHFHNQ3RFUC3JMI": 1,
+			"LHFIEG6R1JD30UH": 1,
+			"LHFK965MT8D3G9E": 1,
+			"LHFN5KCGS5D3IFC": 1,
+			"LHFNDP1TKQD3V3O": 1,
+			"LHFODV4KNLD3L8L": 3,
+			"LHFOE9L06OD3JR6": 1,
+			"LHFS89VFIID3EB6": 2
+		},
+		"streets_visited_in_hub_142": {
+			"LA931BPTNLD3E35": 3,
+			"LA9BT2I0ILD340S": 7,
+			"LA9TCL1H7LD37DC": 2,
+			"LA9U27HN7LD3FVE": 4,
+			"LA9UCEFP7LD3523": 1,
+			"LA9UIKNQ7LD3SN0": 2
+		},
+		"streets_visited_in_hub_143": {
+			"LA96OS42D6F3M9P": 2,
+			"LA9Q9EQ5V4F33RE": 4,
+			"LA9QMIMHV4F3RHN": 2,
+			"LA9QNMSIV4F3143": 1,
+			"LA9QQQ8LV4F3TJ2": 1,
+			"LA9QTSIOV4F31QH": 5,
+			"LA9R3FG405F3B9P": 2,
+			"LA9R4OR505F3PSL": 2,
+			"LA9R6BM705F3L3N": 2,
+			"LA9R9KCC05F3VOU": 1,
+			"LA9RFQBJ05F33D7": 1,
+			"LA9RKS1O05F33Q1": 1,
+			"LA9RM4IT05F3B4M": 1,
+			"LA9RMUNU05F3EI8": 4,
+			"LA9S04AB15F3H53": 2,
+			"LA9S09UB15F34AE": 2
+		},
+		"streets_visited_in_hub_27": {
+			"LM4109NI2R640": 17,
+			"LM410QQ0CHARO": 11,
+			"LM410TMR0S2S1": 5,
+			"LM4115NJ46G8M": 5,
+			"LM413RQ6LRG9N": 11,
+			"LM413SQ6LRN58": 11,
+			"LM416LNIKVLM1": 14
+		},
+		"streets_visited_in_hub_40": {
+			"LA524M0OMOE2OGT": 5,
+			"LA5PPFP86NF2FOS": 15,
+			"LA5PV4T79OE2AOA": 5,
+			"LA5Q57C99OE2GNU": 4,
+			"LA5REO5I9OE2KLS": 6,
+			"LA5RPAFK9OE28GN": 5,
+			"LA5S44RM9OE2416": 5
+		},
+		"streets_visited_in_hub_50": {
+			"LHH1011JSO11ORS": 9,
+			"LHH101L162117H2": 7,
+			"LHH110KCF411NK6": 6,
+			"LHH112FHF411BUI": 5,
+			"LHH12E1QP611OPA": 10,
+			"LLI101QQRA211SM": 6,
+			"LLI107JLRU11EM2": 6,
+			"LLI14TT8T921J21": 5,
+			"LLI1D2QFT571VQT": 6,
+			"LLI1D3B2U5715LL": 6,
+			"LLI1D5DO1671QPA": 7
+		},
+		"streets_visited_in_hub_51": {
+			"LIF101NCNU112O2": 8,
+			"LIF102FDNU11314": 6,
+			"LIF12PMQ5121D68": 5,
+			"LIF2IUQJQ571TFL": 2
+		},
+		"streets_visited_in_hub_56": {
+			"LCR10157DMK1L0G": 1,
+			"LCR101SU5VL1P09": 2,
+			"LCR101UN0NJ1QPQ": 2,
+			"LCR103UREMK11MT": 3,
+			"LCR10NQRPKJ16H6": 1,
+			"LCR10S7GVKJ1ABI": 4,
+			"LCR11SBEGQL13D9": 2,
+			"LCR1356LOEM1NUI": 2,
+			"LCR13CE52PK1L81": 5,
+			"LCR13JCI5MK1EF4": 3,
+			"LCR13KDF9MK1QJK": 1,
+			"LCR13M5UQEM15TA": 2,
+			"LCR13NMUQEM1A2R": 2,
+			"LCR13O9VQEM1M3P": 1,
+			"LCR143M18PK1774": 1,
+			"LCR14HPKPBK1U25": 4,
+			"LCR15ST40FM1M1I": 2,
+			"LCR195Q63RK143M": 2,
+			"LCR1IDDEB2M17RC": 3,
+			"LCR1UERKPIN1G7N": 1,
+			"LCR7KJGL6LL1SSO": 1,
+			"LCRHITPKONL1T7J": 2,
+			"LCRTTKP69DO1MG0": 1,
+			"LLI1BQA9PUH16A0": 2,
+			"LLI23D3LDHD1FQA": 11,
+			"LLI23FELDHD1O3C": 4,
+			"LLI23Q4NDHD11EK": 2,
+			"LLI23TBNDHD19F2": 2,
+			"LLI23UJNDHD1A4V": 6,
+			"LLI2HHRC84F1TJ6": 3,
+			"LLI2HVHUM4F16B0": 5,
+			"LLI2V0UN7RD1T2J": 6,
+			"LLI2V30ECRD1GAU": 12,
+			"LLI2VDR4JRD1AEG": 5,
+			"LLI3272LOTD1B1F": 10,
+			"LLI4HC7IO2E1U31": 4,
+			"LLICFILAMTI11QV": 3,
+			"LLIE7307LTG11T2": 12,
+			"LLIF37ASJFE1AVQ": 2,
+			"LLIF3AQTOFE19OR": 5,
+			"LLIF6R3R9GE1GQB": 5
+		},
+		"streets_visited_in_hub_58": {
+			"LA5134UPLRU29OH": 2,
+			"LCR10B6U5NJ1VMA": 5,
+			"LCR10K0NLRK1GKE": 3,
+			"LCR10K3BPJK1U6F": 13,
+			"LCR10M2FUJK177P": 2,
+			"LCR10U5VHMK112O": 10,
+			"LCR111KI08O1HLB": 2,
+			"LCR113VN08O1116": 1,
+			"LCR117DK18O11FF": 2,
+			"LCR11CD34KK1AN1": 3,
+			"LCR11DNA3EL10TD": 9,
+			"LCR11EIB3EL15ID": 3,
+			"LCR11JA67NJ15N3": 5,
+			"LCR13R31REM1A4S": 2,
+			"LCR13VM1REM1GHI": 5,
+			"LCR14062REM1QIR": 11,
+			"LCR144H8APK1OJS": 5,
+			"LCR14K7RQBK119B": 5,
+			"LCR1664750O1D23": 3,
+			"LCR169OSLQL13JR": 6,
+			"LCR17BAC6OL11L8": 5,
+			"LCR1985LIRK12N4": 10,
+			"LCR199KIJRK1I2B": 5,
+			"LCR1UJAMSIN1D0G": 5,
+			"LCR202JSVIN1STL": 7,
+			"LCR7C1EG6LL1197": 3,
+			"LCRHSGTEION115H": 1,
+			"LCRO4M7LH5L1QOO": 8,
+			"LCRVT5V0BDO1HLF": 6,
+			"LDONEDVHC4030KF": 2,
+			"LLI32G3NUTD100I": 140,
+			"LLI32HBOUTD1GQV": 9,
+			"LLI32IDPUTD1F2R": 65,
+			"LLI32J0SVTD114U": 3,
+			"LLI32KHF0UD1AOK": 30,
+			"LLI32N0F1UD114O": 5,
+			"LLI334UG2UD1IKQ": 2,
+			"LLI33CQJ3UD1G5J": 15,
+			"LLID3PL336E1RN1": 14,
+			"LLIERMJ93DE1H25": 21,
+			"LLIFIG7BP8G1MU9": 27,
+			"LLIFINFQT8G13OU": 1
+		},
+		"streets_visited_in_hub_63": {
+			"LA99U5PI39524GN": 1,
+			"LLI4HJ9GRLI1C4E": 3,
+			"LLI57DI72HI153U": 2,
+			"LLI57EKC2HI1EH8": 2,
+			"LLI57FTH2HI17PN": 3,
+			"LLI57G8I2HI1CSO": 2,
+			"LLI599R12JI1216": 3,
+			"LLICF642CTI16R1": 1,
+			"LM11HIDASHO1THR": 2,
+			"LTJ1013E97K17P1": 1,
+			"LTJ101FB0SO17JK": 1,
+			"LTJ101I3KSO1JQS": 1,
+			"LTJ101PRVCQ1RN0": 1,
+			"LTJ1024R2DQ1B5S": 2,
+			"LTJ102C4FFQ1Q6O": 1,
+			"LTJ102GGGJK1VDO": 2,
+			"LTJ102LVLDQ1NGH": 1,
+			"LTJ103NK29K1TNJ": 1,
+			"LTJ103U2KJK1BLG": 3,
+			"LTJ105NEFDQ1H97": 1,
+			"LTJ108JAODQ11KH": 2,
+			"LTJ10B0UHQQ172V": 2,
+			"LTJ112E9DIO1BPE": 1,
+			"LTJ11BUJ57K1VUV": 1,
+			"LTJ11KEKAKO196V": 2,
+			"LTJ11TPQUMO197U": 1,
+			"LTJ12E6VSFQ1V4E": 1,
+			"LTJ12O0H7AO1IBS": 1,
+			"LTJ13ELOLPQ1DP3": 1,
+			"LTJ17MOFE6P1NJ3": 2,
+			"LTJ3PGOAMIQ1QDS": 1,
+			"LTJ9IM9AFAO1C44": 1,
+			"LTJLTCN21IQ1URB": 1
+		},
+		"streets_visited_in_hub_64": {
+			"LCR10199TPJ1DA3": 1,
+			"LCR101NQ4BU1SKS": 1,
+			"LCR103T98QJ1SC9": 2,
+			"LCR10H9E3QJ1E2P": 3,
+			"LCR10K63BQL14PE": 2,
+			"LCR12NU45AM12BB": 4,
+			"LCR12SD8J4K1PCV": 2,
+			"LCR131F8U1K1PF9": 1,
+			"LCR13L1JQEM1OSG": 1,
+			"LCR1460502K1790": 2,
+			"LCR14T7ECHM18G8": 1,
+			"LCR1516SFHM122V": 1,
+			"LCR167RSRSL1VPP": 2,
+			"LCR168ITRSL1498": 2,
+			"LCR169AURSL1G9O": 1,
+			"LCR16AUURSL1KTM": 1,
+			"LCR16BA1SSL1P7K": 1,
+			"LCR16VUKOQL18DU": 1,
+			"LCR1OU9H34K19OE": 3,
+			"LCR3MQK9NPJ191K": 5,
+			"LCRHJHOFQNL1PHP": 2,
+			"LLI3ABTPR2J1SH9": 2
+		},
+		"streets_visited_in_hub_66": {
+			"LDOHDJ84BST2UI2": 3,
+			"LHVDIELDQQ7228K": 6,
+			"LM11E7ODKHO1QJE": 7,
+			"LTJ1KOM8N2O1EFS": 1
+		},
+		"streets_visited_in_hub_71": {
+			"LA97L62229522GS": 4,
+			"LIF102S56SV16TJ": 1,
+			"LIF1077T5TU16I9": 2,
+			"LIF10HE4JTU1S7P": 3,
+			"LIF10O20NQU1B2P": 1,
+			"LIF10RP1DBU11NU": 1,
+			"LIF113PVOQU1UE5": 2,
+			"LIF11LLL5KV1CUG": 1,
+			"LIF126GSMBU1V2Q": 3,
+			"LIF12EQUGVU1RPI": 1,
+			"LIF12UPTEUV14ON": 1,
+			"LIF12VEKFAV1D67": 3,
+			"LIF13FGQHKV1E72": 1,
+			"LIF15OTSM102353": 4,
+			"LIF15S7VPRV1DIP": 17,
+			"LIF1609JRKV151E": 2,
+			"LIF163TJHQU191C": 3,
+			"LIF17GAI3VV1C1F": 2,
+			"LIF1AUQNSDU1UFL": 3,
+			"LIF1F3IM11020RB": 1,
+			"LIF1GTHPO9V14NG": 1,
+			"LIF1SGGD7EU12T5": 1,
+			"LIF25C8OJSV19UJ": 1,
+			"LIF5UU8FO3029OK": 7,
+			"LIFGR4QG5IV1QPI": 1,
+			"LIFMGTCIQGU13TS": 3,
+			"LIFMOLVTLHV1RAR": 1,
+			"LIFMVP96ONU12CO": 1,
+			"LIFN3FI0TNU10PS": 1,
+			"LIFN5CQH1OU1P61": 3,
+			"LIFNH08K9OU1SAB": 6,
+			"LIFNIC9JFOU1B2S": 3
+		},
+		"streets_visited_in_hub_72": {
+			"LA95U14319524O9": 1,
+			"LIF4SAD3FGU1NJ4": 1,
+			"LIF8TUJ3HGU1G3J": 2,
+			"LIFAGDB0IGU1BCK": 1,
+			"LIFDIDJT0GU1CR8": 3,
+			"LIFNG7GD8OU17BO": 1,
+			"LIFNG8EK8OU1A8D": 1,
+			"LTJ1057EEQU17G1": 3,
+			"LTJ10HO3FAV1HDD": 1,
+			"LTJ10KOCHTU1N89": 2,
+			"LTJ11HQLJUV1R15": 3,
+			"LTJ12G0H5KV10GH": 1,
+			"LTJ12PGU9KV1MGI": 1,
+			"LTJ12SJ2RUV1N6R": 1,
+			"LTJ135JKNQU113D": 5,
+			"LTJ13T0J2VV1A4N": 1,
+			"LTJ13TRDHKV1970": 1,
+			"LTJ13VTR2RU14QO": 4,
+			"LTJ1539P8102B2F": 1,
+			"LTJ154SP8102KIG": 1,
+			"LTJ168OVQRV1TQA": 2,
+			"LTJ16T2SURV19NT": 1,
+			"LTJ18J9ASDU1UPS": 2,
+			"LTJ1F3AER9V139B": 1,
+			"LTJ1FR102AV17DP": 3,
+			"LTJ1PV6RLCV1L08": 2,
+			"LTJ2S0EVDSV1HQ0": 3,
+			"LTJ34OO4UHV1NLQ": 1,
+			"LTJ7GRG1VCV1VJD": 2,
+			"LTJ8GSQV1IV1FBE": 3,
+			"LTJOCVQUMHV1K83": 2
+		},
+		"streets_visited_in_hub_75": {
+			"LA983PEN5DT21G9": 1,
+			"LA9EAH3R8DT2R18": 1,
+			"LA9EBPF8M2031HB": 1,
+			"LA9H1V6OGRU2FSB": 2,
+			"LA9MJQRNCDT23BP": 1,
+			"LA9QR9R40DT2A1D": 1,
+			"LHV12AQNBB32CJ2": 4,
+			"LHV1H1EHOF32UJM": 4,
+			"LHV1HT5F4D32GNM": 1,
+			"LHV1L41MCD32O4A": 3,
+			"LHV1VI5GPD32VAN": 3,
+			"LHV27JP91G321HQ": 3,
+			"LHV2CGP55U22T4Q": 2,
+			"LHV36AG0LO2208L": 4,
+			"LHV5TFKNF0320GQ": 4,
+			"LHV8NMVAGE228A2": 3,
+			"LHVAKM1MR032IGJ": 1,
+			"LHVB9CAE6032G6S": 2,
+			"LHVD0VVK8U2262J": 2,
+			"LHVH2BF13132CUF": 2,
+			"LHVL2NDFT732BK3": 3,
+			"LHVLCNLR783251B": 1,
+			"LHVLJEBAJ832SJA": 1,
+			"LHVMCDF3LA32K2R": 1,
+			"LHVMHDIBNA32QPF": 3,
+			"LHVQM0MUB032B5S": 3,
+			"LHVT7SA9QT221J2": 3,
+			"LHVVLBM1VL22A6Q": 5,
+			"LIF10P7CR622E3R": 1,
+			"LIF13QL5IG02UAI": 4,
+			"LIF1687ILK12R66": 2,
+			"LIF19BFUG922N84": 4,
+			"LIF38KRD8S12HAR": 7,
+			"LIF8I91P8J02A85": 2,
+			"LIFNRF3P0E02J90": 1,
+			"LIFU7EN0HN12ETM": 3,
+			"LIFUNGIBHQ1243A": 2
+		},
+		"streets_visited_in_hub_76": {
+			"LCR105E77812AEF": 2,
+			"LCR10UJQ1922K16": 4,
+			"LCR12D911T12E57": 1,
+			"LCR1303AT622I0Q": 1,
+			"LCR137T2HK123RR": 3,
+			"LCR13974F4220EH": 2,
+			"LCR146VPNK12CTU": 1,
+			"LCR1H8R9J62257C": 1,
+			"LCR241CP4Q129I1": 2,
+			"LCR29V8S4Q12IF4": 5,
+			"LCR3M699PP12F4A": 2,
+			"LCR4R7OEDS123M7": 2,
+			"LCR8F1FLBI12F2H": 2,
+			"LCRCDPP5AN12EK8": 2,
+			"LCRGEU0PUP12CLS": 2,
+			"LCRL3F8I3L12O0J": 2,
+			"LCRMCBQCRN12OFL": 3,
+			"LCRPA1RV1N12J4H": 1,
+			"LCRR4REARA12CM5": 3,
+			"LCRTAJK5UN124GG": 2,
+			"LHV1AMP8TL02B40": 5,
+			"LHV1CIQLVL02C6H": 4,
+			"LHV1E645M21278O": 2,
+			"LHV1F2U5M212P9C": 2,
+			"LHV1HLGUT212JNT": 1,
+			"LHV1IHMG1312A0S": 3,
+			"LHV1IM9C23124HD": 3,
+			"LHVDGF0JMQ7299V": 1,
+			"LHVQU18N3O021A5": 5,
+			"LHVTUCELRV02V9I": 2,
+			"LLI17P0T8J029N7": 1,
+			"LLI17VIKLJ02BSV": 2,
+			"LLI1C5DJ2Q12O21": 1,
+			"LNV4R9D5ADT2NP1": 1,
+			"LNVEC8L1DDT2F20": 1,
+			"LNVVEB4M8DT2JUB": 1,
+			"LUVUKCOSE793PHI": 2
+		},
+		"streets_visited_in_hub_77": {
+			"LIF1Q3IQM7122SP": 1,
+			"LIF1Q48RM712F87": 1,
+			"LIF1QBNPP7123J0": 1
+		},
+		"streets_visited_in_hub_78": {
+			"LA910DULG012JIE": 9,
+			"LA9114MS8B32FB2": 12,
+			"LA911QQIDI32J6R": 2,
+			"LA912TJ0KF328Q3": 4,
+			"LA9154LI9R22R7A": 6,
+			"LA918AIN63127HB": 30,
+			"LA91JU4QQ712DJN": 9,
+			"LA9B6PJ3NM22M0D": 16,
+			"LA9DNT3I2U22RS7": 6,
+			"LA9ENT2CRE22NFB": 11,
+			"LA9QKFSST732VNK": 6,
+			"LA9QR2STO832N8E": 9,
+			"LM112V6OCA126K1": 11,
+			"LM113FUK5422FVO": 13,
+			"LM113VSD6922MRJ": 25,
+			"LM169I1E0C226G1": 8,
+			"LM1TS65LBN12EIV": 31
+		},
+		"streets_visited_in_hub_85": {
+			"LHV12H937T32BDS": 3,
+			"LHV140E5N352BGF": 2,
+			"LHV144684H42FI4": 1,
+			"LHV14CBAO352I1I": 5,
+			"LHV15B8HEQ32SN0": 4,
+			"LHV15C8IEQ322UG": 4,
+			"LHV15D5LEQ325BE": 2,
+			"LHV15EUNEQ32FCI": 3,
+			"LHV15KA8NE42GSP": 1,
+			"LHV17CFO5V327AJ": 3,
+			"LHV17T973F42GEP": 3,
+			"LHV1BIOIL142P25": 3,
+			"LHV1EUUNP142EDF": 1,
+			"LHV1FQN29442T03": 1,
+			"LHV1FUFU9442AKR": 7,
+			"LHV1OOC40U42TKA": 3,
+			"LHV1PHOQH442RKT": 3,
+			"LHV2JBHA9152QAS": 1,
+			"LHV3ISF18352QIP": 2,
+			"LHV43I0BI352TG6": 1,
+			"LHV4AC2C3C42172": 2,
+			"LHV4U1QMFC42NBP": 2,
+			"LHV51JE5JC42VP2": 2,
+			"LHV5B9093K42J9S": 5,
+			"LHV9BF0AUJ42CLQ": 1,
+			"LHVB16RSG652GJ4": 2,
+			"LHVE9CULH652BV2": 3,
+			"LHVHP2BJI652O9S": 4
+		},
+		"streets_visited_in_hub_86": {
+			"LA51450HIC42Q4I": 4,
+			"LA5J7IB1HK42N3D": 4
+		},
+		"streets_visited_in_hub_89": {
+			"LA512IH5226256P": 1,
+			"LA513ALBNM623UJ": 6,
+			"LA51701PF262LC8": 4,
+			"LA517JJML262LT0": 2,
+			"LA517KBQL262H3U": 2,
+			"LA517L6UL262RHT": 1,
+			"LA517MT2M262D0F": 6,
+			"LA519RU9M462NJ1": 2,
+			"LA51A5VM3K62P49": 2,
+			"LA51B2OQAK623EF": 1,
+			"LA51BMHT2562Q3D": 2,
+			"LA51BNNOEK629KG": 1,
+			"LA51CAQQ55629QM": 1,
+			"LA51CGIGKK62NV8": 1,
+			"LA51DOIHSK626VM": 2,
+			"LA51IOM1PC62SPF": 3,
+			"LA51IVI7PC62L64": 1,
+			"LA55645B8O528MI": 1,
+			"LA57FADCBN62PR0": 1,
+			"LA58KK7B9O522PC": 1,
+			"LA5DVVGJQQ5237U": 5,
+			"LA5EPQG0FN62PCS": 1,
+			"LA5FUB7R0N627KI": 2,
+			"LA5I10NJDL52TKD": 2,
+			"LA5QBAL9SL52I02": 2,
+			"LA5TBM8BIL5219R": 3,
+			"LA5VDIGU3G525F9": 1
+		},
+		"streets_visited_in_hub_90": {
+			"LIFLRSGG7952SBS": 4,
+			"LIFNNL3OJG52OKJ": 1
+		},
+		"streets_visited_in_hub_91": {
+			"LA513PFS0J52F45": 1
+		},
+		"streets_visited_in_hub_92": {
+			"LDOFQEEIHDT2QNS": 1,
+			"LDOKTFQ22DT2OEL": 1,
+			"LDORJMMHCDT2J08": 1,
+			"LIF14OKTU8722CQ": 6,
+			"LIF14PFVU872CSG": 3,
+			"LIF14QE5V872L2E": 6,
+			"LIF14RQ7V872TPR": 2,
+			"LIF14S69V872E2N": 3,
+			"LIF14TS9V872U9I": 4,
+			"LIF14ULAV8720HD": 2,
+			"LIF14VBBV872N2I": 2,
+			"LIF1502CV8729RP": 2,
+			"LIF152TCV8720Q6": 1,
+			"LIF153KDV872SE5": 7,
+			"LIF154IEV872JTD": 1,
+			"LIF160988972VND": 2,
+			"LIF1662B8972C00": 2,
+			"LIF16CPE89723EI": 1,
+			"LIF16GDJ89724E3": 2,
+			"LIF16IHL8972EAC": 2,
+			"LIF16PJS9972LC8": 3,
+			"LIF16TPLB972GKV": 2,
+			"LIF18V95I972R96": 1,
+			"LIF1AJ58K972JHJ": 2,
+			"LIF1FHVC1C72HEJ": 3,
+			"LIF7SHGS3E72T8L": 2,
+			"LIFF11B2RE72HMI": 1,
+			"LIFIEGBN9E72ILT": 1,
+			"LIFN23NRGG72NRR": 2,
+			"LIFU9C04IE72O8K": 2,
+			"LIFVTRAAJE72GHD": 1
+		},
+		"streets_visited_in_hub_93": {
+			"LIF103GH4C72BHJ": 4,
+			"LIF14KB3T872MAH": 3,
+			"LIF14N6MU872GGI": 3,
+			"LIF16SBFB972GLK": 1,
+			"LIF16U5HC972SNC": 1,
+			"LIF18TO5NB72AMR": 1,
+			"LIF19MQDQB725HT": 3,
+			"LIF1AQ6CK972734": 2,
+			"LIF1CI1RSB72BCA": 1,
+			"LIF28GT9KE72QQG": 1,
+			"LIF2AUKEAT72DU9": 1,
+			"LIF4CVKKD082IRH": 3,
+			"LIF9UI391Q62CIC": 1,
+			"LIFCLLMITT727LH": 2,
+			"LIFDB8NGF282H0Q": 1,
+			"LIFE9GRB8S62L1H": 4,
+			"LIFEL8CPH08259V": 1,
+			"LIFF72DU3O727EA": 3,
+			"LIFFBC4MNO72556": 10,
+			"LIFFHFT5UO72FC2": 1,
+			"LIFFIRQ00P729BS": 1,
+			"LIFHR02K9S62Q72": 2,
+			"LIFI9G70SV72H3C": 4,
+			"LIFID13EDG725C2": 1,
+			"LIFIECSPJ082A49": 3,
+			"LIFJ9M178082JAO": 1,
+			"LIFJP2UC80820D3": 3,
+			"LIFKPQEDFG722M5": 2,
+			"LIFNU7T73U722U5": 1,
+			"LIFQMHF4MT72V9Q": 1,
+			"LIFR3G1FFE72K0S": 1,
+			"LUVV8SDGGDT2QOH": 1
+		},
+		"streets_visited_in_hub_95": {
+			"LIFF7Q3H9O7222R": 1,
+			"LIFF7V2R9O72MUP": 1,
+			"LIFF81JT9O72F60": 1,
+			"LIFF829V9O7221M": 1,
+			"LIFF83D0AO72SUG": 1,
+			"LIFF85Q3AO72TIV": 1,
+			"LIFF86N5AO72UVT": 1,
+			"LIFF88AAAO72MQ9": 1,
+			"LIFF892CAO72FUN": 1,
+			"LIFF8A7EAO72NPH": 3,
+			"LIFF8D0JAO72UM0": 1,
+			"LIFF8JAQAO72U81": 1,
+			"LIFF8NE0BO72CNQ": 1,
+			"LIFF8P93BO72VKV": 1,
+			"LIFF8R57BO72VDS": 2,
+			"LIFF949JBO728GK": 2,
+			"LIFF95RKBO72R2Q": 5
+		},
+		"streets_visited_in_hub_97": {
+			"LA91JUQT2G82GUL": 3,
+			"LA92VDUR8D82E3F": 1,
+			"LA93B4PV0I82IH7": 2,
+			"LA93EC9GHI824JT": 3,
+			"LA960EK0JI82065": 1,
+			"LA961CLV4G8252G": 2,
+			"LA996D5KMF82E41": 3,
+			"LA9A9CGB9F824PK": 2,
+			"LA9BSVRN5I82JIQ": 2,
+			"LA9FAG24PI828J7": 2,
+			"LA9GLRKMQF82961": 1,
+			"LA9IHQQSCF820VN": 2,
+			"LA9KKVJDTC829U8": 2,
+			"LA9KL58B1D82CDV": 4,
+			"LA9KL68C1D825IA": 1,
+			"LA9KL77D1D829Q3": 4,
+			"LA9KL81E1D82ABT": 1,
+			"LA9KL9UE1D82RFO": 2,
+			"LA9KLA8H1D82JM3": 1,
+			"LA9KLB7I1D822OL": 1,
+			"LA9KLCKK1D82V3B": 3,
+			"LA9L02KJ2D829LS": 2,
+			"LA9L777SRI82T5F": 1,
+			"LA9N5MTRTF828OT": 2,
+			"LA9NT2E8FF8243N": 2,
+			"LA9Q4AL8DI82H2M": 2,
+			"LA9S90EJ0G8241N": 1,
+			"LA9T11KPMD82B1S": 1,
+			"LHV21H2S5DT2VF8": 1,
+			"LHV73IC58DT2RO7": 1,
+			"LHVC7554ADT2VA1": 1,
+			"LHVK0T750DT2D3K": 1
+		},
+		"streets_visited_in_hub_98": {
+			"LA9111H84492V1K": 1,
+			"LA9117J18492SRS": 1,
+			"LA9118S28492QCL": 1,
+			"LA91195E8492R4B": 1,
+			"LA912LITC492EU2": 3,
+			"LA912MO0D49290D": 1,
+			"LA912PJ5D492UIL": 1,
+			"LA912UEGE492F2G": 1,
+			"LA9143HLH4929K7": 2,
+			"LA91O38QQ192K8J": 1,
+			"LA91PK4T4292B0V": 2,
+			"LA95G0P137927B4": 3,
+			"LA96CLEAK692K72": 2,
+			"LA97Q5LV0F92PU6": 2,
+			"LA97VMVOOG92JGT": 1,
+			"LA99NEQK1F92ICE": 3,
+			"LA9BRBV8Q492K6R": 2,
+			"LA9ELDLMNE92JHO": 2,
+			"LA9FD1O7S492CCD": 1,
+			"LA9FDN44SG92SDQ": 1,
+			"LA9G6MA4P6923PH": 2,
+			"LA9GT0J87H92MPR": 1,
+			"LA9I4JIPBE92B8M": 2,
+			"LA9I92MRBE92S8Q": 1,
+			"LA9JJL6KCE924IK": 1,
+			"LA9LU1276F92KDP": 2,
+			"LA9NRNJSB792OG4": 2,
+			"LA9S9DGPV692IU2": 1,
+			"LHVAP821MDT2L85": 1,
+			"LHVBSCOFMDT2VE0": 1,
+			"LHVCJB2OMDT2VD8": 1,
+			"LHVEI9NVJ203LRO": 2,
+			"LHVSP6MKGDT2VUK": 1,
+			"LHVUR3UKGRU2SD2": 2
+		},
+		"streets_visited_in_hub_99": {
+			"LA9111M11LA2VAT": 1,
+			"LA91120N5LA249C": 1,
+			"LA91161VALA21D4": 3,
+			"LA911I05ILA2CQ5": 1,
+			"LA911J5DKLA20MS": 2,
+			"LA91SD0IEQA24L5": 1,
+			"LA931JPPT8A2LPU": 2,
+			"LA934IQQT8A26SV": 2,
+			"LA94KO5CFQA2V4Q": 4,
+			"LA98V53GRQA2VTO": 2,
+			"LA99CL11LSA2M35": 5,
+			"LA99VU1246A2VND": 3,
+			"LA9CO2B02OA2BG0": 1,
+			"LA9DURMSIAA2S1T": 1,
+			"LA9HJCHM18A21B4": 1,
+			"LA9I8CS028A2O5F": 1,
+			"LA9M05J386A296V": 1,
+			"LA9P334396A2GHP": 1,
+			"LA9PIEHVQ8A2H4S": 3,
+			"LA9QOQAL96A2L2K": 1,
+			"LA9RPI1P1QA2IMQ": 1,
+			"LA9T7IFRDIA2N0K": 2,
+			"LA9TDS1HSIA2RCO": 1,
+			"LA9TDT2BUIA2GMA": 3,
+			"LA9TEL683JA2JU0": 1,
+			"LA9TIJ7S4JA2CNF": 1,
+			"LA9U04T3OAA2R2L": 1,
+			"LA9V2T5DH8A23JD": 1
+		},
+		"subway_gate": {
+			"push": 1
+		},
+		"super_scraper": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"super_veggie_kebabs": {
+			"pickup": 1
+		},
+		"swank_zucchini_loaf": {
+			"drop": 7,
+			"eat": 1,
+			"pickup": 7
+		},
+		"swf_1": {
+			"drop": 1,
+			"pickup": 2
+		},
+		"swf_2": {
+			"drop": 2,
+			"pickup": 1
+		},
+		"swf_3": {
+			"drop": 7,
+			"pickup": 4,
+			"wrangle": 1
+		},
+		"swing_batter": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"talked_to": {
+			"P1KUXVLVASKLSIOJ7S0G": 7,
+			"P1KUXVLVAVP5GKE368OC": 70,
+			"P1KUXVLVAVP5HIUAA74G": 1,
+			"P1KUXVLVAXZC1FFG4AW4": 27,
+			"P1KUXVLVB10W5JLPAKSS": 1,
+			"P1KUXVLVB11UPNKE3OOO": 4,
+			"P1KUXVLVB121RIRBP8SS": 5,
+			"P1KUXVLVB2FBXKNA7FSO": 18,
+			"P1KUXVLVB2G5ZDGWCI88": 11,
+			"P1KUXVLVB4729YK5WJ4S": 271,
+			"P1KUXVLVB4RKQUG7E5KO": 9,
+			"P1KUXVLVB4RZYUHLG6OS": 23,
+			"P1KUXVLVB4S7CVPUA884": 84,
+			"PHF8MKOTDUC22PF": 1
+		},
+		"tangy_noodles": {
+			"pickup": 1
+		},
+		"tangy_sauce": {
+			"pickup": 1
+		},
+		"tasty_pasta": {
+			"pickup": 1
+		},
+		"teleportation_others": {
+			"summonee": 2
+		},
+		"teleportation_script": {
+			"pickup": 9,
+			"read": 223
+		},
+		"teleportation_self": {
+			"map": 1,
+			"plain": 95
+		},
+		"test_tube": {
+			"drop": 1,
+			"experiment": 42,
+			"pickup": 1
+		},
+		"tester_widget": {
+			"buffs": 3,
+			"cash": 49,
+			"credits": 19,
+			"doquests": 35,
+			"img": 105,
+			"items": 22,
+			"learn": 40,
+			"max": 593,
+			"redeal": 178,
+			"resurrect": 1,
+			"stubway": 2,
+			"teleport": 172,
+			"whistle": 3
+		},
+		"thread": {
+			"pickup": 1
+		},
+		"time_played": {
+			"2016-5-29": 9572,
+			"2016-5-30": 21740,
+			"2016-5-31": 292,
+			"2016-6-1": 12547,
+			"2016-6-10": 15092,
+			"2016-6-11": 10157,
+			"2016-6-12": 15776,
+			"2016-6-14": 49,
+			"2016-6-15": 6302,
+			"2016-6-16": 12682,
+			"2016-6-17": 14930,
+			"2016-6-18": 9158,
+			"2016-6-19": 6834,
+			"2016-6-2": 9894,
+			"2016-6-20": 7636,
+			"2016-6-21": 7285,
+			"2016-6-22": 7121,
+			"2016-6-23": 2215,
+			"2016-6-24": 16717,
+			"2016-6-25": 8411,
+			"2016-6-26": 2813,
+			"2016-6-27": 29487,
+			"2016-6-28": 15163,
+			"2016-6-29": 940,
+			"2016-6-3": 6640,
+			"2016-6-30": 4397,
+			"2016-6-4": 3368,
+			"2016-6-5": 5093,
+			"2016-6-6": 7863,
+			"2016-6-7": 32789,
+			"2016-6-8": 3937,
+			"2016-6-9": 18180,
+			"2016-7-1": 3831,
+			"2016-7-10": 7483,
+			"2016-7-11": 21254,
+			"2016-7-12": 5534,
+			"2016-7-13": 14305,
+			"2016-7-14": 3297,
+			"2016-7-15": 16213,
+			"2016-7-17": 13512,
+			"2016-7-18": 187,
+			"2016-7-19": 10596,
+			"2016-7-2": 1793,
+			"2016-7-21": 2319,
+			"2016-7-22": 6764,
+			"2016-7-23": 9422,
+			"2016-7-26": 6964,
+			"2016-7-27": 15822,
+			"2016-7-28": 2400,
+			"2016-7-29": 9587,
+			"2016-7-30": 3079,
+			"2016-7-31": 1065,
+			"2016-7-4": 10245,
+			"2016-7-6": 2933,
+			"2016-7-7": 3595,
+			"2016-7-8": 7611,
+			"2016-7-9": 16156,
+			"2016-8-1": 5149,
+			"2016-8-5": 868
+		},
+		"tincturing_kit": {
+			"use": 23
+		},
+		"tinkertool": {
+			"craft": 11,
+			"drop": 2,
+			"pickup": 2,
+			"repair": 13
+		},
+		"tomato": {
+			"drop": 5,
+			"pickup": 21
+		},
+		"tooberry_shake": {
+			"drink": 2,
+			"drop": 1,
+			"pickup": 1
+		},
+		"tool_units_repaired": {
+			"alchemical_tongs": 75,
+			"blender": 31,
+			"construction_tool": 1127,
+			"fancy_pick": 500,
+			"frying_pan": 75,
+			"grand_ol_grinder": 575,
+			"hatchet": 375,
+			"hoe": 3370,
+			"ore_grinder": 337,
+			"saucepan": 75,
+			"scraper": 475,
+			"shovel": 100,
+			"smelter": 375,
+			"spindle": 383,
+			"tinkertool": 1497,
+			"watering_can": 1877
+		},
+		"tools_repaired": {
+			"alchemical_tongs": 1,
+			"blender": 2,
+			"construction_tool": 16,
+			"fancy_pick": 3,
+			"frying_pan": 1,
+			"grand_ol_grinder": 3,
+			"hatchet": 4,
+			"hoe": 67,
+			"ore_grinder": 6,
+			"saucepan": 1,
+			"scraper": 10,
+			"shovel": 2,
+			"smelter": 2,
+			"spindle": 4,
+			"watering_can": 21
+		},
+		"tortilla": {
+			"drop": 2,
+			"pickup": 2
+		},
+		"tower_secrets": {
+			"TowerSpot_04": 2
+		},
+		"trant_bean": {
+			"harvest": 54,
+			"pet": 35,
+			"water": 35
+		},
+		"trant_bean_dead": {
+			"clear": 2
+		},
+		"trant_bubble": {
+			"harvest": 124,
+			"pet": 81,
+			"talk_to": 1,
+			"water": 85
+		},
+		"trant_bubble_dead": {
+			"clear": 3
+		},
+		"trant_egg": {
+			"harvest": 140,
+			"pet": 88,
+			"talk_to": 1,
+			"water": 90
+		},
+		"trant_egg_dead": {
+			"clear": 1
+		},
+		"trant_fruit": {
+			"harvest": 240,
+			"pet": 166,
+			"talk_to": 2,
+			"water": 166
+		},
+		"trant_fruit_dead": {
+			"clear": 2
+		},
+		"trant_gas": {
+			"harvest": 67,
+			"pet": 46,
+			"talk_to": 1,
+			"water": 46
+		},
+		"trant_gas_dead": {
+			"clear": 1
+		},
+		"trant_spice": {
+			"harvest": 89,
+			"pet": 59,
+			"talk_to": 2,
+			"water": 64
+		},
+		"trant_spice_dead": {
+			"clear": 2
+		},
+		"trants_fruit_harvested": {
+			"all_spice": 1020,
+			"bean_plain": 594,
+			"cherry": 2616,
+			"egg_plain": 1578,
+			"general_vapour": 714,
+			"plain_bubble": 1374
+		},
+		"trants_harvested": {
+			"trant_bean": 54,
+			"trant_bubble": 124,
+			"trant_egg": 140,
+			"trant_fruit": 240,
+			"trant_gas": 67,
+			"trant_spice": 89
+		},
+		"trants_petted": {
+			"trant_bean": 35,
+			"trant_bubble": 81,
+			"trant_egg": 88,
+			"trant_fruit": 164,
+			"trant_gas": 46,
+			"trant_spice": 59,
+			"wood_tree": 97
+		},
+		"trants_watered": {
+			"paper_tree": 7,
+			"trant_bean": 35,
+			"trant_bubble": 85,
+			"trant_egg": 90,
+			"trant_fruit": 166,
+			"trant_gas": 46,
+			"trant_spice": 64,
+			"wood_tree": 97
+		},
+		"trophy": {
+			"placed_eleven": 1
+		},
+		"trophy_bubble": {
+			"pickup": 1
+		},
+		"trophy_cubimal": {
+			"pickup": 2
+		},
+		"trophy_cubimal_2": {
+			"pickup": 2
+		},
+		"trophy_emblems": {
+			"pickup": 2
+		},
+		"trophy_gas": {
+			"pickup": 1
+		},
+		"trophy_music_b_brown": {
+			"pickup": 1
+		},
+		"trophy_music_d_blue": {
+			"pickup": 1
+		},
+		"trophy_music_d_green": {
+			"pickup": 1
+		},
+		"trophy_music_d_red": {
+			"pickup": 1
+		},
+		"trophy_music_x_shiny": {
+			"pickup": 2
+		},
+		"trophy_spice": {
+			"pickup": 2
+		},
+		"turmeric": {
+			"drop": 1,
+			"pickup": 16
+		},
+		"upgrade_card_instant_resurrection": {
+			"resurrect": 12
+		},
+		"upgrade_card_reshuffle": {
+			"drop": 1,
+			"pickup": 1,
+			"reshuffle": 61
+		},
+		"upgraded": {
+			"bag_furniture_cabinet": 2,
+			"bag_furniture_sdb": 88,
+			"bag_furniture_smallcabinet": 2,
+			"bag_furniture_wallcabinet": 3,
+			"furniture_armchair": 9,
+			"furniture_bed": 4,
+			"furniture_bench": 5,
+			"furniture_ceilingdeco": 4,
+			"furniture_ceilinglamp": 6,
+			"furniture_chair": 7,
+			"furniture_chassis": 5,
+			"furniture_coffeetable": 2,
+			"furniture_counter": 2,
+			"furniture_desk": 2,
+			"furniture_door": 10,
+			"furniture_fireplace": 2,
+			"furniture_floorlamp": 4,
+			"furniture_loveseat": 7,
+			"furniture_roomdeco": 20,
+			"furniture_rug": 2,
+			"furniture_shelf": 12,
+			"furniture_sidetable": 7,
+			"furniture_sofa": 1,
+			"furniture_stool": 3,
+			"furniture_table": 3,
+			"furniture_tabledeco": 30,
+			"furniture_tower_chassis": 2,
+			"furniture_walldeco": 21,
+			"furniture_walllamp": 4
+		},
+		"urfu": {
+			"pickup": 1
+		},
+		"visiting_stone": {
+			"visit": 5
+		},
+		"waffles": {
+			"pickup": 1
+		},
+		"wall_button": {
+			"press": 28
+		},
+		"watering_can": {
+			"drop": 2,
+			"pickup": 2,
+			"repair": 21
+		},
+		"white_gas": {
+			"pickup": 1,
+			"smash": 1
+		},
+		"whortleberry": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"wine_of_the_dead": {
+			"drink": 1,
+			"drop": 7,
+			"pickup": 6,
+			"pour": 42
+		},
+		"wood_tree": {
+			"harvest": 72,
+			"harvest_clear": 2,
+			"pet": 98,
+			"water": 98
+		},
+		"woodworker": {
+			"collect": 11,
+			"install": 3,
+			"place": 2,
+			"refuel": 5,
+			"use": 12
+		},
+		"woodworker_fuser": {
+			"drop": 1,
+			"pickup": 1
+		},
+		"wotd": {
+			"poured_on_something": 41
+		},
+		"yellow_crumb_flower": {
+			"drop": 2,
+			"extract_seeds": 12,
+			"pickup": 2
+		},
+		"yummy_gruel": {
+			"pickup": 1
+		},
+		"zilloween_candy_given": {
+			"P1KUXVLVB11UPNKE3OOO": 1,
+			"P1KUXVLVB4RKQUG7E5KO": 1
+		},
+		"zucchini": {
+			"drop": 3,
+			"pickup": 2
+		}
+	},
+	"daily_counters": {
+		"qurazy_found": {
+			"LLI32G3NUTD100I": 1,
+			"LLIERMJ93DE1H25": 1
+		},
+		"qurazy_notfound": {
+			"LLI32G3NUTD100I": 1,
+			"LLIERMJ93DE1H25": 1
+		},
+		"today_key": "52-04-02"
+	},
+	"label": "Achievements",
+	"owner": {
+		"label": "ghost777",
+		"objref": true,
+		"tsid": "P1KUXVLVB456CYWAFVCC"
+	},
+	"place_time_counters": {
+		"bestowment_check": {
+			"alph": 1470085264,
+			"cosma": 1470085264,
+			"friendly": 1470085264,
+			"grendaline": 1470085264,
+			"humbaba": 1470083837,
+			"lem": 1470084190,
+			"mab": 1470083864,
+			"pot": 1470083846,
+			"spriggan": 1470085304,
+			"tii": 1470085304,
+			"zille": 1470083854
+		},
+		"piggies_captured": {
+			"L1Q8BNQB4KGHNTRS408": 1465452261,
+			"LCR11DNA3EL10TD": 1465602099,
+			"LCR17BAC6OL11L8": 1464886426,
+			"LLI32G3NUTD100I": 1466283834,
+			"LLI32HBOUTD1GQV": 1465496433,
+			"LLI32IDPUTD1F2R": 1464901170,
+			"LLIFIG7BP8G1MU9": 1465236833
+		},
+		"tithe_request": {
+			"lem": 1466874503,
+			"tii": 1469306296
+		}
+	},
+	"queue": [],
+	"ts": 1464525722386,
+	"tsid": "D1KUXVLVB4KB1GU70R48"
+}

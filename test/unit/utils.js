@@ -501,35 +501,4 @@ suite('utils', function () {
 			assert.deepEqual(utils.pointOnPlat(platform, 10), {x: 10, y: 10});
 		});
 	});
-
-
-	suite('typeGuard', function () {
-
-		test('works as expected', function () {
-			assert.deepEqual(utils.typeGuard({}), {});
-			assert.deepEqual(utils.typeGuard([]), []);
-			assert.deepEqual(utils.typeGuard({
-				a: 'a', b: 1, c: null,
-				d: undefined, e: -Infinity, f: NaN,
-			}), {
-				a: 'a', b: 1, c: null,
-			});
-			assert.deepEqual(utils.typeGuard({
-				a: {b: 1, c: {x: undefined, y: 1}, d: ['z', [NaN]]},
-			}), {
-				a: {b: 1, c: {y: 1}, d: ['z', []]},
-			});
-			assert.deepEqual(utils.typeGuard({
-				a: {b: 1, c: {x: undefined, y: 1}, d: ['z', [NaN]]},
-			}, true), {
-				a: {b: 1, c: {x: null, y: 1}, d: ['z', [null]]},
-			});
-		});
-
-		test('modifies the given object in place', function () {
-			var o = {a: 'a', b: 1, c: null, d: undefined, e: -Infinity, f: NaN};
-			assert.deepEqual(utils.typeGuard(o), {a: 'a', b: 1, c: null});
-			assert.deepEqual(o, {a: 'a', b: 1, c: null});
-		});
-	});
 });

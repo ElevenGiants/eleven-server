@@ -17,7 +17,6 @@ module.exports = {
 
 var rdb = require('rethinkdb');
 var wait = require('wait.for');
-var utils = require('utils');
 
 
 var cfg;
@@ -146,8 +145,8 @@ function write(obj, queryOpts, callback) {
 		callback = queryOpts;
 		queryOpts = null;
 	}
-	utils.typeGuard(obj, true);
-	var query = rdb.table(getTable(obj)).insert(obj, {conflict: 'replace'});
+	var query = rdb.table(getTable(obj)).insert(rdb.json(JSON.stringify(obj)),
+		{conflict: 'replace'});
 	runQuery(query, queryOpts, callback);
 }
 
