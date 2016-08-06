@@ -58,7 +58,7 @@ suite('pers', function () {
 
 		test('loads local objects', function () {
 			var o = {tsid: 'ITEST', some: 'data'};
-			pbeMock.write(o);
+			pbeMock.write([o]);
 			var lo = load(o.tsid);
 			assert.strictEqual(lo.tsid, 'ITEST');
 			var cache = pers.__get__('cache');
@@ -74,7 +74,7 @@ suite('pers', function () {
 					onLoadCalled = true;
 				},
 			};
-			pbeMock.write(o);
+			pbeMock.write([o]);
 			load(o.tsid);
 			assert.isTrue(onLoadCalled);
 		});
@@ -86,7 +86,7 @@ suite('pers', function () {
 					throw new Error('boo!');
 				},
 			};
-			pbeMock.write(o);
+			pbeMock.write([o]);
 			var loaded = load(o.tsid);
 			assert.isNull(loaded);
 			assert.notProperty(pers.__get__('cache'), o.tsid);
@@ -101,8 +101,8 @@ suite('pers', function () {
 				tsid: 'IB',
 				ref: {objref: true, tsid: 'IA'},
 			};
-			pbeMock.write(a);
-			pbeMock.write(b);
+			pbeMock.write([a]);
+			pbeMock.write([b]);
 			var la = load(a.tsid);
 			var cache = pers.__get__('cache');
 			assert.property(cache, a.tsid);
@@ -112,7 +112,7 @@ suite('pers', function () {
 
 		test('does not choke on unavailable objrefs', function () {
 			var o = {tsid: 'IO', ref: {objref: true, tsid: 'IUNAVAILABLE'}};
-			pbeMock.write(o);
+			pbeMock.write([o]);
 			var lo = load(o.tsid);
 			assert.isTrue(lo.ref.__isORP);
 		});
@@ -120,7 +120,7 @@ suite('pers', function () {
 		test('handles remote objects properly', function () {
 			rpcMock.reset(false);
 			var o = {tsid: 'ITEST', some: 'data'};
-			pbeMock.write(o);
+			pbeMock.write([o]);
 			var lo = load(o.tsid);
 			assert.isTrue(lo.__isRP, 'is wrapped in RPC proxy');
 			assert.isDefined(rcMock.getContext().cache.ITEST, 'in request cache');
@@ -134,12 +134,12 @@ suite('pers', function () {
 
 		test('getting an already loaded object reads it from cache', function () {
 			var onLoadCalls = 0;
-			pbeMock.write({
+			pbeMock.write([{
 				tsid: 'I1',
 				gsOnLoad: function gsOnLoad() {
 					onLoadCalls++;
 				},
-			});
+			}]);
 			pers.get('I1');
 			assert.strictEqual(pbeMock.getCounts().read, 1);
 			assert.strictEqual(onLoadCalls, 1);
