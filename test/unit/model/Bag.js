@@ -63,7 +63,6 @@ suite('Bag', function () {
 			var b3 = new Bag({tsid: 'B3', items: [i5]});
 			var b2 = new Bag({tsid: 'B2', items: [i4, b3], hiddenItems: [i3]});
 			var b1 = new Bag({tsid: 'B1', items: [i1, b2, i2]});
-			//jscs:disable disallowQuotedKeysInObjects
 			assert.deepEqual(b1.getAllItems(true), {
 				'I1': i1,
 				'I2': i2,
@@ -82,7 +81,6 @@ suite('Bag', function () {
 				'B2/B3': b3,
 				'B2/B3/I5': i5,
 			});
-			//jscs:enable disallowQuotedKeysInObjects
 		});
 	});
 

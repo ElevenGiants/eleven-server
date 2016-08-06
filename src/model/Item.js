@@ -343,7 +343,6 @@ Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
 Item.prototype.getPosObject = function getPosObject() {
 	// special case: no container (yet, i.e. during item creation)
 	if (!this.container) return;
-	//jscs:disable safeContextKeyword
 	var ret = this;
 	// traverse container chain until we reach a player or a
 	// direct child item of a location
@@ -351,7 +350,6 @@ Item.prototype.getPosObject = function getPosObject() {
 		ret = ret.container;
 	}
 	return ret;
-	//jscs:enable safeContextKeyword
 };
 
 

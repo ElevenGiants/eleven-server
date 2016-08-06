@@ -205,8 +205,6 @@ function getProto(group, klass) {
  * @returns {GameObject} a game object of the specified type,
  *          instantiated through the default constructor with `data`
  */
-//jscs:disable jsDoc
-// (jsDoc rule can't detect return value type here)
 function create(data, modelType) {
 	assert(typeof data === 'object', 'object data is required');
 	var tsidInitial;
@@ -232,7 +230,6 @@ function create(data, modelType) {
 	}
 	/*jshint +W055 */
 }
-//jscs:enable jsDoc
 
 
 /**

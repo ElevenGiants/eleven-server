@@ -56,8 +56,7 @@ The following operations are available:
 * `alltests` run all tests back-to-back with reduced output (also includes the
   `lint` task below); handy as a basic smoke test before committing
 * `bench` run benchmarks
-* `lint` perform static code analysis with [JSHint](http://www.jshint.com/) and
-  [JSCS](https://github.com/jscs-dev/node-jscs/)
+* `lint` perform static code analysis with [JSHint](http://www.jshint.com/)
 * `docs` generate HTML documentation with [JSDoc](http://usejsdoc.org/)
 * `start` run the server
 

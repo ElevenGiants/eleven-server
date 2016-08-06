@@ -71,8 +71,6 @@
     "benchmark": "https://github.com/bestiejs/benchmark.js/tarball/master",
     "chai": "^1.9.1",
     "coveralls": "^2.11.4",
-    "jscs": "^1.12.0",
-    "jscs-jsdoc": "^0.4.6",
     "jsdoc": "^3.3.0-alpha9",
     "jshint": "^2.5.5",
     "mocha": "^2.2.5",
@@ -88,7 +86,7 @@
     "coverage": "NODE_PATH=src node node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R progress test/unit test/func",
     "coveralls": "NODE_PATH=src node node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha --report lcovonly -- -R progress test/unit test/func && cat coverage/lcov.info | node_modules/coveralls/bin/coveralls.js",
     "bench": "NODE_PATH=src node bench/runner.js",
-    "lint": "node_modules/jshint/bin/jshint --verbose --exclude src/gsjs src test tools && node_modules/jscs/bin/jscs --verbose --reporter inline src test tools",
+    "lint": "node_modules/jshint/bin/jshint --verbose --exclude src/gsjs src test tools",
     "docs": "node node_modules/jsdoc/jsdoc.js --destination docs --configure jsdoc-conf.json src",
     "repl": "node tools/repl-client.js 7201"
   }

@@ -72,9 +72,7 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 	callback = callback || function defaultCallback(err, res) {
 		if (err) throw err;
 	};
-	//jscs:disable safeContextKeyword
 	var rc = this;
-	//jscs:enable safeContextKeyword
 	var logtag = util.format('%s/%s', rc.owner, rc.tag);
 	wait.launchFiber(function rcFiber() {
 		var res = null;

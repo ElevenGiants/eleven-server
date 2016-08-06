@@ -307,7 +307,6 @@ function patchGroup(group) {
 	// monkey patch the function generating /who output
 	var orig = group.chat_get_roster_msg;
 	utils.addNonEnumerable(group, 'chat_get_roster_msg',
-		//jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 		function chat_get_roster_msg() {
 			var channel = groupToChannel[group.tsid];
 			var roster = utils.shallowCopy(group.chat_roster);
@@ -319,6 +318,5 @@ function patchGroup(group) {
 			}
 			return orig.call({chat_roster: roster});
 		}
-		//jscs:enable requireCamelCaseOrUpperCaseIdentifiers
 	);
 }
