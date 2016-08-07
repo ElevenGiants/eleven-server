@@ -3,6 +3,7 @@
 module.exports = IdObjRefMap;
 
 
+var _ = require('lodash');
 var orProxy = require('data/objrefProxy');
 var utils = require('utils');
 
@@ -18,10 +19,10 @@ var utils = require('utils');
  * @constructor
  */
 function IdObjRefMap(data) {
-	if (data && !(data instanceof Array)) {
+	if (data && !_.isArray(data)) {
 		throw new TypeError('invalid data type for IdObjRefMap: ' + typeof data);
 	}
-	for (var i = 0; data && (i < data.length); i++) {
+	for (var i = 0; data && i < data.length; i++) {
 		var obj = data[i];
 		if (obj.__isORP) {
 			orProxy.setupObjRefProp(obj.tsid, this, obj.tsid);
@@ -60,7 +61,7 @@ Object.defineProperty(IdObjRefMap.prototype, 'length', {
  */
 IdObjRefMap.prototype.apiIterate = function apiIterate(classTsid, func) {
 	// handle optional classTsid parameter
-	if (classTsid instanceof Function) {
+	if (_.isFunction(classTsid)) {
 		func = classTsid;
 		classTsid = undefined;
 	}

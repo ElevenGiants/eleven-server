@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var gsjsBridge = require('model/gsjsBridge');
 var RC = require('data/RequestContext');
 var Bag = require('model/Bag');
@@ -28,8 +29,7 @@ suite('Bag', function () {
 
 	suite('ctor', function () {
 
-		test('loads items correctly (without infinite loop due to container reference)',
-			function (done) {
+		test('loads items correctly (without infinite loop due to container reference)', function (done) {
 			pbeMock.getDB().B1 = {
 				class_tsid: 'bag_furniture',
 				tsid: 'B1',
@@ -49,7 +49,7 @@ suite('Bag', function () {
 				container: {
 					label: 'Private Furniture Storage',
 					objref: true,
-					tsid:  'B1',
+					tsid: 'B1',
 				},
 				x: 0, y: 0,
 			};
@@ -60,11 +60,9 @@ suite('Bag', function () {
 		});
 
 		test('preserves non-default capacity', function () {
-			/*jshint -W055 */  // deliberate lowercase constructor name here
 			var ctor = gsjsBridge.getProto('items', 'bag_generic_gray').constructor;
 			var b = new ctor({capacity: 10, class_tsid: 'bag_generic_gray'});
 			assert.strictEqual(b.capacity, 10);
-			/*jshint +W055 */
 		});
 	});
 
@@ -110,7 +108,7 @@ suite('Bag', function () {
 
 		test('adds whole itemstack to empty slot', function (done) {
 			var i = new Item({tsid: 'I1'});
-			i.queueChanges = function noop() {};  // changeset creation not tested here
+			i.queueChanges = _.noop;  // changeset creation not tested here
 			var b = new Bag({tsid: 'B1', tcont: 'PDUMMY'});
 			new RC().run(function () {
 				var merged = b.addToSlot(i, 3);
@@ -125,7 +123,7 @@ suite('Bag', function () {
 		test('merges partial itemstack with existing item', function (done) {
 			new RC().run(function () {
 				var i1 = Item.create('apple', 5);
-				i1.queueChanges = function noop() {};  // changes not tested here
+				i1.queueChanges = _.noop;  // changes not tested here
 				var i2 = Item.create('apple', 8);
 				var b = Bag.create('bag_bigger_gray');
 				b.tcont = 'PDUMMY';
@@ -160,7 +158,7 @@ suite('Bag', function () {
 		test('does not merge incompatible items', function (done) {
 			new RC().run(function () {
 				var i1 = Item.create('apple', 5);
-				i1.queueChanges = function noop() {};  // changes not tested here
+				i1.queueChanges = _.noop;  // changes not tested here
 				var i2 = Item.create('pi');
 				var b = Bag.create('bag_bigger_gray');
 				b.tcont = 'PDUMMY';
@@ -174,8 +172,7 @@ suite('Bag', function () {
 			}, done);
 		});
 
-		test('queues appropriate changes when moving an item from a player ' +
-			'inventory bag to a location bag (e.g. furniture)', function (done) {
+		test('queues appropriate changes when moving an item from a player inventory bag to a location bag (e.g. furniture)', function (done) {
 			var rc = new RC();
 			rc.run(function () {
 				var l = Location.create(Geo.create());
@@ -220,8 +217,7 @@ suite('Bag', function () {
 
 	suite('getAllItems', function () {
 
-		test('makes sure GSJS does not fill hidden bags when purchasing from vendors',
-			function (done) {
+		test('makes sure GSJS does not fill hidden bags when purchasing from vendors', function (done) {
 			new RC().run(function () {
 				var p = pers.create(Player, {location: Location.create(Geo.create())});
 				var remaining = p.createItemFromSource('watering_can', 99, p, true);
@@ -245,8 +241,7 @@ suite('Bag', function () {
 			}, done);
 		});
 
-		test('adds items to bags by slot order',
-			function (done) {
+		test('adds items to bags by slot order', function (done) {
 			new RC().run(function () {
 				var p = pers.create(Player, {location: Location.create(Geo.create())});
 				p.capacity = 2;
@@ -262,8 +257,7 @@ suite('Bag', function () {
 			}, done);
 		});
 
-		test('adds items to existing stacks by slot order',
-			function (done) {
+		test('adds items to existing stacks by slot order', function (done) {
 			new RC().run(function () {
 				var p = pers.create(Player, {location: Location.create(Geo.create())});
 				var i1 = Item.create('tomato');

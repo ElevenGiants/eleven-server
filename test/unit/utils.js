@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var rewire = require('rewire');
 var RC = require('data/RequestContext');
 var utils = require('utils');
@@ -75,7 +76,7 @@ suite('utils', function () {
 			var O = function () {
 				this.z = 3;
 			};
-			O.prototype.f = function () {};
+			O.prototype.f = _.noop;
 			O.prototype.x = 7;
 			var o = new O();
 			o.y = 13;
@@ -95,9 +96,9 @@ suite('utils', function () {
 		});
 
 		test('works as intended on prototypes', function () {
-			var O = function () {};
-			var P = function () {};
-			O.prototype.f = function () {};
+			var O = _.noop;
+			var P = _.noop;
+			O.prototype.f = _.noop;
 			O.prototype.x = 13;
 			utils.copyProps(O.prototype, P.prototype);
 			var p = new P();
@@ -353,7 +354,7 @@ suite('utils', function () {
 		test('does not copy functions and inherited properties', function () {
 			var O = function () {
 				this.a = 'A';
-				this.f = function () {};
+				this.f = _.noop;
 			};
 			O.b = 'B';
 			var o = new O();
@@ -364,15 +365,16 @@ suite('utils', function () {
 		});
 
 		test('fails on invalid parameter types', function () {
-			var vals = [null, 1, 'x', [1, 2, 3], function () {}];
+			var vals = [null, 1, 'x', [1, 2, 3], _.noop];
 			for (var i = 0; i < vals.length; i++) {
-				/*jshint -W083 */
+				/* eslint-disable no-loop-func */  // oh well, it's just a test
 				assert.throw(
 					function () {
 						utils.shallowCopy(vals[i]);
 					},
 					assert.AssertionError, undefined, '' + vals[i]
 				);
+				/* eslint-enable no-loop-func */
 			}
 		});
 	});

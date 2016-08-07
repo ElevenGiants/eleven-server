@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var amf = require('eleven-node-amf/node-amf/amf');
 var events = require('events');
 var Player = require('model/Player');
@@ -11,9 +12,9 @@ exports.getDummySocket = function getDummySocket() {
 	ret.write = function write(data) {
 		ret.emit('data', data);  // simple echo
 	};
-	ret.setNoDelay = function setNoDelay() {};  // dummy
-	ret.destroy = function destroy() {};  // dummy
-	ret.end = function end() {};
+	ret.setNoDelay = _.noop;
+	ret.destroy = _.noop;
+	ret.end = _.noop;
 	return ret;
 };
 
@@ -34,9 +35,7 @@ exports.getTestSession = function getTestSession(id, socket) {
 exports.getOnlinePlayer = function getOnlinePlayer(data) {
 	// create a "connected" player instance with a dummy session object
 	var ret = new Player(data);
-	ret.session = {
-		send: function send() {},
-	};
+	ret.session = {send: _.noop};
 	return ret;
 };
 

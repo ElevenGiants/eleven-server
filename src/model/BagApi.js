@@ -7,6 +7,7 @@
  *
  * @mixin
  */
+// eslint-disable-next-line lodash/prefer-noop
 var BagApi = module.exports = function BagApi() {};
 
 

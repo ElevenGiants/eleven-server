@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var rewire = require('rewire');
 var slackChat = rewire('comm/slackChat');
 
@@ -79,7 +80,7 @@ suite('slackChat', function () {
 			// for unknown reasons, the Slack lib sometimes does not return a
 			// user; simulate this
 			slackChat.__set__('slack', {dataStore: {
-				getUserById: function getUserByIDStub(id) {},
+				getUserById: _.noop,
 			}});
 			onSlackMessage({
 				type: 'message',

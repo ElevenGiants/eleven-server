@@ -42,7 +42,7 @@ suite('Location', function () {
 				module: 'pbeMock',
 				config: {pbeMock: {
 					fixturesPath: path.resolve(path.join(__dirname, '../fixtures')),
-				}}
+				}},
 			}}, done);
 		});
 
@@ -51,8 +51,7 @@ suite('Location', function () {
 		});
 
 
-		test('replacing the whole geometry with a plain object is handled right',
-			function (done) {
+		test('replacing the whole geometry with a plain object is handled right', function (done) {
 			// GSJS does that (loc.geometry = {})
 			var g = new Geo({tsid: 'GX'});
 			var l = new Location({tsid: 'LX'}, g);
@@ -68,8 +67,7 @@ suite('Location', function () {
 			}, done);
 		});
 
-		test('loading from persistence loads respective Geo object automatically',
-			function (done) {
+		test('loading from persistence loads respective Geo object automatically', function (done) {
 			new RC().run(function () {
 				var l = pers.get('LLI32G3NUTD100I');
 				assert.instanceOf(l.geometry, Geo);
@@ -228,8 +226,8 @@ suite('Location', function () {
 					b.addToSlot(i2, 0);
 					l.suspendGsTimers = g.suspendGsTimers = b.suspendGsTimers =
 						i1.suspendGsTimers = i2.suspendGsTimers = function check() {
-						unloadCount++;
-					};
+							unloadCount++;
+						};
 					var rq = l.getRQ();
 					l.unload(function (err) {
 						if (err) return done(err);

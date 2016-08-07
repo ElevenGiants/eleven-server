@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var GameObject = require('model/GameObject');
 var RC = require('data/RequestContext');
 
@@ -85,9 +86,7 @@ suite('GameObject', function () {
 				class_tsid: 'something',
 				deep_item: {
 					level: 1,
-					deeper_item: {
-						level: 2
-					},
+					deeper_item: {level: 2},
 				},
 			});
 			var copy = new GameObject();
@@ -136,9 +135,9 @@ suite('GameObject', function () {
 
 		test('includes timers&intervals', function () {
 			var go = new GameObject();
-			go.foo = function foo() {};
-			go.ifoo = function ifoo() {};
-			go.foo2 = function foo2() {};
+			go.foo = _.noop;
+			go.ifoo = _.noop;
+			go.foo2 = _.noop;
 			go.setGsTimer({fname: 'foo', delay: 5});
 			go.setGsTimer({fname: 'ifoo', delay: 10, interval: true});
 			go.setGsTimer({fname: 'foo', delay: 15, multi: true});
@@ -216,7 +215,7 @@ suite('GameObject', function () {
 	suite('setGsTimer', function () {
 
 		test('works as expected for regular timers', function () {
-			var go = new GameObject({foo: function foo() {}});
+			var go = new GameObject({foo: _.noop});
 			go.scheduleTimer = function verify(options, key) {
 				assert.deepEqual(options,
 					{fname: 'foo', args: ['x'], delay: 123});
@@ -233,7 +232,7 @@ suite('GameObject', function () {
 		});
 
 		test('works as expected for multi timers', function () {
-			var go = new GameObject({foo: function foo() {}});
+			var go = new GameObject({foo: _.noop});
 			go.scheduleTimer = function verify(options, key) {
 				assert.deepEqual(options,
 					{fname: 'foo', multi: true, delay: 1});
@@ -248,8 +247,8 @@ suite('GameObject', function () {
 		});
 
 		test('consecutively set multi timers have different keys', function () {
-			var go = new GameObject({foo: function foo() {}});
-			go.scheduleTimer = function dummy() {};
+			var go = new GameObject({foo: _.noop});
+			go.scheduleTimer = _.noop;
 			go.setGsTimer({fname: 'foo', multi: true, delay: 1});
 			go.setGsTimer({fname: 'foo', multi: true, delay: 1});
 			assert.lengthOf(Object.keys(go.gsTimers), 2);
@@ -258,15 +257,15 @@ suite('GameObject', function () {
 		});
 
 		test('fails silently if timer already defined for the method', function () {
-			var go = new GameObject({foo: function foo() {}});
-			go.scheduleTimer = function dummy() {};
+			var go = new GameObject({foo: _.noop});
+			go.scheduleTimer = _.noop;
 			go.setGsTimer({fname: 'foo', delay: 100});
 			go.setGsTimer({fname: 'foo', delay: 100});
 			assert.lengthOf(Object.keys(go.gsTimers), 1);
 		});
 
 		test('works as expected for intervals', function () {
-			var go = new GameObject({foo: function foo() {}});
+			var go = new GameObject({foo: _.noop});
 			go.scheduleTimer = function verify(options, key) {
 				assert.strictEqual(options.interval, true);
 				assert.strictEqual(key, 'foo');
@@ -277,8 +276,7 @@ suite('GameObject', function () {
 				{fname: 'foo', interval: true, delay: 1000});
 		});
 
-		test('start property contains start of last call for intervals',
-			function (done) {
+		test('start property contains start of last call for intervals', function (done) {
 			var go = new GameObject();
 			var calls = 0;
 			var prevStart;
@@ -330,7 +328,7 @@ suite('GameObject', function () {
 		});
 
 		test('ignores multi timers', function () {
-			var go = new GameObject({foo: function foo() {}});
+			var go = new GameObject({foo: _.noop});
 			go.setGsTimer({fname: 'foo', delay: 5, multi: true});
 			assert.isFalse(go.gsTimerExists('foo'));
 		});
@@ -419,9 +417,9 @@ suite('GameObject', function () {
 			assert.lengthOf(Object.keys(go.gsTimers), 3, 'one "partial ' +
 				'interval" timer, one "interval restart" timer and the interval itself');
 			for (var k in go.gsTimers) {
-				assert.isTrue(k.indexOf('foo_') === 0 ||
-					k.indexOf('setGsTimer_') === 0 || k === 'foo');
-				if (k.indexOf('setGsTimer_') === 0) {
+				assert.isTrue(k.startsWith('foo_') ||
+					k.startsWith('setGsTimer_') || k === 'foo');
+				if (k.startsWith('setGsTimer_')) {
 					assert.isTrue(go.gsTimers[k].options.delay <= 10,
 						'partial interval time calculated correctly');
 					assert.isTrue(go.gsTimers[k].options.internal,
@@ -434,8 +432,7 @@ suite('GameObject', function () {
 				'interval itself not resumed yet');
 		});
 
-		test('does not resume interval if the object is deleted while catching up',
-			function () {
+		test('does not resume interval if the object is deleted while catching up', function () {
 			var go = new GameObject();
 			go.gsTimers = {
 				foo: {

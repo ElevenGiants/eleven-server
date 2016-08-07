@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var Item = require('model/Item');
 var Geo = require('model/Geo');
 var Location = require('model/Location');
@@ -20,19 +21,19 @@ var plat1 = {
 	start: {x: 10, y: 10},
 	platform_item_perm: -1,
 	platform_pc_perm: -1,
-	end: {x: 20, y: 10}
+	end: {x: 20, y: 10},
 };
 var slope1 = {
 	start: {x: 20, y: 10},
 	platform_item_perm: -1,
 	platform_pc_perm: -1,
-	end: {x: 30, y: 15}
+	end: {x: 30, y: 15},
 };
 var plat2 = {
 	start: {x: 5, y: 30},
 	platform_item_perm: -1,
 	platform_pc_perm: -1,
-	end: {x: 30, y: 30}
+	end: {x: 30, y: 30},
 };
 var plat3 = {
 	start: {x: 15, y: 25},
@@ -61,7 +62,7 @@ var gWall = new Geo({layers: {middleground: {
 // helper to create items that can move without a request context
 function newItem(data) {
 	var it = new Item(data);
-	it.queueChanges = function queueChanges() {};
+	it.queueChanges = _.noop;
 	return it;
 }
 
@@ -88,8 +89,7 @@ suite('ItemMovement', function () {
 
 	suite('platform walking movement', function () {
 
-		test('does not start if the item is already at the given destination',
-			function (done) {
+		test('does not start if the item is already at the given destination', function (done) {
 			var i1 = newItem({tsid: 'I1', npc_walk_speed: 10});
 			i1.doneMoving = function doneMoving(args) {
 				assert.strictEqual(args.status, STATUS.ARRIVED);
@@ -110,8 +110,7 @@ suite('ItemMovement', function () {
 			}, NpcMovementError);
 		});
 
-		test('walks towards target until no further platform is available',
-			function (done) {
+		test('walks towards target until no further platform is available', function (done) {
 			var i1 = newItem({tsid: 'I1', npc_walk_speed: 10, npc_y_step: 3});
 			i1.doneMoving = function doneMoving(args) {
 				assert.isDefined(args.status);
@@ -132,8 +131,7 @@ suite('ItemMovement', function () {
 			assert.isTrue(moveStarted);
 		});
 
-		test('steps upwards onto higher platforms if y_step is big enough',
-			function (done) {
+		test('steps upwards onto higher platforms if y_step is big enough', function (done) {
 			var i1 = newItem({tsid: 'I1', npc_walk_speed: 30, npc_y_step: 10});
 			i1.doneMoving = function doneMoving(args) {
 				assert.isDefined(args.status);
@@ -194,8 +192,7 @@ suite('ItemMovement', function () {
 			assert.isTrue(moveStarted);
 		});
 
-		test('supports explicitly supplied path (with multiple segments)',
-			function (done) {
+		test('supports explicitly supplied path (with multiple segments)', function (done) {
 			var i1 = newItem({tsid: 'I1', npc_walk_speed: 50});
 			var pt1 = {x: 20, y: 10, transport: 'walking'};
 			var pt2 = {x: 10, y: 10, transport: 'walking'};
@@ -204,8 +201,9 @@ suite('ItemMovement', function () {
 			i1.doneMoving = function doneMoving(args) {
 				assert.isDefined(args.status);
 				if (args.status === STATUS.DIR_CHANGE) {
-					if (this.check === 0)
+					if (this.check === 0) {
 						assert.strictEqual(args.dir, 'right');
+					}
 					else if (this.check === 1) {
 						assert.strictEqual(args.dir, 'left');
 						assert.strictEqual(this.x, pt1.x);

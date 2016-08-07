@@ -3,6 +3,7 @@
 module.exports = OrderedHash;
 
 
+var _ = require('lodash');
 var orProxy = require('data/objrefProxy');
 var utils = require('utils');
 
@@ -65,6 +66,8 @@ function OrderedHashAux(data) {
 /**
  * Helper function for {@link OrderedHashAux#first|first} and {@link
  * OrderedHashAux#last|last}.
+ *
+ * @returns {array} sorted list of the hash keys
  * @private
  */
 OrderedHashAux.prototype.sortedKeys = function sortedKeys() {
@@ -113,7 +116,7 @@ utils.makeNonEnumerable(OrderedHashAux.prototype, 'length');
  */
 OrderedHashAux.prototype.clear = function clear() {
 	for (var prop in this) {
-		if (this.hasOwnProperty(prop) && typeof this[prop] !== 'function') {
+		if (this.hasOwnProperty(prop) && !_.isFunction(this[prop])) {
 			delete this[prop];
 		}
 	}

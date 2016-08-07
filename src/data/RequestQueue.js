@@ -229,8 +229,10 @@ RequestQueue.prototype.next = function next() {
 	log.trace({len: this.queue.length}, 'checking for next request');
 	if (this.inProgress) return;
 	if (this.queue.length) {
-		if (this.closing) log.debug('%s request(s) remaining before closing %s',
-			this.queue.length, this);
+		if (this.closing) {
+			log.debug('%s request(s) remaining before closing %s',
+				this.queue.length, this);
+		}
 		this.handle(this.queue.shift());
 	}
 	else if (this.closing && rqs[this.id]) {

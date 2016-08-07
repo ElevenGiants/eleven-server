@@ -23,6 +23,7 @@ module.exports = {
 };
 
 
+var _ = require('lodash');
 var config = require('config');
 var Lynx = require('lynx');
 var GCStats = require('gc-stats');
@@ -94,9 +95,7 @@ function getMockLynx() {
 				if (global.log) {
 					log.trace({fname: name, args: arguments}, 'statsd call');
 					if (name === 'createTimer') {
-						return {
-							stop: function stop() {}
-						};
+						return {stop: _.noop};
 					}
 				}
 			};
@@ -235,13 +234,14 @@ function setupInterval(stat, type, delay, func) {
  */
 function startSystemMetrics() {
 	// process memory gauges
-	/*jshint -W083 */  // ok to make function within this (specific, run-once) loop
+	/* eslint-disable no-loop-func */
+	// (ok to make function within this (specific, run-once) loop)
 	for (var k in process.memoryUsage()) {
 		setupGaugeInterval('process.memory.' + k, function getter() {
 			return process.memoryUsage()[k];
 		});
 	}
-	/*jshint +W083 */
+	/* eslint-enable no-loop-func */
 	// naive event loop latency
 	setupTimerInterval('process.ev_loop_latency', function resolver(timer) {
 		setImmediate(function stop() {

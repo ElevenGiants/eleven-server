@@ -60,7 +60,7 @@ function Location(data, geo) {
 	utils.addNonEnumerable(this, 'clientGeometry');
 	utils.addNonEnumerable(this, 'geo');
 	var geoData = geo || pers.get(this.getGeoTsid(), true);
-	assert(typeof geoData === 'object', 'no geometry data for ' + this);
+	assert(_.isObject(geoData), 'no geometry data for ' + this);
 	if (rpc.isLocal(this)) {
 		this.updateGeo(geoData);
 	}
@@ -314,6 +314,8 @@ Location.prototype.getGeoTsid = function getGeoTsid() {
  * Creates a processed shallow copy of this location, prepared for
  * serialization.
  *
+ * @returns {object} shallow copy of the location, prepared for serialization
+ *
  * @see {@link GameObject#serialize|GameObject.serialize}
  */
 Location.prototype.serialize = function serialize() {
@@ -337,7 +339,8 @@ Location.prototype.updateGeo = function updateGeo(data) {
 	if (data) this.geometry = data;
 	// workaround for GSJS functions that replace the whole geometry property
 	if (!(this.geometry instanceof Geo)) {
-		this.geometry.tsid = this.getGeoTsid();  // make sure new data does not have a template TSID
+		// make sure new data does not have a template TSID:
+		this.geometry.tsid = this.getGeoTsid();
 		this.geometry = Geo.create(this.geometry);
 	}
 	// process connects for GSJS
@@ -585,10 +588,10 @@ Location.prototype.getClosestItem = function getClosestItem(x, y, filter,
 	for (var k in this.items) {
 		var it = this.items[k];
 		var valid = (!skipItem || skipItem.tsid !== k) && (!filter ||
-			(typeof filter === 'string') && it.class_tsid === filter ||
-			(typeof filter === 'function') && filter(it, options));
+			_.isString(filter) && it.class_tsid === filter ||
+			_.isFunction(filter) && filter(it, options));
 		if (valid) {
-			var rdist = ((it.x - x) * (it.x - x)) + ((it.y - y) * (it.y - y));
+			var rdist = (it.x - x) * (it.x - x) + (it.y - y) * (it.y - y);
 			if (!found || rdist < distance) {
 				distance = rdist;
 				found = it;

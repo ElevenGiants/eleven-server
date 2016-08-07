@@ -1,5 +1,6 @@
 'use strict';
 
+/* eslint-disable max-len */  // ugly long function names defined by API
 
 /**
  * Model layer API functions for the {@link Item} class (used by GSJS
@@ -8,6 +9,7 @@
  *
  * @mixin
  */
+// eslint-disable-next-line lodash/prefer-noop
 var ItemApi = module.exports = function ItemApi() {};
 
 
@@ -23,8 +25,7 @@ var ItemApi = module.exports = function ItemApi() {};
  *          item's actual x/y position, or `undefined` if no such
  *          object exists (e.g. while the item is being created)
  */
-ItemApi.prototype.apiGetLocatableContainerOrSelf =
-	function apiGetLocatableContainerOrSelf() {
+ItemApi.prototype.apiGetLocatableContainerOrSelf = function apiGetLocatableContainerOrSelf() {
 	log.trace('%s.apiGetLocatableContainerOrSelf()', this);
 	return this.getPosObject();
 };
@@ -214,7 +215,7 @@ ItemApi.prototype.apiStartFlyingInTheArea = function apiStartFlyingInTheArea(x, 
  *        care of managing the animation state
  * @returns {boolean} `true` if the item can start moving
  */
-/*jshint -W072 */  // suppress "too many parameters" warning (API function following the spec)
+/* eslint-disable max-params */  // suppress "too many parameters" warning (API function following the spec)
 ItemApi.prototype.apiStartFlyingInTheAreaX = function apiStartFlyingInTheAreaX(
 		x, y, w, h, speed, changeState) {
 	log.debug('%s.apiStartFlyingInTheArea(%s, %s, %s, %s, %s, %s)', this, x,
@@ -223,7 +224,7 @@ ItemApi.prototype.apiStartFlyingInTheAreaX = function apiStartFlyingInTheAreaX(
 		{left: x, right: x + w, width: w, top: y, height: h},
 		{changeState: changeState, speed: speed, stopAtEnd: false});
 };
-/*jshint +W072 */
+/* eslint-enable max-params */
 
 
 /**
@@ -313,3 +314,5 @@ ItemApi.prototype.apiFindCloseItem = function apiFindCloseItem(filter, options) 
 	log.debug('%s.apiFindCloseItem(%s)', this, filter);
 	return this.getClosestItem(filter, options);
 };
+
+/* eslint-enable max-len */

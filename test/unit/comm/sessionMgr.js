@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var rewire = require('rewire');
 var sessionMgr = rewire('comm/sessionMgr');
 var getDummySocket = require('../../helpers').getDummySocket;
@@ -10,7 +11,7 @@ suite('sessionMgr', function () {
 
 	suiteSetup(function () {
 		gsjsBridge.reset({gsjsMain: {
-			processMessage: function dummy() {},
+			processMessage: _.noop,
 		}});
 	});
 

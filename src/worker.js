@@ -42,20 +42,19 @@ function run() {
 	RQ.init();
 	// initialize and wait for modules required for GS operation
 	async.series([
-			persInit,
-			authInit,
-			rpcInit,
-		],
-		function callback(err, res) {
-			if (err) throw err;  // bail if anything went wrong
-			// otherwise, start listening for requests
-			process.on('message', onMessage);
-			// bind SIGINT here too, because it is also sent to child processes
-			// when running the GS from the command line and pressing ctrl+c
-			process.on('SIGINT', shutdown);
-			amfServer.start();
-		}
-	);
+		persInit,
+		authInit,
+		rpcInit,
+	],
+	function callback(err, res) {
+		if (err) throw err;  // bail if anything went wrong
+		// otherwise, start listening for requests
+		process.on('message', onMessage);
+		// bind SIGINT here too, because it is also sent to child processes
+		// when running the GS from the command line and pressing ctrl+c
+		process.on('SIGINT', shutdown);
+		amfServer.start();
+	});
 	// gsjs bridge loads stuff in the background (don't need to wait for it)
 	gsjsBridge.init(function callback(err) {
 		if (err) log.error(err, 'GSJS bridge initialization failed');

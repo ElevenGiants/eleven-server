@@ -1,5 +1,6 @@
 'use strict';
 
+/* eslint-disable max-len */  // ugly long function names defined by API
 
 /**
  * Model layer API functions for the {@link GameObject} class (used by
@@ -8,6 +9,7 @@
  *
  * @mixin
  */
+// eslint-disable-next-line lodash/prefer-noop
 var GameObjectApi = module.exports = function GameObjectApi() {};
 
 
@@ -132,3 +134,5 @@ GameObjectApi.prototype.apiIntervalExists = function apiIntervalExists(fname) {
 	log.debug('%s.apiIntervalExists(%s)', this, fname);
 	return this.gsTimerExists(fname, true);
 };
+
+/* eslint-enable max-len */

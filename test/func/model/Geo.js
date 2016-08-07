@@ -16,7 +16,7 @@ suite('Geo', function () {
 			module: 'pbeMock',
 			config: {pbeMock: {
 				fixturesPath: path.resolve(path.join(__dirname, '../fixtures')),
-			}}
+			}},
 		}}, done);
 	});
 

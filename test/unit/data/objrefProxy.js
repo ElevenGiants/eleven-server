@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var rewire = require('rewire');
 var GameObject = require('model/GameObject');
 var orproxy = rewire('data/objrefProxy');
@@ -20,8 +21,7 @@ suite('objrefProxy', function () {
 
 	suite('makeProxy', function () {
 
-		test('proxy does not resolve objref when accessing objref properties',
-			function () {
+		test('proxy does not resolve objref when accessing objref properties', function () {
 			orproxy.__set__('pers', {
 				get: function () {
 					throw new Error('should not be called');
@@ -31,24 +31,21 @@ suite('objrefProxy', function () {
 			assert.strictEqual(proxy.label, 'refdata');
 		});
 
-		test('proxy resolves objref when accessing properties not contained ' +
-			'in objref itself', function () {
+		test('proxy resolves objref when accessing properties not contained in objref itself', function () {
 			var proxy = orproxy.makeProxy({tsid: 'TEST'});
 			persMock.add({tsid: 'TEST', data: 'objdata'});
 			assert.strictEqual(proxy.data, 'objdata');
 		});
 
-		test('proxy throws error when referenced object is not available',
-			function () {
+		test('proxy throws error when referenced object is not available', function () {
 			var proxy = orproxy.makeProxy({tsid: 'NOT_AVAILABLE'});
 			assert.throw(function () {
-				/*jshint -W030 */  // we're doing this on purpose here
+				// eslint-disable-next-line no-unused-expressions
 				proxy.something;
 			}, orproxy.ObjRefProxyError);
 		});
 
-		test('set and delete operations on proxy are reflected in referenced object',
-			function () {
+		test('set and delete operations on proxy are reflected in referenced object', function () {
 			var obj = {tsid: 'TEST'};
 			persMock.add(obj);
 			var proxy = orproxy.makeProxy({tsid: 'TEST'});
@@ -59,8 +56,7 @@ suite('objrefProxy', function () {
 		});
 
 		test('construct/apply on a proxy throw an error', function () {
-			/*jshint -W055 */  // this isn't a real constructor
-			var proxy = orproxy.makeProxy(function () {});  // does not make sense anyway, but just in case...
+			var proxy = orproxy.makeProxy(_.noop);  // does not make sense anyway, but just in case...
 			assert.throw(function () {
 				new proxy();
 			}, orproxy.ObjRefProxyError);
@@ -76,8 +72,7 @@ suite('objrefProxy', function () {
 			assert.sameMembers(Object.keys(proxy), ['tsid', 'a', 'x']);
 		});
 
-		test('for loop on proxy loops over referenced object\'s properties',
-			function () {
+		test('for loop on proxy loops over referenced object\'s properties', function () {
 			var obj = {tsid: 'TEST', a: 1, b: 2};
 			persMock.add(obj);
 			var proxy = orproxy.makeProxy({tsid: 'TEST'});
@@ -97,7 +92,7 @@ suite('objrefProxy', function () {
 		});
 
 		test('"hasOwnProperty" works on referenced object', function () {
-			var O = function () {};
+			var O = _.noop;
 			O.prototype.y = 2;
 			var obj = new O();
 			obj.tsid = 'TEST';
@@ -107,9 +102,9 @@ suite('objrefProxy', function () {
 			assert.isTrue(proxy.hasOwnProperty('tsid'));
 			assert.isTrue(proxy.hasOwnProperty('x'));
 			assert.isFalse(proxy.hasOwnProperty('y'));
-			assert.isTrue(({}).hasOwnProperty.call(proxy, 'tsid'));
-			assert.isTrue(({}).hasOwnProperty.call(proxy, 'x'));
-			assert.isFalse(({}).hasOwnProperty.call(proxy, 'y'));
+			assert.isTrue({}.hasOwnProperty.call(proxy, 'tsid'));
+			assert.isTrue({}.hasOwnProperty.call(proxy, 'x'));
+			assert.isFalse({}.hasOwnProperty.call(proxy, 'y'));
 		});
 
 		test('proxy supports game object serialization', function () {
@@ -145,22 +140,22 @@ suite('objrefProxy', function () {
 				item1: {
 					tsid: 'I88RBN5IGO3KDQU',
 					label: 'Watering Can',
-					objref: true
+					objref: true,
 				},
 				secondlevel: {
 					item2: {
 						tsid: 'IHVKNR85F603IR7',
 						label: 'Random Kindness',
-						objref: true
+						objref: true,
 					},
 				},
 				anarray: [
 					{
 						tsid: 'IA510NRCAI32COC',
 						label: 'Carrot',
-						objref: true
+						objref: true,
 					},
-				]
+				],
 			};
 			orproxy.proxify(x);
 			assert.isTrue(x.item1.__isORP);
@@ -228,8 +223,7 @@ suite('objrefProxy', function () {
 			assert.strictEqual(res[1].objref, true);
 		});
 
-		test('does not refify random things that happen to have a TSID property',
-			function () {
+		test('does not refify random things that happen to have a TSID property', function () {
 			var x = {
 				child: {tsid: 'ABCDE', label: 'not really a game object'},
 			};

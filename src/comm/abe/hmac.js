@@ -29,6 +29,7 @@ module.exports = {
 };
 
 
+var _ = require('lodash');
 var assert = require('assert');
 var auth = require('comm/auth');
 var token = require('token');
@@ -42,9 +43,8 @@ var utils = require('utils');
  * @param {object} config configuration settings
  */
 function init(config) {
-	assert(typeof config === 'object' && config !== null &&
-		config.secret !== undefined && utils.isInt(config.timeStep),
-		'invalid or missing HMAC auth config');
+	assert(_.isObject(config) && config.secret !== undefined &&
+		utils.isInt(config.timeStep), 'invalid or missing HMAC auth config');
 	token.defaults.secret = config.secret;
 	token.defaults.timeStep = config.timeStep;
 }

@@ -3,6 +3,7 @@
 module.exports = GameObject;
 
 
+var _ = require('lodash');
 var assert = require('assert');
 var config = require('config');
 var errors = require('errors');
@@ -95,7 +96,7 @@ GameObject.prototype.serialize = function serialize() {
 		var k = keys[i];
 		if (k[0] !== '!') {
 			var val = this[k];
-			if (typeof val !== 'function') {
+			if (!_.isFunction(val)) {
 				ret[k] = val;
 			}
 		}
@@ -164,7 +165,8 @@ GameObject.prototype.rqPush = function rqPush(func) {
  * Schedules this object for deletion after the current request.
  */
 GameObject.prototype.del = function del() {
-	log.info('GameObject.del: %s', this);  // TODO for broken objref debugging, remove when no longer needed
+	// TODO INFO msg for broken objref debugging, remove when no longer needed:
+	log.info('GameObject.del: %s', this);
 	this.deleted = true;
 	this.unload();
 };
@@ -234,7 +236,7 @@ GameObject.prototype.setGsTimer = function setGsTimer(options) {
 	log.trace('%s.setGsTimer(%s)', this, util.inspect(options, {depth: 1}));
 	var logtag = util.format('%s.%s', this, options.fname);
 	assert(!(options.multi && options.interval), 'multi intervals not supported');
-	assert(typeof this[options.fname] === 'function', 'no such function: ' + logtag);
+	assert(_.isFunction(this[options.fname]), 'no such function: ' + logtag);
 	if (!options.multi && this.gsTimerExists(options.fname, options.interval, true)) {
 		log.trace('timer/interval already set: %s', logtag);
 		return;
@@ -269,6 +271,7 @@ GameObject.prototype.setGsTimer = function setGsTimer(options) {
  * @private
  */
 GameObject.prototype.scheduleTimer = function scheduleTimer(options, key) {
+	// eslint-disable-next-line consistent-this
 	var self = this.__isORP ? this.__proxyTarget : this;
 	if (options.delay > 2147483647) {
 		// see https://github.com/joyent/node/issues/3605
@@ -355,7 +358,7 @@ GameObject.prototype.gsTimerExists = function gsTimerExists(fname, interval, act
 	var entry = this.gsTimers[fname];
 	if (entry) {
 		if (entry.options.interval && interval || !entry.options.interval && !interval) {
-			return !active || ('handle' in entry);
+			return !active || 'handle' in entry;
 		}
 	}
 	return false;
@@ -407,7 +410,8 @@ GameObject.prototype.resumeGsTimers = function resumeGsTimers() {
 					this.gsTimerExec(entry.options, num);
 				}
 			}
-			// if not deleted while catching up (e.g. trant death), actually resume interval
+			// if not deleted while catching up (e.g. trant death), actually
+			// resume interval
 			if (!this.deleted) {
 				// schedule next call with shortened interval
 				var nextDelay = entry.options.delay - age % entry.options.delay;
@@ -446,9 +450,7 @@ GameObject.prototype.resumeGsTimers = function resumeGsTimers() {
 GameObject.prototype.cancelGsTimer = function cancelGsTimer(fname, interval) {
 	var ret = false;
 	var entry = this.gsTimers[fname];
-	/*jshint -W018 */
 	if (entry && !!entry.options.interval === !!interval) {
-		/*jshint +W018 */
 		if (entry.handle) {
 			if (entry.handle.tag && entry.handle.func) {
 				// already a request queue entry; flag it as canceled
@@ -496,23 +498,21 @@ GameObject.prototype.copyProps = function copyProps(from, skipList) {
 		if (key === 'tsid') continue;
 		if (skipList && skipList.indexOf(key) !== -1) continue;
 		var val = from[key];
-		if (typeof val === 'function') continue;
+		if (_.isFunction(val)) continue;
 		// directly copy primitive types
 		if (!(val instanceof Object)) {
 			this[key] = val;
 		}
-		else {
+		else if (val.__isORP || val.__isGO) {
 			// don't resolve/follow objref proxies (just copy them)
-			if (val.__isORP || val.__isGO) {
-				this[key] = val;
-			}
-			else {
-				// recursive call for objects and arrays
-				this[key] = val instanceof Array ? [] : {};
-				// skipList omitted on purpose - we only want to exclude those
-				// properties on the first level
-				GameObject.prototype.copyProps.call(this[key], val);
-			}
+			this[key] = val;
+		}
+		else {
+			// recursive call for objects and arrays
+			this[key] = _.isArray(val) ? [] : {};
+			// skipList omitted on purpose - we only want to exclude those
+			// properties on the first level
+			GameObject.prototype.copyProps.call(this[key], val);
 		}
 	}
 };

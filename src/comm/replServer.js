@@ -110,7 +110,7 @@ function getReplEval(addr, socket) {
 			}
 			catch (e) {
 				log.error(e, 'unhandled error in REPL callback: %s', e.message);
-				if (socket && typeof socket.destroy === 'function') {
+				if (socket && _.isFunction(socket.destroy)) {
 					log.info('closing REPL connection after error: %s', addr);
 					socket.destroy();
 				}

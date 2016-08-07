@@ -3,6 +3,7 @@
 module.exports = Property;
 
 
+var _ = require('lodash');
 var assert = require('assert');
 var utils = require('utils');
 
@@ -21,18 +22,18 @@ var utils = require('utils');
 function Property(label, data) {
 	this.label = label;
 	if (data === undefined) data = {};
-	if (typeof data === 'number') {
+	if (_.isNumber(data)) {
 		this.value = Math.round(data);
 	}
-	else if (typeof data === 'object') {
-		this.value = typeof data.value === 'number' ? Math.round(data.value) : 0;
+	else if (_.isObject(data)) {
+		this.value = _.isNumber(data.value) ? Math.round(data.value) : 0;
 	}
 	else {
 		this.value = 0;
 	}
 	this.setLimits(
-		typeof data.bottom === 'number' ? data.bottom : this.value,
-		typeof data.top === 'number' ? data.top : this.value);
+		_.isNumber(data.bottom) ? data.bottom : this.value,
+		_.isNumber(data.top) ? data.top : this.value);
 	// add a flag that indicates whether an update for this property's value
 	// needs to be sent to the client
 	utils.addNonEnumerable(this, 'changed', false);
@@ -42,7 +43,7 @@ utils.copyProps(require('model/PropertyApi').prototype, Property.prototype);
 
 
 /**
- * @returns {string}
+ * @returns {string} string representation of the property
  */
 Property.prototype.toString = function toString() {
 	return '[prop.' + this.label + ':' + this.value + ']';

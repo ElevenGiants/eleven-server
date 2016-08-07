@@ -7,6 +7,7 @@ var net = require('net');
 
 var args = process.argv;
 if (args.length < 3) {
+	// eslint-disable-next-line no-console
 	console.log('usage: %s %s <port>', args[0], args[1]);
 	process.exit(1);
 }
@@ -25,7 +26,7 @@ process.stdin.on('data', function onData(buffer) {
 
 // this event won't be fired if REPL is exited by '.exit' command
 process.stdin.on('end', function onEnd() {
-	console.log('.exit');
+	console.log('.exit');// eslint-disable-line no-console
 	socket.destroy();
 });
 
@@ -33,12 +34,12 @@ socket.pipe(process.stdout);
 
 
 socket.on('connect', function connect() {
-	console.log('Connected.');
+	console.log('Connected.');  // eslint-disable-line no-console
 	process.stdin.setRawMode(true);
 });
 
 
 socket.on('close', function close() {
-	console.log('Disconnected.');
+	console.log('Disconnected.');  // eslint-disable-line no-console
 	socket.removeListener('close', close);
 });

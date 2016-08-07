@@ -26,8 +26,7 @@ suite('OrderedHash', function () {
 				'{"x":"x","yz":{"y":"y","z":"z"}}');
 		});
 
-		test('makes property enumeration iterate over keys in natural order',
-			function () {
+		test('makes property enumeration iterate over keys in natural order', function () {
 			var oh = new OrderedHash({z: 'z', a: 'a'});
 			var keys = [];
 			for (var k in oh) {

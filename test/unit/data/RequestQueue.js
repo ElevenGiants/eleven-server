@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var RQ = require('data/RequestQueue');
 
 
@@ -46,7 +47,7 @@ suite('RequestQueue', function () {
 				}
 			);
 			rq.push('tag2',
-				function secondReq() {},
+				_.noop,
 				function callback(err) {
 					assert.isTrue(firstReqProcessed);
 					assert.isTrue(firstCallbackCalled);
@@ -59,7 +60,7 @@ suite('RequestQueue', function () {
 			var rq = RQ.create('LX');
 			var closeReqProcessed = false;
 			rq.push('close',
-				function () {},
+				_.noop,
 				function (err) {
 					if (err) return done(err);
 					assert.isTrue(rq.closing, 'closing flag set');
@@ -163,7 +164,7 @@ suite('RequestQueue', function () {
 					done();
 				},
 			}];
-			rq.handle({func: function dummy() {}});
+			rq.handle({func: _.noop});
 		});
 
 		test('passes the request function result to the callback', function (done) {

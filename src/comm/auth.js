@@ -23,6 +23,7 @@ module.exports = {
 };
 
 
+var _ = require('lodash');
 var assert = require('assert');
 
 
@@ -60,7 +61,7 @@ var abe = null;
  */
 function init(backEnd, config, callback) {
 	abe = backEnd;
-	if (abe && typeof abe.init === 'function') {
+	if (abe && _.isFunction(abe.init)) {
 		abe.init(config);
 	}
 	if (callback) return callback();

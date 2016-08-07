@@ -33,12 +33,12 @@ suite('gsjsBridge', function () {
 			gsjsBridge.init(function (err) {
 				var protos = gsjsBridge.__get__('prototypes');
 				// these numbers should be adjusted after GSJS changes, obviously:
-				assert.isTrue(Object.keys(protos.achievements).length >= 664);
-				assert.isTrue(Object.keys(protos.groups).length >= 13);
-				assert.isTrue(Object.keys(protos.items).length >= 1286);
-				assert.isTrue(Object.keys(protos.locations).length >= 20);
-				assert.isTrue(Object.keys(protos.players).length >= 4);
-				assert.isTrue(Object.keys(protos.quests).length >= 448);
+				assert.isTrue(Object.keys(protos.achievements).length >= 664, 'achievements');
+				assert.isTrue(Object.keys(protos.groups).length >= 13, 'groups');
+				assert.isTrue(Object.keys(protos.items).length >= 1286, 'items');
+				assert.isTrue(Object.keys(protos.locations).length >= 20, 'locations');
+				assert.isTrue(Object.keys(protos.players).length >= 4, 'players');
+				assert.isTrue(Object.keys(protos.quests).length >= 448, 'quests');
 				done(err);
 			});
 		});
@@ -124,13 +124,14 @@ suite('gsjsBridge', function () {
 		});
 
 		test('global API functions can be used', function (done) {
+			var human;
 			gsjsBridge.__get__('initDependencies')({}, {
 				apiIsPlayerOnline: function apiIsPlayerOnline(tsid) {
 					assert.strictEqual(tsid, human.tsid);
 					done();
 				},
 			});
-			var human = gsjsBridge.create({class_tsid: 'human'}, Player);
+			human = gsjsBridge.create({class_tsid: 'human'}, Player);
 			human.isOnline();
 		});
 

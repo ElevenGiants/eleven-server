@@ -38,7 +38,7 @@ function init() {
 	var gsid = config.getGsid();
 	var masterGsid = config.getMasterGsid();
 	var cfg = config.get('log');
-	assert(typeof gsid === 'string' && gsid.length > 0, 'invalid GSID: ' + gsid);
+	assert(_.isString(gsid) && gsid.length, 'invalid GSID: ' + gsid);
 	var dir = path.resolve(path.join(cfg.dir));
 	try {
 		fs.mkdirSync(dir);
@@ -78,7 +78,7 @@ function init() {
 				level: 'debug',
 				path: path.join(dir, masterGsid + '-actions.log'),
 			},
-		]
+		],
 	});
 	// set up global log handler that transparently wraps bunyan log calls
 	global.log = {
@@ -123,7 +123,7 @@ function end(done) {
 			});
 			s.stream.end();
 			s.closeOnExit = false;
-			s.stream.write = function () {};  // prevent errors on further write attempts
+			s.stream.write = _.noop;  // prevent errors on further write attempts
 		}
 	});
 }
@@ -131,7 +131,7 @@ function end(done) {
 
 function addField(args, name, val) {
 	// first arg is an Error -> wrap it in a fields object
-	if (args[0] instanceof Error) {
+	if (_.isError(args[0])) {
 		args[0] = {err: args[0]};
 	}
 	// handle unexpected input gracefully (probably caller meant to supply an
@@ -140,7 +140,7 @@ function addField(args, name, val) {
 		args[0] = {};
 	}
 	// first arg is the log message -> insert an empty fields object
-	if (typeof args[0] === 'string') {
+	if (_.isString(args[0])) {
 		Array.prototype.splice.call(args, 0, 0, {});
 	}
 	// add the new field
@@ -170,8 +170,7 @@ function wrapLogEmitter(emitter, metric) {
 			metrics.increment(metric);
 		}
 		// add 'rq', 'rc' and 'session' fields if available
-		if (typeof arguments[0] === 'object' && arguments[0] !== null &&
-			!(arguments[0] instanceof Error)) {
+		if (_.isObject(arguments[0]) && !_.isError(arguments[0])) {
 			arguments[0] = _.clone(arguments[0]);
 		}
 		var rc = RC.getContext(true);
@@ -202,15 +201,15 @@ function getCallerInfo() {
 	Error.stackTraceLimit = 2;
 	var e = new Error();
 	Error.captureStackTrace(e, getCallerInfo);
-	Error.prepareStackTrace = function (_, stack) {
+	Error.prepareStackTrace = function prepareStackTrace(_, stack) {
 		var caller = stack[1];
 		obj.file = caller.getFileName();
 		obj.line = caller.getLineNumber();
 		var func = caller.getFunctionName();
 		if (func) obj.func = func;
 	};
-	/*jshint -W030 */  // the following expression triggers prepareStackTrace
-	e.stack;
+	// trigger prepareStackTrace
+	e.stack;  // eslint-disable-line no-unused-expressions
 	Error.stackTraceLimit = saveLimit;
 	Error.prepareStackTrace = savePrepare;
 	return obj;
@@ -227,7 +226,7 @@ function getCallerInfo() {
  *        formatted as `"name=value"`)
  */
 function logAction(action, fields) {
-	assert(typeof action === 'string', 'invalid action type: "' + action + '"');
+	assert(_.isString(action), 'invalid action type: "' + action + '"');
 	metrics.increment('log.action.' + action);
 	var data = {action: action};
 	for (var i = 0; i < fields.length; i++) {

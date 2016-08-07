@@ -77,6 +77,8 @@ Bag.prototype.del = function del() {
  * Creates a processed shallow copy of this bag's data, prepared for
  * serialization.
  *
+ * @returns {object} shallow copy of the bag, prepared for serialization
+ *
  * @see {@link GameObject#serialize|GameObject.serialize}
  */
 Bag.prototype.serialize = function serialize() {
@@ -164,9 +166,11 @@ Bag.prototype.getAllItems = function getAllItems(includeHidden, sort, aggregate,
 	pathPrefix = pathPrefix || '';
 	lookIn.forEach(function collect(itemHash) {
 		var keys = Object.keys(itemHash);
-		if (sort) keys.sort(function sort(a, b) {
-			return itemHash[a].x - itemHash[b].x;
-		});
+		if (sort) {
+			keys.sort(function sort(a, b) {
+				return itemHash[a].x - itemHash[b].x;
+			});
+		}
 		for (var i = 0; i < keys.length; i++) {
 			var it = itemHash[keys[i]];
 			ret[pathPrefix + it.tsid] = it;

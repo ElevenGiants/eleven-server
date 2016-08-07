@@ -27,6 +27,7 @@ module.exports = {
 };
 
 
+var _ = require('lodash');
 var assert = require('assert');
 var async = require('async');
 var nconf = require('nconf');
@@ -306,7 +307,7 @@ function forEachGS(func, callback, noLocal, noRemote) {
 	async.map(gsids,
 		function iterator(gsid, cb) {
 			var gsconf = gameServers[gsid];
-			if ((gsconf.local && !noLocal) || (!gsconf.local && !noRemote)) {
+			if (gsconf.local && !noLocal || !gsconf.local && !noRemote) {
 				func(gsconf, cb);
 			}
 			else cb(null);
@@ -368,8 +369,7 @@ function forEachRemoteGS(func, callback) {
  */
 function mapToGS(objOrTsid) {
 	var tsid = typeof objOrTsid === 'string' ? objOrTsid : objOrTsid.tsid;
-	assert(typeof tsid === 'string' && tsid.length > 0,
-		util.format('invalid TSID for %s: %s', objOrTsid, tsid));
+	assert(_.isString(tsid) && tsid.length, `invalid TSID for ${objOrTsid}: ${tsid}`);
 	// using simple charcode summation for now - we may need something more
 	// sophisticated later (e.g. if we need manual influence on the mapping);
 	// first character ignored so Locs and Geos are always mapped to the same GS
@@ -397,7 +397,7 @@ function mapToGS(objOrTsid) {
  *          the specified server instance
  */
 function getServicePort(basePort, gsid) {
-	if (typeof basePort === 'string') {
+	if (_.isString(basePort)) {
 		basePort = get(basePort);
 	}
 	if (!gsid) gsid = getGsid();

@@ -34,7 +34,7 @@ suite('pers', function () {
 			module: 'pbeMock',
 			config: {pbeMock: {
 				fixturesPath: path.resolve(path.join(__dirname, '../fixtures')),
-			}}
+			}},
 		}}, done);
 	});
 
@@ -55,8 +55,7 @@ suite('pers', function () {
 			}, done);
 		});
 
-		test('recursive structures (Player with inventory) are loaded correctly',
-			function (done) {
+		test('recursive structures (Player with inventory) are loaded correctly', function (done) {
 			new RC().run(function () {
 				var p = pers.get('P00000000000002');
 				assert.instanceOf(p, Player);
@@ -65,12 +64,11 @@ suite('pers', function () {
 			}, done);
 		});
 
-		test('remote and local objects are loaded and proxified correctly in' +
-			 ' a cluster setup', function (done) {
+		test('remote and local objects are loaded and proxified correctly in a cluster setup', function (done) {
 			var cfgBackup = config.get();
-			config.init(false, {net: {gameServers: {
-					gs01: {host: '127.0.0.1', ports: [3000, 3001]},
-				}, rpc: {basePort: 17000},
+			config.init(false, {net: {
+				gameServers: {gs01: {host: '127.0.0.1', ports: [3000, 3001]}},
+				rpc: {basePort: 17000},
 			}}, {gsid: 'gs01-01'});
 			// this is dependent on the specific implementation of the TSID ->
 			// server mapping, and will have to be adjusted when that changes
@@ -140,8 +138,7 @@ suite('pers', function () {
 			);
 		});
 
-		test('does not load non-loaded objects referenced within objects' +
-			' scheduled for unloading', function (done) {
+		test('does not load non-loaded objects referenced within objects scheduled for unloading', function (done) {
 			var obj = {
 				tsid: 'P1',
 				items: {b1: {tsid: 'B1'}},
@@ -152,7 +149,8 @@ suite('pers', function () {
 			obj.items.b1.items.i1 = orProxy.makeProxy({tsid: 'I1', objref: true});
 			pbeMock.getDB().b1 = obj.items.b1;
 			var rc = new RC();
-			rc.run(function () {
+			rc.run(
+				function () {
 					pers.get('P1');
 					pers.get('B1');
 					assert.strictEqual(pbeMock.getCounts().read, 2);
@@ -170,8 +168,7 @@ suite('pers', function () {
 
 	suite('data integrity and consistency', function () {
 
-		test('no duplicate objects with slow async back-end and fibers',
-			function (done) {
+		test('no duplicate objects with slow async back-end and fibers', function (done) {
 			// set up "slow" fibers based back-end mock
 			pers.init({
 				read: function read(tsid) {
@@ -185,7 +182,7 @@ suite('pers', function () {
 			// launch some quasi-parallel requests that all load the same object
 			var firstLoaded;
 			var err;
-			/*jshint -W083 */  // oh well, it's just a test
+			/* eslint-disable no-loop-func */  // oh well, it's just a test
 			for (var i = 0; i < 10; i++) {
 				setImmediate(function launchReq() {
 					new RC().run(function () {
@@ -202,7 +199,7 @@ suite('pers', function () {
 					});
 				});
 			}
-			/*jshint +W083 */
+			/* eslint-enable no-loop-func */
 			// wait for all requests to finish and report first error (if any)
 			setTimeout(function () {
 				done(err);

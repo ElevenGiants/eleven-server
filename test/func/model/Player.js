@@ -79,8 +79,7 @@ suite('Player', function () {
 
 	suite('addToAnySlot', function () {
 
-		test('adds to player inventory, splits items if necessary',
-			function (done) {
+		test('adds to player inventory, splits items if necessary', function (done) {
 			var rc = new RC();
 			rc.run(function () {
 				var p = new Player({location: {tsid: 'LDUMMY'}});
@@ -96,8 +95,7 @@ suite('Player', function () {
 			}, done);
 		});
 
-		test('adds to bag in inventory, deletes source item if necessary',
-			function (done) {
+		test('adds to bag in inventory, deletes source item if necessary', function (done) {
 			var rc = new RC();
 			rc.run(function () {
 				var b = Bag.create('bag_bigger_gray');
@@ -251,6 +249,7 @@ suite('Player', function () {
 			new RC().run(
 				function () {
 					var p = new Player();
+					var origMsg = {};
 					p.session = {
 						send: function send(msg) {
 							var anncs = msg.announcements;
@@ -265,7 +264,6 @@ suite('Player', function () {
 					};
 					p.queueAnnc({id: 'someAnnc', data: 5});
 					p.queueAnnc({mo1: 'money', mo2: 'problems'});
-					var origMsg = {};
 					p.send(origMsg);
 				},
 				function (err, res) {
@@ -278,6 +276,7 @@ suite('Player', function () {
 			new RC().run(
 				function () {
 					var p = new Player();
+					var origMsg = {moo: 'far'};
 					p.stats.xp.setLimits(0, 1000);
 					p.stats.xp.setVal(555);
 					p.session = {
@@ -289,7 +288,6 @@ suite('Player', function () {
 							done();
 						},
 					};
-					var origMsg = {moo: 'far'};
 					p.send(origMsg);
 				},
 				function (err, res) {

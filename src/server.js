@@ -287,7 +287,7 @@ process.on('uncaughtException', function onUncaughtException(err) {
 		logging.end(process.exit, 1);
 	}
 	else {
-		console.error(err.stack);
+		console.error(err.stack);  // eslint-disable-line no-console
 	}
 });
 

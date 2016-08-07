@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var rewire = require('rewire');
 var globalApi = rewire('model/globalApi');
 var orProxy = require('data/objrefProxy');
@@ -22,7 +23,7 @@ suite('globalApi', function () {
 		});
 
 		test('does not include prototype properties', function () {
-			var O = function () {};
+			var O = _.noop;
 			O.prototype.x = 12;
 			var o = new O();
 			o.y = 13;

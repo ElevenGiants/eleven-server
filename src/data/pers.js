@@ -82,7 +82,7 @@ function init(backEnd, config, callback) {
 	metrics.setupGaugeInterval('pers.poc.size', function getPocSize() {
 		return proxyCache ? Object.keys(proxyCache).length : 0;
 	});
-	if (pbe && typeof pbe.init === 'function') {
+	if (pbe && _.isFunction(pbe.init)) {
 		var pbeConfig;
 		if (config && config.backEnd) {
 			pbeConfig = config.backEnd.config[config.backEnd.module];
@@ -138,7 +138,7 @@ function load(tsid) {
 		data = pbe.read(utils.isGeo(tsid) ? 'GKZ8WU4WGMQME7CXXX' : 'LKZ8WU4WGMQME7CXXX');
 		if (data) data.tsid = tsid;
 	}
-	if (typeof data !== 'object' || data === null) {
+	if (!_.isObject(data)) {
 		log.info(new DummyError(), 'no or invalid data for %s', tsid);
 		return null;
 	}
@@ -242,7 +242,7 @@ function get(tsid, noProxy) {
  */
 function create(modelType, data, upsert) {
 	log.debug('pers.create: %s%s', modelType.name,
-		(typeof data === 'object' && data.tsid) ? ('#' + data.tsid) : '');
+		_.isObject(data) && data.tsid ? '#' + data.tsid : '');
 	data = data || {};
 	var obj = gsjsBridge.create(data, modelType);
 	if (!upsert) {
@@ -342,19 +342,17 @@ function postRequestProcStep(step, tsids, logmsg, callback) {
 				if (step === 'delete') {
 					// skip objects that are not actually deleted
 					if (!o.deleted) return cb();
-					return del(o, logmsg, function (e) {
+					return del(o, logmsg, (e) => {
 						if (e && !err) err = e;
 						return cb();
 					});
 				}
-				else {
-					// skip objects that will be deleted later anyway
-					if (o.deleted) return cb();
-					return write(o, logmsg, function (e) {
-						if (e && !err) err = e;
-						return cb();
-					});
-				}
+				// skip objects that will be deleted later anyway
+				if (o.deleted) return cb();
+				return write(o, logmsg, (e) => {
+					if (e && !err) err = e;
+					return cb();
+				});
 			}
 			catch (e) {
 				log.error(e, 'failed to %s %s', step, o);
@@ -362,7 +360,7 @@ function postRequestProcStep(step, tsids, logmsg, callback) {
 				return cb();
 			}
 		},
-		function (e, res) {
+		function done(e, res) {
 			callback(err || e, res);
 		}
 	);
@@ -388,11 +386,11 @@ function getLoadedRefs(obj, root, ret) {
 		if (k === 'owner' || k === 'container' || k === 'location') continue;
 		var v = obj[k];
 		// skip non-object properties
-		if (typeof v !== 'object' || v === null) continue;
+		if (!_.isObject(v)) continue;
 		// skip references to game objects that are not currently loaded
 		if (v.__isORP) continue;
 		// skip if this is not one of the game object types we need to pick up
-		var isGO = v.tsid && typeof v.tsid === 'string' && v.tsid.length;
+		var isGO = _.isString(v.tsid) && v.tsid.length;
 		var type = isGO ? v.tsid[0] : null;
 		if (isGO && type !== 'B' && type !== 'I' && type !== 'D' && type !== 'Q') {
 			continue;
@@ -484,7 +482,8 @@ function write(obj, logmsg, callback) {
  */
 function del(obj, logmsg, callback) {
 	log.debug('pers.del: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
-	log.info('pers.del: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');  // TODO for broken objref debugging, remove when no longer needed
+	// TODO INFO msg for broken objref debugging, remove when no longer needed:
+	log.info('pers.del: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
 	metrics.increment('pers.del');
 	if (obj.tsid in cache) {
 		obj.suspendGsTimers();

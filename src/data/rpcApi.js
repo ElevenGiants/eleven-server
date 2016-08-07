@@ -30,7 +30,6 @@ var auth = require('comm/auth');
 var config = require('config');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
-var util = require('util');
 var utils = require('utils');
 var gsjsBridge = require('model/gsjsBridge');
 var Player = require('model/Player');
@@ -64,17 +63,15 @@ function redirWrap(func, fixedTsid) {
 		if (rpc.isLocal(objOrTsid)) {
 			return func.apply(null, args.slice(0, func.length));
 		}
-		else {
-			// slightly hacky trick to prevent redirect loops without extending
-			// the RPC mechanism: append an indicator flag to the function args
-			if (arguments[func.length]) {
-				throw new rpc.RpcError('redirect loop detected');
-			}
-			args[func.length] = true;  // set forwarded flag
-			var gsid = rpc.getGsid(objOrTsid);
-			log.debug('forwarding %s request to %s', func.name, gsid);
-			return rpc.sendRequest(gsid, 'gs', [func.name, args]);
+		// slightly hacky trick to prevent redirect loops without extending
+		// the RPC mechanism: append an indicator flag to the function args
+		if (arguments[func.length]) {
+			throw new rpc.RpcError('redirect loop detected');
 		}
+		args[func.length] = true;  // set forwarded flag
+		var gsid = rpc.getGsid(objOrTsid);
+		log.debug('forwarding %s request to %s', func.name, gsid);
+		return rpc.sendRequest(gsid, 'gs', [func.name, args]);
 	};
 }
 
@@ -122,10 +119,10 @@ function getConnectData(playerTsid) {
  */
 function createPlayer(userId, name, tsid) {
 	log.info('rpcApi.createPlayer(%s, %s)', userId, name);
-	assert(typeof userId === 'string' && userId.trim().length > 0,
-		util.format('invalid user ID: "%s"', userId));
-	assert(typeof name === 'string' && name.trim().length > 2,
-		util.format('invalid player name: "%s"', name));
+	assert(_.isString(userId) && userId.trim().length,
+		`invalid user ID: "${userId}"`);
+	assert(_.isString(name) && name.trim().length > 2,
+		`invalid player name: "${name}"`);
 	//TODO: more checks on name (e.g. only "safe" (printable&visible) characters,
 	// etc.); generally, a lot more data validation should probably happen here
 	var data = {
@@ -328,25 +325,24 @@ function getGSStatus(locally) {
 			return statusCB(null, {ok: false, error: 'RPC timeout'});
 		}, 2000);
 		rpc.sendRequest(gsid, 'gs', ['getGSStatus', [true]], function cb(err, res) {
-			// abort if it's too late (timeout already hit, so don't invoke callback again)
+			// abort if it's too late (timeout already hit, so don't invoke
+			// callback again)
 			if (timedOut) return;
 			// otherwise, cancel the timeout mechanism and proceed as planned
 			clearTimeout(timeout);
 			if (!err) {
 				return statusCB(null, res);
 			}
-			else {
-				return statusCB(null, {
-					ok: false,
-					error: err instanceof Error ? err.message : '' + err,
-				});
-			}
+			return statusCB(null, {
+				ok: false,
+				error: _.isError(err) ? err.message : '' + err,
+			});
 		});
 	});
 	// add aggregate 'ok' property
 	ret.ok = true;
 	for (var k in ret) {
-		if (typeof ret[k] === 'object' && !ret[k].ok) {
+		if (_.isObject(ret[k]) && !ret[k].ok) {
 			ret.ok = false;
 			ret.error = ret[k].error;
 			break;

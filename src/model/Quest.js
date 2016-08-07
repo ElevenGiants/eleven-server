@@ -56,9 +56,7 @@ Quest.prototype.getRQ = function getRQ() {
 	if (this.owner) {
 		return this.owner.getRQ();
 	}
-	else {
-		return RQ.getGlobal();
-	}
+	return RQ.getGlobal();
 };
 
 

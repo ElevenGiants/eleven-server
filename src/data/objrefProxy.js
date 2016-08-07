@@ -42,6 +42,7 @@ module.exports = {
 };
 
 
+var _ = require('lodash');
 var pers = require('data/pers');
 var utils = require('utils');
 
@@ -87,9 +88,7 @@ function makeProxy(objref) {
 			}
 			if (name === 'valueOf' || name === 'toString' ||
 				name === Symbol.toPrimitive) {
-				return function () {
-					return '^O[' + target.tsid + ']';
-				};
+				return () => '^O[' + target.tsid + ']';
 			}
 			if (name === 'objref' || name === 'tsid' || name === 'label') {
 				// what's in the objref can be returned without loading actual object
@@ -168,7 +167,10 @@ function proxify(data, handled) {
 				setupObjRefProp(v.tsid, data, k);
 			}
 			else {
-				if (handled.indexOf(v) !== -1) continue;  // circular ref, v is already covered
+				if (handled.indexOf(v) !== -1) {
+					// circular ref, v is already covered
+					continue;
+				}
 				handled.push(v);
 				proxify(v, handled);
 			}
@@ -242,20 +244,18 @@ function refify(data, ret) {
 		return makeRef(data);
 	}
 	// regular use case (object or array input)
-	if (ret === undefined) ret = data instanceof Array ? [] : {};
+	if (ret === undefined) ret = _.isArray(data) ? [] : {};
 	for (var k in data) {
 		var v = data[k];
 		if (!(v instanceof Object)) {
 			ret[k] = v;
 		}
+		else if (v.__isORP || v.__isGO) {
+			ret[k] = makeRef(v);
+		}
 		else {
-			if (v.__isORP || v.__isGO) {
-				ret[k] = makeRef(v);
-			}
-			else {
-				ret[k] = v instanceof Array ? [] : {};
-				refify(v, ret[k]);
-			}
+			ret[k] = _.isArray(v) ? [] : {};
+			refify(v, ret[k]);
 		}
 	}
 	return ret;

@@ -148,8 +148,7 @@ suite('pers', function () {
 			assert.strictEqual(onLoadCalls, 1);
 		});
 
-		test('if an object is already in the request cache, get it from there',
-			function () {
+		test('if an object is already in the request cache, get it from there', function () {
 			rcMock.getContext().cache.IA = {tsid: 'IA'};
 			assert.strictEqual(pers.get('IA').tsid, 'IA');
 			assert.strictEqual(pbeMock.getCounts().read, 0);
@@ -224,7 +223,7 @@ suite('pers', function () {
 					assert.isFalse(callbackCalled,
 						'callback is called *after* persistence operations');
 					callback();
-				}
+				},
 			};
 			pers.init(pbe, undefined, function () {  // set custom back-end mock
 				pers.__set__('cache', {I1: o1});
@@ -236,8 +235,7 @@ suite('pers', function () {
 			});
 		});
 
-		test('performs operation on all objects, even in case of errors',
-			function (done) {
+		test('performs operation on all objects, even in case of errors', function (done) {
 			var errorThrown = false;
 			var o1 = new GameObject({tsid: 'I1'});
 			var o2 = new GameObject({tsid: 'I2'});

@@ -37,6 +37,7 @@ module.exports = {
 };
 
 
+var _ = require('lodash');
 var assert = require('assert');
 var async = require('async');
 var config = require('config');
@@ -119,7 +120,7 @@ function reset(testDeps) {
  *        wrong (in which case initialization is aborted immediately)
  */
 function init(noPreload, callback) {
-	if (typeof noPreload === 'function') {
+	if (_.isFunction(noPreload)) {
 		callback = noPreload;
 		noPreload = false;
 	}
@@ -140,7 +141,7 @@ function init(noPreload, callback) {
 			var entryPath = path.join(groupPath, entries[i]);
 			var klass = entries[i].slice(0, -3);  // strip trailing '.js'
 			// skip directories, non-JS files and includes
-			if (entryPath.slice(-3) === '.js' && klass.indexOf('inc_') !== 0) {
+			if (entryPath.slice(-3) === '.js' && !klass.startsWith('inc_')) {
 				tasks.push({group: group, klass: klass});
 			}
 		}
@@ -206,7 +207,7 @@ function getProto(group, klass) {
  *          instantiated through the default constructor with `data`
  */
 function create(data, modelType) {
-	assert(typeof data === 'object', 'object data is required');
+	assert(_.isObject(data), 'object data is required');
 	var tsidInitial;
 	if (modelType) {
 		tsidInitial = modelType.prototype.TSID_INITIAL;
@@ -214,21 +215,17 @@ function create(data, modelType) {
 			'invalid custom TSID %s for model type %s', data.tsid, modelType.name));
 	}
 	else {
-		assert(typeof data.tsid === 'string' && data.tsid.length > 1,
+		assert(_.isString(data.tsid) && data.tsid.length > 1,
 			util.format('valid TSID is required (got: %s)', data.tsid));
 		tsidInitial = data.tsid[0];
 	}
 	var groupOrClass = TSID_INITIALS_MAP[tsidInitial];
-	/*jshint -W055 */  // ignore lowercase constructor names here
-	if (typeof groupOrClass === 'string') {
+	if (_.isString(groupOrClass)) {
 		var klass = data.class_tsid || groupOrClass.slice(0, -1);
 		var ctor = getProto(groupOrClass, klass).constructor;
 		return new ctor(data);
 	}
-	else {
-		return new groupOrClass(data);
-	}
-	/*jshint +W055 */
+	return new groupOrClass(data);
 }
 
 
@@ -248,8 +245,9 @@ function loadProto(group, klass) {
 	}
 	log.debug('loading game object prototype: %s.%s', group, klass);
 	// create named constructor that relays to model class constructor if possible
-	var name = (utils.isInt(klass[0]) ? '_' : '') + klass;  // function name can't start with a digit
-	/*jslint evil: true */
+	// (special handling for numbers, as function name can't start with a digit)
+	var name = (utils.isInt(klass[0]) ? '_' : '') + klass;
+	// eslint-disable-next-line no-eval
 	var ctor = eval('\
 		(function ' + name + '() {\
 			if (ctor.super_) {\
@@ -257,7 +255,6 @@ function loadProto(group, klass) {
 			}\
 		});\
 	');
-	/*jslint evil: false */
 	// inherit from appropriate model class
 	if (getModelClass(group, klass)) {
 		util.inherits(ctor, getModelClass(group, klass));
@@ -328,10 +325,11 @@ function getModelClass(group, klass) {
  * @private
  */
 function patchItemGsjsFunc(proto, fname) {
-	if (typeof proto[fname] === 'function') {
+	if (_.isFunction(proto[fname])) {
 		// dirty tricks so we can generate a custom function name
-		/*jslint evil: true */
-		var gsjsFunc = proto[fname]; // jshint ignore:line
+		/* eslint-disable no-eval */
+		/* eslint-disable no-unused-vars */
+		var gsjsFunc = proto[fname];
 		proto[fname] = eval('(\
 			function ' + fname + '__patched() {\
 				var ret = gsjsFunc.apply(this, arguments);\
@@ -339,7 +337,8 @@ function patchItemGsjsFunc(proto, fname) {
 				return ret;\
 			}\
 		);');
-		/*jslint evil: false */
+		/* eslint-enable no-unused-vars */
+		/* eslint-enable no-eval */
 	}
 }
 
@@ -369,8 +368,8 @@ function patchItemGsjsFunc(proto, fname) {
 function include(dir, file, proto) {
 	var fpath = path.resolve(path.join(dir, file));
 	var composer = require(fpath);
-	assert(typeof composer === 'function', 'module does not export a ' +
-		'prototype composition function: ' + fpath);
+	assert(_.isFunction(composer), 'module does not export a prototype ' +
+		'composition function: ' + fpath);
 	composer.call(proto, include,
 		dependencies.api, dependencies.utils, dependencies.config);
 }
@@ -429,5 +428,5 @@ function getConfig() {
  * @returns {boolean} `true` if the given string is a valid TSID
  */
 function isTsid(tsid) {
-	return typeof tsid === 'string' && tsid[0] in TSID_INITIALS_MAP;
+	return _.isString(tsid) && tsid[0] in TSID_INITIALS_MAP;
 }

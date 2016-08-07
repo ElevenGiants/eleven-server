@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var async = require('async');
 var rewire = require('rewire');
 var auth = require('comm/auth');
@@ -60,7 +61,7 @@ suite('Player', function () {
 				},
 				stats: {
 					recipe_xp_today: {
-						97: {value: 2, bottom: 0, top: 85447, label: '97'}
+						97: {value: 2, bottom: 0, top: 85447, label: '97'},
 					},
 				},
 			});
@@ -107,8 +108,7 @@ suite('Player', function () {
 			assert.strictEqual(data.stats.blerg, 12);
 		});
 
-		test('stores data in a way that allows restoring properties correctly',
-			function () {
+		test('stores data in a way that allows restoring properties correctly', function () {
 			var p = new Player({tsid: 'P1',
 				daily_favor: {alph: {value: 17, bottom: 2, top: 20}}});
 			p = new Player(p.serialize());
@@ -139,8 +139,7 @@ suite('Player', function () {
 
 	suite('startMove', function () {
 
-		test('removes player from old loc and updates location property',
-			function () {
+		test('removes player from old loc and updates location property', function () {
 			var lold = new Location({tsid: 'Lold'}, new Geo());
 			var lnew = new Location({tsid: 'Lnew'}, new Geo());
 			var p = new Player({tsid: 'P1', location: lold, x: 1, y: 1});
@@ -342,7 +341,7 @@ suite('Player', function () {
 		});
 
 		test('handles local move case correctly', function (done) {
-			var p = new Player({tsid: 'P1', onGSLogout: function dummy() {}});
+			var p = new Player({tsid: 'P1', onGSLogout: _.noop});
 			var rc = new RC();
 			rc.run(function () {
 				var res = p.gsMoveCheck('LLOCAL');
@@ -353,8 +352,8 @@ suite('Player', function () {
 
 		test('returns data required for GS reconnect', function (done) {
 			rpcMock.reset(false);
-			var p = new Player({tsid: 'P1', onGSLogout: function dummy() {}});
-			p.session = {send: function dummy() {}};
+			var p = new Player({tsid: 'P1', onGSLogout: _.noop});
+			p.session = {send: _.noop};
 			new RC().run(function () {
 				var res = p.gsMoveCheck('LREMOTE');
 				assert.strictEqual(res.hostPort, '12.34.56.78:1445');
@@ -366,7 +365,7 @@ suite('Player', function () {
 		test('sends/schedules server messages required for GS reconnect and ' +
 			'unloads player', function (done) {
 			rpcMock.reset(false);
-			var p = new Player({tsid: 'P1', onGSLogout: function dummy() {}});
+			var p = new Player({tsid: 'P1', onGSLogout: _.noop});
 			var unloaded = false;
 			p.unload = function () {
 				unloaded = true;
@@ -469,7 +468,7 @@ suite('Player', function () {
 						pc: {},
 						location: {
 							IX: {path_tsid: 'IX'},
-						}}
+						}},
 				}, {
 					location_tsid: 'LCANADA',
 					itemstack_values: {
@@ -495,8 +494,7 @@ suite('Player', function () {
 			});
 		});
 
-		test('picks last change if multiple changes for the same item are queued',
-			function () {
+		test('picks last change if multiple changes for the same item are queued', function () {
 			var p = new Player();
 			p.location = {tsid: 'L1'};
 			p.changes = [
@@ -659,8 +657,7 @@ suite('Player', function () {
 			assert.strictEqual(p.y, 0, 'setXY did not change player y');
 		});
 
-		test('does not set position/handle collisions while player is changing location',
-			function () {
+		test('does not set position/handle collisions while player is changing location', function () {
 			// i2 triggers a (fake) location change, no further item should be
 			// collision-tested after that; due to the non-deterministic order
 			// in which items are tested, the test may not always actually
@@ -737,7 +734,7 @@ suite('Player', function () {
 					p.handleCollision(i, i.hitBox, 'foo');
 				},
 				function callsOnPlayerLeavingCollisionArea(cb) {
-					i.onPlayerCollision = function () {};  // needed to enable CD
+					i.onPlayerCollision = _.noop;  // needed to enable CD
 					i.onPlayerLeavingCollisionArea = function (i) {
 						assert.notProperty(i['!colliders'], p.tsid,
 							'removed hitBox from !colliders');

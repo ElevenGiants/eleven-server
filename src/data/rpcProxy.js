@@ -17,6 +17,7 @@ module.exports = {
 };
 
 
+var _ = require('lodash');
 var assert = require('assert');
 var rpc = require('data/rpc');
 
@@ -51,13 +52,11 @@ function makeProxy(obj) {
 function proxyGet(target, name, receiver) {
 	if (name === '__isRP') return true;
 	// only functions are called remotely
-	if (typeof target[name] !== 'function') {
+	if (!_.isFunction(target[name])) {
 		return target[name];
 	}
 	if (name === 'inspect' || name === 'valueOf' || name === 'toString') {
-		return function () {
-			return '^R' + target.toString();
-		};
+		return () => '^R' + target.toString();
 	}
 	// call functions inherited from Object locally (e.g. hasOwnProperty(), etc)
 	if (Object.prototype.hasOwnProperty(name)) {

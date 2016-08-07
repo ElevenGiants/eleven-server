@@ -67,7 +67,7 @@ function getConn(callback) {
 	rdb.connect(options, function cb(err, res) {
 		if (err) {
 			if (callback) return callback(err);
-			else throw err;
+			throw err;
 		}
 		log.info('connected to RethinkDB');
 		conn = res;

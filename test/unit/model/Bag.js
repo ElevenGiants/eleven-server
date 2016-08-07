@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var Bag = require('model/Bag');
 var Item = require('model/Item');
 
@@ -63,6 +64,7 @@ suite('Bag', function () {
 			var b3 = new Bag({tsid: 'B3', items: [i5]});
 			var b2 = new Bag({tsid: 'B2', items: [i4, b3], hiddenItems: [i3]});
 			var b1 = new Bag({tsid: 'B1', items: [i1, b2, i2]});
+			/* eslint-disable quote-props */  // for symmetry...
 			assert.deepEqual(b1.getAllItems(true), {
 				'I1': i1,
 				'I2': i2,
@@ -81,6 +83,7 @@ suite('Bag', function () {
 				'B2/B3': b3,
 				'B2/B3/I5': i5,
 			});
+			/* eslint-enable quote-props */
 		});
 	});
 
@@ -187,7 +190,7 @@ suite('Bag', function () {
 			var b = new Bag({tsid: 'B1', tcont: 'PDUMMY'});
 			b.capacity = 1;
 			// changeset creation not tested here:
-			i1.queueChanges = i2.queueChanges = b.queueChanges = function noop() {};
+			i1.queueChanges = i2.queueChanges = b.queueChanges = _.noop;
 			b.addToSlot(i1, 0);
 			var merged = b.addToSlot(i2, '0');  // GSJS actually does this :/
 			assert.strictEqual(merged, 0, 'not added to occupied slot');

@@ -118,7 +118,8 @@ Geo.prototype.prepConnects = function prepConnects() {
 function prepConnect(conn) {
 	var ret = utils.shallowCopy(conn);
 	if (conn.target) {
-		ret.target = conn.target;  // may be non-enumerable (when prepConnect used more than once)
+		// target may be non-enumerable (when prepConnect used more than once):
+		ret.target = conn.target;
 		ret.label = conn.target.label;
 		ret.street_tsid = conn.target.tsid;
 	}
@@ -167,6 +168,8 @@ function connectToJSON(connect) {
  * Creates a processed deep copy of this geometry object, prepared for
  * serialization. The `connect` objects in doors and signposts are converted
  * back to their "persistence form" here (cf. {@link Geo|constructor}).
+ *
+ * @returns {object} shallow copy of the geometry, prepared for serialization
  *
  * @see {@link GameObject#serialize|GameObject.serialize}
  */

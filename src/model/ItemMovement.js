@@ -83,13 +83,8 @@ ItemMovement.prototype.getGeo = function getGeo() {
  * @private
  */
 ItemMovement.prototype.offsetY = function offsetY(y, add) {
-	var yoff = (this.item.y_offset ? this.item.y_offset : 0);
-	if (add) {
-		return y + yoff;
-	}
-	else {
-		return y - yoff;
-	}
+	var yoff = this.item.y_offset ? this.item.y_offset : 0;
+	return add ? y + yoff : y - yoff;
 };
 
 
@@ -103,7 +98,7 @@ ItemMovement.prototype.offsetY = function offsetY(y, add) {
  * @private
  */
 ItemMovement.prototype.dirX = function dirX(targetX) {
-	return (this.item.x < targetX ? 1 : -1);
+	return this.item.x < targetX ? 1 : -1;
 };
 
 
@@ -117,7 +112,7 @@ ItemMovement.prototype.dirX = function dirX(targetX) {
  * @private
  */
 ItemMovement.prototype.dirY = function dirY(targetY) {
-	return (this.item.y < targetY ? 1 : -1);
+	return this.item.y < targetY ? 1 : -1;
 };
 
 
@@ -170,8 +165,8 @@ ItemMovement.prototype.isMoving = function isMoving() {
  */
 ItemMovement.prototype.checkWalls = function checkWalls(nextStep) {
 	// default width and height of 10px (TODO: is there a better value?)
-	var halfWidth = ('item_width' in this.item) ? this.item.item_width / 2 : 5;
-	var height = ('item_height' in this.item) ? this.item.item_height : 10;
+	var halfWidth = 'item_width' in this.item ? this.item.item_width / 2 : 5;
+	var height = 'item_height' in this.item ? this.item.item_height : 10;
 
 	for (var k in this.getGeo().layers.middleground.walls) {
 		var wall = this.getGeo().layers.middleground.walls[k];
@@ -179,7 +174,7 @@ ItemMovement.prototype.checkWalls = function checkWalls(nextStep) {
 
 		// direction from which we are crossing the wall line
 		var crossDir = null;
-		if (this.item.x < wall.x && (nextStep.dx + halfWidth) > wall.x) {
+		if (this.item.x < wall.x && nextStep.dx + halfWidth > wall.x) {
 			crossDir = -1;
 		}
 		else if (this.item.x > wall.x && nextStep.dx - halfWidth < wall.x) {
@@ -187,12 +182,12 @@ ItemMovement.prototype.checkWalls = function checkWalls(nextStep) {
 		}
 		if (crossDir && (!wall.item_perm || crossDir === wall.item_perm)) {
 			var myY = this.offsetY(this.item.y, true);
-			var dy = myY + ((nextStep.dy - myY) *
-					(wall.x - this.item.x) / (nextStep.dx - this.item.x));
+			var dy = myY + (nextStep.dy - myY) *
+					(wall.x - this.item.x) / (nextStep.dx - this.item.x);
 			// check if lines overlap
-			if (((dy - height) <= (wall.y + wall.h) || dy <= (wall.y + wall.h)) &&
-				(dy >= wall.y || (dy - height) >= wall.y)) {
-				return {x: wall.x + (crossDir * halfWidth), y: dy};
+			if ((dy - height <= wall.y + wall.h || dy <= wall.y + wall.h) &&
+				(dy >= wall.y || dy - height >= wall.y)) {
+				return {x: wall.x + crossDir * halfWidth, y: dy};
 			}
 		}
 	}
@@ -226,8 +221,8 @@ ItemMovement.prototype.findPlatform = function findPlatform(x, y) {
 		// Once we start building paths then we will need a way to
 		// specify an up or down platform transition if both are allowed
 		this.platform = null;
-		var yStep = ('npc_y_step' in this.item) ? this.item.npc_y_step : 32;
-		var canFall = ('npc_can_fall' in this.item) ? this.item.npc_can_fall : false;
+		var yStep = 'npc_y_step' in this.item ? this.item.npc_y_step : 32;
+		var canFall = 'npc_can_fall' in this.item ? this.item.npc_can_fall : false;
 		var above = this.getGeo().getClosestPlatPoint(x, y, 1);
 		if (above.plat && Math.abs(above.point.y - y) < yStep) {
 			this.platform = above.plat;
@@ -279,7 +274,8 @@ ItemMovement.prototype.moveWalking = function moveWalking(nextPath) {
 	var step = Math.min(Math.abs(this.item.x - nextPath.x),
 		this.item.npc_walk_speed / 3);
 	nextStep.dx = Math.floor(this.item.x + this.facing * step);
-	nextStep.dy = this.item.y;  // adjusted later (depends on where the horizontal movement takes us)
+	nextStep.dy = this.item.y;
+	// dy is adjusted later (depends on where the horizontal movement takes us)
 
 	// find initial or next platform
 	if (!this.platform || nextStep.dx < this.platform.start.x ||
@@ -291,7 +287,8 @@ ItemMovement.prototype.moveWalking = function moveWalking(nextPath) {
 		nextStep.dy = this.offsetY(
 			utils.pointOnPlat(this.platform, nextStep.dx).y, false);
 	}
-	// check if we walked into a wall, or could not find a suitable platform (end movement if so)
+	// check if we walked into a wall, or could not find a suitable platform
+	// (end movement if so)
 	var block = this.checkWalls(nextStep);
 	if (block || !this.platform) {
 		return {dx: block ? block.x : this.item.x, dy: this.item.y,
@@ -329,7 +326,7 @@ ItemMovement.prototype.nextFlightPath = function nextFlightPath(nextPath) {
 			nextPath.x = Math.round(nextPath.right - xVariation);
 		}
 	}
-	nextPath.y = Math.round(nextPath.top + (Math.random() * nextPath.height));
+	nextPath.y = Math.round(nextPath.top + Math.random() * nextPath.height);
 };
 
 
@@ -348,7 +345,7 @@ ItemMovement.prototype.changeState = function changeState(distX, distY, dir) {
 		if (distX < 10 && distY < 10) {
 			this.item.state += '-top';
 		}
-		else if (distX > (distY * 2)) {
+		else if (distX > distY * 2) {
 			this.item.state += '-side';
 		}
 		else if (distX > distY) {
@@ -376,7 +373,7 @@ ItemMovement.prototype.moveFlying = function moveFlying(nextPath) {
 		return {forceStop: MOVE_CB_STATUS.ARRIVED};
 	}
 	// otherwise, set new destination within the flight area if necessary
-	if (!('x' in nextPath) || (!nextPath.stopAtEnd && this.item.x === nextPath.x)) {
+	if (!('x' in nextPath) || !nextPath.stopAtEnd && this.item.x === nextPath.x) {
 		this.nextFlightPath(nextPath);
 	}
 	var dirX = this.dirX(nextPath.x);
@@ -386,19 +383,19 @@ ItemMovement.prototype.moveFlying = function moveFlying(nextPath) {
 
 	// add a touch of randomization to the y movement
 	if ('height' in nextPath) {
-		distY += (Math.random() * (nextPath.height / 2)) - (nextPath.height / 4);
+		distY += Math.random() * nextPath.height / 2 - nextPath.height / 4;
 	}
 	// change animation state if necessary
 	this.changeState(distX, distY, dirX);
 
 	// calculate the fraction of the way to the target we can cover in this step
-	var frac = (nextPath.speed / 3) / Math.sqrt(distX * distX + distY * distY);
+	var frac = nextPath.speed / 3 / Math.sqrt(distX * distX + distY * distY);
 	frac = Math.min(frac, 1);  // make sure we don't overshoot
 
 	// set next step destination one step further towards the path segment target
 	if (frac < 1) {
-		nextStep.dy = this.item.y + (dirY * distY * frac);
-		nextStep.dx = this.item.x + (dirX * distX * frac);
+		nextStep.dy = this.item.y + dirY * distY * frac;
+		nextStep.dx = this.item.x + dirX * distX * frac;
 	}
 	else {
 		// we're within 1px of the target, so just go there exactly
@@ -435,13 +432,13 @@ ItemMovement.prototype.moveDirect = function moveDirect(nextPath) {
 	var distY = Math.abs(this.item.y - nextPath.y);
 
 	// calculate the fraction of the way to the target we can cover in this step
-	var frac = (nextPath.speed / 3) / Math.sqrt(distX * distX + distY * distY);
+	var frac = nextPath.speed / 3 / Math.sqrt(distX * distX + distY * distY);
 	frac = Math.min(frac, 1);  // make sure we don't overshoot
 
 	// set next step destination one step further towards the path segment target
 	if (frac < 1) {
-		nextStep.dy = this.item.y + (this.dirY(nextPath.y) * distY * frac);
-		nextStep.dx = this.item.x + (this.dirX(nextPath.x) * distX * frac);
+		nextStep.dy = this.item.y + this.dirY(nextPath.y) * distY * frac;
+		nextStep.dx = this.item.x + this.dirX(nextPath.x) * distX * frac;
 	}
 	else {
 		// we're within 1px of the target, so just go there exactly
@@ -670,8 +667,10 @@ ItemMovement.prototype.changeFlockState = function changeFlockState(vX, vY,
 	dirX, dirY, oVx) {
 	var distX = Math.abs(vX);
 	var distY = Math.abs(vY);
+	/* eslint-disable no-nested-ternary */
 	var sX = vX ? vX < 0 ? -1 : 1 : 0;
 	var soX = oVx ? oVx < 0 ? -1 : 1 : 0;
+	/* eslint-enable no-nested-ternary */
 	if (sX !== soX) {
 		this.item.state = 'turnRight';
 	}
@@ -681,23 +680,19 @@ ItemMovement.prototype.changeFlockState = function changeFlockState(vX, vY,
 		if (t < 0.13) {
 			this.item.state += 'Right';
 		}
-		else {
-			if (dirY < 0) {
-				if (t < 0.39) {
-					this.item.state += 'RightUp15';
-				}
-				else {
-					this.item.state += 'RightUp30';
-				}
+		else if (dirY < 0) {
+			if (t < 0.39) {
+				this.item.state += 'RightUp15';
 			}
 			else {
-				if (t < 0.39) {
-					this.item.state += 'RightDown15';
-				}
-				else {
-					this.item.state += 'RightDown30';
-				}
+				this.item.state += 'RightUp30';
 			}
+		}
+		else if (t < 0.39) {
+			this.item.state += 'RightDown15';
+		}
+		else {
+			this.item.state += 'RightDown30';
 		}
 	}
 	this.item.dir = dirX > 0 ? 'right' : 'left';
@@ -839,13 +834,13 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 	if (transport === 'walking') {
 		//TODO: actual pathing
 		path = [
-			{x: dest.x, y: dest.y, transport: 'walking'}
+			{x: dest.x, y: dest.y, transport: 'walking'},
 		];
 	}
 	else if (transport === 'direct') {
 		// straight line movement path
 		path = [
-			{x: dest.x, y: dest.y, speed: this.options.speed, transport: 'direct'}
+			{x: dest.x, y: dest.y, speed: this.options.speed, transport: 'direct'},
 		];
 	}
 	else if (transport === 'flying') {
@@ -886,13 +881,13 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 				x: geo.limitX(this.item.x + tx),
 				y: geo.limitY(this.item.y + this.options.vy),
 				speed: speed,
-				transport: 'direct'
+				transport: 'direct',
 			});
 		}
 		// TODO: Handle more than just platform landings
-		tx = geo.limitX(this.item.x + (3 * this.options.vx));
+		tx = geo.limitX(this.item.x + 3 * this.options.vx);
 		var platform = geo.getClosestPlatPoint(tx,
-			(this.item.y + this.options.vy), -1).plat;
+			this.item.y + this.options.vy, -1).plat;
 		if (!platform) {
 			throw new NpcMovementError(this, 'failed to find landing platform',
 				{tx: tx, path: path, options: this.options});

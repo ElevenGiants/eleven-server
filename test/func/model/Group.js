@@ -66,6 +66,7 @@ suite('Group', function () {
 				},
 				function (err) {
 					if (err) return done(err);
+					/* eslint-disable max-nested-callbacks */
 					g.unload(function (err2) {
 						if (err2) return done(err2);
 						assert.isTrue(rq.closing);
@@ -76,6 +77,7 @@ suite('Group', function () {
 							done();
 						}, 10);
 					});
+					/* eslint-enable max-nested-callbacks */
 				}
 			);
 		});

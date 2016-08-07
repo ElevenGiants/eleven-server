@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var util = require('util');
 var Item = require('model/Item');
 var Bag = require('model/Bag');
@@ -32,7 +33,7 @@ suite('Item', function () {
 		test('enables collision detection where appropriate', function () {
 			var i = new Item();
 			assert.isFalse(i.collDet);
-			i = new Item({onPlayerCollision: function dummy() {}});
+			i = new Item({onPlayerCollision: _.noop});
 			assert.isTrue(i.collDet);
 			assert.property(i, '!colliders');
 		});
@@ -64,7 +65,7 @@ suite('Item', function () {
 		test('works as expected', function () {
 			var i = new Item();
 			assert.isFalse(i.isStack);
-			var I = function () {};
+			var I = _.noop;
 			util.inherits(I, Item);
 			I.prototype.stackmax = 17;
 			i = new I();
@@ -103,7 +104,7 @@ suite('Item', function () {
 				count: 1,
 				x: 123,
 				y: 456,
-				onPlayerCollision: function () {},
+				onPlayerCollision: _.noop,
 			};
 			var i = new Item(data);
 			delete data.onPlayerCollision;  // functions are not included in serialization
@@ -116,7 +117,7 @@ suite('Item', function () {
 
 		function getTestItem(tsid) {
 			var it = new Item({tsid: tsid});
-			it.queueChanges = function noop() {};  // this part is not tested here
+			it.queueChanges = _.noop;  // this part is not tested here
 			return it;
 		}
 
@@ -261,15 +262,14 @@ suite('Item', function () {
 			it1.setContainer(new Bag({tsid: 'BY', tcont: 'LDUMMY'}), 1, 0);
 		});
 
-		test('does not send change events for moves within a container',
-			function () {
+		test('does not send change events for moves within a container', function () {
 			var it = getTestItem('IT');
 			var b = new Bag({tsid: 'BX', tcont: 'LDUMMY'});
 			it.setContainer(b, 3, 7);
 			it.onContainerChanged = it.onContainerItemRemoved =
 				it.onContainerItemAdded = function () {
-				throw new Error('should not be called');
-			};
+					throw new Error('should not be called');
+				};
 			it.setContainer(b, 6, 7);  // move to different slot
 		});
 	});

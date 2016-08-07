@@ -56,9 +56,7 @@ DataContainer.prototype.getRQ = function getRQ() {
 	if (this.owner && rpc.isLocal(this.owner)) {
 		return this.owner.getRQ();
 	}
-	else {
-		return RQ.getGlobal();
-	}
+	return RQ.getGlobal();
 };
 
 

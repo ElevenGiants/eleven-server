@@ -3,6 +3,7 @@
 module.exports = Session;
 
 
+var _ = require('lodash');
 var amf = {
 	js: require('eleven-node-amf/node-amf/amf'),
 	cc: require('node_amf_cc'),
@@ -179,7 +180,7 @@ Session.prototype.handleError = function handleError(err) {
 	log.error({session: this, err: err},
 		'unhandled error: %s', err ? err.message : err);
 	// careful cleanup - if anything throws here, the server goes down
-	if (this.socket && typeof this.socket.destroy === 'function') {
+	if (this.socket && this.socket.destroy) {
 		log.info({session: this}, 'destroying socket');
 		this.socket.destroy();
 	}
@@ -268,7 +269,7 @@ Session.prototype.enqueueMessage = function enqueueMessage(msg) {
 Session.prototype.processRequest = function processRequest(req) {
 	log.trace({data: req}, 'handling %s request', req.type);
 	var timer = metrics.createTimer('req.proc.' + req.type,
-		(req.type === 'move_xy') ? 0.1 : undefined);
+		req.type === 'move_xy' ? 0.1 : undefined);
 	try {
 		var abort = this.preRequestProc(req);
 		if (abort) return;
@@ -382,8 +383,8 @@ Session.prototype.flushPreLoginBuffer = function flushPreLoginBuffer() {
 
 Session.prototype.handleAmfReqError = function handleAmfReqError(req, err) {
 	if (!err) return;
-	if (typeof req !== 'object') req = {};
-	if (typeof err === 'string') {
+	if (!_.isObject(req)) req = {};
+	if (_.isString(err)) {
 		// catch malcontents throwing strings instead of Errors
 		err = new Error(err);
 	}

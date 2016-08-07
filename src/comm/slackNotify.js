@@ -15,6 +15,7 @@ module.exports = {
 	alert: alert,
 };
 
+var _ = require('lodash');
 var config = require('config');
 var Slack = require('slack-node');
 var util = require('util');
@@ -101,13 +102,13 @@ function send(args, icon) {
 		channel: cfg.channel,
 	};
 	// function parameter handling
-	if (typeof args[0] === 'object' && args[0] !== null) {
+	if (_.isObject(args[0])) {
 		webhookParams.channel = args[0].channel || webhookParams.channel;
 		args = Array.prototype.slice.call(args, 1);
 	}
 	// format message content
 	var text = util.format.apply(null, args);
-	if (typeof icon === 'string' && icon.length) {
+	if (_.isString(icon) && icon.length) {
 		text = util.format('%s %s', icon, text);
 	}
 	webhookParams.text = text;

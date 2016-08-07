@@ -35,6 +35,7 @@ module.exports = {
 };
 
 
+var _ = require('lodash');
 var assert = require('assert');
 var util = require('util');
 var murmur = require('murmurhash-js');
@@ -56,11 +57,11 @@ var lastTsidHrt = process.hrtime();
  * @returns {string} the generated TSID
  */
 function makeTsid(initial, gsid) {
-	assert(typeof initial === 'string', util.format(
+	assert(_.isString(initial), util.format(
 		'TSID initial must be a string (got: %s)', typeof initial));
 	assert(initial.length === 1, util.format(
 		'TSID initial must be single letter (got length: %s)', initial.length));
-	assert(typeof gsid === 'string' && gsid.length >= 1, util.format(
+	assert(_.isString(gsid) && gsid.length, util.format(
 		'GSID must be a non-empty string (got: %s)', gsid));
 	var t = new Date().getTime() * 1e6;  // epoch time in ns
 	while (t <= lastTsidTime) {
@@ -116,26 +117,26 @@ function copyProps(from, to) {
 
 
 /**
- * Checks whether the supplied value is an integer number (works for
- * number and string type values).
+ * Checks whether the supplied value is an integer number (works for number and
+ * string type values).
  *
- * @param {number|string} i
- * @returns {boolean}
+ * @param {number|string} i value to check
+ * @returns {boolean} `true` if i is an integer number, `false` otherwise
  */
 function isInt(i) {
-	return i !== null && i !== '' && typeof i !== 'boolean' && i % 1 === 0;
+	return i !== null && i !== '' && !_.isBoolean(i) && i % 1 === 0;
 }
 
 
 /**
- * Converts a string containing a numeric value to the actual
- * corresponding number (radix 10).
+ * Converts a string containing a numeric value to the actual corresponding
+ * number (radix 10).
  *
- * @param {string|number} i the string to convert (finite numbers are
- *        also accepted and just passed through)
+ * @param {string|number} i the string to convert (finite numbers are also
+ *        accepted and just passed through)
  * @returns {number} the parsed numeric value
- * @throws {AssertionError} in case the given string cannot be parsed
- *         to a finite integer value
+ * @throws {AssertionError} in case the given string cannot be parsed to a
+ *         finite integer value
  */
 function intVal(i) {
 	var ret = parseInt(i, 10);
@@ -145,11 +146,12 @@ function intVal(i) {
 
 
 /**
- * Checks whether a given object or TSID is (resp. refers to, in case
- * of proxies) a {@link GameObject}.
+ * Checks whether a given object or TSID is (resp. refers to, in case of
+ * proxies) a {@link GameObject}.
  *
  * @param {GameObject|string} gameObjOrTsid game object/TSID to check
- * @returns {boolean}
+ * @returns {boolean} `true` if the given object/ID is a game object, `false`
+ *          otherwise
  */
 function isGameObject(gameObjOrTsid) {
 	var i = getInitial(gameObjOrTsid);
@@ -159,11 +161,11 @@ function isGameObject(gameObjOrTsid) {
 
 
 /**
- * Checks whether a given game object or TSID is (resp. refers to) a
- * {@link Bag} (which includes {@link Player}s).
+ * Checks whether a given game object or TSID is (resp. refers to) a {@link Bag}
+ * (which includes {@link Player}s).
  *
  * @param {GameObject|string} gameObjOrTsid game object/TSID to check
- * @returns {boolean}
+ * @returns {boolean} `true` if the given object/ID is a bag, `false` otherwise
  */
 function isBag(gameObjOrTsid) {
 	var i = getInitial(gameObjOrTsid);
@@ -175,8 +177,11 @@ function isBag(gameObjOrTsid) {
  * Checks whether a given game object or TSID is (resp. refers to) a
  * {@link Player}.
  *
+ * @returns {boolean} `true` if the given object/ID is a game object, `false`
+ *          otherwise
  * @param {GameObject|string} gameObjOrTsid game object/TSID to check
- * @returns {boolean}
+ * @returns {boolean} `true` if the given object/ID is a player, `false`
+ *          otherwise
  */
 function isPlayer(gameObjOrTsid) {
 	return getInitial(gameObjOrTsid) === 'P';
@@ -188,7 +193,8 @@ function isPlayer(gameObjOrTsid) {
  * {@link Location}.
  *
  * @param {GameObject|string} gameObjOrTsid game object/TSID to check
- * @returns {boolean}
+ * @returns {boolean} `true` if the given object/ID is a location, `false`
+ *          otherwise
  */
 function isLoc(gameObjOrTsid) {
 	return getInitial(gameObjOrTsid) === 'L';
@@ -200,7 +206,8 @@ function isLoc(gameObjOrTsid) {
  * geometry object.
  *
  * @param {GameObject|string} gameObjOrTsid game object/TSID to check
- * @returns {boolean}
+ * @returns {boolean} `true` if the given object/ID is a geometry object,
+ *         `false` otherwise
  */
 function isGeo(gameObjOrTsid) {
 	return getInitial(gameObjOrTsid) === 'G';
@@ -212,7 +219,8 @@ function isGeo(gameObjOrTsid) {
  * {@link Item} (which includes {@link Player}s and {@link Bag}s).
  *
  * @param {GameObject|string} gameObjOrTsid game object/TSID to check
- * @returns {boolean}
+ * @returns {boolean} `true` if the given object/ID is an item, `false`
+ *          otherwise
  */
 function isItem(gameObjOrTsid) {
 	var i = getInitial(gameObjOrTsid);
@@ -225,7 +233,8 @@ function isItem(gameObjOrTsid) {
  * generic data container.
  *
  * @param {GameObject|string} gameObjOrTsid game object/TSID to check
- * @returns {boolean}
+ * @returns {boolean} `true` if the given object/ID is a data container, `false`
+ *          otherwise
  */
 function isDC(gameObjOrTsid) {
 	return getInitial(gameObjOrTsid) === 'D';
@@ -237,7 +246,8 @@ function isDC(gameObjOrTsid) {
  * {@link Quest}.
  *
  * @param {GameObject|string} gameObjOrTsid game object/TSID to check
- * @returns {boolean}
+ * @returns {boolean} `true` if the given object/ID is a quest, `false`
+ *          otherwise
  */
 function isQuest(gameObjOrTsid) {
 	return getInitial(gameObjOrTsid) === 'Q';
@@ -249,7 +259,8 @@ function isQuest(gameObjOrTsid) {
  * {@link Group}.
  *
  * @param {GameObject|string} gameObjOrTsid game object/TSID to check
- * @returns {boolean}
+ * @returns {boolean} `true` if the given object/ID is a group, `false`
+ *          otherwise
  */
 function isGroup(gameObjOrTsid) {
 	return getInitial(gameObjOrTsid) === 'R';
@@ -316,7 +327,7 @@ function addNonEnumerable(obj, propName, val) {
  */
 function arrayToHash(data) {
 	var ret = {};
-	if (data instanceof Array) {
+	if (_.isArray(data)) {
 		for (var i = 0; i < data.length; i++) {
 			if (typeof data[i].tsid !== 'string') {
 				throw new Error('invalid TSID: ' + data[i].tsid);
@@ -406,10 +417,10 @@ function gameObjArgToList(objects, filter) {
 	// handle single GameObject instance or single TSID string as 1-element array
 	if (filter(objects)) objects = [objects];
 	// if it's an object, assume it's a hash with TSIDs as keys
-	if (objects && typeof objects === 'object' && !(objects instanceof Array)) {
+	if (_.isObject(objects) && !_.isArray(objects)) {
 		objects = Object.keys(objects);
 	}
-	if (objects instanceof Array) {
+	if (_.isArray(objects)) {
 		// could be an array of TSIDs or an array of GameObject instances
 		for (var i = 0; i < objects.length; i++) {
 			var o = objects[i];

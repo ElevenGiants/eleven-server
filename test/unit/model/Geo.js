@@ -209,13 +209,13 @@ suite('Geo', function () {
 			start: {x: 10, y: 10},
 			platform_item_perm: -1,  // -1 => solid from the top only
 			platform_pc_perm: -1,
-			end: {x: 20, y: 10}
+			end: {x: 20, y: 10},
 		};
 		var plat2 = {
 			start: {x: 5, y: 30},
 			platform_item_perm: null,  // null => solid from both sides
 			platform_pc_perm: null,
-			end: {x: 30, y: 30}
+			end: {x: 30, y: 30},
 		};
 		var plat3 = {
 			start: {x: 15, y: 25},
@@ -223,11 +223,11 @@ suite('Geo', function () {
 			platform_pc_perm: -1,
 			end: {x: 35, y: 25},
 		};
-		var plat4 =  {
+		var plat4 = {
 			start: {x: 0, y: 5},
 			platform_item_perm: 1,  // 1 => solid from the bottom only
 			platform_pc_perm: 1,
-			end: {x: 50, y: 5}
+			end: {x: 50, y: 5},
 		};
 		var g = new Geo({layers: {middleground: {platform_lines: {
 			plat_1: plat1,
@@ -272,9 +272,9 @@ suite('Geo', function () {
 						boxes: {
 							foo: {w: 23, h: 13},
 							bar: {w: 42, h: 12},
-						}
-					}
-				}
+						},
+					},
+				},
 			});
 			var hitBoxes = g.getHitBoxes();
 			assert.typeOf(hitBoxes, 'array');

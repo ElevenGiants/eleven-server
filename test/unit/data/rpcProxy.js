@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var rewire = require('rewire');
 var rp = rewire('data/rpcProxy');
 var rpcMock = require('../../mock/rpc');
@@ -71,7 +72,7 @@ suite('rpcProxy', function () {
 
 		test('function arguments are sent as an Array', function () {
 			var p = rp.makeProxy({
-				test: function (a, b, c) {},
+				test: _.noop,
 			});
 			p.test(1, 2, 3);
 			var args = rpcMock.getRequests()[0].args;

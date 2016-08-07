@@ -1,5 +1,6 @@
 'use strict';
-/*jshint -W072 */  // function parameters prescribed by RPC API
+
+/* eslint-disable max-params */  // function parameters prescribed by RPC API
 
 /**
  * Module for management of the transparent RPC connections between
@@ -35,6 +36,7 @@ module.exports = {
 };
 
 
+var _ = require('lodash');
 var assert = require('assert');
 var async = require('async');
 var config = require('config');
@@ -99,10 +101,10 @@ function init(startServer, callback) {
 	shuttingDown = false;
 	clients = {};
 	if (arguments.length < 2) {
-		if (typeof startServer === 'function') {
+		if (_.isFunction(startServer)) {
 			callback = startServer;
 		}
-		if (typeof startServer !== 'boolean') {
+		if (_.isBoolean(startServer)) {
 			startServer = true;
 		}
 	}
@@ -206,7 +208,7 @@ function shutdown(callback) {
 	// first shut down the clients...
 	async.each(Object.keys(clients), function iterator(gsid, cb) {
 		log.debug('shutting down RPC client for %s', gsid);
-		clients[gsid].shutdown(function () {
+		clients[gsid].shutdown(function done() {
 			log.debug('RPC client for %s shut down', gsid);
 			cb();
 		});
@@ -216,7 +218,7 @@ function shutdown(callback) {
 		if (err) log.error(err, 'error shutting down RPC clients');
 		clients = {};
 		log.debug('shutting down RPC server');
-		server.shutdown(function () {
+		server.shutdown(function done() {
 			log.debug('RPC server shut down');
 			server = undefined;
 		});
@@ -315,7 +317,7 @@ function sendRequest(gsid, rpcFunc, args, callback) {
 	if (!client) {
 		var err = new RpcError(util.format('no RPC client found for "%s"', gsid));
 		if (callback) return callback(err);
-		else throw err;
+		throw err;
 	}
 	// argument marshalling (replace objref proxies with actual objrefs)
 	args = orProxy.refify(args);
@@ -368,13 +370,13 @@ function sendRequest(gsid, rpcFunc, args, callback) {
  */
 function handleRequest(callerId, obj, tag, fname, args, callback) {
 	metrics.increment('net.rpc.rx');
-	if (!obj || typeof obj[fname] !== 'function') {
+	if (!obj || !_.isFunction(obj[fname])) {
 		var msg = util.format('no such function: %s.%s', obj, fname);
 		return callback(new RpcError(msg));
 	}
 	orProxy.proxify(args);  // unmarshal arguments
 	var logtag = util.format('%s.%s.%s', callerId, obj.tsid ? obj.tsid : obj, fname);
-	log.debug('%s(%s)', logtag, args instanceof Array ? args.join(', ') : args);
+	log.debug('%s(%s)', logtag, _.isArray(args) ? args.join(', ') : args);
 	var rpcReq = function rpcReq() {
 		var ret = obj[fname].apply(obj, args);
 		// convert <undefined> result to <null> so RPC lib produces a valid
@@ -386,7 +388,7 @@ function handleRequest(callerId, obj, tag, fname, args, callback) {
 		if (err) {
 			log.error(err, 'exception in %s', logtag);
 		}
-		if (typeof callback !== 'function') {
+		if (!_.isFunction(callback)) {
 			log.error('%s called without a valid callback', logtag);
 		}
 		else {
@@ -397,7 +399,7 @@ function handleRequest(callerId, obj, tag, fname, args, callback) {
 	};
 	try {
 		var rq = RQ.getGlobal('rpc');
-		if (obj.tsid && isLocal(obj) && typeof obj.getRQ === 'function') {
+		if (obj.tsid && isLocal(obj) && _.isFunction(obj.getRQ)) {
 			rq = obj.getRQ();
 		}
 		rq.push(tag, rpcReq, rpcCallback, {waitPers: true});
@@ -423,7 +425,7 @@ function handleRequest(callerId, obj, tag, fname, args, callback) {
  */
 function objectRequest(callerId, tsid, tag, fname, args, callback) {
 	// backwards compatibility with external components
-	if (typeof fname !== 'string') {
+	if (!_.isString(fname)) {
 		args = fname;
 		fname = tag;
 		tag = util.format('%s.%s.%s', callerId, tsid, fname);
@@ -644,4 +646,4 @@ function getOnClientShutdownHandler(gsid) {
 		log.info('[jrpc client for %s] shutdown', gsid);
 	};
 }
-/*jshint +W072 */
+/* eslint-enable max-params */

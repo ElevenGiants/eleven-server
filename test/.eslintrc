@@ -1,0 +1,18 @@
+{
+	"globals": {
+		"assert": true,
+		"setup": true,
+		"suite": true,
+		"suiteSetup": true,
+		"suiteTeardown": true,
+		"teardown": true,
+		"test": true
+	},
+	"rules": {
+		"complexity": [1, 15],
+		"func-names": 0,
+		"max-len": 0,
+		"max-nested-callbacks": [1, 5],
+		"no-underscore-dangle": [1, "allow": ["super_", "__proxyTarget", "__isGO", "__isORP", "__isRP", "__get__", "__set__"]]
+	}
+}

@@ -71,8 +71,10 @@
     "benchmark": "https://github.com/bestiejs/benchmark.js/tarball/master",
     "chai": "^1.9.1",
     "coveralls": "^2.11.4",
+    "eslint": "^3.2.2",
+    "eslint-plugin-lodash": "^1.10.1",
+    "eslint-plugin-node": "^2.0.0",
     "jsdoc": "^3.3.0-alpha9",
-    "jshint": "^2.5.5",
     "mocha": "^2.2.5",
     "rewire": "^2.1.0"
   },
@@ -82,11 +84,11 @@
     "test": "NODE_PATH=src node_modules/mocha/bin/mocha test/unit",
     "functest": "NODE_PATH=src node_modules/mocha/bin/mocha test/func",
     "inttest": "NODE_PATH=src node_modules/mocha/bin/mocha test/int",
-    "alltests": "NODE_PATH=src sh -c 'npm run lint && npm run test -- -R progress && npm run functest -- -R progress && npm run inttest -- -R progress'",
+    "alltests": "NODE_PATH=src sh -c 'npm run test -- -R progress && npm run functest -- -R progress && npm run inttest -- -R progress && npm run lint'",
     "coverage": "NODE_PATH=src node node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R progress test/unit test/func",
     "coveralls": "NODE_PATH=src node node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha --report lcovonly -- -R progress test/unit test/func && cat coverage/lcov.info | node_modules/coveralls/bin/coveralls.js",
     "bench": "NODE_PATH=src node bench/runner.js",
-    "lint": "node_modules/jshint/bin/jshint --verbose --exclude src/gsjs src test tools",
+    "lint": "node_modules/eslint/bin/eslint.js src test tools",
     "docs": "node node_modules/jsdoc/jsdoc.js --destination docs --configure jsdoc-conf.json src",
     "repl": "node tools/repl-client.js 7201"
   }

@@ -71,7 +71,7 @@ function Item(data) {
 	utils.addNonEnumerable(this, 'collDet', false);
 	utils.addNonEnumerable(this, 'path', this.tsid);
 	// enable collision detection if we have a handler function
-	if (typeof this.onPlayerCollision === 'function') {
+	if (_.isFunction(this.onPlayerCollision)) {
 		utils.addNonEnumerable(this, '!colliders', {});
 		this.collDet = true;
 	}
@@ -108,8 +108,9 @@ Item.prototype.gsOnLoad = function gsOnLoad() {
 
 
 /**
- * Creates a processed shallow copy of this item, prepared for
- * serialization.
+ * Creates a processed shallow copy of this item, prepared for serialization.
+ *
+ * @returns {object} shallow copy of the item, prepared for serialization
  *
  * @see {@link GameObject#serialize|GameObject.serialize}
  */
@@ -165,9 +166,7 @@ Item.prototype.getRQ = function getRQ() {
 	if (this.container && rpc.isLocal(this.container)) {
 		return this.container.getRQ();
 	}
-	else {
-		return RQ.getGlobal();
-	}
+	return RQ.getGlobal();
 };
 
 
@@ -176,7 +175,8 @@ Item.prototype.getRQ = function getRQ() {
  */
 Item.prototype.del = function del() {
 	log.trace('del %s', this);
-	log.info('Item.del: %s', this);  // TODO for broken objref debugging, remove when no longer needed
+	// TODO INFO msg for broken objref debugging, remove when no longer needed:
+	log.info('Item.del: %s', this);
 	Item.super_.prototype.del.call(this);
 	if (this.container) {
 		RC.setDirty(this.container);
@@ -247,7 +247,6 @@ Item.prototype.setXY = function setXY(x, y) {
  * @param {boolean} [hidden] item will be hidden in the new container
  *        (`false` by default)
  */
-/*jshint -W071 */
 Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 	var tcont = cont.tcont ? cont.tcont : cont.tsid;
 	assert(utils.isPlayer(tcont) || utils.isLoc(tcont), util.format(
@@ -293,7 +292,6 @@ Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 	}
 	this.sendContChangeEvents(prev);
 };
-/*jshint +W071 */
 
 
 /**
@@ -343,7 +341,7 @@ Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
 Item.prototype.getPosObject = function getPosObject() {
 	// special case: no container (yet, i.e. during item creation)
 	if (!this.container) return;
-	var ret = this;
+	var ret = this;  // eslint-disable-line consistent-this
 	// traverse container chain until we reach a player or a
 	// direct child item of a location
 	while (ret.container && !utils.isPlayer(ret) && !utils.isLoc(ret.container)) {
@@ -384,7 +382,7 @@ Item.prototype.queueChanges = function queueChanges(removed, compact) {
  *        (only coordinates and state, for NPC movement)
  * @returns {object} changes data set
  */
-/*jshint -W071 */  // suppress "too many statements" warning (this is a fairly trivial function)
+/* eslint-disable complexity */  // this is actually not really complex at all
 Item.prototype.getChangeData = function getChangeData(pc, removed, compact) {
 	var ret = {};
 	ret.x = this.x;
@@ -399,7 +397,7 @@ Item.prototype.getChangeData = function getChangeData(pc, removed, compact) {
 	}
 	ret.path_tsid = this.path;
 	ret.class_tsid = this.class_tsid;
-	ret.count = (removed || this.deleted) ? 0 : this.count;
+	ret.count = removed || this.deleted ? 0 : this.count;
 	ret.label = this.getLabel ? this.getLabel() : this.label;
 	if (!removed && this.slot !== undefined) ret.slot = this.slot;
 	if (this.z) ret.z = this.z;
@@ -417,7 +415,7 @@ Item.prototype.getChangeData = function getChangeData(pc, removed, compact) {
 	}
 	return ret;
 };
-/*jshint +W071 */
+/* eslint-enable complexity */
 
 
 /**

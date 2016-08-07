@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var fs = require('fs');
 var path = require('path');
 
@@ -27,7 +28,7 @@ var deletes = [];
 
 
 function init(pbeConfig, callback) {
-	if (typeof pbeConfig === 'object') {
+	if (_.isObject(pbeConfig)) {
 		fpath = pbeConfig.fixturesPath;
 	}
 	db = {};
@@ -40,7 +41,7 @@ function init(pbeConfig, callback) {
 	reads = [];
 	writes = [];
 	deletes = [];
-	if (typeof callback === 'function') callback(null);
+	if (_.isFunction(callback)) callback(null);
 }
 
 

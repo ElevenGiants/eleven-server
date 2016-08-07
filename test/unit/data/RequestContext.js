@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var rewire = require('rewire');
 var RC = rewire('data/RequestContext');
 var persMock = require('../../mock/pers');
@@ -95,8 +96,7 @@ suite('RequestContext', function () {
 			done();
 		});
 
-		test('runs request function and returns its return value in callback',
-			function (done) {
+		test('runs request function and returns its return value in callback', function (done) {
 			var derp = 1;
 			new RC().run(function () {
 				derp = 3;
@@ -109,8 +109,7 @@ suite('RequestContext', function () {
 			});
 		});
 
-		test('passes errors thrown by the request function back in callback',
-			function (done) {
+		test('passes errors thrown by the request function back in callback', function (done) {
 			new RC().run(function () {
 				throw new Error('meh');
 			},
@@ -121,12 +120,11 @@ suite('RequestContext', function () {
 			});
 		});
 
-		test('does not invoke callback twice in case of errors in callback',
-			function () {
+		test('does not invoke callback twice in case of errors in callback', function () {
 			var calls = 0;
 			assert.throw(function () {
 				new RC().run(
-					function dummy() {},
+					_.noop,
 					function callback(err, res) {
 						calls++;
 						assert.strictEqual(calls, 1);

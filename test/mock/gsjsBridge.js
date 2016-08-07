@@ -12,9 +12,7 @@ module.exports = {
 
 function create(data, modelType) {
 	if (modelType) {
-		/*jshint -W055 */  // ignore lowercase constructor names here
 		return new modelType(data);
-		/*jshint +W055 */
 	}
 	return data;
 }

@@ -1,5 +1,8 @@
 'use strict';
 
+var _ = require('lodash');
+
+/* eslint-disable max-len */  // ugly long function names defined by API
 
 /**
  * Model layer API functions for the {@link Player} class (used by GSJS
@@ -8,6 +11,7 @@
  *
  * @mixin
  */
+// eslint-disable-next-line lodash/prefer-noop
 var PlayerApi = module.exports = function PlayerApi() {};
 
 
@@ -18,8 +22,7 @@ var PlayerApi = module.exports = function PlayerApi() {};
  * @returns {boolean} `true` if the current location is locked by the
  *          player
  */
-PlayerApi.prototype.apiPlayerHasLockForCurrentLocation =
-	function apiPlayerHasLockForCurrentLocation() {
+PlayerApi.prototype.apiPlayerHasLockForCurrentLocation = function apiPlayerHasLockForCurrentLocation() {
 	log.trace('%s.apiPlayerHasLockForCurrentLocation()', this);
 	//TODO: implement location locking
 	return false;
@@ -32,8 +35,7 @@ PlayerApi.prototype.apiPlayerHasLockForCurrentLocation =
  * @returns {boolean} `true` if the current location was locked successfully,
  *          `false` otherwise
  */
-PlayerApi.prototype.apiLockCurrentLocationForEditing =
-	function apiLockCurrentLocationForEditing() {
+PlayerApi.prototype.apiLockCurrentLocationForEditing = function apiLockCurrentLocationForEditing() {
 	log.info('%s.apiLockCurrentLocationForEditing()', this);
 	//TODO: implement location locking
 	return true;
@@ -44,8 +46,7 @@ PlayerApi.prototype.apiLockCurrentLocationForEditing =
  * Releases an editing lock for the player's current location. Does nothing if
  * the player does not hold a lock.
  */
-PlayerApi.prototype.apiUnlockCurrentLocationForEditing =
-	function apiUnlockCurrentLocationForEditing() {
+PlayerApi.prototype.apiUnlockCurrentLocationForEditing = function apiUnlockCurrentLocationForEditing() {
 	log.info('%s.apiUnlockCurrentLocationForEditing()', this);
 	//TODO: implement location locking
 };
@@ -102,8 +103,7 @@ PlayerApi.prototype.apiAddStack = function apiAddStack(item, slot, path, amount)
  *        if not specified, the whole stack is processed
  * @returns {number} amount of remaining items
  */
-PlayerApi.prototype.apiAddStackAnywhere =
-	function apiAddStackAnywhere(item, maxSlot, path, amount) {
+PlayerApi.prototype.apiAddStackAnywhere = function apiAddStackAnywhere(item, maxSlot, path, amount) {
 	log.debug('%s.apiAddStackAnywhere(%s, %s, %s, %s)', this, item, maxSlot,
 		path, amount);
 	return this.addToAnySlot(item, 0, maxSlot, path, amount);
@@ -119,8 +119,7 @@ PlayerApi.prototype.apiAddStackAnywhere =
  *        available items)
  * @returns {object} a hash with the matching items
  */
-PlayerApi.prototype.apiInventoryGetItems =
-	function apiInventoryGetItems(classTsid, minCount) {
+PlayerApi.prototype.apiInventoryGetItems = function apiInventoryGetItems(classTsid, minCount) {
 	log.debug('%s.apiInventoryGetItems(%s, %s)', this, classTsid, minCount);
 	return this.getClassItems(classTsid, minCount > 0 ? minCount : undefined);
 };
@@ -178,8 +177,8 @@ PlayerApi.prototype.apiSendLocMsgX = function apiSendLocMsgX(msg) {
  * @param {object} annc announcement data
  */
 PlayerApi.prototype.apiSendAnnouncement = function apiSendAnnouncement(annc) {
-	log.debug('%s.apiSendAnnouncement(%s)', this, typeof annc !== 'object' ?
-		'' : (annc.type + '/' + annc.uid));
+	log.debug('%s.apiSendAnnouncement(%s)', this,
+		_.isObject(annc) ? annc.type + '/' + annc.uid : '');
 	this.queueAnnc(annc);
 };
 
@@ -197,8 +196,7 @@ PlayerApi.prototype.apiSendAnnouncement = function apiSendAnnouncement(annc) {
  *     token: "<TOKEN_FOR_CONNECTION_TO_OTHER_GS>"
  * }```
  */
-PlayerApi.prototype.apiCheckIfNeedToMoveToAnotherGSAndGetMoveData = function
-	apiCheckIfNeedToMoveToAnotherGSAndGetMoveData(locTsid) {
+PlayerApi.prototype.apiCheckIfNeedToMoveToAnotherGSAndGetMoveData = function apiCheckIfNeedToMoveToAnotherGSAndGetMoveData(locTsid) {
 	log.debug('%s.apiCheckIfNeedToMoveToAnotherGSAndGetMoveData(%s)', this, locTsid);
 	var moveData = this.gsMoveCheck(locTsid);
 	if (moveData) {
@@ -217,8 +215,7 @@ PlayerApi.prototype.apiCheckIfNeedToMoveToAnotherGSAndGetMoveData = function
  * @param {number} x x coordinate of the player in the new location
  * @param {number} y y coordinate of the player in the new location
  */
-PlayerApi.prototype.apiStartLocationMoveX = function
-	apiStartLocationMoveX(newLoc, x, y) {
+PlayerApi.prototype.apiStartLocationMoveX = function apiStartLocationMoveX(newLoc, x, y) {
 	log.debug('%s.apiStartLocationMoveX(%s, %s, %s)', this, newLoc, x, y);
 	this.startMove(newLoc, x, y);
 };
@@ -251,8 +248,7 @@ PlayerApi.prototype.apiEndLocationMove = function apiEndLocationMove(newLoc) {
  * @param {number} x x coordinate of the player in the new location
  * @param {number} y y coordinate of the player in the new location
  */
-PlayerApi.prototype.apiMoveOfflinePlayerToAnotherLocation =
-	function apiMoveOfflinePlayerToAnotherLocation(newLoc, x, y) {
+PlayerApi.prototype.apiMoveOfflinePlayerToAnotherLocation = function apiMoveOfflinePlayerToAnotherLocation(newLoc, x, y) {
 	log.debug('%s.apiMoveOfflinePlayerToAnotherLocation(%s, %s, %s)', this,
 		newLoc, x, y);
 	this.startMove(newLoc, x, y);
@@ -286,3 +282,5 @@ PlayerApi.prototype.apiPlayerCanReach = function apiPlayerCanReach(x, y) {
 	log.warn('TODO Player.apiPlayerCanReach not implemented yet');
 	return true;
 };
+
+/* eslint-enable max-len */

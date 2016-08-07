@@ -18,6 +18,7 @@ module.exports = {
 };
 
 
+var _ = require('lodash');
 var Slack = require('@slack/client');
 var config = require('config');
 var pers = require('data/pers');
@@ -162,7 +163,7 @@ function connectGroup(groupTsid, cogName, cogs) {
 
 function onSlackError(err) {
 	var msg = 'Slack client error';
-	if (typeof err === 'string') {
+	if (_.isString(err)) {
 		log.error('%s: %s', msg, err);
 	}
 	else {
@@ -199,7 +200,8 @@ function onSlackMessage(msg) {
 		type: 'pc_groups_chat',
 		tsid: groupTsid,
 		pc: {
-			tsid: 'PSLACK' + user.id,  // unique pseudo TSID so client assigns different colors
+			// unique pseudo TSID so client assigns different colors:
+			tsid: 'PSLACK' + user.id,
 			label: user.name,
 		},
 		txt: processMsgText(msg.text),
@@ -307,7 +309,7 @@ function patchGroup(group) {
 	// monkey patch the function generating /who output
 	var orig = group.chat_get_roster_msg;
 	utils.addNonEnumerable(group, 'chat_get_roster_msg',
-		function chat_get_roster_msg() {
+		function chat_get_roster_msg() {  // eslint-disable-line camelcase
 			var channel = groupToChannel[group.tsid];
 			var roster = utils.shallowCopy(group.chat_roster);
 			for (var i = 0; i < channel.members.length; i++) {

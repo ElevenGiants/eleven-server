@@ -1,5 +1,7 @@
 'use strict';
 
+var _ = require('lodash');
+var async = require('async');
 var net = require('net');
 var rewire = require('rewire');
 var config = require('config');
@@ -42,15 +44,16 @@ suite('rpc', function () {
 
 		test('works', function (done) {
 			config.init(true, CONFIG, {});
-			// start up RPC server
-			rpc.__get__('initServer')(function serverStarted() {
-				// start up RPC client (with fake config to connect back to
-				// the server we just started)
-				rpc.__get__('initClient')(GSCONF_LOOPBACK, function clientStarted() {
+			var client;
+			async.series([
+				// start up RPC server
+				rpc.__get__('initServer').bind(rpc),
+				rpc.__get__('initClient').bind(rpc, GSCONF_LOOPBACK),
+				function checkInitialized(cb) {
 					assert.deepEqual(Object.keys(rpc.__get__('clients')),
 						['gs01-loopback'], 'exactly one client endpoint initialized');
 					// multitransport-jsonrpc specific stuff:
-					var client = rpc.__get__('clients')['gs01-loopback'];
+					client = rpc.__get__('clients')['gs01-loopback'];
 					assert.deepEqual(client.transport.tcpConfig,
 						{host: '127.0.0.1', port: 17000});
 					var server = rpc.__get__('server');
@@ -63,14 +66,16 @@ suite('rpc', function () {
 					assert.strictEqual(connection.remotePort,
 						client.transport.con.localPort,
 						'server and client endpoints are connected');
-					// test shutdown, too
-					rpc.shutdown(function callback() {
-						assert.deepEqual(rpc.__get__('clients'), {});
-						// multitransport-jsonrpc specific stuff:
-						assert.isTrue(client.transport.con.destroyed);
-						done();
-					});
-				});
+					return cb();
+				},
+				rpc.shutdown.bind(rpc),
+			], function (err) {
+				if (err) return done(err);
+				// test shutdown, too
+				assert.deepEqual(rpc.__get__('clients'), {});
+				// multitransport-jsonrpc specific stuff:
+				assert.isTrue(client.transport.con.destroyed);
+				return done();
 			});
 		});
 	});
@@ -142,7 +147,7 @@ suite('rpc', function () {
 			rpc.__get__('clients')['gs01-02'] = rpc.__get__('clients')['gs01-loopback'];
 			persMock.preAdd(new GameObject({
 				tsid: 'LXYZ',
-				func: function () {},  // implicitly returns undefined
+				func: _.noop,
 			}));
 			rcMock.run(function () {
 				var res = rpc.sendObjRequest('LXYZ', 'func', []);
@@ -150,11 +155,10 @@ suite('rpc', function () {
 			}, null, null, done);
 		});
 
-		test('return proper RPC result object if called function returns undefined',
-			function (done) {
+		test('return proper RPC result object if called function returns undefined', function (done) {
 			persMock.preAdd(new GameObject({
 				tsid: 'LXYZ',
-				func: function () {},  // implicitly returns undefined
+				func: _.noop,
 			}));
 			var socket = net.connect({port: 17001}, function () {
 				socket.on('data', function (data) {
@@ -178,8 +182,7 @@ suite('rpc', function () {
 			});
 		});
 
-		test('handles invalid (non-array) args parameter gracefully',
-			function (done) {
+		test('handles invalid (non-array) args parameter gracefully', function (done) {
 			persMock.preAdd(new GameObject({
 				tsid: 'LX',
 				func: function () {
@@ -187,8 +190,7 @@ suite('rpc', function () {
 				},
 			}));
 			rcMock.run(function () {
-				rpc.__get__('objectRequest')('caller', 'LX', null, 'func', null,
-					function cb(err, res) {
+				rpc.__get__('objectRequest')('caller', 'LX', null, 'func', null, function cb(err, res) {
 					if (err) return done(err);
 					assert.strictEqual(res, 'foo');
 					done();
@@ -198,8 +200,7 @@ suite('rpc', function () {
 
 		test('handles calls on nonexistent game objects gracefully', function (done) {
 			rcMock.run(function () {
-				rpc.__get__('objectRequest')('caller', 'IMISSING', null, 'func', null,
-					function cb(err, res) {
+				rpc.__get__('objectRequest')('caller', 'IMISSING', null, 'func', null, function cb(err, res) {
 					assert.instanceOf(err, Error);
 					assert.strictEqual(err.message, 'object not found: IMISSING');
 					return done();
@@ -236,8 +237,7 @@ suite('rpc', function () {
 		});
 
 
-		test('apiFindItemPrototype retrieves catalog objects properly',
-			function (done) {
+		test('apiFindItemPrototype retrieves catalog objects properly', function (done) {
 			new RC().run(function () {
 				var res = rpc.sendRequest('gs01-02', 'api',
 					['apiFindItemPrototype', ['catalog']]);
@@ -246,8 +246,7 @@ suite('rpc', function () {
 			}, done);
 		});
 
-		test('apiGetJSFileObject returns object prototypes (not objrefs)',
-			function (done) {
+		test('apiGetJSFileObject returns object prototypes (not objrefs)', function (done) {
 			new RC().run(function () {
 				var res = rpc.sendRequest('gs01-02', 'api',
 					['apiGetJSFileObject', ['achievements/able_chopper.js']]);
@@ -260,8 +259,7 @@ suite('rpc', function () {
 			}, done);
 		});
 
-		test('apiFindQuestPrototype returns quest prototypes (not objrefs)',
-			function (done) {
+		test('apiFindQuestPrototype returns quest prototypes (not objrefs)', function (done) {
 			new RC().run(function () {
 				var res = rpc.sendRequest('gs01-02', 'api',
 					['apiFindQuestPrototype', ['an_autumn_day']]);

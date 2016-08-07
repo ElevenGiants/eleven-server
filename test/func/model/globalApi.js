@@ -74,11 +74,11 @@ suite('globalApi', function () {
 				rc.cache[p.tsid] = p;
 				p.session = 'notnull';  // just to trick Player.isConnected
 				p.foo = function (arg1, arg2) {
-					throw arg1 + ' ' + arg2;
+					throw new Error(arg1 + ' ' + arg2);
 				};
 				var res = callFor('foo', [i, p], ['annoyed', 'grunt'], true);
 				var expected = {};
-				expected[p.tsid] = {ok: 0, error: 'annoyed grunt'};
+				expected[p.tsid] = {ok: 0, error: 'Error: annoyed grunt'};
 				assert.deepEqual(res, expected);
 			}, done);
 		});

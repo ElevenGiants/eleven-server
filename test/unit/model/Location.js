@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var Location = require('model/Location');
 var Geo = require('model/Geo');
 var Item = require('model/Item');
@@ -100,7 +101,7 @@ suite('Location', function () {
 			var l = new Location({items: [b]}, new Geo());
 			l.getRQ = function mockGetRQ() {
 				return {
-					push: function push() {},
+					push: _.noop,
 				};
 			};
 			b.container = l;
@@ -199,6 +200,7 @@ suite('Location', function () {
 			var b3 = new Bag({tsid: 'B3', items: [i5]});
 			var b2 = new Bag({tsid: 'B2', items: [b3], hiddenItems: [i3]});
 			var l = new Location({tsid: 'L1', items: [i1, b2]}, new Geo());
+			/* eslint-disable quote-props */  // for symmetry...
 			assert.deepEqual(l.getAllItems(true), {
 				'I1': i1,
 				'B2': b2,
@@ -213,6 +215,7 @@ suite('Location', function () {
 				'B2/B3': b3,
 				'B2/B3/I5': i5,
 			});
+			/* eslint-enable quote-props */
 		});
 	});
 

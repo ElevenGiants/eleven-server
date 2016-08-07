@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var rewire = require('rewire');
 var config = rewire('config');
 var rpc = rewire('data/rpc');
@@ -36,8 +37,7 @@ suite('rpc', function () {
 		setup(function () {
 			rpc.__set__('config', {
 				mapToGS: function (objOrTsid) {
-					var tsid = (typeof objOrTsid === 'string' ?
-						objOrTsid : objOrTsid.tsid);
+					var tsid = _.isString(objOrTsid) ? objOrTsid : objOrTsid.tsid;
 					return {gsid: 'gs-' + tsid};
 				},
 			});
@@ -154,13 +154,13 @@ suite('rpc', function () {
 
 		test('fails for non-top-level object types', function () {
 			var initials = ['I', 'B', 'D', 'P', 'Q'];
+			/* eslint-disable no-loop-func */  // oh well, it's just a test
 			for (var i = 0; i < initials.length; i++) {
-				/*jshint -W083 */
 				assert.throw(function () {
 					rpc.makeLocalTsid(initials[i]);
 				}, assert.AssertionError);
-				/*jshint +W083 */
 			}
+			/* eslint-enable no-loop-func */
 		});
 	});
 });

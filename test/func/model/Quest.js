@@ -26,11 +26,9 @@ suite('Quest', function () {
 	suite('ctor', function () {
 
 		test('does not override changed prototype properties', function () {
-			/*jshint -W055 */  // deliberate lowercase constructor name here
 			var ctor = gsjsBridge.getProto('quests', 'lightgreenthumb_1').constructor;
 			var q = new ctor({accepted: true, class_tsid: 'lightgreenthumb_1'});
 			assert.strictEqual(q.accepted, true);
-			/*jshint +W055 */
 		});
 	});
 
@@ -82,7 +80,7 @@ suite('Quest', function () {
 						class_ids: {
 							job_proto_door: {
 								class_id: 'job_proto_door',
-								label:  'Build a New Floor',
+								label: 'Build a New Floor',
 								instance: {objref: true, tsid: 'Q2'},
 							},
 						},

@@ -72,7 +72,7 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 	callback = callback || function defaultCallback(err, res) {
 		if (err) throw err;
 	};
-	var rc = this;
+	var rc = this;  // eslint-disable-line consistent-this
 	var logtag = util.format('%s/%s', rc.owner, rc.tag);
 	wait.launchFiber(function rcFiber() {
 		var res = null;
@@ -83,9 +83,9 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 			log.debug('finished %s (%s dirty)', logtag, Object.keys(rc.dirty).length);
 		}
 		catch (err) {
-			/*jshint -W030 */  // trigger prepareStackTrace (parts of the trace might not be available outside the RC)
-			err.stack;
-			/*jshint +W030 */
+			// trigger prepareStackTrace (parts of the trace might not be
+			// available outside the RC)
+			err.stack;  // eslint-disable-line no-unused-expressions
 			return callback(err);
 		}
 		// persist modified objects

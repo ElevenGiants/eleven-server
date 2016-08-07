@@ -37,7 +37,7 @@ var PROPS = {
 		meditation_today: 'property',
 		rube_trades: 'property',
 		rube_lure_disabled: 'property',
-		recipe_xp_today: 'object'
+		recipe_xp_today: 'object',
 	},
 	daily_favor: {
 		alph: 'property',
@@ -50,7 +50,7 @@ var PROPS = {
 		pot: 'property',
 		spriggan: 'property',
 		ti: 'property',
-		zille: 'property'
+		zille: 'property',
 	},
 	favor_points: {
 		alph: 'property',
@@ -63,7 +63,7 @@ var PROPS = {
 		pot: 'property',
 		spriggan: 'property',
 		ti: 'property',
-		zille: 'property'
+		zille: 'property',
 	},
 	giant_emblems: {
 		alph: 'property',
@@ -76,7 +76,7 @@ var PROPS = {
 		pot: 'property',
 		spriggan: 'property',
 		ti: 'property',
-		zille: 'property'
+		zille: 'property',
 	},
 };
 // indicates which of the above PROPS will be included in the 'changes' segment
@@ -139,7 +139,7 @@ utils.copyProps(require('model/PlayerApi').prototype, Player.prototype);
  * @returns {object} a `Player` object
  */
 Player.create = function create(data) {
-	assert(typeof data === 'object', 'minimal player data set required');
+	assert(_.isObject(data), 'minimal player data set required');
 	assert(utils.isLoc(data.location), 'location required');
 	data.class_tsid = data.class_tsid || 'human';
 	var ret = pers.create(Player, data);
@@ -159,8 +159,9 @@ Player.prototype.del = function del() {
 
 
 /**
- * Creates a processed shallow copy of this player instance for
- * serialization.
+ * Creates a processed shallow copy of this player instance for serialization.
+ *
+ * @returns {object} shallow copy of the player, prepared for serialization
  *
  * @see {@link GameObject#serialize|GameObject.serialize}
  */
@@ -178,7 +179,7 @@ Player.prototype.serialize = function serialize() {
 			else if (this[group][key] instanceof Prop) {
 				ret[group][key] = this[group][key].serialize();
 			}
-			else if (typeof this[group][key] === 'object') {
+			else if (_.isObject(this[group][key])) {
 				ret[group][key] = {};
 				for (var subkey in this[group][key]) {
 					ret[group][key][subkey] = this[group][key][subkey].serialize();
@@ -205,9 +206,7 @@ Player.prototype.getRQ = function getRQ() {
 	if (this.location && rpc.isLocal(this.location)) {
 		return RQ.get(this.location);
 	}
-	else {
-		return RQ.getGlobal();
-	}
+	return RQ.getGlobal();
 };
 
 
@@ -693,46 +692,43 @@ Player.prototype.handleCollision = function handleCollision(it, hitBox, hitBoxNa
 				log.trace('%s entered location hitbox "%s"', this, hitBoxName);
 				// call the handler for this hitbox
 				this.location.rqPush(this.location.hitBox, this, hitBoxName, hit);
-				// "abuse" player's colliders list to keep track of location hitboxes we're in
+				// "abuse" player's colliders list to keep track of location
+				// hitboxes we're in
 				this['!colliders'][hitBoxName] = t;
 			}
 		}
-		else {
-			// if we just entered a named hitbox, an item's default hitbox or a player's
-			// default hitbox
-			if (hitBoxName || !it['!colliders'][this.tsid]) {
-				log.trace('%s entered/inside hitbox "%s" of %s', this, hitBoxName, it);
-				// call item's or player's collision handler
-				it.rqPush(it.onPlayerCollision, this, hitBoxName);
-				// keep track of player in the item's or player's hitbox
-				if (!hitBoxName) {
-					it['!colliders'][this.tsid] = t;
-				}
+		else if (hitBoxName || !it['!colliders'][this.tsid]) {
+			// if we just entered a named hitbox, an item's default hitbox or a
+			// player's default hitbox
+			log.trace('%s entered/inside hitbox "%s" of %s', this, hitBoxName, it);
+			// call item's or player's collision handler
+			it.rqPush(it.onPlayerCollision, this, hitBoxName);
+			// keep track of player in the item's or player's hitbox
+			if (!hitBoxName) {
+				it['!colliders'][this.tsid] = t;
 			}
 		}
 	}
-	else {
-		if (!it.onPlayerCollision) {
-			// if we're leaving a location hitbox
-			if (this['!colliders'][hitBoxName]) {
-				log.trace('%s left location hitbox "%s"', this, hitBoxName);
-				// remove this hitbox from the player's list of hitboxes
-				delete this['!colliders'][hitBoxName];
-				// call the handler for leaving the hitbox (if any)
-				if (this.location.onLeavingHitBox) {
-					this.location.rqPush(this.location.onLeavingHitBox, this, hitBoxName);
-				}
+	else if (!it.onPlayerCollision) {
+		// if we're leaving a location hitbox
+		if (this['!colliders'][hitBoxName]) {
+			log.trace('%s left location hitbox "%s"', this, hitBoxName);
+			// remove this hitbox from the player's list of hitboxes
+			delete this['!colliders'][hitBoxName];
+			// call the handler for leaving the hitbox (if any)
+			if (this.location.onLeavingHitBox) {
+				this.location.rqPush(this.location.onLeavingHitBox, this, hitBoxName);
 			}
 		}
+	}
+	else if (it['!colliders'][this.tsid] && !hitBoxName) {
 		// if we're leaving a default hitbox
-		else if (it['!colliders'][this.tsid] && !hitBoxName) {
-			log.trace('%s left hitbox of %s', this, it);
-			// remove the player from the list of hitboxes
-			delete it['!colliders'][this.tsid];
-			// call the handler for leaving the item's hitbox (if any)
-			if (it.onPlayerLeavingCollisionArea) {
-				it.rqPush(it.onPlayerLeavingCollisionArea, this);
-			}
+		log.trace('%s left hitbox of %s', this, it);
+		// remove the player from the list of hitboxes
+		delete it['!colliders'][this.tsid];
+		// call the handler for leaving the item's hitbox (if any)
+		if (it.onPlayerLeavingCollisionArea) {
+			it.rqPush(it.onPlayerLeavingCollisionArea, this);
 		}
 	}
 };
@@ -753,11 +749,13 @@ Player.prototype.isHit = function isHit(it, hitBox) {
 	// respect the player's current scale factor
 	var pcHeight = this.h * this.stacked_physics_cache.pc_scale;
 	var pcWidth = this.w * this.stacked_physics_cache.pc_scale;
-	// the x/y properties of items (and players) always indicate the center of their bottom edge
+	// the x/y properties of items (and players) always indicate the center of
+	// their bottom edge
 	var xDist = Math.abs(this.x - it.x);
 	// calculate y distance based on vertical center of player/item hitbox
-	// the y axis is reversed in the in-game coordinate system (i.e. negative values go upward)
-	var yDist = Math.abs((this.y - pcHeight / 2) - (it.y - hitBox.h / 2));
+	// the y axis is reversed in the in-game coordinate system (i.e. negative
+	// values go upward)
+	var yDist = Math.abs(this.y - pcHeight / 2 - (it.y - hitBox.h / 2));
 	// return true if the two hitboxes overlap
 	return xDist < (hitBox.w + pcWidth) / 2 && yDist < (hitBox.h + pcHeight) / 2;
 };

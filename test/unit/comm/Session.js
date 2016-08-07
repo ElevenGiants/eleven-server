@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var amf = require('eleven-node-amf/node-amf/amf');
 var config = require('config');
 var Session = require('comm/Session');
@@ -16,7 +17,7 @@ suite('Session', function () {
 
 	suiteSetup(function () {
 		gsjsBridge.reset({gsjsMain: {
-			processMessage: function dummy() {},
+			processMessage: _.noop,
 		}});
 	});
 
@@ -51,8 +52,7 @@ suite('Session', function () {
 
 	suite('onSocketData/handleData', function () {
 
-		test('stores data in internal buffer and triggers message handler',
-			function (done) {
+		test('stores data in internal buffer and triggers message handler', function (done) {
 			var s = helpers.getTestSession('test');
 			s.checkForMessages = function () {
 				assert.property(s, 'buffer');
@@ -92,12 +92,12 @@ suite('Session', function () {
 
 		test('handles errors in our code', function (done) {
 			var socket = helpers.getDummySocket();
+			var s = new Session('test', socket);
 			socket.destroy = function () {
 				// this should be called by the domain error handler
 				s.dom.exit();  // clean up (otherwise this domain affects other tests)
 				done();
 			};
-			var s = new Session('test', socket);
 			s.checkForMessages = function (msg) {
 				throw new Error('something bad happened while processing a request');
 			};
@@ -271,8 +271,7 @@ suite('Session', function () {
 			s.send({foo: 'bar', msg_id: '1'});
 		});
 
-		test('does not send non-login messages until login is complete',
-			function (done) {
+		test('does not send non-login messages until login is complete', function (done) {
 			var socket = helpers.getDummySocket();
 			var s = helpers.getTestSession('test', socket);
 			socket.write = function (data) {

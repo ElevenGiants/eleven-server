@@ -13,6 +13,9 @@
  *   process and the "passthrough" authentication back-end.
  */
 
+/* eslint-disable func-names */
+
+var _ = require('lodash');
 var amf = require('../node_modules/node_amf_cc');
 var jrpc = require('../node_modules/multitransport-jsonrpc');
 var events = require('events');
@@ -73,7 +76,7 @@ Client.prototype.send = function (msg) {
 
 Client.prototype.request = function (typeOrMsg, callback) {
 	var msg = typeOrMsg;
-	if (typeof msg === 'string') {
+	if (_.isString(msg)) {
 		msg = {type: msg};
 	}
 	var id = this.send(msg);
@@ -232,3 +235,4 @@ if (!module.parent) {
 		}
 	});
 }
+/* eslint-enable func-names */

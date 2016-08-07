@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint-disable max-len */  // ugly long function names defined by API
+
 /**
  * Global model layer API functions (used by GSJS code).
  *
@@ -30,7 +32,7 @@ var crypto = require('crypto');
 
 
 function getItemType(classTsid) {
-	return (classTsid.substr(0, 4) === 'bag_') ? Bag : Item;
+	return classTsid.substr(0, 4) === 'bag_' ? Bag : Item;
 }
 
 
@@ -89,8 +91,7 @@ function safeClone(obj, cloneGameObjects) {
 function callFor(fname, targets, args, onlineOnly) {
 	//TODO: this is currently not making the function calls in parallel (as
 	// described in the GSJS docs), and not applying a timeout on the calls either
-	assert(args === undefined || args instanceof Array, 'when specified, ' +
-		'args needs to be an array');
+	assert(!args || _.isArray(args), 'when specified, args must be an array');
 	var tsids = utils.gameObjArgToList(targets, onlineOnly ? utils.isPlayer : null);
 	var ret = {};
 	for (var i = 0; i < tsids.length; i++) {
@@ -102,12 +103,12 @@ function callFor(fname, targets, args, onlineOnly) {
 		try {
 			var obj = pers.get(tsid);
 			var res = obj[fname].apply(obj, args);
-			ret[tsid] = (typeof res !== 'object' || res === null) ? {res: res} : res;
+			ret[tsid] = _.isObject(res) ? res : {res};
 			ret[tsid].tsid = tsid;
 			ret[tsid].ok = 1;
 		}
 		catch (e) {
-			ret[tsid] = {ok: 0, error: e};
+			ret[tsid] = {ok: 0, error: '' + e};
 		}
 	}
 	return ret;
@@ -389,8 +390,7 @@ exports.apiCallMethod = function apiCallMethod(fname, targets) {
  *          the function call results; see {@link
  *          module:model/globalApi~callFor|callFor} for details
  */
-exports.apiCallMethodForOnlinePlayers =
-	function apiCallMethodForOnlinePlayers(fname, targets) {
+exports.apiCallMethodForOnlinePlayers = function apiCallMethodForOnlinePlayers(fname, targets) {
 	log.debug('global.apiCallMethodForOnlinePlayers(%s)',
 		Array.prototype.slice.call(arguments).join(', '));
 	var args = Array.prototype.slice.call(arguments,
@@ -527,3 +527,5 @@ exports.apiAsyncHttpCall = function apiAsyncHttpCall(url, header, postParams, ts
 exports.apiResetThreadCPUClock = function apiResetThreadCPUClock(statName) {
 	log.trace('global.apiResetThreadCPUClock(%s)', statName);
 };
+
+/* eslint-enable max-len */

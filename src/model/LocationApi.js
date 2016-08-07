@@ -1,5 +1,8 @@
 'use strict';
 
+var _ = require('lodash');
+
+/* eslint-disable max-len */  // ugly long function names defined by API
 
 /**
  * Model layer API functions for the {@link Location} class (used by
@@ -8,6 +11,7 @@
  *
  * @mixin
  */
+// eslint-disable-next-line lodash/prefer-noop
 var LocationApi = module.exports = function LocationApi() {};
 
 var Location = require('model/Location');
@@ -24,10 +28,9 @@ var Location = require('model/Location');
  *        with other nearby items (default behavior if omitted is
  *        to merge)
  */
-LocationApi.prototype.apiPutItemIntoPosition =
-	function apiPutItemIntoPosition(item, x, y, merge) {
+LocationApi.prototype.apiPutItemIntoPosition = function apiPutItemIntoPosition(item, x, y, merge) {
 	log.debug('%s.apiPutItemIntoPosition(%s, %s, %s, %s)', this, item, x, y, merge);
-	this.addItem(item, x, y, typeof merge === 'boolean' ? !merge : false);
+	this.addItem(item, x, y, _.isBoolean(merge) ? !merge : false);
 };
 
 
@@ -63,8 +66,7 @@ LocationApi.prototype.apiAddStack = function apiAddStack(item, slot, path, amoun
  * @param {Player} [pc] player adding the item (for animation announcements)
  * @returns {number} amount of remaining items
  */
-LocationApi.prototype.apiAddStackAnywhere =
-	function apiAddStackAnywhere(item, maxSlot, path, amount, pc) {
+LocationApi.prototype.apiAddStackAnywhere = function apiAddStackAnywhere(item, maxSlot, path, amount, pc) {
 	log.debug('%s.apiAddStackAnywhere(%s, %s, %s, %s, %s)', this, item, maxSlot,
 		path, amount, pc);
 	return this.addToBag(item, 0, maxSlot, path, amount);
@@ -80,8 +82,7 @@ LocationApi.prototype.apiAddStackAnywhere =
  * @returns {object|undefined} the resulting point (e.g. `{x: 12, y: -50}`), or
  *          `undefined` if no platform could be found.
  */
-LocationApi.prototype.apiGetPointOnTheClosestPlatformLineBelow =
-	function apiGetPointOnTheClosestPlatformLineBelow(x, y) {
+LocationApi.prototype.apiGetPointOnTheClosestPlatformLineBelow = function apiGetPointOnTheClosestPlatformLineBelow(x, y) {
 	log.debug('%s.apiGetPointOnTheClosestPlatformLineBelow(%s, %s)', this, x, y);
 	var ret = this.geometry.getClosestPlatPoint(x, y, -1);
 	if (ret) {
@@ -98,8 +99,7 @@ LocationApi.prototype.apiGetPointOnTheClosestPlatformLineBelow =
  * @returns {object|undefined} the resulting point (e.g. `{x: 12, y: -50}`), or
  *          `undefined` if no platform could be found.
  */
-LocationApi.prototype.apiGetPointOnTheClosestPlatformLineAbove =
-	function apiGetPointOnTheClosestPlatformLineAbove(x, y) {
+LocationApi.prototype.apiGetPointOnTheClosestPlatformLineAbove = function apiGetPointOnTheClosestPlatformLineAbove(x, y) {
 	log.debug('%s.apiGetPointOnTheClosestPlatformLineAbove(%s, %s)', this, x, y);
 	var ret = this.geometry.getClosestPlatPoint(x, y, 1);
 	if (ret) {
@@ -117,8 +117,7 @@ LocationApi.prototype.apiGetPointOnTheClosestPlatformLineAbove =
  *          `{x1: 0, y1: -10, x2: 100, y2: -40}`), or `undefined` if no
  *          platform could be found.
  */
-LocationApi.prototype.apiGetClosestPlatformLineBelow =
-	function apiGetClosestPlatformLineBelow(x, y) {
+LocationApi.prototype.apiGetClosestPlatformLineBelow = function apiGetClosestPlatformLineBelow(x, y) {
 	log.debug('%s.apiGetClosestPlatformLineBelow(%s, %s)', this, x, y);
 	var ret = this.geometry.getClosestPlatPoint(x, y, -1);
 	if (ret && ret.plat) {
@@ -139,8 +138,7 @@ LocationApi.prototype.apiGetClosestPlatformLineBelow =
  *          `{x1: 0, y1: -10, x2: 100, y2: -40}`), or `undefined` if no
  *          platform could be found.
  */
-LocationApi.prototype.apiGetClosestPlatformLineAbove =
-	function apiGetClosestPlatformLineAbove(x, y) {
+LocationApi.prototype.apiGetClosestPlatformLineAbove = function apiGetClosestPlatformLineAbove(x, y) {
 	log.debug('%s.apiGetClosestPlatformLineAbove(%s, %s)', this, x, y);
 	var ret = this.geometry.getClosestPlatPoint(x, y, 1);
 	if (ret && ret.plat) {
@@ -291,8 +289,7 @@ LocationApi.prototype.apiLockStack = function apiLockStack(path) {
  *
  * @param {Item} item the item whose state has changed
  */
-LocationApi.prototype.apiNotifyItemStateChanged =
-	function apiNotifyItemStateChanged(item) {
+LocationApi.prototype.apiNotifyItemStateChanged = function apiNotifyItemStateChanged(item) {
 	log.debug('%s.apiNotifyItemStateChanged(%s)', this, item);
 	this.sendItemStateChange(item);
 };
@@ -313,8 +310,7 @@ LocationApi.prototype.apiGetItemsInTheRadius = function apiGetItemsInTheRadius(
 };
 
 
-LocationApi.prototype.apiGetNoPlayerScanItemsInTheRadius =
-	function apiGetNoPlayerScanItemsInTheRadius(x, y, radius) {
+LocationApi.prototype.apiGetNoPlayerScanItemsInTheRadius = function apiGetNoPlayerScanItemsInTheRadius(x, y, radius) {
 	log.debug('%s.apiGetNoPlayerScanItemsInTheRadius(%s, %s, %s)', this, x, y, radius);
 	return this.getInRadius(x, y, radius);
 };
@@ -328,8 +324,7 @@ LocationApi.prototype.apiGetNoPlayerScanItemsInTheRadius =
  * @param {number} radius radius to consider (in px)
  * @returns {object} hash of the found players
  */
-LocationApi.prototype.apiGetActivePlayersInTheRadius =
-	function apiGetActivePlayersInTheRadius(x, y, radius) {
+LocationApi.prototype.apiGetActivePlayersInTheRadius = function apiGetActivePlayersInTheRadius(x, y, radius) {
 	log.debug('%s.apiGetActivePlayersTheRadius(%s, %s, %s)', this, x, y, radius);
 	return this.getInRadius(x, y, radius, true);
 };
@@ -352,8 +347,7 @@ LocationApi.prototype.apiGetActivePlayersInTheRadius =
  *     ...
  * ]```
  */
-LocationApi.prototype.apiGetActivePlayersInTheRadiusX =
-	function apiGetActivePlayersInTheRadiusX(x, y, radius) {
+LocationApi.prototype.apiGetActivePlayersInTheRadiusX = function apiGetActivePlayersInTheRadiusX(x, y, radius) {
 	log.debug('%s.apiGetActivePlayersTheRadiusX(%s, %s, %s)', this, x, y, radius);
 	return this.getInRadius(x, y, radius, true, true);
 };
@@ -370,8 +364,7 @@ LocationApi.prototype.apiGetActivePlayersInTheRadiusX =
           location class by default)
  * @returns {Location} the copied location
  */
-LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId,
-	hubId, isInstance, altClassTsid) {
+LocationApi.prototype.apiCopyLocation = function apiCopyLocation(label, moteId, hubId, isInstance, altClassTsid) {
 	log.debug('%s.apiCopyLocation(%s, %s, %s, %s, %s)', this, label, moteId,
 		hubId, isInstance, altClassTsid);
 	var options = {
@@ -393,3 +386,5 @@ LocationApi.prototype.apiGeometryUpdated = function apiGeometryUpdated() {
 	log.debug('%s.apiGeometryUpdated()', this);
 	return this.updateGeo();
 };
+
+/* eslint-enable max-len */

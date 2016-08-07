@@ -8,7 +8,9 @@
  *
  * @mixin
  */
+// eslint-disable-next-line lodash/prefer-noop
 var PropertyApi = module.exports = function PropertyApi() {};
+
 
 
 /**

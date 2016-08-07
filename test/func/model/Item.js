@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var gsjsBridge = require('model/gsjsBridge');
 var RC = require('data/RequestContext');
 var RQ = require('data/RequestQueue');
@@ -403,13 +404,12 @@ suite('Item', function () {
 			}, done);
 		});
 
-		test('does not queue removal change when moving within same container',
-			function (done) {
+		test('does not queue removal change when moving within same container', function (done) {
 			var rc = new RC();
 			rc.run(function () {
 				// setup (item in a bag in player inventory)
 				var p = new Player({tsid: 'PX'});
-				p.queueChanges = function noop() {};
+				p.queueChanges = _.noop;
 				var it = new Item({tsid: 'IT'});
 				var b = new Bag({tcont: 'PX'});
 				rc.cache[p.tsid] = p;
