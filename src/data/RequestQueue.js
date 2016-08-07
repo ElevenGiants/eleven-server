@@ -261,15 +261,18 @@ RequestQueue.prototype.handle = function handle(req) {
 	if (!req.nested) this.inProgress = req;
 	var self = this;
 	var rc = new RC(req.tag, this.id, options.session, this);
+	rc.once('done', function onDone() {
+		log.trace('finished %s request', req.tag);
+		if (!req.nested) {
+			self.inProgress = null;
+			setImmediate(self.next.bind(self));
+		}
+	});
 	rc.run(
 		req.func,
 		function callback(err, res) {
-			log.trace('finished %s request', req.tag);
-			if (!req.nested) {
-				self.inProgress = null;
-				setImmediate(self.next.bind(self));
-			}
 			if (req.callback) return req.callback(err, res);
+			else if (err) log.error(err, '%s request failed', req.tag);
 		},
 		options.waitPers
 	);

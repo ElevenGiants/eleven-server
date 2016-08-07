@@ -4,10 +4,14 @@ module.exports = RequestContext;
 
 
 var assert = require('assert');
+var events = require('events');
 var util = require('util');
 var wait = require('wait.for');
 var Fiber = require('fibers');
 var pers = require('data/pers');
+
+
+util.inherits(RequestContext, events.EventEmitter);
 
 
 /**
@@ -75,17 +79,21 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 	var rc = this;  // eslint-disable-line consistent-this
 	var logtag = util.format('%s/%s', rc.owner, rc.tag);
 	wait.launchFiber(function rcFiber() {
+		var done = false;
 		var res = null;
 		try {
 			Fiber.current.rc = rc;
 			// call function in fiber context
 			res = func();
 			log.debug('finished %s (%s dirty)', logtag, Object.keys(rc.dirty).length);
+			done = true;
+			rc.emit('done');
 		}
 		catch (err) {
 			// trigger prepareStackTrace (parts of the trace might not be
 			// available outside the RC)
 			err.stack;  // eslint-disable-line no-unused-expressions
+			if (!done) rc.emit('done');
 			return callback(err);
 		}
 		// persist modified objects
