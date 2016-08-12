@@ -23,7 +23,6 @@ module.exports = {
 };
 
 
-var _ = require('lodash');
 var config = require('config');
 var Lynx = require('lynx');
 var GCStats = require('gc-stats');
@@ -93,9 +92,17 @@ function getMockLynx() {
 		get: function get(target, name, receiver) {
 			return function dummy() {
 				if (global.log) {
-					log.trace({fname: name, args: arguments}, 'statsd call');
+					var logdata = {lib: 'mockLynx', fname: name, args: arguments};
+					log.trace(logdata, 'statsd call');
 					if (name === 'createTimer') {
-						return {stop: _.noop};
+						var t = Date.now();
+						return {
+							stop: function stop() {
+								logdata.fname = 'stop';
+								logdata.t = Date.now() - t;
+								log.trace(logdata, 'statsd timer stopped');
+							},
+						};
 					}
 				}
 			};

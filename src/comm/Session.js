@@ -261,24 +261,17 @@ Session.prototype.enqueueMessage = function enqueueMessage(msg) {
 		var rq = this.pc ? this.pc.getRQ() : RQ.getGlobal('prelogin');
 		rq.push(msg.type, this.processRequest.bind(this, msg),
 			this.handleAmfReqError.bind(this, msg),
-			{session: this, obj: this.pc});
+			{session: this, obj: this.pc, timerTag: msg.type});
 	}
 };
 
 
 Session.prototype.processRequest = function processRequest(req) {
 	log.trace({data: req}, 'handling %s request', req.type);
-	var timer = metrics.createTimer('req.proc.' + req.type,
-		req.type === 'move_xy' ? 0.1 : undefined);
-	try {
-		var abort = this.preRequestProc(req);
-		if (abort) return;
-		this.gsjsProcessMessage(this.pc, req);
-		this.postRequestProc(req);
-	}
-	finally {
-		timer.stop();
-	}
+	var abort = this.preRequestProc(req);
+	if (abort) return;
+	this.gsjsProcessMessage(this.pc, req);
+	this.postRequestProc(req);
 };
 
 

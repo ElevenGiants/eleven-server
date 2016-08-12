@@ -8,6 +8,7 @@ var events = require('events');
 var util = require('util');
 var wait = require('wait.for');
 var Fiber = require('fibers');
+var metrics = require('metrics');
 var pers = require('data/pers');
 
 
@@ -38,11 +39,12 @@ util.inherits(RequestContext, events.EventEmitter);
  *
  * @constructor
  */
-function RequestContext(tag, owner, session, queue) {
+function RequestContext(tag, owner, session, queue, timerTag) {
 	this.tag = tag;
 	this.owner = owner;
 	this.session = session;
 	this.rq = queue;
+	this.timerTag = timerTag;
 	// request-local game object cache
 	this.cache = {};
 	// dirty object collector for persistence
@@ -78,13 +80,19 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 	};
 	var rc = this;  // eslint-disable-line consistent-this
 	var logtag = util.format('%s/%s', rc.owner, rc.tag);
+	var sampleRate = rc.timerTag === 'move_xy' ? 0.1 : undefined;
 	wait.launchFiber(function rcFiber() {
+		var timer;
+		if (rc.timerTag) {
+			timer = metrics.createTimer('req.proc.' + rc.timerTag, sampleRate);
+		}
 		var done = false;
 		var res = null;
 		try {
 			Fiber.current.rc = rc;
 			// call function in fiber context
 			res = func();
+			if (timer) timer.stop();
 			log.debug('finished %s (%s dirty)', logtag, Object.keys(rc.dirty).length);
 			done = true;
 			rc.emit('done');
@@ -97,7 +105,11 @@ RequestContext.prototype.run = function run(func, callback, waitPers) {
 			return callback(err);
 		}
 		// persist modified objects
+		if (rc.timerTag) {
+			timer = metrics.createTimer('req.pers.' + rc.timerTag, sampleRate);
+		}
 		pers.postRequestProc(rc.dirty, rc.unload, logtag, function done() {
+			if (timer) timer.stop();
 			if (waitPers) {
 				return callback(null, res);
 			}

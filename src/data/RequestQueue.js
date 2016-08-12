@@ -185,6 +185,8 @@ RequestQueue.prototype.getLength = function getLength() {
  *        operations to finish before invoking callback
  * @param {GameObject} [options.obj] game object that is the subject of the
  *        request (for logging)
+ * @param {string} [options.timerTag] if supplied, timing metrics will be
+ *        recorded for the request, using this tag as an identifier
  * @returns {object} the resulting request queue entry
  */
 RequestQueue.prototype.push = function push(tag, func, callback, options) {
@@ -260,7 +262,7 @@ RequestQueue.prototype.handle = function handle(req) {
 	}
 	if (!req.nested) this.inProgress = req;
 	var self = this;
-	var rc = new RC(req.tag, this.id, options.session, this);
+	var rc = new RC(req.tag, this.id, options.session, this, options.timerTag);
 	rc.once('done', function onDone() {
 		log.trace('finished %s request', req.tag);
 		if (!req.nested) {
