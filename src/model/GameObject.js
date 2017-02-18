@@ -433,6 +433,10 @@ GameObject.prototype.resumeGsTimers = function resumeGsTimers() {
 				this.setGsTimer(intStartOpts);
 			}
 		}
+		if (entry.options.multi) {
+			// as we have made a new multi timer in setGsTimer, delete the old one
+			delete this.gsTimers[key];
+		}
 	}
 };
 

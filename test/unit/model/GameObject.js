@@ -478,6 +478,21 @@ suite('GameObject', function () {
 			resumeFinished = true;
 			assert.strictEqual(count, 0);
 		});
+
+		test('removes old multi timer on catch-up', function (done) {
+			var go = new GameObject();
+			go.gsTimers = {
+				one: {
+					options: {fname: 'foo', delay: 30, multi: true},
+					start: new Date().getTime() - 80,
+				},
+			};
+			go.foo = _.noop;
+			go.resumeGsTimers();
+			assert.strictEqual(Object.keys(go.gsTimers).length, 1,
+				'old multi-timer reference was not removed');
+			done();
+		});
 	});
 
 
