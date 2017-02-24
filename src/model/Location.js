@@ -274,6 +274,10 @@ Location.prototype.checkUnload = function checkUnload() {
 			log.debug('not unloading %s, %s is still growing here', this, it);
 			return;
 		}
+		if (it.is_running) {
+			log.debug('not unloading %s, %s is still making here', this, it);
+			return;
+		}
 	}
 	// still here? go ahead, then
 	var self = this;
