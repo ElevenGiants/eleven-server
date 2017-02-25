@@ -440,8 +440,29 @@ Location.prototype.flush = function flush() {
  *        with other nearby items
  */
 Location.prototype.addItem = function addItem(item, x, y, noMerge) {
+	if (!noMerge) {
+		for (var k in this.items) {
+			var it = this.items[k];
+			var dist = (x - it.x) * (x - it.x) + (y - it.y) * (y - it.y);
+			if (it.class_tsid === item.class_tsid && it.count < it.stackmax && 
+				dist < 10000) {
+				if (it.count + item.count > it.stackmax) {
+					item.count = it.count + item.count - it.stackmax;
+					it.count = it.stackmax;
+				}
+				else {
+					it.count = it.count + item.count;
+					item.count = 0;
+				}
+				it.setContainer(this, it.x, it.y);
+			}
+			if (!item.count) {
+				item.del();
+				return;
+			}
+		}
+	}
 	item.setContainer(this, x, y);
-	//TODO: merging
 };
 
 
