@@ -203,6 +203,22 @@ suite('Location', function () {
 				assert.strictEqual(locChg.y, 200);
 			}, done);
 		});
+
+		test('merge stacks where possible', function (done) {
+			var rc = new RC();
+			rc.run(function () {
+				var l = Location.create(Geo.create());
+				var i1 = Item.create('apple', 50);
+				var i2 = Item.create('apple', 82);
+				var i3 = Item.create('apple', 30);
+				l.addItem(i1, 0, 0);
+				l.addItem(i2, 10, 10);
+				l.addItem(i3, 100, 100);
+				assert.strictEqual(i1.count, 100);
+				assert.strictEqual(i2.count, 32);
+				assert.strictEqual(i3.count, 30);
+			}, done);
+		});
 	});
 
 
