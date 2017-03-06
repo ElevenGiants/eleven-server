@@ -444,12 +444,17 @@ Location.prototype.flush = function flush() {
  *        with other nearby items
  */
 Location.prototype.addItem = function addItem(item, x, y, noMerge) {
+	var pc = this.players[item.dropper];
+	if (!item.animSourceTsid) {
+		item.animSourceTsid = item.tsid;
+	}
 	if (!noMerge) {
 		for (var k in this.items) {
 			var it = this.items[k];
 			var dist = (x - it.x) * (x - it.x) + (y - it.y) * (y - it.y);
 			if (it.class_tsid === item.class_tsid && it.count < it.stackmax &&
 				dist < 10000) {
+				var initial = item.count;
 				if (it.count + item.count > it.stackmax) {
 					item.count = it.count + item.count - it.stackmax;
 					it.count = it.stackmax;
@@ -458,6 +463,15 @@ Location.prototype.addItem = function addItem(item, x, y, noMerge) {
 					it.count = it.count + item.count;
 					item.count = 0;
 				}
+				if (pc) {
+					pc.createStackAnim('pack_to_floor', item.class_tsid,
+						initial - item.count, {
+							dest_x: it.x,
+							dest_y: it.y,
+							orig_path: pc.tsid + '/' + item.animSourceTsid + '/',
+						}
+					);
+				}
 				it.setContainer(this, it.x, it.y);
 			}
 			if (!item.count) {
@@ -465,6 +479,13 @@ Location.prototype.addItem = function addItem(item, x, y, noMerge) {
 				return;
 			}
 		}
+	}
+	if (pc) {
+		pc.createStackAnim('pack_to_floor', item.class_tsid, item.count, {
+			dest_x: x,
+			dest_y: y,
+			orig_path: pc.tsid + '/' + item.animSourceTsid + '/',
+		});
 	}
 	item.setContainer(this, x, y);
 };

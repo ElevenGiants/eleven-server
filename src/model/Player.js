@@ -449,8 +449,22 @@ Player.prototype.addToAnySlot = function addToAnySlot(item, fromSlot, toSlot,
 	path, amount) {
 	if (amount === undefined || amount > item.count) amount = item.count;
 	var bag = path ? pers.get(path.split('/').pop()) : this;
+	var origPos = {x: item.x, y: item.y};
 	for (var slot = fromSlot; slot <= toSlot && amount > 0; slot++) {
-		amount -= bag.addToSlot(item, slot, amount);
+		var count = bag.addToSlot(item, slot, amount);
+		amount -= count;
+		if (count) {
+			var annc = {
+				orig_x: origPos.x,
+				orig_y: origPos.y,
+				dest_path: this.tsid + '/' + bag.getSlot(slot).tsid + '/',
+			};
+			if (!utils.isPlayer(bag)) {
+				annc.dest_path = this.tsid + '/' + bag.tsid + '/';
+				annc.dest_slot = slot;
+			}
+			this.createStackAnim('floor_to_pack', item.class_tsid, count, annc);
+		}
 	}
 	return amount;
 };
@@ -758,4 +772,28 @@ Player.prototype.isHit = function isHit(it, hitBox) {
 	var yDist = Math.abs(this.y - pcHeight / 2 - (it.y - hitBox.h / 2));
 	// return true if the two hitboxes overlap
 	return xDist < (hitBox.w + pcWidth) / 2 && yDist < (hitBox.h + pcHeight) / 2;
+};
+
+
+/**
+ * Creates and queues an announcement that makes item transfer
+ * animations on the players client.
+ *
+ * @param {string} type the stack animation type to send
+ * @param {string} classTsid the item to show the player
+ * @param {number} count the number of items moved
+ * @param {object} info additional data for the announcement (properties are
+ *                 shallow-copied into the generated announcement)
+ */
+Player.prototype.createStackAnim = function createStackAnim(type, classTsid,
+	count, info) {
+	var annc = {
+		type: type,
+		item_class: classTsid,
+		count: count,
+	};
+	for (var key in info) {
+		annc[key] = info[key];
+	}
+	this.queueAnnc(annc);
 };

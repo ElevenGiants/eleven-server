@@ -70,6 +70,7 @@ function Item(data) {
 	// add some non-enumerable properties (used internally or by GSJS)
 	utils.addNonEnumerable(this, 'collDet', false);
 	utils.addNonEnumerable(this, 'path', this.tsid);
+	utils.addNonEnumerable(this, 'animSourceTsid', null);
 	// enable collision detection if we have a handler function
 	if (_.isFunction(this.onPlayerCollision)) {
 		utils.addNonEnumerable(this, '!colliders', {});
@@ -447,6 +448,7 @@ Item.prototype.split = function split(n) {
 		newItem.is_soulbound_item = this.is_soulbound_item;
 		newItem.soulbound_to = this.soulbound_to;
 	}
+	newItem.animSourceTsid = this.tsid;
 	this.queueChanges();
 	return newItem;
 };
