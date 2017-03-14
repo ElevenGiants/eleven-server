@@ -37,8 +37,8 @@ suite('logging', function () {
 			logging.__set__('actionLogger', {
 				info: function info(fields, msg) {
 					assert.strictEqual(msg, 'meh');
-					assert.deepEqual(fields,
-						{action: 'meh', 'UNKNOWN#0': 'barf', 'UNKNOWN#1': '123',
+					assert.deepEqual(fields, {action: 'meh',
+						'UNKNOWN#0': 'barf', 'UNKNOWN#1': '123',
 						'UNKNOWN#2': 'null', 'UNKNOWN#3': 'undefined'});
 					done();
 				},
