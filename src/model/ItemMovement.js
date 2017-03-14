@@ -846,8 +846,8 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 	else if (transport === 'flying') {
 		if (!this.options.stopAtEnd) {
 			path = [{
-				left: dest.left,
-				right: dest.right,
+				left: geo.limitX(dest.left),
+				right: geo.limitX(dest.right),
 				width: dest.width,
 				top: dest.top,
 				height: dest.height,
