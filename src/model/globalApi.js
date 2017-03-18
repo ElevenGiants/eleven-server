@@ -206,10 +206,16 @@ exports.apiNewItem = function apiNewItem(classTsid) {
 };
 
 
+/**
+ * Creates a new item from a source item.
+ *
+ * @param {string} classTsid ID of the desired item class
+ * @param {Item} sourceItem the item source used for stack anims
+ * @returns {Item} the new object
+ */
 exports.apiNewItemFromSource = function apiNewItemFromSource(classTsid, sourceItem) {
 	log.trace('global.apiNewItemFromSource(%s, %s)', classTsid, sourceItem);
-	//TODO: animation announcements&docs
-	return getItemType(classTsid).create(classTsid);
+	return getItemType(classTsid).create(classTsid, null, sourceItem.x, sourceItem.y);
 };
 
 
@@ -225,13 +231,19 @@ exports.apiNewItemStack = function apiNewItemStack(classTsid, count) {
 	return getItemType(classTsid).create(classTsid, count);
 };
 
-
+/**
+ * Creates a new itemstack from a source item.
+ *
+ * @param {string} classTsid ID of the desired item class
+ * @param {number} count item stack amount (must be a positive integer)
+ * @param {Item} sourceItem the item source used for stack anims
+ * @returns {Item} the new object
+ */
 exports.apiNewItemStackFromSource = function apiNewItemStackFromSource(
 	classTsid, count, sourceItem) {
 	log.debug('global.apiNewItemStackFromSource(%s, %s, %s)', classTsid, count,
 		sourceItem);
-	//TODO: adjust&document once itemstack animations are available
-	return getItemType(classTsid).create(classTsid, count);
+	return getItemType(classTsid).create(classTsid, count, sourceItem.x, sourceItem.y);
 };
 
 
@@ -243,14 +255,20 @@ exports.apiNewItemStackFromFamiliar = function apiNewItemStackFromFamiliar(
 };
 
 
+/**
+ * Creates a new itemstack setting the x/y position.
+ *
+ * @param {string} classTsid ID of the desired item class
+ * @param {number} count item stack amount (must be a positive integer)
+ * @param {number} x the x position of the item
+ * @param {number} y the y position of the item
+ * @returns {Item} the new object
+ */
 exports.apiNewItemStackFromXY = function apiNewItemStackFromXY(
 	classTsid, count, x, y) {
 	log.debug('global.apiNewItemStackFromXY(%s, %s, %s, %s)', classTsid, count,
 		x, y);
-	//TODO: adjust&document once itemstack animations are available
-	var ret = getItemType(classTsid).create(classTsid, count);
-	ret.setXY(x, y);
-	return ret;
+	return getItemType(classTsid).create(classTsid, count, x, y);
 };
 
 
