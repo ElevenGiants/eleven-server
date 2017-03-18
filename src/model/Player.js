@@ -449,14 +449,14 @@ Player.prototype.addToAnySlot = function addToAnySlot(item, fromSlot, toSlot,
 	path, amount) {
 	if (amount === undefined || amount > item.count) amount = item.count;
 	var bag = path ? pers.get(path.split('/').pop()) : this;
-	var origPos = {x: item.x, y: item.y};
+	var src = {x: item.x, y: item.y, tcont: item.tcont};
 	for (var slot = fromSlot; slot <= toSlot && amount > 0; slot++) {
 		var count = bag.addToSlot(item, slot, amount);
 		amount -= count;
-		if (count) {
+		if (count && src.tcont !== this.tsid) {
 			var annc = {
-				orig_x: origPos.x,
-				orig_y: origPos.y,
+				orig_x: src.x,
+				orig_y: src.y,
 				dest_path: this.tsid + '/' + bag.getSlot(slot).tsid + '/',
 			};
 			if (!utils.isPlayer(bag)) {
