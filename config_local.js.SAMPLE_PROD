@@ -9,7 +9,8 @@ module.exports = {
 	net: {
 		gameServers: {
 			gs01: {
-				host: 'THIS.GS.HOST.IP',
+				host: 'THIS.GS.HOST.LOCAL.IP',
+				hostRemote: 'THIS.GS.HOST.REMOTE.IP',
 				ports: [
 					// add as many worker processes as you like (probably best
 					// not to add more than the number of CPU cores, though)
