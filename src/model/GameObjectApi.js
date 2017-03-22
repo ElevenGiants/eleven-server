@@ -135,4 +135,9 @@ GameObjectApi.prototype.apiIntervalExists = function apiIntervalExists(fname) {
 	return this.gsTimerExists(fname, true);
 };
 
+GameObjectApi.prototype.apiReplaceDynamic = function apiReplaceDynamic(data) {
+	log.debug('GameObject.apiReplaceDynamic(%s)', data);
+	this.replaceDynamic(data);
+}
+
 /* eslint-enable max-len */

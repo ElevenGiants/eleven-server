@@ -12,6 +12,8 @@ var util = require('util');
 var utils = require('utils');
 var RC = require('data/RequestContext');
 var RQ = require('data/RequestQueue');
+var pers = require('data/pers');
+var Location = require('model/Location');
 
 
 GameObject.prototype.TSID_INITIAL = 'G';
@@ -520,3 +522,21 @@ GameObject.prototype.copyProps = function copyProps(from, skipList) {
 		}
 	}
 };
+
+
+/**
+ * Gets the TSID of the {@link Geo} object for this location.
+ *
+ * @returns {string} TSID of the corresponding {@link Geo} object
+ */
+GameObject.prototype.getLocTsid = function getLocTsid() {
+	return Location.prototype.TSID_INITIAL + this.tsid.slice(1);
+};
+
+GameObject.prototype.replaceDynamic = function replaceDynamic(data) {
+	this.copyProps(data);
+	if(utils.isGeo(this)) {
+		var loc = pers.get(this.getLocTsid());
+		loc.updateGeo(this);
+	}
+}
