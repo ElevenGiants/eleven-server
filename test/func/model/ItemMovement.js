@@ -343,4 +343,20 @@ suite('ItemMovement', function () {
 			assert.isTrue(moveStarted);
 		});
 	});
+
+
+	suite('flying movement', function () {
+
+		test('respects geo boundaries in continuous movement', function (done) {
+			var i1 = newItem({tsid: 'I1'});
+			addToTestLoc(i1, 0, 0, new Geo({l: -100, r: 100, t: 100, b: 0}));
+			var moveStarted = i1.gsStartMoving('flying',
+				{left: -150, right: 150, width: 300, top: 100, height: 100},
+				{changeState: false, speed: 15, stopAtEnd: false});
+			assert.isTrue(moveStarted);
+			assert.strictEqual(i1.gsMovement.path[0].left, -100);
+			assert.strictEqual(i1.gsMovement.path[0].right, 100);
+			done();
+		});
+	});
 });

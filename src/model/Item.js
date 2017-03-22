@@ -70,6 +70,7 @@ function Item(data) {
 	// add some non-enumerable properties (used internally or by GSJS)
 	utils.addNonEnumerable(this, 'collDet', false);
 	utils.addNonEnumerable(this, 'path', this.tsid);
+	utils.addNonEnumerable(this, 'animSourceTsid', null);
 	// enable collision detection if we have a handler function
 	if (_.isFunction(this.onPlayerCollision)) {
 		utils.addNonEnumerable(this, '!colliders', {});
@@ -128,14 +129,20 @@ Item.prototype.serialize = function serialize() {
  *
  * @param {string} classTsid specific class of the item
  * @param {number} [count] item stack size (1 by default)
+ * @param {number} [x] x position of item (0 by default)
+ * @param {number} [y] y position of item (0 by default)
  * @returns {object} an `Item` object
  */
-Item.create = function create(classTsid, count) {
+Item.create = function create(classTsid, count, x, y) {
 	assert(classTsid.substr(0, 4) !== 'bag_', util.format(
 		'invalid class TSID for Item: %s', classTsid));
 	var data = {class_tsid: classTsid};
 	if (utils.isInt(count)) {
 		data.count = count;
+	}
+	if (utils.isInt(x) && utils.isInt(y)) {
+		data.x = x;
+		data.y = y;
 	}
 	return pers.create(Item, data);
 };
@@ -441,6 +448,7 @@ Item.prototype.split = function split(n) {
 		newItem.is_soulbound_item = this.is_soulbound_item;
 		newItem.soulbound_to = this.soulbound_to;
 	}
+	newItem.animSourceTsid = this.tsid;
 	this.queueChanges();
 	return newItem;
 };
