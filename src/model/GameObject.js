@@ -554,8 +554,8 @@ GameObject.prototype.getLocTsid = function getLocTsid() {
  */
 GameObject.prototype.replaceDynamic = function replaceDynamic(data) {
 	this.copyProps(data);
-	if(utils.isGeo(this)) {
+	if (utils.isGeo(this)) {
 		var loc = pers.get(this.getLocTsid());
 		loc.updateGeo(this);
 	}
-}
+};

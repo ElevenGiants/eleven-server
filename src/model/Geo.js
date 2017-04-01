@@ -11,7 +11,6 @@ var RQ = require('data/RequestQueue');
 var util = require('util');
 var utils = require('utils');
 var GameObject = require('model/GameObject');
-var Location = require('model/Location');
 
 
 util.inherits(Geo, GameObject);

@@ -148,6 +148,6 @@ GameObjectApi.prototype.apiIntervalExists = function apiIntervalExists(fname) {
 GameObjectApi.prototype.apiReplaceDynamic = function apiReplaceDynamic(data) {
 	log.debug('GameObject.apiReplaceDynamic(%s)', data);
 	this.replaceDynamic(data);
-}
+};
 
 /* eslint-enable max-len */
