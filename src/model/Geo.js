@@ -11,7 +11,6 @@ var RQ = require('data/RequestQueue');
 var util = require('util');
 var utils = require('utils');
 var GameObject = require('model/GameObject');
-var Location = require('model/Location');
 
 
 util.inherits(Geo, GameObject);
@@ -61,7 +60,7 @@ Geo.create = function create(data) {
 Geo.copy = function copy(src, label) {
 	var ret = Geo.create({
 		label: label,
-		tsid: rpc.makeLocalTsid(this.TSID_INITIAL_GEO),
+		tsid: rpc.makeLocalTsid(Geo.prototype.TSID_INITIAL),
 	});
 	ret.copyProps(src, ['label']);
 	for (var j in ret.layers.middleground.signposts) {
