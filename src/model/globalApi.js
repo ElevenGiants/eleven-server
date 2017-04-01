@@ -448,6 +448,22 @@ exports.apiGetObjectContent = function apiGetObjectContent(tsid) {
 
 
 /**
+ * Returns a JSON copy of the data of a game object, specified by TSID in an
+ * array with all of the objects referenced within it.
+ * The returned data may (by nature of being a copy) quickly get out of sync
+ * with the original object.
+ *
+ * @param {string} tsid TSID of the object to retrieve
+ * @returns {array} a copy of the desired object and references' data data
+ */
+exports.apiGetObjectJSON = function apiGetObjectJSON(tsid) {
+	log.debug('global.apiGetObjectJSON(%s)', tsid);
+	var obj = pers.extract(tsid, true);
+	return obj;
+};
+
+
+/**
  * Sends a message to **all** connected clients (on all GS instances).
  * Does not provide any feedback about message delivery status/success.
  *
