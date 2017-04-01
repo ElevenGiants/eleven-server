@@ -15,7 +15,7 @@ var Location = require('model/Location');
 
 
 util.inherits(Geo, GameObject);
-Geo.prototype.TSID_INITIAL = 'G';
+Geo.prototype.TSID_INITIAL = GameObject.prototype.TSID_INITIAL_GEO;
 
 
 /**
@@ -31,7 +31,7 @@ Geo.prototype.TSID_INITIAL = 'G';
  */
 function Geo(data) {
 	data = data || {};
-	if (!data.tsid) data.tsid = rpc.makeLocalTsid(Geo.prototype.TSID_INITIAL);
+	if (!data.tsid) data.tsid = rpc.makeLocalTsid(this.TSID_INITIAL);
 	if (!data.layers) {
 		data.layers = {middleground: {decos: {}, doors: {}, signposts: {}}};
 	}
@@ -61,7 +61,7 @@ Geo.create = function create(data) {
 Geo.copy = function copy(src, label) {
 	var ret = Geo.create({
 		label: label,
-		tsid: rpc.makeLocalTsid(Geo.prototype.TSID_INITIAL),
+		tsid: rpc.makeLocalTsid(this.TSID_INITIAL_GEO),
 	});
 	ret.copyProps(src, ['label']);
 	for (var j in ret.layers.middleground.signposts) {
@@ -263,7 +263,7 @@ Geo.prototype.getGeo = function getGeo() {
  * @returns {string} TSID of the corresponding {@link Location} object
  */
 Geo.prototype.getLocTsid = function getLocTsid() {
-	return Location.prototype.TSID_INITIAL + this.tsid.slice(1);
+	return this.TSID_INITIAL_LOCATION + this.tsid.slice(1);
 };
 
 

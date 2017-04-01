@@ -12,7 +12,7 @@ var util = require('util');
 
 
 util.inherits(Group, GameObject);
-Group.prototype.TSID_INITIAL = 'R';
+Group.prototype.TSID_INITIAL = GameObject.prototype.TSID_INITIAL_GROUP;
 
 
 /**
@@ -26,7 +26,7 @@ Group.prototype.TSID_INITIAL = 'R';
  */
 function Group(data) {
 	data = data || {};
-	if (!data.tsid) data.tsid = rpc.makeLocalTsid(Group.prototype.TSID_INITIAL);
+	if (!data.tsid) data.tsid = rpc.makeLocalTsid(this.TSID_INITIAL_GROUP);
 	Group.super_.call(this, data);
 	slackChat.patchGroup(this);
 }

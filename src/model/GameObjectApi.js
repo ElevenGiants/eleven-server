@@ -135,6 +135,16 @@ GameObjectApi.prototype.apiIntervalExists = function apiIntervalExists(fname) {
 	return this.gsTimerExists(fname, true);
 };
 
+
+
+/**
+ * Updates the current object with data from the passed in object.
+ * If the current object is a Geo, have the corresponding Location
+ * process the change.
+ *
+ * @param {GameObject} data copy source
+ */
+
 GameObjectApi.prototype.apiReplaceDynamic = function apiReplaceDynamic(data) {
 	log.debug('GameObject.apiReplaceDynamic(%s)', data);
 	this.replaceDynamic(data);
