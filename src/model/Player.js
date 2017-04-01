@@ -8,6 +8,7 @@ var assert = require('assert');
 var auth = require('comm/auth');
 var config = require('config');
 var Prop = require('model/Property');
+var GameObject = require('model/GameObject');
 var Bag = require('model/Bag');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
@@ -17,7 +18,7 @@ var utils = require('utils');
 
 
 util.inherits(Player, Bag);
-Player.prototype.TSID_INITIAL = 'P';
+Player.prototype.TSID_INITIAL = GameObject.prototype.TSID_INITIAL_PLAYER;
 
 
 // the JSON data in persistence does not contain specific class information for
