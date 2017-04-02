@@ -36,6 +36,7 @@ module.exports = {
 			config: {
 				rethink: {
 					dbname: 'eleven_prod',
+					dbtable: 'gamedata',
 					dbhost: 'localhost',
 					dbport: 28015,
 					dbauth: 'RETHINKDB_AUTH_KEY',

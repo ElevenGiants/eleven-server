@@ -90,17 +90,20 @@ function read(tsid) {
 }
 
 
-function write(obj, callback) {
-	counts.write++;
-	writes.push(obj.tsid);
-	db[obj.tsid] = obj;
+function write(objects, callback) {
+	counts.write += objects.length;
+	for (var i = 0; i < objects.length; i++) {
+		var obj = objects[i];
+		writes.push(obj.tsid);
+		db[obj.tsid] = obj;
+	}
 	if (callback) callback(null, null);
 }
 
 
-function del(obj, callback) {
+function del(tsid, callback) {
 	counts.del++;
-	deletes.push(obj.tsid);
-	delete db[obj.tsid];
+	deletes.push(tsid);
+	delete db[tsid];
 	if (callback) callback(null, null);
 }

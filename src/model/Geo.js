@@ -5,6 +5,7 @@ module.exports = Geo;
 
 var _ = require('lodash');
 var math = require('mathjs');
+var config = require('config');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
 var RQ = require('data/RequestQueue');
@@ -55,13 +56,16 @@ Geo.create = function create(data) {
  *
  * @param {Geo} src the geometry object to copy
  * @param {string} label label for the copied geometry
+ * @param {boolean} [isPol] if `true`, the returned geometry will be assigned
+ *        to a random GS instance (may or may not be the one processing the
+ *        current request)
  * @returns {Geo} a "clone" of the source geometry object
  */
-Geo.copy = function copy(src, label) {
-	var ret = Geo.create({
-		label: label,
-		tsid: rpc.makeLocalTsid(Geo.prototype.TSID_INITIAL),
-	});
+Geo.copy = function copy(src, label, isPol) {
+	var tsid = isPol
+		? utils.makeTsid(Geo.prototype.TSID_INITIAL, config.getGsid())
+		: rpc.makeLocalTsid(Geo.prototype.TSID_INITIAL);
+	var ret = Geo.create({tsid, label});
 	ret.copyProps(src, ['label']);
 	for (var j in ret.layers.middleground.signposts) {
 		ret.layers.middleground.signposts[j].connects = {};

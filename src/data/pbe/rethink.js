@@ -21,7 +21,6 @@ var wait = require('wait.for');
 
 var cfg;
 var conn;
-var getTable;
 
 
 /**
@@ -31,20 +30,13 @@ var getTable;
  * needs to be called explicitly in that case.
  *
  * @param {object} config DB connection parameters
- * @param {function} [tableMapper] custom function for mapping game
- *        objects/TSIDs to DB table names (for testing)
  * @param {function} callback called when initialization is finished
  *        (connection to the DB has been established)
  */
-function init(config, tableMapper, callback) {
-	if (arguments.length === 2) {  // handle optional argument
-		callback = tableMapper;
-		tableMapper = undefined;
-	}
+function init(config, callback) {
 	cfg = config;
 	if (!cfg.queryOpts) cfg.queryOpts = {};
 	conn = null;
-	getTable = tableMapper ? tableMapper : defaultTableMapper;
 	getConn(callback);
 }
 
@@ -114,7 +106,7 @@ function read(tsid, queryOpts, callback) {
 		callback = queryOpts;
 		queryOpts = null;
 	}
-	var query = rdb.table(getTable(tsid)).get(tsid);
+	var query = rdb.table(cfg.dbtable).get(tsid);
 	if (callback) {
 		// async version
 		runQuery(query, queryOpts, function cb(err, data) {
@@ -131,8 +123,8 @@ function read(tsid, queryOpts, callback) {
 /**
  * Writes game object data to the DB.
  *
- * @param {object} obj serialized game object data (*not* an actual
- *        {@link GameObject} instance)
+ * @param {object|array} data serialized game object data (*not* actual
+ *        {@link GameObject} instances); may be a single object or an array
  * @param {object} [queryOpts] [RethinkDB query options]{@link
  *        http://www.rethinkdb.com/api/javascript/run/}; if not
  *        specified, the options passed to {@link
@@ -140,12 +132,12 @@ function read(tsid, queryOpts, callback) {
  * @param {function} callback called when the object was written, or an
  *        error occurred
  */
-function write(obj, queryOpts, callback) {
+function write(data, queryOpts, callback) {
 	if (!callback) {
 		callback = queryOpts;
 		queryOpts = null;
 	}
-	var query = rdb.table(getTable(obj)).insert(rdb.json(JSON.stringify(obj)),
+	var query = rdb.table(cfg.dbtable).insert(rdb.json(JSON.stringify(data)),
 		{conflict: 'replace'});
 	runQuery(query, queryOpts, callback);
 }
@@ -154,20 +146,19 @@ function write(obj, queryOpts, callback) {
 /**
  * Removes game object data from the DB.
  *
- * @param {object} obj serialized data of the game object to be removed
+ * @param {object} tsid ID of the game object to be removed
  * @param {object} [queryOpts] [RethinkDB query options]{@link
- *        http://www.rethinkdb.com/api/javascript/run/}; if not
- *        specified, the options passed to {@link
- *        module:data/pbe/rethink~init|init} are used
+ *        http://www.rethinkdb.com/api/javascript/run/}; if not specified, the
+ *        options passed to {@link module:data/pbe/rethink~init|init} are used
  * @param {function} callback called when the object was deleted, or an
  *        error occurred
  */
-function del(obj, queryOpts, callback) {
+function del(tsid, queryOpts, callback) {
 	if (!callback) {
 		callback = queryOpts;
 		queryOpts = null;
 	}
-	var query = rdb.table(getTable(obj)).get(obj.tsid).delete();
+	var query = rdb.table(cfg.dbtable).get(tsid).delete();
 	runQuery(query, queryOpts, callback);
 }
 
@@ -178,19 +169,4 @@ function runQuery(query, opts, callback) {
 		if (err) return callback(err);
 		query.run(conn, opts, callback);
 	});
-}
-
-
-function defaultTableMapper(objOrTsid) {
-	var tsid = typeof objOrTsid === 'object' ? objOrTsid.tsid : objOrTsid;
-	switch (tsid[0]) {
-		case 'B': return 'bags';
-		case 'D': return 'data';
-		case 'G': return 'geometry';
-		case 'I': return 'items';
-		case 'L': return 'locations';
-		case 'P': return 'players';
-		case 'Q': return 'quests';
-		case 'R': return 'groups';
-	}
 }

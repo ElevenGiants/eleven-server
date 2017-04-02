@@ -12,7 +12,6 @@ suite('rethink', function () {
 	this.timeout(5000);
 
 	var cfg = config.get('pers:backEnd:config:rethink');
-	var TABLE = 'dummy';
 
 	function connect(cb) {
 		rdb.connect({
@@ -37,9 +36,6 @@ suite('rethink', function () {
 			if (err) return done(err);
 			pbe.init(
 				config.get('pers:backEnd:config:rethink'),
-				function tableMapper(objOrTsid) {
-					return TABLE;
-				},
 				function cb(err, res) {
 					return done(err);
 				}
@@ -50,17 +46,16 @@ suite('rethink', function () {
 	suiteTeardown(function (done) {
 		run(rdb.dbDrop, cfg.dbname, function cb(err, res) {
 			if (err) return done(err);
-			// restore default table mapper
 			pbe.init(config.get('pers:backEnd:config:rethink'), done);
 		});
 	});
 
 	setup(function (done) {
-		run(rdb.tableCreate, TABLE, {primaryKey: 'tsid'}, done);
+		run(rdb.tableCreate, cfg.dbtable, {primaryKey: 'tsid'}, done);
 	});
 
 	teardown(function (done) {
-		run(rdb.tableDrop, TABLE, done);
+		run(rdb.tableDrop, cfg.dbtable, done);
 	});
 
 
@@ -84,7 +79,7 @@ suite('rethink', function () {
 				assert.isNull(wait.for(pbe.read, 'X'));
 				wait.for(pbe.write, o);
 				assert.strictEqual(wait.for(pbe.read, 'X').ping, 'pong');
-				wait.for(pbe.del, o);
+				wait.for(pbe.del, o.tsid);
 				assert.isNull(wait.for(pbe.read, 'X'));
 				return done();
 			});

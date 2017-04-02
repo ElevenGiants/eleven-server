@@ -9,8 +9,8 @@
  *     init(config, callback)
  *     close(callback)
  *     read(tsid) -> object
- *     write(obj, callback)
- *     del(obj, callback)
+ *     write(objects, callback)
+ *     del(tsid, callback)
  * ```
  * Where `callback` follows the usual Node conventions (`Error` object
  * or `null` as first parameter, function call results second). The
@@ -109,7 +109,7 @@ function shutdown(done) {
 			log.debug('%s already unloaded through its container/owner', k);
 			return cb();
 		}
-		write(cache[k], 'shutdown', cb);
+		write([k], 'shutdown', cb);
 		if (--num % 50 === 0 && num > 0) {
 			log.info('persistence layer shutdown: %s objects remaining', num);
 		}
@@ -317,53 +317,22 @@ function postRequestProc(dlist, ulist, logmsg, callback) {
 
 
 /**
- * Helper for `postRequestProc` to process individual operations
- * write/delete objects) separately. This will always try to execute
- * the operation on all given objects, even if some of those operations
- * fail. In case of errors, only the **first** encountered error is
- * passed to the callback.
+ * Helper for `postRequestProc` to process individual operations (write/delete
+ * objects) separately.
  *
- * @param {string} step persistence operation (must be `write` or
- *         `delete`)
- * @param {array} tsids list of tsids of game objects to process
+ * @param {string} step persistence operation (must be `write` or `delete`)
+ * @param {array} tsids list of TSIDs of game objects to process
  * @param {string} logmsg information for log messages
  * @param {function} callback function to be called after persistence
  *        operations have finished
  * @private
  */
 function postRequestProcStep(step, tsids, logmsg, callback) {
-	var err = null;
-	async.each(tsids,
-		function iter(tsid, cb) {
-			// skip if not a "live" object in the first place
-			if (!(tsid in cache)) return cb();
-			var o = cache[tsid];
-			try {
-				if (step === 'delete') {
-					// skip objects that are not actually deleted
-					if (!o.deleted) return cb();
-					return del(o, logmsg, (e) => {
-						if (e && !err) err = e;
-						return cb();
-					});
-				}
-				// skip objects that will be deleted later anyway
-				if (o.deleted) return cb();
-				return write(o, logmsg, (e) => {
-					if (e && !err) err = e;
-					return cb();
-				});
-			}
-			catch (e) {
-				log.error(e, 'failed to %s %s', step, o);
-				if (!err) err = e;
-				return cb();
-			}
-		},
-		function done(e, res) {
-			callback(err || e, res);
-		}
-	);
+	tsids = _.filter(tsids, (tsid) => tsid in cache);
+	var delOp = step === 'delete';
+	tsids = _.filter(tsids, (i) => delOp ? cache[i].deleted : !cache[i].deleted);
+	if (!tsids.length) return callback();
+	return (delOp ? del : write)(tsids, logmsg, callback);
 }
 
 
@@ -440,65 +409,70 @@ function clearStaleRefs(obj, path) {
 
 
 /**
- * Writes a game object to persistent storage.
+ * Writes game objects to persistent storage.
  *
- * @param {GameObject} obj game object to write
+ * @param {array} tsids IDs of the game objects to write
  * @param {string} logmsg short additional info for log messages
  * @param {function} callback called when write operation has finished,
  *        or in case of errors
  * @private
  */
-function write(obj, logmsg, callback) {
-	log.debug('pers.write: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
-	metrics.increment('pers.write');
-	var cb = function cb(err, res) {
-		if (err) {
-			log.error(err, 'could not write: %s', obj.tsid);
-			metrics.increment('pers.write.fail');
+function write(tsids, logtag, callback) {
+	var n = tsids.length;
+	log.debug({n, tsids, logtag}, 'pers.write');
+	metrics.count('pers.write', n);
+	var data = [];
+	var err;
+	for (var i = 0; i < tsids.length; i++) {
+		try {
+			data.push(orProxy.refify(cache[tsids[i]].serialize()));
 		}
-		if (callback) return callback(err, err ? null : res);
-	};
-	var ser;
-	try {
-		ser = obj.serialize();
+		catch (e) {
+			log.error(e, 'failed to serialize %s', tsids[i]);
+			err = err || e;
+		}
 	}
-	catch (e) {
-		return cb(e);
-
-	}
-	pbe.write(orProxy.refify(ser), cb);
+	return pbe.write(data, (e) => {
+		if (err) {
+			log.error({err, logtag}, 'pers.write failed');
+			metrics.count('pers.write.fail', n);
+		}
+		return callback(e || err);
+	});
 }
 
 
+
 /**
- * Permanently deletes a game object from persistent storage. Also
- * removes the object from the live object cache.
+ * Permanently deletes game objects from persistent storage and removes them
+ * from the live object cache.
  *
- * @param {GameObject} obj game object to remove
- * @param {string} logmsg short additional info for log messages
- * @param {function} callback called when delete operation has
- *        finished, or in case of errors
+ * @param {array} list of TSIDs to remove
+ * @param {string} logtag short additional info for log messages
+ * @param {function} callback called when delete operation has finished, or in
+ *        case of errors
  * @private
  */
-function del(obj, logmsg, callback) {
-	log.debug('pers.del: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
-	// TODO INFO msg for broken objref debugging, remove when no longer needed:
-	log.info('pers.del: %s%s', obj.tsid, logmsg ? ' (' + logmsg + ')' : '');
-	metrics.increment('pers.del');
-	if (obj.tsid in cache) {
-		obj.suspendGsTimers();
-		delete cache[obj.tsid];
-	}
-	if (obj.tsid in proxyCache) {
-		delete proxyCache[obj.tsid];
-	}
-	pbe.del(obj, function db(err, res) {
-		if (err) {
-			log.error(err, 'could not delete: %s', obj.tsid);
-			metrics.increment('pers.del.fail');
+function del(tsids, logtag, callback) {
+	var n = tsids.length;
+	log.info({n, tsids, logtag}, 'pers.del');
+	metrics.count('pers.del', n);
+	async.each(tsids, function iter(tsid, cb) {
+		if (tsid in cache) {
+			cache[tsid].suspendGsTimers();
+			delete cache[tsid];
 		}
-		if (callback) return callback(err, res);
-	});
+		if (tsid in proxyCache) {
+			delete proxyCache[tsid];
+		}
+		pbe.del(tsid, (err) => {
+			if (err) {
+				log.error(err, 'could not delete: %s', tsid);
+				metrics.increment('pers.del.fail');
+			}
+			return cb();
+		});
+	}, callback);
 }
 
 

@@ -45,6 +45,7 @@ function initConfig() {
 				config: {
 					rethink: {
 						dbname: 'eleven_test',
+						dbtable: 'gamedata',
 						dbhost: 'localhost',
 						dbport: 28015,
 						dbauth: 'test123',

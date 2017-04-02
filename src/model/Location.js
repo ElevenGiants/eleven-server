@@ -102,7 +102,9 @@ Location.prototype.gsOnLoad = function gsOnLoad() {
 
 Location.prototype.gsOnCreate = function gsOnCreate() {
 	Location.super_.prototype.gsOnCreate.call(this);
-	this.startUnloadInterval();
+	if (this.class_tsid !== 'home') {  // POLs are unloaded after creation anyway
+		this.startUnloadInterval();
+	}
 };
 
 
@@ -154,7 +156,8 @@ Location.copy = function copy(src, options) {
 		log.warn('not copying %s (not an instance template)', src);
 		return null;
 	}
-	var geo = Geo.copy(src.geometry, options.label);
+	var isPol = options.classTsid === 'home';
+	var geo = Geo.copy(src.geometry, options.label, isPol);
 	var ret = Location.create(geo, {
 		class_tsid: options.classTsid || src.class_tsid,
 		label: options.label,
@@ -170,7 +173,14 @@ Location.copy = function copy(src, options) {
 	for (var k in src.items) {
 		Item.copy(src.items[k], ret);
 	}
-	ret.onCreateAsCopyOf(src);
+	if (!isPol) ret.onCreateAsCopyOf(src);
+	else {
+		// ensure geo data is initialized (constructor may have skipped it)
+		ret.updateGeo(geo);
+		// make sure loc (and geo/items) don't stay in persistence cache, as
+		// this GS (that created it) may not be the one that is managing it
+		RC.getContext().setUnload(ret);
+	}
 	return ret;
 };
 
