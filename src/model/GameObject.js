@@ -12,9 +12,21 @@ var util = require('util');
 var utils = require('utils');
 var RC = require('data/RequestContext');
 var RQ = require('data/RequestQueue');
+var pers = require('data/pers');
 
 
-GameObject.prototype.TSID_INITIAL = 'G';
+GameObject.prototype.TSID_INITIAL_GAME_OBJECT = 'G';
+GameObject.prototype.TSID_INITIAL_BAG = 'B';
+GameObject.prototype.TSID_INITIAL_DATA_CONTAINER = 'D';
+GameObject.prototype.TSID_INITIAL_GEO = 'G';
+GameObject.prototype.TSID_INITIAL_GROUP = 'R';
+GameObject.prototype.TSID_INITIAL_ITEM = 'I';
+GameObject.prototype.TSID_INITIAL_LOCATION = 'L';
+GameObject.prototype.TSID_INITIAL_PLAYER = 'P';
+GameObject.prototype.TSID_INITIAL_QUEST = 'Q';
+
+GameObject.prototype.TSID_INITIAL = GameObject.prototype.TSID_INITIAL_GAME_OBJECT;
+
 
 /**
  * Generic constructor for both instantiating an existing game object
@@ -518,5 +530,32 @@ GameObject.prototype.copyProps = function copyProps(from, skipList) {
 			// properties on the first level
 			GameObject.prototype.copyProps.call(this[key], val);
 		}
+	}
+};
+
+
+/**
+ * Gets the TSID of the {@link Geo} object for this location.
+ *
+ * @returns {string} TSID of the corresponding {@link Geo} object
+ */
+GameObject.prototype.getLocTsid = function getLocTsid() {
+	return this.TSID_INITIAL_LOCATION + this.tsid.slice(1);
+};
+
+
+
+/**
+ * Updates the current object with data from the passed in object.
+ * If the current object is a Geo, have the corresponding Location
+ * process the change.
+ *
+ * @param {GameObject} data copy source
+ */
+GameObject.prototype.replaceDynamic = function replaceDynamic(data) {
+	this.copyProps(data);
+	if (utils.isGeo(this)) {
+		var loc = pers.get(this.getLocTsid());
+		loc.updateGeo(this);
 	}
 };

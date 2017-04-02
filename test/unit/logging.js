@@ -39,7 +39,7 @@ suite('logging', function () {
 					assert.strictEqual(msg, 'meh');
 					assert.deepEqual(fields,
 						{action: 'meh', 'UNKNOWN#0': 'barf', 'UNKNOWN#1': '123',
-						'UNKNOWN#2': 'null', 'UNKNOWN#3': 'undefined'});
+							'UNKNOWN#2': 'null', 'UNKNOWN#3': 'undefined'});
 					done();
 				},
 			});
