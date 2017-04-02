@@ -281,6 +281,8 @@ function loadProto(group, klass) {
 	}
 	// patch a few GSJS functions for items
 	if (group === 'items') {
+		if(proto.getAssetInfo)
+			proto.assetInfo = proto.getAssetInfo();
 		PATCHED_ITEM_GSJS_FUNCS.forEach(patchItemGsjsFunc.bind(null, proto));
 	}
 	prototypes[group][klass] = proto;
