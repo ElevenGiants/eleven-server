@@ -345,7 +345,12 @@ exports.apiLogAction = function apiLogAction(type) {
  */
 exports.apiFindItemPrototype = function apiFindItemPrototype(classTsid) {
 	log.trace('global.apiFindItemPrototype(%s)', classTsid);
-	return gsjsBridge.getProto('items', classTsid);
+	var proto = gsjsBridge.getProto('items', classTsid);
+	if(proto.getAssetInfo)
+		proto.assetInfo = proto.getAssetInfo();
+	if(proto.getDescExtras)
+		proto.descExtras = proto.getDescExtras();
+	return proto;
 };
 
 
