@@ -350,6 +350,11 @@ exports.apiFindItemPrototype = function apiFindItemPrototype(classTsid) {
 		proto.assetInfo = proto.getAssetInfo();
 	if(proto.getDescExtras)
 		proto.descExtras = proto.getDescExtras();
+	if(proto.initInstanceProps){
+		var defaults = {};
+		proto.initInstanceProps.call(defaults);
+		proto.defaults = defaults.instanceProps;
+	}
 	return proto;
 };
 
