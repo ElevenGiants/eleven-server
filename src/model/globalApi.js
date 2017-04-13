@@ -38,7 +38,7 @@ function getItemType(classTsid) {
 
 function isPlayerOnline(tsid) {
 	var p = pers.get(tsid);
-	return p !== undefined && p.isConnected();
+	return p !== undefined && (p.isConnected() || p.isMovingGs);
 }
 
 

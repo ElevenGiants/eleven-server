@@ -107,6 +107,7 @@ function Player(data) {
 	utils.addNonEnumerable(this, 'active', false);
 	utils.addNonEnumerable(this, 'changes', []);
 	utils.addNonEnumerable(this, 'anncs', []);
+	utils.addNonEnumerable(this, 'msgCache', []);
 	// convert selected properties to "Property" instances (works with simple
 	// int values as well as serialized Property instances)
 	for (var group in PROPS) {
@@ -278,6 +279,8 @@ Player.prototype.onDisconnect = function onDisconnect() {
 		// stop timers etc and unload from live object cache
 		this.rqPush(this.unload);
 	}
+	// delete gs movement flag
+	delete this.isMovingGs;
 	// unlink the session, so this function won't be accidentally called again
 	this.session = null;
 };
@@ -345,6 +348,9 @@ Player.prototype.startMove = function startMove(newLoc, x, y) {
 		// update location and position
 		this.location = newLoc;
 		this.setXY(x, y, true);
+		if (!rpc.isLocal(newLoc)) {
+			this.isMovingGs = true;
+		}
 	}
 	this.active = false;
 };
@@ -360,6 +366,14 @@ Player.prototype.endMove = function endMove() {
 	log.info('end move to %s', this.location);
 	assert(utils.isLoc(this.location), util.format(
 		'invalid location property: %s', this.location));
+	if (this.isMovingGs) {
+		// catch up on cached messages
+		delete this.isMovingGs;
+		for (var i = 0; i < this.msgCache.length; i++) {
+			this.send(this.msgCache[i]);
+		}
+		this.msgCache = [];
+	}
 	this.active = true;
 	this.location.addPlayer(this);
 };
@@ -535,6 +549,11 @@ Player.prototype.queueAnnc = function queueAnnc(annc) {
  *        there are changes and/or announcements to send along with it
  */
 Player.prototype.send = function send(msg, skipChanges, flushOnly) {
+	if (this.isMovingGs) {
+		log.info('queueing message during gs move for player %s', this);
+		this.msgCache.push(msg);
+		return;
+	}
 	if (!this.session) {
 		log.info('dropping message to offline player %s', this);
 		return;
