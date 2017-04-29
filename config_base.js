@@ -95,7 +95,7 @@ module.exports = {
 	},
 	god: {
 		hidden_properties: ['ts', 'tsid', 'class_tsid', 'label',
-			'container', 'tcont', 'pcont',
+			'pcont',
 			'version', 'letime', 'rbtime', 'load_time', 'upd_time',
 			'lastUpdateTime', 'upd_gs',
 			'gstimers', 'gsintervals',
