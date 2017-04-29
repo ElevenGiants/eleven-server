@@ -533,6 +533,46 @@ GameObject.prototype.copyProps = function copyProps(from, skipList) {
 	}
 };
 
+GameObject.prototype.updateProps = function updateProps(data) {
+	var changed = false;
+	for (var k in data) {
+		var v = data[k];
+		if (typeof v === 'object') {
+			if(v.__isORP || v.__isGO) {
+				if(this[k].tsid !== v.tsid) {
+					log.debug('changing objref from %s to %s', this[k], v);
+					this[k] = v;
+					changed = true;
+				}
+			}
+			else if (typeof this[k] === 'object') {
+				if (GameObject.prototype.updateProps.call(this[k], v)) changed = true;
+				//may not be needed/used
+			}
+			else {
+				log.debug('type mismatch: %s vs. %s', typeof v, typeof this[k]);
+			}
+		}
+		else {
+			if (this[k] !== v) {
+				log.trace('changing %s from %s to %s', k, this[k], v);
+				this[k] = v;
+				changed = true;
+			}
+		}
+	}
+	if (changed) {
+		if (utils.isItem(this)) {
+			this.setXY(this.x, this.y);
+			this.queueChanges();
+		}
+		if (this.onPropsChanged)
+			this.onPropsChanged();
+		if (this.broadcastState)
+			this.broadcastState();
+	}
+}
+
 
 /**
  * Gets the TSID of the {@link Geo} object for this location.

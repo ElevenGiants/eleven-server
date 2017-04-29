@@ -29,6 +29,9 @@ var Location = require('model/Location');
 var logging = require('logging');
 var slackChat = require('comm/slackChat');
 var crypto = require('crypto');
+var util = require('util');
+var config = require('config');
+var orProxy = require('data/objrefProxy');
 
 
 function getItemType(classTsid) {
@@ -471,6 +474,368 @@ exports.apiGetObjectJSON = function apiGetObjectJSON(tsid) {
 	var obj = pers.extract(tsid, true);
 	return obj;
 };
+
+exports.apiGetObjectGodDetails = function apiGetObjectGodDetails(tsid, includeRefs) {
+	var ret = {};
+	var objects = pers.extract(tsid, includeRefs);
+	for(var i = 0; i < objects.length; i++) {
+		var obj = objects[i];
+		var tsid = obj.tsid;
+		ret[tsid] = {};
+		ret[tsid].data = obj;
+		ret[tsid].schema = getSchema(obj);
+		ret[tsid].options = getOptions(obj);
+	}
+	return ret;
+}
+
+exports.apiGodUpdateObjects = function apiGodUpdateObjects(objs) {
+	var results = {};
+	for (var tsid in objs) {
+		var obj = pers.get(tsid);
+		var data = objs[tsid];
+		typeConv(data, getSchema(orProxy.refify(obj.serialize())));
+		log.info({data: data}, 'updating %s via god interface', tsid);
+		try {
+			obj.updateProps(data);
+			results[tsid] = orProxy.refify(obj.serialize());
+		}
+		catch (e) {
+			log.error(e, 'error updating %s via god interface', tsid);
+			results[tsid] = 'error saving ' + tsid + ': ' + e;
+		}
+	}
+	var body = JSON.stringify(results, null, '\t');
+	return body;
+}
+
+
+/**
+ * Incoming data from AlpacaJS forms already has the right structure
+ * (regarding objects and arrays), but the "leaf" property values are
+ * all strings. This function casts them back into their original types
+ * according to the given schema.
+ */
+function typeConv(data, schema, parentNode, nodeKey) {
+	switch(schema.type) {
+		case 'object':
+			for (var k in data) {
+				if (schema.properties && schema.properties[k]) {
+					typeConv(data[k], schema.properties[k], data, k);
+				}
+			}
+			break;
+		case 'array':
+			for (var i = 0; i < data.length; i++) {
+				if (schema.items) {
+					typeConv(data[i], schema.items, data, i);
+				}
+			}
+			break;
+		case 'null':
+			assert(data === null, 'non-null data for null type: ' +
+				data + '/' + schema.title);
+			break;
+		case 'boolean':
+			parentNode[nodeKey] = data === 'true' ? true : false;
+			break;
+		case 'integer':
+			parentNode[nodeKey] = parseInt(data, 10);
+			break;
+		case 'number':
+			parentNode[nodeKey] = parseFloat(data);
+			break;
+		// strings just stay strings
+	}
+}
+
+/**
+ * Creates a suitable JSON schema for the given game object.
+ */
+function getSchema(obj) {
+	log.error(obj.tsid);
+	var ret = buildGenericSchema(obj, obj.tsid);
+	// modify according to base object type
+	if (utils.isGeo(obj)) {
+		ret.title = util.format('Geometry');
+	}
+	else if (utils.isLoc(obj)) {
+		ret.title = util.format('Location data');
+	}
+	else {  // assume item
+		ret.title = util.format('%s (%s) %s', obj.class_tsid, obj.label, obj.tsid);
+		augmentItemSchema(obj, ret);
+	}
+	// apply class-specific customizations
+	getCustomConfig(obj).forEach(function iter(cconf) {
+		if (cconf.schemaOverride) {
+			applyCustomOverrides(ret, cconf.schemaOverride);
+		}
+		if (cconf.customizeSchema) {
+			ret = cconf.customizeSchema(obj, ret);
+		}
+		if (cconf.schemaOrder) {
+			reorderSchema(ret, cconf.schemaOrder);
+		}
+	});
+	return ret;
+}
+
+
+/**
+ * Creates an AlpacaJS display/editor options object for the given
+ * game object.
+ */
+function getOptions(obj) {
+	var ret = buildGenericOptions(obj);
+	// special adjustments for items (itemProps)
+	if (utils.isItem(obj)) {
+		augmentItemOptions(obj, ret);
+	}
+	// apply class-specific customizations
+	getCustomConfig(obj).forEach(function iter(cconf) {
+		if (cconf.optionsOverride) {
+			applyCustomOverrides(ret, cconf.optionsOverride);
+		}
+		if (cconf.customizeOptions) {
+			ret = cconf.customizeOptions(obj, ret);
+		}
+	});
+	return ret;
+}
+
+
+function buildGenericOptions(obj, nested) {
+	var ret = {};
+	if (_.isPlainObject(obj)) {
+		ret.fields = {};
+		for (var k in obj) {
+			ret.fields[k] = buildGenericOptions(obj[k], true);
+			if (!nested && config.get('god:hidden_properties').indexOf(k) !== -1) {
+				ret.fields[k].hidden = true;
+			}
+			// make nested objects lazy-loading (which implies collapsed) by default
+			if (_.isPlainObject(obj[k])) {
+				ret.fields[k].lazyLoading = true;
+			}
+		}
+		if (obj.objref === true) {
+			ret.fields.objref.hidden = true;
+			ret.helper = '(this is an objref)';
+		}
+	}
+	return ret;
+}
+
+
+/**
+ * Amends additional schema data to a JSON schema for items, generated
+ * from information we can get out of the GSJS item prototypes.
+ */
+function augmentItemSchema(it, schema) {
+	if (!it.instanceProps) {
+		// workaround for broken items
+		return;
+	}
+	var proto = getItemPrototype(it.class_tsid);
+	var defaults = getInstancePropsDefaults(it.class_tsid);
+	schema.properties.instanceProps = {
+		type: 'object',
+		title: 'instanceProps',
+		properties: {},
+	};
+	for (var k in proto.instancePropsDef) {
+		// determine type; skip properties with undefined type
+		var type = getSchemaType(it.instanceProps[k]);
+		if (type === 'null') {
+			type = getSchemaType(defaults[k]);
+			if (type === 'null') continue;
+		}
+		var propSchema = {
+			title: k,
+			type: type,
+			description: proto.instancePropsDef[k],
+		};
+		schema.properties.instanceProps.properties[k] = propSchema;
+		if (k in defaults) {
+			propSchema.description += ' (default: ' + defaults[k] + ')';
+			propSchema['default'] = defaults[k];
+		}
+		if (proto.instancePropsChoices[k] && proto.instancePropsChoices[k].length > 1) {
+			propSchema['enum'] = proto.instancePropsChoices[k];
+			propSchema.required = true;  // otherwise Alpaca insists on including a 'None' choice
+		}
+	}
+}
+
+
+/**
+ * Adds additional options to an AlpacaJS options object for the
+ * given item, based on information from the GSJS item prototypes.
+ */
+function augmentItemOptions(it, options) {
+	var proto = getItemPrototype(it.class_tsid);
+	// hide count property for non-stacks
+	if (it.count && proto.stackmax === 1) {
+		options.fields.count.hidden = true;
+	}
+	// workaround for broken items
+	if (!it.instanceProps) return;
+	// load and expand instanceProps form by default
+	delete options.fields.instanceProps.lazyLoading;
+	// for some reason, Alpaca is refusing to cooperate with both 'checkbox'
+	// and 'radio' types (current value is not always reflected); only 'select'
+	// works right
+	for (var k in it.instanceProps) {
+		if (proto.instancePropsChoices[k] && proto.instancePropsChoices[k].length > 1) {
+			options.fields.instanceProps.fields[k] = {
+				type: 'select',
+				// also, remove "None" option from all enums
+				removeDefaultNone: true,
+			};
+		}
+	}
+}
+
+
+/**
+ * Creates a JSON schema for the given game object (of arbitrary type).
+ */
+function buildGenericSchema(obj, name) {
+	var type = getSchemaType(obj);
+	if (type === 'null' || type === 'function') return null;
+	if (name[0] === '!') return null;
+	var ret = {
+		title: name,
+		type: type,
+	};
+	if (type === 'array') {
+		ret.items = {};
+		// if there is anything in the array, we'll just look at the first
+		// element and assume all elements should be of the same type
+		if (obj.length) {
+			ret.items.type = getSchemaType(obj[0]);
+		}
+	}
+	if (type === 'object') {
+		ret.properties = {};
+		for (var k in obj) {
+			var propSchema = buildGenericSchema(obj[k], k);
+			if (propSchema) ret.properties[k] = propSchema;
+		}
+	}
+	return ret;
+}
+
+
+/**
+ * Recursively overwrites values in an AlpacaJS schema/options object
+ * `data` with the corresponding values in `overrides`.
+ */
+function applyCustomOverrides(data, overrides) {
+	if (!overrides) return;
+	for (var k in data) {
+		if (k in overrides) {
+			var v = data[k];
+			if (_.isPlainObject(v)) {
+				data[k] = applyCustomOverrides(data[k], overrides[k]);
+			}
+			else {
+				data[k] = overrides[k];
+			}
+		}
+	}
+	// also add properties that are not in data at all
+	for (var k in overrides) {
+		if (!(k in data)) {
+			data[k] = overrides[k];
+		}
+	}
+	return data;
+}
+
+
+/**
+ * Reorders an AlpacaJS JSON schema according to a custom order
+ * object, which needs to follow this pattern:
+ * {
+ *   _self: ['display', 'order', 'of', 'direct', 'properties'],
+ *   nested_object: {_self: ['order', 'of', 'properties', 'of', 'nested_object']},
+ *   another_object: {
+ *     _self: ['etc'],
+ *     deeper: {_self: ['turtles', 'all', 'the', 'way', 'down']},
+ *   },
+ * }
+ * The sequence in which properties are added to the schema *usually*
+ * governs the display order of the AlpacaJS fields, but since the
+ * order of properties in a JS object is non-deterministic, this might
+ * not always work.
+ */
+function reorderSchema(schema, order) {
+	var props = {};
+	if (order._self){
+		for (var i = 0; i < order._self.length; i++) {
+			var k = order._self[i];
+			if (k in schema.properties) {
+				props[k] = schema.properties[k];
+			}
+		}
+	}
+	// add keys that are not listed in order._self (in existing order)
+	for (var k in schema.properties) {
+		if (!props.hasOwnProperty(k)) props[k] = schema.properties[k];
+	}
+	// process nested objects
+	for (var k in order) {
+		if (k === '_self') continue;
+		if (k in props) reorderSchema(props[k], order[k]);
+	}
+	schema.properties = props;
+}
+
+
+function getCustomConfig(obj) {
+	// hack: relying on the fact that geo objects are the only ones without a class_tsid
+	var classTsid = obj.class_tsid ? obj.class_tsid : 'geo';
+	var comps = classTsid.split('_');
+	var ret = [];
+	for (var i = 1; i <= comps.length; i++) {
+		var fpath = '../../god/customize/' + comps.slice(0, i).join('_');
+		try {
+			ret.push(require(fpath));
+		}
+		catch (e) {
+			if (e.code !== 'MODULE_NOT_FOUND') {
+				log.error(e, 'could not load god page customizations: %s', fpath);
+			}
+		}
+	}
+	return ret;
+}
+
+function getSchemaType(v) {
+	if (v === null || v === undefined) return 'null';
+	var t = typeof v;
+	if (v instanceof Array) return 'array';
+	if (_.isInteger(v) && t !== 'string') return 'integer';
+	return t;
+}
+
+
+function getItemPrototype(class_tsid) {
+	return exports.apiFindItemPrototype(class_tsid);
+}
+
+
+function getInstancePropsDefaults(class_tsid) {
+	var proto = getItemPrototype(class_tsid);
+	var defaults = {};
+	if (proto.initInstanceProps) {
+		proto.initInstanceProps.call(defaults);
+		defaults = defaults.instanceProps;
+	}
+	return defaults;
+}
 
 
 /**
