@@ -524,7 +524,8 @@ function extract(tsid, includeRefs, ret) {
 	};
 
 	ret = ret || [];
-	var data = orProxy.refify(get(tsid).serialize());
+	var dataObj = get(tsid);
+	var data = orProxy.refify(dataObj.serialize ? dataObj.serialize() : dataObj);
 	if (!_.isObject(data)) {
 		log.info(new DummyError(), 'no or invalid data for %s', tsid);
 		return ret;

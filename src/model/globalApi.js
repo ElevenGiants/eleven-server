@@ -30,7 +30,6 @@ var logging = require('logging');
 var slackChat = require('comm/slackChat');
 var crypto = require('crypto');
 var util = require('util');
-var config = require('config');
 var orProxy = require('data/objrefProxy');
 
 
@@ -349,11 +348,13 @@ exports.apiLogAction = function apiLogAction(type) {
 exports.apiFindItemPrototype = function apiFindItemPrototype(classTsid) {
 	log.trace('global.apiFindItemPrototype(%s)', classTsid);
 	var proto = gsjsBridge.getProto('items', classTsid);
-	if(proto.getAssetInfo)
+	if (proto.getAssetInfo) {
 		proto.assetInfo = proto.getAssetInfo();
-	if(proto.getDescExtras)
+	}
+	if (proto.getDescExtras) {
 		proto.descExtras = proto.getDescExtras();
-	if(proto.initInstanceProps){
+	}
+	if (proto.initInstanceProps) {
 		var defaults = {};
 		proto.initInstanceProps.call(defaults);
 		proto.defaults = defaults.instanceProps;
@@ -478,16 +479,16 @@ exports.apiGetObjectJSON = function apiGetObjectJSON(tsid) {
 exports.apiGetObjectGodDetails = function apiGetObjectGodDetails(tsid, includeRefs) {
 	var ret = {};
 	var objects = pers.extract(tsid, includeRefs);
-	for(var i = 0; i < objects.length; i++) {
+	for (var i = 0; i < objects.length; i++) {
 		var obj = objects[i];
-		var tsid = obj.tsid;
-		ret[tsid] = {};
-		ret[tsid].data = obj;
-		ret[tsid].schema = getSchema(obj);
-		ret[tsid].options = getOptions(obj);
+		var objTsid = obj.tsid;
+		ret[objTsid] = {};
+		ret[objTsid].data = obj;
+		ret[objTsid].schema = getSchema(obj);
+		ret[objTsid].options = getOptions(obj);
 	}
 	return ret;
-}
+};
 
 exports.apiGodUpdateObjects = function apiGodUpdateObjects(objs) {
 	var results = {};
@@ -507,7 +508,7 @@ exports.apiGodUpdateObjects = function apiGodUpdateObjects(objs) {
 	}
 	var body = JSON.stringify(results, null, '\t');
 	return body;
-}
+};
 
 
 /**
@@ -517,7 +518,7 @@ exports.apiGodUpdateObjects = function apiGodUpdateObjects(objs) {
  * according to the given schema.
  */
 function typeConv(data, schema, parentNode, nodeKey) {
-	switch(schema.type) {
+	switch (schema.type) {
 		case 'object':
 			for (var k in data) {
 				if (schema.properties && schema.properties[k]) {
@@ -537,7 +538,7 @@ function typeConv(data, schema, parentNode, nodeKey) {
 				data + '/' + schema.title);
 			break;
 		case 'boolean':
-			parentNode[nodeKey] = data === 'true' ? true : false;
+			parentNode[nodeKey] = data === 'true';
 			break;
 		case 'integer':
 			parentNode[nodeKey] = parseInt(data, 10);
@@ -659,10 +660,10 @@ function augmentItemSchema(it, schema) {
 		schema.properties.instanceProps.properties[k] = propSchema;
 		if (k in defaults) {
 			propSchema.description += ' (default: ' + defaults[k] + ')';
-			propSchema['default'] = defaults[k];
+			propSchema.default = defaults[k];
 		}
 		if (proto.instancePropsChoices[k] && proto.instancePropsChoices[k].length > 1) {
-			propSchema['enum'] = proto.instancePropsChoices[k];
+			propSchema.enum = proto.instancePropsChoices[k];
 			propSchema.required = true;  // otherwise Alpaca insists on including a 'None' choice
 		}
 	}
@@ -746,15 +747,16 @@ function applyCustomOverrides(data, overrides) {
 		}
 	}
 	// also add properties that are not in data at all
-	for (var k in overrides) {
-		if (!(k in data)) {
-			data[k] = overrides[k];
+	for (var key in overrides) {
+		if (!(key in data)) {
+			data[key] = overrides[key];
 		}
 	}
 	return data;
 }
 
 
+/* eslint-disable no-underscore-dangle */
 /**
  * Reorders an AlpacaJS JSON schema according to a custom order
  * object, which needs to follow this pattern:
@@ -773,7 +775,7 @@ function applyCustomOverrides(data, overrides) {
  */
 function reorderSchema(schema, order) {
 	var props = {};
-	if (order._self){
+	if (order._self) {
 		for (var i = 0; i < order._self.length; i++) {
 			var k = order._self[i];
 			if (k in schema.properties) {
@@ -782,16 +784,17 @@ function reorderSchema(schema, order) {
 		}
 	}
 	// add keys that are not listed in order._self (in existing order)
-	for (var k in schema.properties) {
-		if (!props.hasOwnProperty(k)) props[k] = schema.properties[k];
+	for (var propKey in schema.properties) {
+		if (!props.hasOwnProperty(propKey)) props[propKey] = schema.properties[propKey];
 	}
 	// process nested objects
-	for (var k in order) {
-		if (k === '_self') continue;
-		if (k in props) reorderSchema(props[k], order[k]);
+	for (var orderKey in order) {
+		if (orderKey === '_self') continue;
+		if (orderKey in props) reorderSchema(props[orderKey], order[orderKey]);
 	}
 	schema.properties = props;
 }
+/* eslint-enable no-underscore-dangle */
 
 
 function getCustomConfig(obj) {
@@ -822,13 +825,13 @@ function getSchemaType(v) {
 }
 
 
-function getItemPrototype(class_tsid) {
-	return exports.apiFindItemPrototype(class_tsid);
+function getItemPrototype(classTsid) {
+	return exports.apiFindItemPrototype(classTsid);
 }
 
 
-function getInstancePropsDefaults(class_tsid) {
-	var proto = getItemPrototype(class_tsid);
+function getInstancePropsDefaults(classTsid) {
+	var proto = getItemPrototype(classTsid);
 	var defaults = {};
 	if (proto.initInstanceProps) {
 		proto.initInstanceProps.call(defaults);
