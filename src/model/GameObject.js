@@ -59,7 +59,7 @@ utils.copyProps(require('model/GameObjectApi').prototype, GameObject.prototype);
  */
 GameObject.prototype.gsOnLoad = function gsOnLoad() {
 	if (this.onLoad) {
-		this.rqPush(this.onLoad);
+		this.onLoad();
 	}
 	this.resumeGsTimers();
 };
