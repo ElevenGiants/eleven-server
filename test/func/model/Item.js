@@ -35,11 +35,11 @@ suite('Item', function () {
 		test('does its job', function (done) {
 			new RC().run(
 				function () {
-					var it = Item.create('pi', 7);
+					var it = Item.create('pi', 5);
 					assert.isTrue(utils.isItem(it));
 					assert.strictEqual(it.class_tsid, 'pi');
 					assert.strictEqual(it.constructor.name, 'pi');
-					assert.strictEqual(it.count, 7);
+					assert.strictEqual(it.count, 5);
 				},
 				function cb(err, res) {
 					if (err) return done(err);
@@ -62,6 +62,20 @@ suite('Item', function () {
 			assert.throw(function () {
 				Item.create('bag_bigger_gray');
 			}, assert.AssertionError);
+		});
+
+		test('does not create items with count over stackmax', function (done) {
+			new RC().run(function () {
+				var it = Item.create('pi', 7);
+				assert.strictEqual(it.count, 5);
+			}, done);
+		});
+
+		test('does not create items with string item counts', function (done) {
+			new RC().run(function () {
+				var it = Item.create('pi', '5');
+				assert.strictEqual(it.count, 5);
+			}, done);
 		});
 	});
 

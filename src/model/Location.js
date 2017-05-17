@@ -461,6 +461,9 @@ Location.prototype.addItem = function addItem(item, x, y, noMerge) {
 	if (!noMerge) {
 		for (var k in this.items) {
 			var it = this.items[k];
+			if (it === item) {
+				continue;
+			}
 			var dist = (x - it.x) * (x - it.x) + (y - it.y) * (y - it.y);
 			if (it.class_tsid === item.class_tsid && it.count < it.stackmax &&
 				dist < 10000) {
