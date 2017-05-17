@@ -69,8 +69,14 @@ LocationApi.prototype.apiAddStack = function apiAddStack(item, slot, path, amoun
 LocationApi.prototype.apiAddStackAnywhere = function apiAddStackAnywhere(item, maxSlot, path, amount, pc) {
 	log.debug('%s.apiAddStackAnywhere(%s, %s, %s, %s, %s)', this, item, maxSlot,
 		path, amount, pc);
-	return this.addToBag(item, 0, maxSlot, path, amount);
-	//TODO: item animation announcements from pc
+	var ret = this.addToBag(item, 0, maxSlot, path, amount);
+	if (pc) {
+		pc.createStackAnim('pack_to_bag', item.class_tsid, amount - ret, {
+			orig_path: pc.tsid + '/' + item.tsid + '/',
+			dest_path: path + '/',
+		});
+	}
+	return ret;
 };
 
 

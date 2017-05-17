@@ -452,12 +452,18 @@ Player.prototype.addToAnySlot = function addToAnySlot(item, fromSlot, toSlot,
 	var src = {
 		x: item.x === 0 ? this.x : item.x,
 		y: item.y === 0 ? this.y : item.y,
-		tcont: item.tcont,
+		cont: item.container,
 	};
 	for (var slot = fromSlot; slot <= toSlot && amount > 0; slot++) {
 		var count = bag.addToSlot(item, slot, amount);
 		amount -= count;
-		if (count && src.tcont !== this.tsid) {
+		if (count && src.cont !== this) {
+			if (utils.isBag(src.cont) && !utils.isPlayer(src.cont)) {
+				src.x = src.cont.x;
+				src.y = src.cont.y;
+			}
+			var animSrc = (item.animSourceTsid === 'I-FAMILIAR' ? 'familiar_to_pack' :
+				'floor_to_pack');
 			var annc = {
 				orig_x: src.x,
 				orig_y: src.y,
@@ -467,7 +473,8 @@ Player.prototype.addToAnySlot = function addToAnySlot(item, fromSlot, toSlot,
 				annc.dest_path = this.tsid + '/' + bag.tsid + '/';
 				annc.dest_slot = slot;
 			}
-			this.createStackAnim('floor_to_pack', item.class_tsid, count, annc);
+			delete item.animSourceTsid;
+			this.createStackAnim(animSrc, item.class_tsid, count, annc);
 		}
 	}
 	return amount;
