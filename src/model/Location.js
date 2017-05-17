@@ -454,7 +454,7 @@ Location.prototype.flush = function flush() {
  *        with other nearby items
  */
 Location.prototype.addItem = function addItem(item, x, y, noMerge) {
-	var pc = this.players[item.dropper];
+	var pcont = item.container;
 	if (!item.animSourceTsid) {
 		item.animSourceTsid = item.tsid;
 	}
@@ -473,12 +473,12 @@ Location.prototype.addItem = function addItem(item, x, y, noMerge) {
 					it.count = it.count + item.count;
 					item.count = 0;
 				}
-				if (pc) {
-					pc.createStackAnim('pack_to_floor', item.class_tsid,
+				if (pcont && utils.isPlayer(pcont)) {
+					pcont.createStackAnim('pack_to_floor', item.class_tsid,
 						initial - item.count, {
 							dest_x: it.x,
 							dest_y: it.y,
-							orig_path: pc.tsid + '/' + item.animSourceTsid + '/',
+							orig_path: pcont.tsid + '/' + item.animSourceTsid + '/',
 						}
 					);
 				}
@@ -490,11 +490,11 @@ Location.prototype.addItem = function addItem(item, x, y, noMerge) {
 			}
 		}
 	}
-	if (pc) {
-		pc.createStackAnim('pack_to_floor', item.class_tsid, item.count, {
+	if (pcont && utils.isPlayer(pcont)) {
+		pcont.createStackAnim('pack_to_floor', item.class_tsid, item.count, {
 			dest_x: x,
 			dest_y: y,
-			orig_path: pc.tsid + '/' + item.animSourceTsid + '/',
+			orig_path: pcont.tsid + '/' + item.animSourceTsid + '/',
 		});
 	}
 	item.setContainer(this, x, y);
