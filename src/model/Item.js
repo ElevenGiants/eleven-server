@@ -66,7 +66,16 @@ function Item(data) {
 	else {
 		utils.addNonEnumerable(this, 'gsMovement', null);
 	}
-	if (!utils.isInt(this.count)) this.count = 1;
+	// ensure stack count is valid
+	if (utils.isInt(this.count)) {
+		this.count = parseInt(this.count);
+	}
+	else {
+		this.count = 1;
+	}
+	if (utils.isInt(this.stackmax)) {
+		this.count = Math.min(this.count, this.stackmax);
+	}
 	// add some non-enumerable properties (used internally or by GSJS)
 	utils.addNonEnumerable(this, 'collDet', false);
 	utils.addNonEnumerable(this, 'path', this.tsid);
@@ -144,11 +153,7 @@ Item.create = function create(classTsid, count, x, y) {
 		data.x = x;
 		data.y = y;
 	}
-	var ret = pers.create(Item, data);
-	if (ret.count > ret.stackmax) {
-		ret.count = ret.stackmax;
-	}
-	return ret;
+	return pers.create(Item, data);
 };
 
 
