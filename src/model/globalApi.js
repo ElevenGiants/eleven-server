@@ -247,11 +247,19 @@ exports.apiNewItemStackFromSource = function apiNewItemStackFromSource(
 };
 
 
+/**
+ * Creates a new itemstack from a player's familiar (magic rock).
+ *
+ * @param {string} classTsid ID of the desired item class
+ * @param {number} count item stack amount (must be a positive integer)
+ * @returns {Item} the new object
+ */
 exports.apiNewItemStackFromFamiliar = function apiNewItemStackFromFamiliar(
 	classTsid, count) {
 	log.debug('global.apiNewItemStackFromFamiliar(%s, %s)', classTsid, count);
-	//TODO: adjust&document once itemstack animations are available
-	return getItemType(classTsid).create(classTsid, count);
+	var ret = getItemType(classTsid).create(classTsid, count);
+	ret.animSourceTsid = 'I-FAMILIAR';
+	return ret;
 };
 
 
