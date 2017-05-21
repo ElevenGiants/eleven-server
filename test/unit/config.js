@@ -55,14 +55,20 @@ suite('config', function () {
 				net: {gameServers: {
 					gs07: {host: '123.4.5.6', ports: [2345]},
 					gs01: {host: '127.0.0.1', ports: [1234, 1235]},
+					gs03: {
+						host: '0.0.0.0',
+						publicHost: 'elevengiants.com',
+						ports: [1234],
+					},
 				}},
 			}, {});
 			assert.deepEqual(config.__get__('gsids'),
-				['gs01-01', 'gs01-02', 'gs07-01']);
+				['gs01-01', 'gs01-02', 'gs03-01', 'gs07-01']);
 			assert.deepEqual(config.__get__('gameServers'), {
 				'gs01-01': {
 					gsid: 'gs01-01',
 					host: '127.0.0.1',
+					publicHost: '127.0.0.1',
 					port: 1234,
 					hostPort: '127.0.0.1:1234',
 					local: true,
@@ -70,13 +76,23 @@ suite('config', function () {
 				'gs01-02': {
 					gsid: 'gs01-02',
 					host: '127.0.0.1',
+					publicHost: '127.0.0.1',
 					port: 1235,
 					hostPort: '127.0.0.1:1235',
 					local: true,
 				},
+				'gs03-01': {
+					gsid: 'gs03-01',
+					host: '0.0.0.0',
+					publicHost: 'elevengiants.com',
+					port: 1234,
+					hostPort: 'elevengiants.com:1234',
+					local: false,
+				},
 				'gs07-01': {
 					gsid: 'gs07-01',
 					host: '123.4.5.6',
+					publicHost: '123.4.5.6',
 					port: 2345,
 					hostPort: '123.4.5.6:2345',
 					local: false,

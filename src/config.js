@@ -136,11 +136,13 @@ function initClusterConfig(isMaster) {
 			var id = hostid + '-' + utils.padLeft('' + (i + 1), '0', 2);
 			gsids.push(id);
 			// generate GS configuration object for worker process
+			var publicHost = gsconf.publicHost || gsconf.host;
 			gameServers[id] = {
 				gsid: id,
 				host: gsconf.host,
+				publicHost: publicHost,
 				port: gsconf.ports[i],
-				hostPort: gsconf.host + ':' + gsconf.ports[i],
+				hostPort: publicHost + ':' + gsconf.ports[i],
 				local: local,
 			};
 			// if we are a worker process and this ID matches the env variable

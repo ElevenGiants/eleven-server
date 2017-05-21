@@ -161,9 +161,9 @@ function initClient(gsconf, callback) {
 	if (gsconf.gsid === config.getGsid()) return callback();  // skip self
 	var gsid = gsconf.gsid;
 	var port = config.getRpcPort(gsid);
-	log.info('starting RPC client for %s (%s:%s)', gsid, gsconf.host, port);
+	log.info('starting RPC client for %s (%s:%s)', gsid, gsconf.publicHost, port);
 	var client = new jrpc.client(
-		new jrpc.transports.client.tcp(gsconf.host, port, {
+		new jrpc.transports.client.tcp(gsconf.publicHost, port, {
 			logger: getJrpcLogger('client-' + gsid),
 			timeout: config.get('net:rpc:timeout'),
 		}), {},

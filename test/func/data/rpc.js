@@ -26,6 +26,7 @@ suite('rpc', function () {
 	var GSCONF_LOOPBACK = {
 		gsid: 'gs01-loopback',  // different from actual GSID to trick rpc module
 		host: '127.0.0.1',
+		publicHost: '127.0.0.1',
 	};
 
 	var cfgBackup;
