@@ -295,5 +295,34 @@ suite('Player', function () {
 				}
 			);
 		});
+
+		test('caches messages during inter-GS moves', function (done) {
+			var p;
+			var sent = [];
+			new RC().run(
+				function () {
+					var l = Location.create(Geo.create());
+					p = new Player({tsid: 'PX', location: l});
+					var msg = {some: 'msg'};
+					p.session = {
+						send: function send(msg) {
+							sent.push(msg);
+						},
+					};
+					p.isMovingGs = true;
+					p.send(msg);
+					assert.lengthOf(p.msgCache, 1);
+					p.endMove();
+				},
+				function (err, res) {
+					if (err) return done(err);
+					assert.lengthOf(sent, 1);
+					assert.deepEqual(sent[0], {some: 'msg'});
+					assert.lengthOf(p.msgCache, 0);
+					assert.notProperty(p, 'isMovingGs');
+					return done();
+				}
+			);
+		});
 	});
 });
