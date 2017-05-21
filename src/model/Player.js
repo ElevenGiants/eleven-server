@@ -476,8 +476,8 @@ Player.prototype.addToAnySlot = function addToAnySlot(item, fromSlot, toSlot,
 				src.x = src.cont.x;
 				src.y = src.cont.y;
 			}
-			var animSrc = (item.animSourceTsid === 'I-FAMILIAR' ? 'familiar_to_pack' :
-				'floor_to_pack');
+			var animSrc = item.animSourceTsid ===
+				'I-FAMILIAR' ? 'familiar_to_pack' : 'floor_to_pack';
 			var annc = {
 				orig_x: src.x,
 				orig_y: src.y,
