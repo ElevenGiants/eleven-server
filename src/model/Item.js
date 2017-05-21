@@ -153,7 +153,11 @@ Item.create = function create(classTsid, count, x, y) {
 		data.x = x;
 		data.y = y;
 	}
-	return pers.create(Item, data);
+	var ret = pers.create(Item, data);
+	if (ret.count > ret.stackmax) {
+		ret.count = ret.stackmax;
+	}
+	return ret;
 };
 
 
