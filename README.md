@@ -50,7 +50,7 @@ called `config_local.js` in its root directory. Copy one of the
 All actions are invoked via [`npm`](https://www.npmjs.org/doc/cli/npm.html).
 The following operations are available:
 
-* `test` run the unit tests (with [mocha](https://visionmedia.github.io/mocha/))
+* `test` run the unit tests (with [mocha](https://mochajs.org/))
 * `functest` run functional tests
 * `inttest` run integration tests (depends on external components)
 * `alltests` run all tests back-to-back with reduced output (also includes the
