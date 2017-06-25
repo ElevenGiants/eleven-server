@@ -296,6 +296,20 @@ suite('ItemMovement', function () {
 				}, 700);
 			}, 700);
 		});
+
+		test('item movement is stopped on item deletion', function (done) {
+			var i1 = newItem({tsid: 'I1', npc_walk_speed: 10, npc_y_step: 3});
+			i1.doneMoving = function doneMoving(args) {
+				if (args.status === STATUS.STOP) {
+					done();
+				}
+			};
+			addToTestLoc(i1, 18, 9, gPlat);
+			var moveStarted = i1.gsStartMoving('walking', {x: 2000, y: 10},
+				{callback: 'doneMoving'});
+			assert.isTrue(moveStarted);
+			i1.apiDelete();
+		});
 	});
 
 
