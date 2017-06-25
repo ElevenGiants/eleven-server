@@ -193,6 +193,7 @@ Item.prototype.del = function del() {
 	log.trace('del %s', this);
 	// TODO INFO msg for broken objref debugging, remove when no longer needed:
 	log.info('Item.del: %s', this);
+	this.gsStopMoving();
 	Item.super_.prototype.del.call(this);
 	if (this.container) {
 		RC.setDirty(this.container);
