@@ -163,8 +163,6 @@ function load(tsid) {
 		}
 		catch (err) {
 			log.error(err, 'failed to process onLoad event');
-			delete cache[tsid];
-			return null;
 		}
 		metrics.increment('pers.load.local');
 	}
