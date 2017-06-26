@@ -560,7 +560,7 @@ Player.prototype.queueAnnc = function queueAnnc(annc) {
  *        there are changes and/or announcements to send along with it
  */
 Player.prototype.send = function send(msg, skipChanges, flushOnly) {
-	if (this.isMovingGs) {
+	if (this.isMovingGs && !this.session) {
 		log.info('queueing message during GS move for player %s', this);
 		this.msgCache.push(msg);
 		return;

@@ -304,14 +304,14 @@ suite('Player', function () {
 					var l = Location.create(Geo.create());
 					p = new Player({tsid: 'PX', location: l});
 					var msg = {some: 'msg'};
+					p.isMovingGs = true;
+					p.send(msg);
+					assert.lengthOf(p.msgCache, 1);
 					p.session = {
 						send: function send(msg) {
 							sent.push(msg);
 						},
 					};
-					p.isMovingGs = true;
-					p.send(msg);
-					assert.lengthOf(p.msgCache, 1);
 					p.endMove();
 				},
 				function (err, res) {

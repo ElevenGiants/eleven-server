@@ -88,8 +88,8 @@ suite('pers', function () {
 			};
 			pbeMock.write([o]);
 			var loaded = load(o.tsid);
-			assert.isNull(loaded);
-			assert.notProperty(pers.__get__('cache'), o.tsid);
+			assert.strictEqual(loaded, o);
+			assert.property(pers.__get__('cache'), o.tsid);
 		});
 
 		test('does not choke on objref cycles', function () {
