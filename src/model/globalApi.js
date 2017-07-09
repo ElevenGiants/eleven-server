@@ -310,11 +310,16 @@ exports.apiNewLocation = function apiNewLocation(label, moteId, hubId, classTsid
  */
 exports.apiFindObject = function apiFindObject(tsid) {
 	log.trace('global.apiFindObject(%s)', tsid);
+	// GSJS code is calling this with invalid TSIDs during regular operation
+	// (e.g. in groups/hi_variants_tracker.reset), so we should not throw/report
+	// errors in those cases
 	try {
-		return pers.get(tsid);
+		if (gsjsBridge.isTsid(tsid)) {
+			return pers.get(tsid);
+		}
 	}
 	catch (e) {
-		log.error(e, 'apiFindObject called with problematic tsid %s', tsid);
+		log.error(e, 'apiFindObject called with problematic TSID "%s"', tsid);
 	}
 	return null;
 };
