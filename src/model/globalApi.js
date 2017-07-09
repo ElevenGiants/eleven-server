@@ -53,14 +53,21 @@ function isPlayerOnline(tsid) {
  * @returns {object} copy of the given object
  */
 function safeClone(obj, cloneGameObjects) {
-	var ret = _.clone(obj, true, function customizer(val) {
+	var ret = obj;
+	if (typeof ret === 'object' && ret !== null) {
+		if (!ret.__isORP && (!ret.__isGO || cloneGameObjects)) {
+			ret = _.pickBy(obj, function ownProp(val, key) {
+				return obj.hasOwnProperty(key);
+			});
+		}
+	}
+	return _.cloneDeepWith(ret, function customizer(val) {
 		if (typeof val === 'object' && val !== null) {
 			if (val.__isORP || val.__isGO && !cloneGameObjects) {
 				return val;
 			}
 		}
 	});
-	return ret;
 }
 
 

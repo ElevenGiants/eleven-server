@@ -250,7 +250,7 @@ function getPlayerInfo(locally) {
 			res = rpc.sendRequest(gsid, 'gs', ['getPlayerInfo', [true]]);
 		}
 		// add 'gs' property to each entry:
-		_.assign(ret, res, function addGS(destVal, srcVal) {
+		_.assignWith(ret, res, function addGS(destVal, srcVal) {
 			srcVal.gs = gsid;
 			return srcVal;
 		});
@@ -275,7 +275,7 @@ function getSessionInfo(locally) {
 			res = rpc.sendRequest(gsid, 'gs', ['getSessionInfo', [true]]);
 		}
 		// add 'gs' property to each entry:
-		_.assign(ret, res, function addGS(destVal, srcVal) {
+		_.assignWith(ret, res, function addGS(destVal, srcVal) {
 			srcVal.gs = gsid;
 			return srcVal;
 		});
