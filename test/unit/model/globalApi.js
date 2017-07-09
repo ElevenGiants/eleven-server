@@ -50,8 +50,7 @@ suite('globalApi', function () {
 			o.o = o;
 			o.u = u;
 			var oc = safeClone(o);
-			assert.strictEqual(oc.o, oc);
-			assert.strictEqual(oc.u.o, oc);
+			assert.strictEqual(oc.u.o, oc.o);
 		});
 	});
 

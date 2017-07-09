@@ -179,7 +179,7 @@ function connectToJSON(connect) {
  */
 Geo.prototype.serialize = function serialize() {
 	var ret = Geo.super_.prototype.serialize.call(this);
-	ret = _.cloneDeep(ret, function customizer(val, key) {
+	ret = _.cloneDeepWith(ret, function customizer(val, key) {
 		if (key === 'target' && utils.isLoc(val)) {
 			return {};  // populated later by revertConnect
 		}

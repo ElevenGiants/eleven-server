@@ -204,7 +204,7 @@ Bag.prototype.getClassItems = function getClassItems(classTsid, minCount) {
 		if (utils.isBag(it)) {
 			var inBag = it.getClassItems(classTsid, minCount - count);
 			_.merge(ret, inBag);
-			count += _.sum(inBag, 'count');
+			count += _.sumBy(_.values(inBag), 'count');
 		}
 		if (minCount && count >= minCount) break;
 	}
