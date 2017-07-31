@@ -196,6 +196,9 @@ Item.prototype.del = function del() {
 	this.gsStopMoving();
 	Item.super_.prototype.del.call(this);
 	if (this.container) {
+		if (this.container.index) {
+			this.container.index[this.x] = null;
+		}
 		RC.setDirty(this.container);
 		delete this.container.items[this.tsid];
 		delete this.container.hiddenItems[this.tsid];
@@ -288,6 +291,13 @@ Item.prototype.setContainer = function setContainer(cont, x, y, hidden) {
 		}
 		RC.setDirty(cont);
 		cont[hidden ? 'hiddenItems' : 'items'][this.tsid] = this;
+	}
+	// update indices
+	if (prev && prev.index) {
+		prev.index[this.x] = null;
+	}
+	if (cont.index) {
+		cont.index[x] = this;
 	}
 	// queue removal change if top container changed
 	if (tcont !== this.tcont) {

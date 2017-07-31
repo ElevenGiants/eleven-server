@@ -31,6 +31,7 @@ function Bag(data) {
 	if (!('capacity' in this)) this.capacity = 16;
 	this.items = new IdObjRefMap(this.items);
 	this.hiddenItems = new IdObjRefMap(this.hiddenItems);
+	utils.addNonEnumerable(this, 'index');
 }
 
 utils.copyProps(require('model/BagApi').prototype, Bag.prototype);
@@ -221,12 +222,10 @@ Bag.prototype.getClassItems = function getClassItems(classTsid, minCount) {
  */
 Bag.prototype.getSlot = function getSlot(slot) {
 	slot = utils.intVal(slot);
-	for (var k in this.items) {
-		if (this.items[k].x === slot) {
-			return this.items[k];
-		}
+	if (!this.index) {
+		this.index = this.getSlots();
 	}
-	return null;
+	return this.index[slot] ? this.index[slot] : null;
 };
 
 
