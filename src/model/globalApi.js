@@ -38,7 +38,7 @@ function getItemType(classTsid) {
 
 function isPlayerOnline(tsid) {
 	var p = pers.get(tsid);
-	return p !== undefined && (p.isConnected() || p.isMovingGs);
+	return p !== undefined && (p.isConnected() || p.isMovingGs !== undefined);
 }
 
 
@@ -501,7 +501,9 @@ exports.apiSendToGroup = function apiSendToGroup(msg, recipients) {
 	recipients = _.map(utils.playersArgToList(recipients), pers.get);
 	async.each(recipients, function send(recipient, cb) {
 		try {
-			recipient.send(msg, true);
+			if (isPlayerOnline(recipient.tsid)) {
+				recipient.send(msg, true);
+			}
 		}
 		catch (err) {
 			log.error(err, 'error delivering group message to %s', recipient.tsid);
