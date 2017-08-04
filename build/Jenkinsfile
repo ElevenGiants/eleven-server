@@ -3,7 +3,7 @@
 node {
 
 	def dockerImage = 'elevengiants/eleven-server-build'
-	def dockerArgs = "-v ${env.WORKSPACE}/npm-cache:/home/node/.npm"
+	def dockerArgs = ''
 	def version = 'UNKNOWN'
 
 	properties([
@@ -50,6 +50,7 @@ node {
 	stage('GS build') {
 		docker.image(dockerImage).inside(dockerArgs) {
 			sh 'node --version && npm --version'
+			sh "npm config set cache ${env.WORKSPACE}/npm-cache"
 			sh 'cd eleven-server && npm install'
 			sh 'cd eleven-server && npm run preproc'
 			def gsVersion = sh(returnStdout: true, script: 'cd eleven-server && npm ls | head -1 | grep -oP "(?<=@)[\\S]+"').trim()
