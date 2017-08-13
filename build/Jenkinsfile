@@ -1,0 +1,101 @@
+#!groovy​
+
+node {
+
+	def dockerImage = 'elevengiants/eleven-server-build'
+	def dockerArgs = ''
+	def version = 'UNKNOWN'
+
+	properties([
+		parameters([
+			string(
+				name: 'gsjsGitRef',
+				defaultValue: 'refs/heads/master',
+				description: 'GSJS Git ref to build/deploy. For DEV or testing environments, use something like "refs/heads/someBranch" to deploy from master or another branch; for PROD, use a tag like "refs/tags/v1.2.3".',
+			),
+			choice(
+				name: 'deployEnv',
+				choices: ['', 'DEV', 'PROD'].join('\n'),
+				description: 'Successful build will be deployed to this environment (leave blank to skip deployment).'
+			),
+		]),
+		pipelineTriggers([])
+	])
+
+	stage('Checkout') {
+		def gsCommit
+		def gsjsCommit
+		sh 'mkdir -p npm-cache'
+		dir('eleven-server') {
+			deleteDir()
+			checkout scm
+			gsCommit = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+		}
+		dir('eleven-gsjs') {
+			deleteDir()
+			checkout scm: [
+				$class: 'GitSCM',
+				userRemoteConfigs: [[url: 'https://github.com/ElevenGiants/eleven-gsjs.git']],
+				branches: [[name: params.gsjsGitRef]]
+			], changelog: false, poll: false
+			gsjsCommit = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+		}
+		version = "GS@${gsCommit}, GSJS@${gsjsCommit}"
+	}
+
+	stage('Docker build') {
+		docker.build dockerImage, './eleven-server/build'
+	}
+
+	stage('GS build') {
+		docker.image(dockerImage).inside(dockerArgs) {
+			sh 'node --version && npm --version'
+			sh "npm config set cache ${env.WORKSPACE}/npm-cache"
+			sh 'cd eleven-server && npm install'
+			sh 'cd eleven-server && npm run preproc'
+			def gsVersion = sh(returnStdout: true, script: 'cd eleven-server && npm ls | head -1 | grep -oP "(?<=@)[\\S]+"').trim()
+			version = "$gsVersion (${version})"
+			currentBuild.description = version
+			sh "cd eleven-server && echo '${version}' > version"
+		}
+	}
+
+	stage('GS tests') {
+		docker.image(dockerImage).inside(dockerArgs) {
+			sh 'cd eleven-server && npm -s run lint'
+			try {
+				sh 'cd eleven-server && npm -s run test -- --reporter xunit --reporter-options output=test-results-unit.xml'
+				sh 'cd eleven-server && npm -s run functest -- --reporter xunit --reporter-options output=test-results-func.xml'
+			}
+			finally {
+				echo 'Submitting test results'
+				junit 'eleven-server/test-results*.xml'
+			}
+		}
+	}
+
+	if (params.deployEnv != '') {
+		stage('Deployment build') {
+			echo 'Cleaning up and rebuilding with --production flag'
+			docker.image(dockerImage).inside(dockerArgs) {
+				sh 'cd eleven-server && rm -rf node_modules && npm install --production'
+			}
+			withCredentials([
+				file(credentialsId: "${params.deployEnv}_CONFIG_FILE", variable: 'CONFIG_FILE_PATH'),
+			]) {
+				sh "cp \"${env.CONFIG_FILE_PATH}\" ${WORKSPACE}/eleven-server/config_local.js"
+			}
+		}
+
+		stage('Deploy') {
+			withCredentials([
+				string(credentialsId: "${params.deployEnv}_SSH_HOST", variable: 'SSH_HOST'),
+				string(credentialsId: "${params.deployEnv}_SSH_PORT", variable: 'SSH_PORT'),
+				string(credentialsId: "${params.deployEnv}_SSH_USER", variable: 'SSH_USER'),
+			]) {
+				echo "Deploying to ${params.deployEnv} environment"
+				sh "${WORKSPACE}/eleven-server/deploy/deploy.sh"
+			}
+		}
+	}
+}
