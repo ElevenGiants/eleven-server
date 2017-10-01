@@ -14,7 +14,7 @@ is probably the least painful way to get up and running. Setup instructions for
 the VM can be found in our internal wiki.
 
 For the adventurous, it should be possible to run the server on most platforms
-that support [Node.js](http://nodejs.org/) v6. At the moment you also need
+that support [Node.js](http://nodejs.org/) 8. At the moment you also need
 [Python 2.7](https://www.python.org/download/releases/2.7/) for the GSJS
 preprocessor script.
 
