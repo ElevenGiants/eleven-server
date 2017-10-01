@@ -858,8 +858,8 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 		}
 		else {
 			path = [{
-				x: dest.x,
-				y: dest.y,
+				x: geo.limitX(dest.x),
+				y: geo.limitY(dest.y),
 				speed: this.options.speed,
 				stopAtEnd: true,
 				transport: 'flying',
