@@ -13,9 +13,10 @@ var CFG = {
 	dbhost: 'localhost',
 	dbport: 28015,
 	dbname: 'eleven_bench',
+	dbtable: 'testdata',
 	dbauth: 'test123',
 };
-var TABLE = 'dummy';
+var TABLE = CFG.dbtable;
 
 var conn;
 
@@ -46,10 +47,7 @@ for (var i = 0; i < 200; i++) {
 suite.asyncSetup = function(done) {
 	async.series([
 		function init(cb) {
-			var tableMapper = function tableMapper(objOrTsid) {
-				return TABLE;
-			};
-			pbe.init(CFG, tableMapper, function (err, res) {
+			pbe.init(CFG, function (err, res) {
 				conn = res;
 				return cb(err);
 			});
