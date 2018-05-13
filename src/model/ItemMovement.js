@@ -776,7 +776,8 @@ ItemMovement.prototype.moveStep = function moveStep() {
 	var nextStep = this.transport(this.path[0]);
 	if (nextStep && !nextStep.forceStop) {
 		if (nextStep.dx < this.getGeo().l || nextStep.dx > this.getGeo().r) {
-			throw new NpcMovementError(this, 'step destination out of bounds');
+			log.warn('movement: step destination out of bounds for %s', this.item);
+			return this.stopMove(MOVE_CB_STATUS.ARRIVED_NEAR);
 		}
 		// actually move and announce the resulting changes
 		this.item.setXY(nextStep.dx, nextStep.dy);
