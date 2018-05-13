@@ -91,6 +91,8 @@ Location.prototype.gsOnLoad = function gsOnLoad() {
 	// on demand, but this makes the logs easier to grok)
 	this.getRQ();
 	this.startUnloadInterval();
+	// remove broken item refs in locations item list
+	pers.clearStaleRefs(this, 'items');
 	// clean up stale instance group references
 	var instances = _.get(this, 'instances.instances', {});
 	for (var k in instances) {
