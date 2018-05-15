@@ -21,7 +21,7 @@ var utils = require('utils');
 
 
 util.inherits(Location, GameObject);
-Location.prototype.TSID_INITIAL = 'L';
+Location.prototype.TSID_INITIAL = GameObject.prototype.TSID_INITIAL_LOCATION;
 
 
 /**
@@ -44,7 +44,7 @@ function Location(data, geo) {
 			data.tsid = geo.getLocTsid();
 		}
 		else {
-			data.tsid = rpc.makeLocalTsid(Location.prototype.TSID_INITIAL);
+			data.tsid = rpc.makeLocalTsid(this.TSID_INITIAL_LOCATION);
 		}
 	}
 	Location.super_.call(this, data);
@@ -320,7 +320,7 @@ Location.prototype.unload = function unload(callback) {
  * @returns {string} TSID of the corresponding {@link Geo} object
  */
 Location.prototype.getGeoTsid = function getGeoTsid() {
-	return Geo.prototype.TSID_INITIAL + this.tsid.slice(1);
+	return this.TSID_INITIAL_GEO + this.tsid.slice(1);
 };
 
 

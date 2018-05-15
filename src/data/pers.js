@@ -36,6 +36,7 @@ module.exports = {
 	registerProxy: registerProxy,
 	postRequestProc: postRequestProc,
 	clearStaleRefs: clearStaleRefs,
+	extract: extract,
 };
 
 
@@ -491,4 +492,59 @@ function unload(tsid, logmsg) {
 		cache[tsid].suspendGsTimers();
 		delete cache[tsid];
 	}
+}
+
+
+/**
+ * Returns an array of objects containing the non-proxied data
+ * for the passed in tsid and all referenced objects if
+ * desired.
+ *
+ * @param {tsid} tsid tsid of the game object to extract
+ * @param {bool} includeRefs if true, extract referenced objects
+ * @returns {array} includes an array of the requested object
+ * 		and referenced objects if requested
+ * @private
+ */
+function extract(tsid, includeRefs, ret) {
+	assert(pbe, 'persistence back-end not set');
+	log.debug('pers.extract: %s', tsid);
+
+	var checkRecurse = function checkRecurse(obj) {
+		// skip non-object properties
+		if (!_.isObject(obj)) return;
+		// skip if this is not one of the game object types we need to pick up
+		var isGO = _.isString(obj.tsid) && obj.tsid.length;
+		var type = isGO ? obj.tsid[0] : null;
+		if (isGO && type !== 'P' && type !== 'Q') {
+			extract(obj.tsid, false, ret);
+		}
+	};
+
+	ret = ret || [];
+	var dataObj = get(tsid);
+	var data = orProxy.refify(dataObj.serialize ? dataObj.serialize() : dataObj);
+	if (!_.isObject(data)) {
+		log.info(new DummyError(), 'no or invalid data for %s', tsid);
+		return ret;
+	}
+	ret.push(data);
+	if (utils.isLoc(tsid)) {
+		extract('G' + tsid.slice(1), false, ret);
+	}
+	if (includeRefs) {
+		for (var k in data) {
+			// optimization: don't follow well-known "parent" references
+			if (k === 'owner' || k === 'container' || k === 'location') continue;
+			var v = data[k];
+			// recurse through arrays
+			if (_.isArray(v)) {
+				for (var i = 0; i < v.length; i++) {
+					checkRecurse(v[i]);
+				}
+			}
+			checkRecurse(v);
+		}
+	}
+	return ret;
 }

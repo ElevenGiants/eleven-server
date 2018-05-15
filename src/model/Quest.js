@@ -13,7 +13,7 @@ var utils = require('utils');
 
 
 util.inherits(Quest, GameObject);
-Quest.prototype.TSID_INITIAL = 'Q';
+Quest.prototype.TSID_INITIAL = GameObject.prototype.TSID_INITIAL_QUEST;
 
 
 /**

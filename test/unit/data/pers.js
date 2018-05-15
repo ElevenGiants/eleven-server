@@ -321,4 +321,51 @@ suite('pers', function () {
 			assert.sameMembers(getLoadedRefs(obj), ['O', 'Q1', 'B1', 'B2']);
 		});
 	});
+
+	suite('extract', function () {
+		test('loads object', function () {
+			var o = {tsid: 'ITEST', some: 'data'};
+			pbeMock	.write([o]);
+			var extractData = pers.extract('ITEST');
+			assert.deepEqual(extractData, [o]);
+		});
+
+		test('loads referenced objects', function () {
+			var b = {tsid: 'BTEST', some: 'data', items: []};
+			var i1 = {tsid: 'ITEST1', data: 'item1'};
+			var i2 = {tsid: 'ITEST2', data: 'item2'};
+			b.items.push(i1, i2);
+			pbeMock.write([i1, i2, b]);
+			var extractData	= pers.extract('BTEST', true);
+			assert.deepEqual(extractData, [b, i1, i2]);
+		});
+
+		test('ignores references when not requested', function () {
+			var b = {tsid: 'BTEST', some: 'data', items: []};
+			var i1 = {tsid: 'ITEST1', data: 'item1'};
+			var i2 = {tsid: 'ITEST2', data: 'item2'};
+			b.items.push(i1, i2);
+			pbeMock.write([i1, i2, b]);
+			var extractData	= pers.extract('BTEST');
+			assert.deepEqual(extractData, [b]);
+		});
+
+		test('includes geo data when requesting location', function () {
+			var l = {tsid: 'LTEST', some: 'data'};
+			var g = {tsid: 'GTEST', geo: 'data'};
+			pbeMock.write([l, g]);
+			var extractData = pers.extract('LTEST');
+			assert.deepEqual(extractData, [l, g]);
+		});
+
+		test('ignores referenced player', function () {
+			var l = {tsid: 'LTEST', some: 'data', players: []};
+			var g = {tsid: 'GTEST', geo: 'data'};
+			var p = {tsid: 'PTEST', player: 'data'};
+			l.players.push(p);
+			pbeMock.write([p, l, g]);
+			var extractData = pers.extract('LTEST');
+			assert.deepEqual(extractData, [l, g]);
+		});
+	});
 });

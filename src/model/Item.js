@@ -18,7 +18,7 @@ var ItemMovement = require('model/ItemMovement');
 
 
 util.inherits(Item, GameObject);
-Item.prototype.TSID_INITIAL = 'I';
+Item.prototype.TSID_INITIAL = GameObject.prototype.TSID_INITIAL_ITEM;
 
 
 // define some derived properties (used by GSJS)

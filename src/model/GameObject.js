@@ -12,9 +12,21 @@ var util = require('util');
 var utils = require('utils');
 var RC = require('data/RequestContext');
 var RQ = require('data/RequestQueue');
+var pers = require('data/pers');
 
 
-GameObject.prototype.TSID_INITIAL = 'G';
+GameObject.prototype.TSID_INITIAL_GAME_OBJECT = 'G';
+GameObject.prototype.TSID_INITIAL_BAG = 'B';
+GameObject.prototype.TSID_INITIAL_DATA_CONTAINER = 'D';
+GameObject.prototype.TSID_INITIAL_GEO = 'G';
+GameObject.prototype.TSID_INITIAL_GROUP = 'R';
+GameObject.prototype.TSID_INITIAL_ITEM = 'I';
+GameObject.prototype.TSID_INITIAL_LOCATION = 'L';
+GameObject.prototype.TSID_INITIAL_PLAYER = 'P';
+GameObject.prototype.TSID_INITIAL_QUEST = 'Q';
+
+GameObject.prototype.TSID_INITIAL = GameObject.prototype.TSID_INITIAL_GAME_OBJECT;
+
 
 /**
  * Generic constructor for both instantiating an existing game object
@@ -518,5 +530,78 @@ GameObject.prototype.copyProps = function copyProps(from, skipList) {
 			// properties on the first level
 			GameObject.prototype.copyProps.call(this[key], val);
 		}
+	}
+};
+
+
+/**
+ * Updates the object with data from a javascript object.
+ * Used by god page updates.
+ *
+ * @param {object} data update source
+ */
+GameObject.prototype.updateProps = function updateProps(data) {
+	var changed = false;
+	for (var k in data) {
+		var v = data[k];
+		if (typeof v === 'object') {
+			if (v.__isORP || v.__isGO) {
+				if (this[k].tsid !== v.tsid) {
+					log.debug('changing objref from %s to %s', this[k], v);
+					this[k] = v;
+					changed = true;
+				}
+			}
+			else if (typeof this[k] === 'object') {
+				if (GameObject.prototype.updateProps.call(this[k], v)) changed = true;
+			}
+			else {
+				log.debug('type mismatch: %s vs. %s', typeof v, typeof this[k]);
+			}
+		}
+		else if (this[k] !== v) {
+			log.trace('changing %s from %s to %s', k, this[k], v);
+			this[k] = v;
+			changed = true;
+		}
+	}
+	if (changed) {
+		if (utils.isItem(this)) {
+			this.setXY(this.x, this.y);
+			this.queueChanges();
+		}
+		if (this.onPropsChanged) {
+			this.onPropsChanged();
+		}
+		if (this.broadcastState) {
+			this.broadcastState();
+		}
+	}
+};
+
+
+/**
+ * Gets the TSID of the {@link Geo} object for this location.
+ *
+ * @returns {string} TSID of the corresponding {@link Geo} object
+ */
+GameObject.prototype.getLocTsid = function getLocTsid() {
+	return this.TSID_INITIAL_LOCATION + this.tsid.slice(1);
+};
+
+
+
+/**
+ * Updates the current object with data from the passed in object.
+ * If the current object is a Geo, have the corresponding Location
+ * process the change.
+ *
+ * @param {GameObject} data copy source
+ */
+GameObject.prototype.replaceDynamic = function replaceDynamic(data) {
+	this.copyProps(data);
+	if (utils.isGeo(this)) {
+		var loc = pers.get(this.getLocTsid());
+		loc.updateGeo(this);
 	}
 };

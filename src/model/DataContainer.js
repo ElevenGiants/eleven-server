@@ -14,7 +14,7 @@ var utils = require('utils');
 
 
 util.inherits(DataContainer, GameObject);
-DataContainer.prototype.TSID_INITIAL = 'D';
+DataContainer.prototype.TSID_INITIAL = GameObject.prototype.TSID_INITIAL_DATA_CONTAINER;
 
 
 /**

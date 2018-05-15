@@ -96,6 +96,51 @@ suite('GameObject', function () {
 	});
 
 
+	suite('updateProps', function () {
+		test('updates provided props', function () {
+			var obj = new GameObject({
+				tsid: 'GXYZ',
+				class_tsid: 'something',
+				deep_item: {
+					level: 1,
+					deeper_item: {level: 2},
+				},
+			});
+			obj.updateProps({class_tsid: 'something_else'});
+			assert.strictEqual(obj.class_tsid, 'something_else');
+		});
+
+		test('updates nested props', function () {
+			var obj = new GameObject({
+				tsid: 'GXYZ',
+				class_tsid: 'something',
+				deep_item: {
+					level: 1,
+					deeper_item: {level: 2},
+				},
+			});
+			obj.updateProps({deep_item: {level: 2}});
+			assert.strictEqual(obj.deep_item.level, 2);
+		});
+
+		test('only updates provided props', function () {
+			var obj = new GameObject({
+				tsid: 'GXYZ',
+				class_tsid: 'something',
+				deep_item: {
+					level: 1,
+					deeper_item: {level: 2},
+				},
+			});
+			obj.updateProps({deep_item: {level: 2}});
+			assert.strictEqual(obj.tsid, 'GXYZ');
+			assert.strictEqual(obj.class_tsid, 'something');
+			assert.strictEqual(obj.deep_item.level, 2);
+			assert.strictEqual(obj.deep_item.deeper_item.level, 2);
+		});
+	});
+
+
 	suite('serialize', function () {
 
 		test('skips properties prefixed with "!"', function () {

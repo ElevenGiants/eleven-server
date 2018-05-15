@@ -6,6 +6,7 @@ module.exports = Bag;
 var _ = require('lodash');
 var assert = require('assert');
 var IdObjRefMap = require('model/IdObjRefMap');
+var GameObject = require('model/GameObject');
 var Item = require('model/Item');
 var pers = require('data/pers');
 var util = require('util');
@@ -13,7 +14,7 @@ var utils = require('utils');
 
 
 util.inherits(Bag, Item);
-Bag.prototype.TSID_INITIAL = 'B';
+Bag.prototype.TSID_INITIAL = GameObject.prototype.TSID_INITIAL_BAG;
 
 
 /**

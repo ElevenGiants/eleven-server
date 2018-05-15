@@ -93,4 +93,12 @@ module.exports = {
 		// the GSJS configuration variant to load
 		config: 'config_prod',
 	},
+	god: {
+		hidden_properties: ['ts', 'tsid', 'class_tsid', 'label',
+			'pcont',
+			'version', 'letime', 'rbtime', 'load_time', 'upd_time',
+			'lastUpdateTime', 'upd_gs',
+			'gstimers', 'gsintervals',
+			'package_intervals']
+	},
 };
