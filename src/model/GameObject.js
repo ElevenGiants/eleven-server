@@ -108,7 +108,7 @@ GameObject.prototype.serialize = function serialize() {
 		var k = keys[i];
 		if (k[0] !== '!') {
 			var val = this[k];
-			if (!_.isFunction(val)) {
+			if ((val && val.__isORP) || !_.isFunction(val)) {
 				ret[k] = val;
 			}
 		}
