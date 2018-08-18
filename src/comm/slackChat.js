@@ -196,6 +196,10 @@ function onSlackMessage(msg) {
 		log.error({data: msg}, 'could not retrieve Slack user');
 		return;
 	}
+	if (user.id === slack.activeUserId) {
+        // don't echo!
+        return;
+    }
 	var out = {
 		type: 'pc_groups_chat',
 		tsid: groupTsid,
