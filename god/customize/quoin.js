@@ -27,7 +27,49 @@ exports.optionsOverride = {
 						'1': 'yes',
 					}
 				},
+				benefit: {
+					hidden: true,
+				},
+				benefit_ceil: {
+					hidden: true,
+				},
+				benefit_floor: {
+					hidden: true,
+				},
+				is_random: {
+					hidden: true,
+				},
+				location_event_id: {
+					hidden: true,
+				},
+				marker: {
+					hidden: true,
+				},
+				owner: {
+					hidden: true,
+				},
+				respawn_time: {
+					hidden: true,
+				},
+				uses_remaining: {
+					hidden: true,
+				},
 			},
 		},
+		state: {
+			hidden: true,
+		},
+		spawned: {
+			hidden: true,
+		},
+		only_visible_to: {
+			hidden: true,
+		},
+		isHidden: {
+			hidden: true,
+		},
 	},
+}
+exports.schemaOrder = {
+	instanceProps: {_self: ['class_name', 'type', 'giant']},
 }

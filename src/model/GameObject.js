@@ -540,32 +540,38 @@ GameObject.prototype.copyProps = function copyProps(from, skipList) {
  *
  * @param {object} data update source
  */
-GameObject.prototype.updateProps = function updateProps(data) {
-	var changed = false;
-	for (var k in data) {
-		var v = data[k];
-		if (typeof v === 'object') {
-			if (v.__isORP || v.__isGO) {
-				if (this[k].tsid !== v.tsid) {
-					log.debug('changing objref from %s to %s', this[k], v);
-					this[k] = v;
-					changed = true;
+GameObject.prototype.updateProps = function updateProps(newData) {
+	var updateSub = function updateSub(start, data) {
+		var changed = false;
+		for (var k in data) {
+			var v = data[k];
+			if (typeof v === 'object') {
+				if (v.__isORP || v.__isGO) {
+					if (start[k].tsid !== v.tsid) {
+						log.debug('changing objref from %s to %s', start[k], v);
+						start[k] = v;
+						changed = true;
+					}
+				}
+				else if (typeof start[k] === 'object') {
+					if (updateSub(start[k], v)) {
+						changed = true;
+					}
+				}
+				else {
+					log.debug('type mismatch: %s vs. %s', typeof v, typeof start[k]);
 				}
 			}
-			else if (typeof this[k] === 'object') {
-				if (GameObject.prototype.updateProps.call(this[k], v)) changed = true;
-			}
-			else {
-				log.debug('type mismatch: %s vs. %s', typeof v, typeof this[k]);
+			else if (start[k] !== v) {
+				log.trace('changing %s from %s to %s', k, start[k], v);
+				start[k] = v;
+				changed = true;
 			}
 		}
-		else if (this[k] !== v) {
-			log.trace('changing %s from %s to %s', k, this[k], v);
-			this[k] = v;
-			changed = true;
-		}
-	}
-	if (changed) {
+		return changed;
+	};
+
+	if (updateSub(this, newData)) {
 		if (utils.isItem(this)) {
 			this.setXY(this.x, this.y);
 			this.queueChanges();
