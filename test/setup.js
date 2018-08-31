@@ -60,6 +60,9 @@ function initConfig() {
 		gsjs: {
 			config: 'config_prod',
 		},
+		cache: {
+			pathfinding: './test/pathfinding.json',
+		},
 	}, {
 		gsid: 'gs01-01',
 	});

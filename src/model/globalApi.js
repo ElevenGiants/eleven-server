@@ -11,6 +11,7 @@
 var _ = require('lodash');
 var assert = require('assert');
 var async = require('async');
+var fs = require('fs');
 var gsjsBridge = require('model/gsjsBridge');
 var Property = require('model/Property');
 var OrderedHash = require('model/OrderedHash');
@@ -31,6 +32,10 @@ var slackChat = require('comm/slackChat');
 var crypto = require('crypto');
 var util = require('util');
 var orProxy = require('data/objrefProxy');
+var Graph = require('node-dijkstra');
+
+// initialize global variable, will be filled in reloadDataForGlobalPathFinding
+var pathFindingData;
 
 
 function getItemType(classTsid) {
@@ -121,6 +126,129 @@ function callFor(fname, targets, args, onlineOnly) {
 		}
 	}
 	return ret;
+}
+
+
+/* eslint-disable max-depth */
+/**
+ * Loads signpost data from all public locations and creates a Graph.
+ *
+ * This Graph is stored in the global variable `pathFindingData` and can be used
+ * to find the shortest path on the map.
+ */
+function reloadDataForGlobalPathFinding(skipCache) {
+	log.info('reloading data for global pathfinding');
+	var pMap;
+	// check pathfinding cache
+	if (!skipCache) {
+		try {
+			pMap = JSON.parse(fs.readFileSync(config.get('cache:pathfinding')));
+		}
+		catch (e) {
+			log.warn(e, 'failed to load pathfinding cache file');
+		}
+	}
+
+	// generate new pathfinding data if empty
+	if (!pMap) {
+		pMap = {};
+		var gsjsConfig = gsjsBridge.getConfig();
+		// From the list of public hubs...
+		for (var i = 0; i < gsjsConfig.public_hubs.length; i++) {
+			var mapData = gsjsConfig.data_maps.maps[gsjsConfig.public_hubs[i]];
+			// ...get map data for each hub...
+			for (var j = 0; j < Object.keys(mapData.objs).length; j++) {
+				var mapObjData = mapData.objs[j];
+				// ...check if it is a street...
+				if (mapObjData.type === 'S') {
+					if (!pMap[mapObjData.tsid.slice(1)]) {
+						pMap[mapObjData.tsid.slice(1)] = {};
+					}
+					try {
+						// ...load the geo and store it's signpost connects.
+						var loc = pers.view('G' + mapObjData.tsid.slice(1));
+						var signposts = loc.layers.middleground.signposts;
+						for (var name in signposts) {
+							var connects = signposts[name].connects;
+							for (var k = 0; k < Object.keys(connects).length; k++) {
+								var connect = connects[k].target.tsid;
+								pMap[mapObjData.tsid.slice(1)][connect.slice(1)] = 1;
+							}
+						}
+					}
+					catch (e) {
+						log.warn(e, 'failed to load street geo %s for pathing',
+							mapObjData.tsid);
+					}
+				}
+			}
+		}
+
+		// write generated pathfinding data to a cache file
+		try {
+			fs.writeFileSync(config.get('cache:pathfinding'), JSON.stringify(pMap));
+		}
+		catch (e) {
+			log.warn(e, 'failed to save pathfinding cache file');
+		}
+	}
+
+	pathFindingData = new Graph(pMap);
+	log.info('reloaded data for global pathfinding');
+}
+/* eslint-enable max-depth */
+
+
+/**
+ * Use Dijkstra to find the shortest path between "from" and "to" (without the leading "G")
+ *
+ * @param {string} from starting TSID of the path
+ * @param {string} to ending  TSID of the path
+ * @returns {array} the shortest path between "from" and "to"
+ */
+function findShortestPath(from, to) {
+	// TODO this is just a dummy value, we need the actual location of the signpost within the streets here
+	var signpostLocation = 5;
+	// if either "from" or "to" are missing, return an empty list immediately
+	if (from === undefined || to === undefined || from === '' || to === '') {
+		return [];
+	}
+	// if the global variable has not been filled with the data of all paths yet...
+	if (!pathFindingData) {
+		// ... then do that now
+		reloadDataForGlobalPathFinding();
+	}
+	var path = [];
+	try {
+		// find the shortest path in the graph using all but the first letter, which is the "G" for "GEO"
+		var result = pathFindingData.path(from.substring(1), to.substring(1));
+
+		if (result && result.length) {
+			// special handling for the first and the last node on the route
+			for (var i = 0; i < result.length; i++) {
+				var node = result[i];
+				// the TSID in the result needs an L for "location"
+				var tsid = 'L' + node;
+				// the first entry only has a "to"
+				if (i === 0) {
+					path.push({tsid: tsid, to: signpostLocation});
+				// the last node only has a "from"
+				}
+				else if (i === result.length - 1) {
+					path.push({tsid: tsid, from: signpostLocation});
+				// all other nodes have "to" and "from"
+				}
+				else {
+					path.push({tsid: tsid, to: signpostLocation, from: signpostLocation});
+				}
+			}
+		}
+	}
+	catch (e) {
+		log.error(e, 'findShortestPath error when trying to find a path between these TSIDs:', from, to);
+	}
+
+	return path;
 }
 
 
@@ -926,26 +1054,76 @@ exports.apiAdminCall = function apiAdminCall(methodName, args) {
 };
 
 
-exports.apiFindGlobalPathX = function apiFindGlobalPathX(from, to) {
-	log.debug('global.apiFindGlobalPathX(%s, %s)', from, to);
-	//TODO: implement&document me
-	log.warn('TODO globa.apiFindGlobalPathX not implemented yet');
-	return [];
-};
-
-
-exports.apiFindShortestGlobalPath = function apiFindShortestGlobalPath(from, tos) {
-	log.debug('global.apiFindShortestGlobalPath(%s, %s)', from,
-		Array.prototype.slice.call(tos).join());
-	//TODO: implement&document me
-	log.warn('TODO global.apiFindShortestGlobalPath not implemented yet');
-	return [];
-};
-
-
+/**
+ * API function to load/reload the Graph with pathFindingData.
+ * This is called by the GSJS when doors/signposts are updated.
+ */
 exports.apiReloadDataForGlobalPathFinding = function apiReloadDataForGlobalPathFinding() {
-	log.debug('global.apiReloadDataForGlobalPathFinding()');
-	log.warn('TODO global.apiReloadDataForGlobalPathFinding not implemented yet');
+	reloadDataForGlobalPathFinding(true);
+};
+
+
+/**
+ * Returns path as array of objects containing location TSIDs and relative
+ * positions(percentage of street length) of signposts for the transitions.
+ * If path cannot be found then empty array is returned.
+ * The non-empty path is returned in following form:
+ *   [
+ *       {tsid:'current_loc_tsid',to:5}
+ *       {tsid:'loctsid1',from:47, to:98},
+ *       ... ,
+ *       {tsid:'destination_loc_tsid', from:5}
+ *   ]
+ *
+ * @param {string} from TSID of the starting location
+ * @param {string} to TSID of the target location
+ */
+exports.apiFindGlobalPathX = function apiFindGlobalPathX(from, to) {
+	return findShortestPath(from, to);
+};
+
+
+/**
+ * Returns shortest path to one of toArrayOfLocationRefsOrTSIDs as
+ * array of objects containing location TSIDs and relative positions
+ * (percentage of street length) of signposts for the transitions.
+ * If path cannot be found then empty array is returned.
+ *
+ * The non-empty path is returned in following form:
+ * [
+ *     {tsid:'current_loc_tsid',to:5}
+ *     {tsid:'loctsid1',from:47, to:98},
+ *     ...,
+ *     {tsid:'destination_loc_tsid', from:5}
+ * ]
+ *
+ * @param {string} from TSID of the starting location
+ * @param {string} tos ArrayOfLocationRefsOrTSIDs, should be provided in following forms:
+ *     ['TSID1', 'TSID2', ... ,'TSID1N']
+ * or
+ *     [OBJREF1, OBJREF2, ... ,OBJREFN]
+ */
+exports.apiFindShortestGlobalPath = function apiFindShortestGlobalPath(from, tos) {
+	// if the global variable has not been filled with the data of all paths yet...
+	if (!pathFindingData) {
+		// ... then do that now
+		reloadDataForGlobalPathFinding();
+	}
+	var shortestPath = [];
+	for (var i = 0; i <= tos.length - 1; i++) {
+		var to = tos[i];
+		// if tos is a list of ObjRefs
+		// apparently this is not actually used in the GSJS
+		if (typeof to === 'object') {
+			to = to.tsid;
+		}
+		// find the shortest of all paths
+		var currentPath = findShortestPath(from, to);
+		if (currentPath.length < shortestPath.length || shortestPath.length === 0) {
+			shortestPath = currentPath;
+		}
+	}
+	return shortestPath;
 };
 
 

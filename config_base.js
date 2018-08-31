@@ -101,4 +101,8 @@ module.exports = {
 			'gstimers', 'gsintervals',
 			'package_intervals']
 	},
+	cache: {
+		// cached data files. right now this just contains the pathfinding file
+		pathfinding: '../pathfinding.json',
+	},
 };
