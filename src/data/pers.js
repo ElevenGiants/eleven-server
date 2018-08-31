@@ -32,6 +32,7 @@ module.exports = {
 	init: init,
 	shutdown: shutdown,
 	get: get,
+	view: view,
 	create: create,
 	registerProxy: registerProxy,
 	postRequestProc: postRequestProc,
@@ -118,6 +119,21 @@ function shutdown(done) {
 		log.info('persistence layer shutdown complete');
 		done();
 	});
+}
+
+
+/**
+ * Loads a COPY of the game object with the given TSID from persistence.
+ * This object will not be stored in cache, nor will any timers be run. This
+ * function exists purely to get information from persisted objects.
+ *
+ * @param {string} tsid TSID of the object to load
+ * @returns {Object|null} the requested object, or `null` if no
+ *          object data was found for the given TSID
+ */
+function view(tsid) {
+	assert(pbe, 'persistence back-end not set');
+	return pbe.read(tsid);
 }
 
 

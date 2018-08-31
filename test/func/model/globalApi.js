@@ -145,4 +145,74 @@ suite('globalApi', function () {
 			}, done);
 		});
 	});
+
+
+	suite('apiFindGlobalPathX', function () {
+
+		test('returns an empty list when something went wrong', function (done) {
+			new RC().run(function () {
+				var path = globalApi.apiFindGlobalPathX();
+				assert.deepEqual(path, [], 'both params missing');
+				path = globalApi.apiFindGlobalPathX('foo', 'bar');
+				assert.deepEqual(path, [], 'invalid TSIDs');
+				path = globalApi.apiFindGlobalPathX('foo', 'bar');
+				assert.deepEqual(path, [], 'invalid TSIDs');
+				path = globalApi.apiFindGlobalPathX('LA9DNT3I2U22RS7');
+				assert.deepEqual(path, [], 'only "from" was a valid TSID');
+				path = globalApi.apiFindGlobalPathX('', 'LA9DNT3I2U22RS7');
+				assert.deepEqual(path, [], 'only "to" was a valid TSID');
+				path = globalApi.apiFindGlobalPathX('LA9DNT3I2U22RS7', 'LA9DNT3I2U22RS7');
+				assert.deepEqual(path, [], '"from" and "to" are the same street');
+			}, done);
+		});
+
+		test('finds the shortest path from one street to another', function (done) {
+			new RC().run(function () {
+				var path = globalApi.apiFindGlobalPathX('LA9DNT3I2U22RS7', 'LA9QKFSST732VNK');
+				assert.deepEqual(path, [{to: 5, tsid: 'LA9DNT3I2U22RS7'}, {from: 5, tsid: 'LA9QKFSST732VNK'}], 'Nandak Intention to Punpun Snug (1 street)');
+				var expected = [{
+					tsid: 'LDOFE9L72S03U5T',
+					to: 5,
+				},
+				{
+					tsid: 'LDORU6QC6S035VQ',
+					to: 5,
+					from: 5,
+				},
+				{
+					tsid: 'LDO3QTOUUR03ELC',
+					to: 5,
+					from: 5,
+				},
+				{
+					tsid: 'LDO42D61VR03PM6',
+					to: 5,
+					from: 5,
+				},
+				{
+					tsid: 'LDOF4NU42S03R63',
+					to: 5,
+					from: 5,
+				},
+				{
+					tsid: 'LDO38FFPUR035D6',
+					to: 5,
+					from: 5,
+				},
+				{
+					tsid: 'LUVSMJ94HKF2V3J',
+					from: 5,
+				}];
+				path = globalApi.apiFindGlobalPathX('LDOFE9L72S03U5T', 'LUVSMJ94HKF2V3J');
+				assert.deepEqual(path, expected, 'Tamasco Roko to Karka Dakam (6 streets, different maps)');
+			}, done);
+		});
+
+		test('finds the shortest path from one street to one of many other streets', function (done) {
+			new RC().run(function () {
+				var path = globalApi.apiFindShortestGlobalPath('LA9DNT3I2U22RS7', ['LA9QKFSST732VNK', 'LDOFE9L72S03U5T']);
+				assert.deepEqual(path, [{to: 5, tsid: 'LA9DNT3I2U22RS7'}, {from: 5, tsid: 'LA9QKFSST732VNK'}], 'Nandak Intention to Punpun Snug (1 street) should be shorter than the path to Tamasco Roko');
+			}, done);
+		});
+	});
 });
