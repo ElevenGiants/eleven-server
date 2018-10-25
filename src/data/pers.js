@@ -504,6 +504,9 @@ function del(tsids, logtag, callback) {
 function unload(tsid, logmsg) {
 	log.debug('pers.unload: %s%s', tsid, logmsg ? ' (' + logmsg + ')' : '');
 	if (tsid in cache) {
+		// check to see if the player is gs moving and send the relevant
+		// messages if they are.
+		if (cache[tsid].sendGsMoveMsg) cache[tsid].sendGsMoveMsg();
 		// suspend timers/intervals
 		cache[tsid].suspendGsTimers();
 		delete cache[tsid];

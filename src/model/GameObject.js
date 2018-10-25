@@ -136,6 +136,18 @@ GameObject.prototype.toString = function toString() {
 
 
 /**
+ * Checks to see if two GameObjects are equal. This is currently just by
+ * comparing their TSIDs.
+ *
+ * @param {GameObject} [obj] object to compare against
+ * @returns {boolean} `true` if the GOs are the same
+ */
+GameObject.prototype.equals = function equals(obj) {
+	return obj instanceof GameObject ? this.tsid === obj.tsid : false;
+};
+
+
+/**
  * Schedules this object to be released from the live object cache after the
  * current request.
  */

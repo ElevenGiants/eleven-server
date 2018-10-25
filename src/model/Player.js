@@ -407,22 +407,27 @@ Player.prototype.gsMoveCheck = function gsMoveCheck(newLocId) {
 		hostport: gsConf.hostPort,
 		token: token,
 	});
-	// set up next request that will tell the client to reconnect to the new GS
-	var self = this;
-	this.getRQ().push('unload', this.unload.bind(this),
-		function triggerReconnect() {
-			if (self.isConnected()) {
-				// make sure remaining announcements are sent to client
-				self.send({type: 'location_event'}, true, true);
-				self.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
-				self.session = null;  // cut the cord
-			}
-		}, {waitPers: true, obj: this, session: this.session});
+	// unload the player, which will also send the reconnect message.
+	this.getRQ().push('unload', this.unload.bind(this), undefined,
+		{waitPers: true, obj: this, session: this.session});
 	var ret = utils.shallowCopy(gsConf);
 	ret.token = token;
 	return ret;
 };
 
+
+/**
+ * Checks to see if this player needs to receive the CONNECT_TO_ANOTHER_SERVER
+ * message before being unloaded from the server. This needs to be done just
+ * before the player is unloaded otherwise we will not have access to the session.
+ */
+Player.prototype.sendGsMoveMsg = function sendGsMoveMsg() {
+	if (this.isMovingGs) {
+		log.debug('%s is moving gameservers. sending connect message.', this);
+		this.send({type: 'location_event'}, true, true);
+		this.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
+	}
+};
 
 
 /**

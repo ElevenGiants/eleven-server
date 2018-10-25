@@ -15,6 +15,7 @@ var domain = require('domain');
 var events = require('events');
 var pers = require('data/pers');
 var rpc = require('data/rpc');
+var orp = require('data/objrefProxy');
 var util = require('util');
 var RQ = require('data/RequestQueue');
 var gsjsBridge = require('model/gsjsBridge');
@@ -270,7 +271,7 @@ Session.prototype.processRequest = function processRequest(req) {
 	log.trace({data: req}, 'handling %s request', req.type);
 	var abort = this.preRequestProc(req);
 	if (abort) return;
-	this.gsjsProcessMessage(this.pc, req);
+	this.gsjsProcessMessage(orp.makeProxy(this.pc), req);
 	this.postRequestProc(req);
 };
 

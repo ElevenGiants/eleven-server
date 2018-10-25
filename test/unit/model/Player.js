@@ -366,9 +366,8 @@ suite('Player', function () {
 			'unloads player', function (done) {
 			rpcMock.reset(false);
 			var p = new Player({tsid: 'P1', onGSLogout: _.noop});
-			var unloaded = false;
 			p.unload = function () {
-				unloaded = true;
+				p.sendGsMoveMsg();
 			};
 			var msgs = [];
 			p.session = {send: function send(msg) {
@@ -382,7 +381,6 @@ suite('Player', function () {
 						});
 						break;
 					case 1:
-						assert.isTrue(unloaded);
 						assert.deepEqual(msg, {
 							type: 'server_message',
 							action: 'CLOSE',
@@ -396,6 +394,7 @@ suite('Player', function () {
 				if (msgs.length > 1) return done();
 			}};
 			new RC().run(function () {
+				p.isMovingGs = true;
 				p.gsMoveCheck('LREMOTE');
 			});
 		});
