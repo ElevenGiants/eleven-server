@@ -335,14 +335,18 @@ function sendRequest(gsid, rpcFunc, args, callback) {
 		});
 	}
 	else {
+        var rc = RC.getContext(true);
 		try {
+			if (rc && rc.rq) rc.rq.rpcWait = true;
 			var res = wait.forMethod(client, 'request', rpcFunc, rpcArgs);
+			if (rc && rc.rq) delete rc.rq.rpcWait;
 			// wrapping to handle the special case where res is an objref itself
 			var wrap = {res: res};
 			orProxy.proxify(wrap);
 			return wrap.res;
 		}
 		catch (e) {
+            if (rc && rc.rq) delete rc.rq.rpcWait;
 			throw new RpcError('error calling ' + logmsg, e);
 		}
 	}
