@@ -197,9 +197,9 @@ function onSlackMessage(msg) {
 		return;
 	}
 	if (user.id === slack.activeUserId) {
-        // don't echo!
-        return;
-    }
+		// don't echo!
+		return;
+	}
 	var out = {
 		type: 'pc_groups_chat',
 		tsid: groupTsid,

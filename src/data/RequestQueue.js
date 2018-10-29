@@ -203,8 +203,10 @@ RequestQueue.prototype.push = function push(tag, func, callback, options) {
 	if (callback) entry.callback = callback;
 	if (options) entry.options = options;
 	// handle requests belonging to the same context as the currently active
-	// request (typically nested RPCs) directly, to avoid deadlocks
-	if (this.inProgress && tag && tag.startsWith(this.inProgress.tag)) {
+	// request (typically nested RPCs) or requests where the RQ is currently busy
+	// waiting for an RPC response directly, to avoid deadlocks
+	if (this.inProgress && tag && tag.startsWith(this.inProgress.tag) ||
+		this.rpcWait) {
 		entry.nested = true;
 		setImmediate(this.handle.bind(this, entry, true));
 	}
