@@ -46,4 +46,7 @@ function handleConnect(socket) {
 		}
 		socket.end();
 	});
+	socket.on('error', function onError(err) {
+		log.error(err, 'policy server error: %s', err.message);
+	});
 }
