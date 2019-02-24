@@ -251,6 +251,10 @@ function refify(data, ret) {
 			ret[k] = v;
 		}
 		else if (v.__isORP || v.__isGO) {
+			// do not make refs for deleted GOs.
+			if (!v.__isORP && v.deleted) {
+				continue;
+			}
 			ret[k] = makeRef(v);
 		}
 		else {

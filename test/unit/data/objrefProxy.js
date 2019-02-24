@@ -258,5 +258,12 @@ suite('objrefProxy', function () {
 			assert.isFalse('label' in refd, 'resulting objref does not have ' +
 				'a "label" property');
 		});
+
+		test('does not refify objects scheduled for deletion', function() {
+			var o = [new GameObject({tsid: 'IDELETEME'})];
+			o[0].apiDelete();
+			var refd = orproxy.refify(o);
+			assert.strictEqual(refd.length, 0);
+		});
 	});
 });
