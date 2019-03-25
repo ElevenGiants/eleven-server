@@ -330,6 +330,10 @@ Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
 			for (k in prev.items) {
 				it = prev.items[k];
 				if (it && it.onContainerItemRemoved) {
+					if (it.deleted) {
+						log.warn('skipping onContainerItemRemoved for deleted item %s', it);
+						continue;
+					}
 					it.rqPush(it.onContainerItemRemoved, this, cont);
 				}
 			}
@@ -339,6 +343,10 @@ Item.prototype.sendContChangeEvents = function sendContChangeEvents(prev) {
 		for (k in cont.items) {
 			it = cont.items[k];
 			if (it && it.onContainerItemAdded) {
+				if (it.deleted) {
+					log.warn('skipping onContainerItemAdded for deleted item %s', it);
+					continue;
+				}
 				it.rqPush(it.onContainerItemAdded, this, prev);
 			}
 		}
