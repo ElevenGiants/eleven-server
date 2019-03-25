@@ -24,6 +24,10 @@ function IdObjRefMap(data) {
 	}
 	for (var i = 0; data && i < data.length; i++) {
 		var obj = data[i];
+		if (!_.isObject(obj)) {
+			// ignore values that aren't objects
+			continue;
+		}
 		if (obj.__isORP) {
 			orProxy.setupObjRefProp(obj.tsid, this, obj.tsid);
 		}
