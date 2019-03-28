@@ -889,12 +889,16 @@ ItemMovement.prototype.buildPath = function buildPath(transport, dest) {
 		tx = geo.limitX(this.item.x + 3 * this.options.vx);
 		var platform = geo.getClosestPlatPoint(tx,
 			this.item.y + this.options.vy, -1).plat;
-		if (!platform) {
-			throw new NpcMovementError(this, 'failed to find landing platform',
-				{tx: tx, path: path, options: this.options});
+		if (platform) {
+			var ty = utils.pointOnPlat(platform, tx).y;
+			path.push({x: tx, y: ty, speed: 90, transport: 'direct'});
 		}
-		var ty = utils.pointOnPlat(platform, tx).y;
-		path.push({x: tx, y: ty, speed: 90, transport: 'direct'});
+		else {
+			// set the item back to its starting location, which is safe
+			log.warn('movement: failed to find landing platform. bad plats for %s',
+				this.item);
+			path.push({x: this.item.x, y: this.item.y, speed: 90, transport: 'direct'});
+		}
 		this.callback = this.item.onPlatformLanding;
 	}
 	else if (transport === 'flock') {
