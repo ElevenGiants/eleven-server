@@ -1,0 +1,19 @@
+image: node:6.17.1
+
+services:
+  - gcc:4.8
+
+cache: {}
+
+before_script:
+  - cd ..
+  - git clone https://gitlab.com/ElevenGiants/eleven-gsjs.git
+  - cd eleven-server
+  - npm run preproc
+  - npm install
+
+build:
+ script:
+   - npm -s run test
+   - npm -s run functest
+   - npm -s run lint
