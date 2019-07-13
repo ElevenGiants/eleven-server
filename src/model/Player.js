@@ -241,6 +241,14 @@ Player.prototype.onLoginStart = function onLoginStart(session, isRelogin) {
 		// implemented with great self-loathing in order to lighten the player
 		// support load, instead of fixing the underlying architecture issues :(
 		pers.clearStaleRefs(this, 'instances.instances');
+		// also clear stale refs in the players inventory, and in any bags
+		// in the players inventory
+		pers.clearStaleRefs(this, 'items');
+		for (var tsid in this.items) {
+			if (utils.isBag(this.items[tsid])) {
+				pers.clearStaleRefs(this, 'items.' + tsid + '.items');
+			}
+		}
 	}
 	if (auth.getTokenLifespan() > 0) {
 		this.setGsTimer({fname: 'refreshToken', interval: true, internal: true,
