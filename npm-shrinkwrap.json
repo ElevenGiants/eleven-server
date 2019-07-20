@@ -1,6 +1,6 @@
 {
   "name": "eleven-server",
-  "version": "0.2.12",
+  "version": "0.2.14",
   "dependencies": {
     "@slack/client": {
       "version": "3.5.4",
