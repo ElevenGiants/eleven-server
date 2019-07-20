@@ -38,6 +38,7 @@ module.exports = {
 	postRequestProc: postRequestProc,
 	clearStaleRefs: clearStaleRefs,
 	extract: extract,
+	isLoaded: isLoaded,
 };
 
 
@@ -134,6 +135,18 @@ function shutdown(done) {
 function view(tsid) {
 	assert(pbe, 'persistence back-end not set');
 	return pbe.read(tsid);
+}
+
+
+/**
+ * Checks to see if a given object is in cache.
+ *
+ * @param {string} tsid TSID of the object to load
+ * @returns {bool} true if in cache, false otherwise
+ */
+function isLoaded(tsid) {
+	assert(pbe, 'persistence back-end not set');
+	return utils.isGameObject(cache[tsid]);
 }
 
 

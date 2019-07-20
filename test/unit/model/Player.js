@@ -223,7 +223,8 @@ suite('Player', function () {
 
 		test('handles logout/error case correctly', function (done) {
 			var logoutCalled = false;
-			var p = new Player({tsid: 'P1', session: 'foo'});
+			var p = new Player({tsid: 'P1'});
+			p.session = 'foo';
 			p.onLogout = function () {
 				logoutCalled = true;
 			};
@@ -250,16 +251,22 @@ suite('Player', function () {
 
 		test('handles inter-GS move case correctly', function (done) {
 			var logoutCalled = false;
-			var p = new Player({tsid: 'P1', session: 'foo'});
+			var p = new Player({tsid: 'P1'});
+			p.session = 'foo';
 			p.onLogout = function () {
 				logoutCalled = true;
 			};
 			var l = new Location({tsid: 'L', players: [p]}, new Geo());
 			p.location = l;
+			p.unload = function () {
+				assert.isFalse(logoutCalled, 'API event onLogout not called');
+				p.session = null;
+			}
 			rpcMock.reset(false);  // simulate inter-GS move
 			new RC().run(
 				function () {
-					p.onDisconnect();
+					// call gsMoveCheck, which unloads and sends the gs move msg
+					p.unload();
 				},
 				function callback(err, res) {
 					if (err) return done(err);

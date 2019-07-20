@@ -19,6 +19,7 @@ var util = require('util');
 var RQ = require('data/RequestQueue');
 var gsjsBridge = require('model/gsjsBridge');
 var metrics = require('metrics');
+var orp = require('data/objrefProxy');
 
 
 util.inherits(Session, events.EventEmitter);
@@ -126,13 +127,13 @@ Session.prototype.onSocketTimeout = function onSocketTimeout() {
 Session.prototype.onSocketClose = function onSocketClose(hadError) {
 	log.info({session: this}, 'socket close (hadError: %s)', hadError);
 	delete this.socket;
-	if (this.pc && this.pc.isConnected()) {
+	if (this.pc && pers.isLoaded(this.pc.tsid)) {
 		// if pc is still linked to session, socket has been closed without a
-		// "logout" request; could be an error/unexpected connection loss or a
-		// move to another GS (Player#onDisconnect will act accordingly)
+		// "logout" request, which is likely an unexpected error
 		this.close(this.emit.bind(this, 'close', this));
 	}
 	else {
+		// we don't have a player ref, or the ref is unloaded
 		this.emit('close', this);
 	}
 };
@@ -297,13 +298,12 @@ Session.prototype.preRequestProc = function preRequestProc(req) {
 				if (this.socket) this.socket.end();
 				return true;
 			}
-			this.pc = pers.get(tsid, true);
+			this.pc = orp.makeProxy(pers.get(tsid, true));
 			assert(this.pc !== undefined, 'unable to load player: ' + tsid);
 			// prepare Player object for login (e.g. call GSJS events)
 			this.pc.onLoginStart(this, req.type === 'relogin_start');
 			break;
 		case 'logout':
-			if (this.pc) this.pc.onDisconnect();
 			if (this.socket) this.socket.end();
 			return true;
 		case 'ping':

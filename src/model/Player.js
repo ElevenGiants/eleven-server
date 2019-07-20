@@ -265,32 +265,28 @@ Player.prototype.onLoginStart = function onLoginStart(session, isRelogin) {
  * * "regular" logout (`logout` request, triggered by user action, e.g.
  *   selecting "Exit the world" in the menu or closing the browser tab)
  * * network error (socket closed without preceding `logout` request)
- * * player moving to another GS (location change)
  */
 Player.prototype.onDisconnect = function onDisconnect() {
 	// properly move out of location in case of an actual logout request, or
-	// error/connection loss (in case of an inter-GS moves, the location already
-	// points to another castle^Wserver)
-	if (rpc.isLocal(this.location)) {
-		// clear intervals
-		this.cancelGsTimer('onTimePlaying', true);
-		this.cancelGsTimer('onPlayTimeCheck', false);
-		this.cancelGsTimer('refreshToken', true);
-		// remove from location, onExit callbacks etc.
-		this.startMove();
-		// GSJS logout event
-		this.rqPush(this.onLogout);
-		// let other clients in same location know we're gone
-		this.location.send({
-			type: 'pc_logout',
-			pc: {tsid: this.tsid, label: this.label},
-		}, false, this);
-		// stop timers etc and unload from live object cache
-		this.rqPush(this.unload);
-	}
-	// delete GS movement flag
+	// error/connection loss
+	// clear intervals
+	this.cancelGsTimer('onTimePlaying', true);
+	this.cancelGsTimer('onPlayTimeCheck', false);
+	this.cancelGsTimer('refreshToken', true);
+	// remove from location, onExit callbacks etc.
+	this.startMove();
+	// GSJS logout event
+	this.rqPush(this.onLogout);
+	// let other clients in same location know we're gone
+	this.location.send({
+		type: 'pc_logout',
+		pc: {tsid: this.tsid, label: this.label},
+	}, false, this);
+	// remove isMovingGs flag if set
 	delete this.isMovingGs;
-	// unlink the session, so this function won't be accidentally called again
+	// stop timers etc and unload from live object cache
+	this.rqPush(this.unload);
+	// remove session
 	this.session = null;
 };
 
@@ -415,17 +411,14 @@ Player.prototype.gsMoveCheck = function gsMoveCheck(newLocId) {
 		hostport: gsConf.hostPort,
 		token: token,
 	});
+	// send any remaining announcements
+	this.send({type: 'location_event'}, true, true);
 	// set up next request that will tell the client to reconnect to the new GS
-	var self = this;
-	this.getRQ().push('unload', this.unload.bind(this),
-		function triggerReconnect() {
-			if (self.isConnected()) {
-				// make sure remaining announcements are sent to client
-				self.send({type: 'location_event'}, true, true);
-				self.sendServerMsg('CLOSE', {msg: 'CONNECT_TO_ANOTHER_SERVER'});
-				self.session = null;  // cut the cord
-			}
-		}, {waitPers: true, obj: this, session: this.session});
+	var sess = this.session;
+	this.getRQ().push('unload', this.unload.bind(this), function gsMove() {
+		sess.send({type: 'server_message', action: 'CLOSE',
+			msg: 'CONNECT_TO_ANOTHER_SERVER'});
+	});
 	var ret = utils.shallowCopy(gsConf);
 	ret.token = token;
 	return ret;
