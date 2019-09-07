@@ -73,7 +73,7 @@ var TSID_INITIALS_MAP = {
 
 // list of GSJS item functions to be patched (see patchItemGsjsFunc function)
 var PATCHED_ITEM_GSJS_FUNCS = ['use', 'updateState', 'broadcastState',
-	'setInstanceProp', 'onInputBoxResponse'];
+	'setInstanceProp', 'onInputBoxResponse', 'updateLabel'];
 
 // container for loaded game object prototypes
 var prototypes = {};
