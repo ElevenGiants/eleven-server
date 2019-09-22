@@ -297,10 +297,10 @@ suite('Geo', function () {
 			var g = new Geo(getSampleData());
 			assert.strictEqual(g.limitX(0), 0);
 			assert.strictEqual(g.limitX(333.33), 333.33);
-			assert.strictEqual(g.limitX(-3000), -3000);
-			assert.strictEqual(g.limitX(-3000.1), -3000);
-			assert.strictEqual(g.limitX(-Infinity), -3000);
-			assert.strictEqual(g.limitX(12345), 3000);
+			assert.strictEqual(g.limitX(-3000), -2999);
+			assert.strictEqual(g.limitX(-3000.1), -2999);
+			assert.strictEqual(g.limitX(-Infinity), -2999);
+			assert.strictEqual(g.limitX(12345), 2997);
 			assert.isTrue(isNaN(g.limitX(NaN)), 'not trying to "fix" NaN here');
 		});
 	});

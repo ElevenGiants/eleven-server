@@ -37,6 +37,9 @@ function Geo(data) {
 	}
 	Geo.super_.call(this, data);
 	this.prepConnects();
+	utils.addNonEnumerable(this, 'safeL', 0);
+	utils.addNonEnumerable(this, 'safeR', 0);
+	this.setSafeMoveBounds();
 }
 
 
@@ -307,14 +310,15 @@ Geo.prototype.getClosestPlatPoint = function getClosestPlatPoint(x, y, dir,
 
 
 /**
- * Makes sure an x coordinate is within the geometry boundaries.
+ * Makes sure an x coordinate is within the geometry boundaries
+ * and above a valid platform line.
  *
  * @param {number} x coordinate to test
  * @returns {number} the given `x` if it is within geometry limits,
  *          otherwise the closest x coordinate that is
  */
 Geo.prototype.limitX = function limitX(x) {
-	return Math.max(this.l, Math.min(this.r, x));
+	return Math.max(this.safeL, Math.min(this.safeR, x));
 };
 
 
@@ -377,4 +381,23 @@ Geo.prototype.getHitBoxes = function getHitBoxes() {
 		ret.push(this.layers.middleground.boxes[j]);
 	}
 	return ret;
+};
+
+
+/**
+ * Sets the safe item movement bounds for this location, i.e.
+ * the safe l and r values that we can find a plat between
+ */
+Geo.prototype.setSafeMoveBounds = function getSafeMoveBounds() {
+	if (!this.layers.middleground ||
+		!this.layers.middleground.platform_lines) {
+		return;
+	}
+	for (var k in this.layers.middleground.platform_lines) {
+		var plat = this.layers.middleground.platform_lines[k];
+		if (this.safeL > plat.start.x) this.safeL = plat.start.x;
+		if (this.safeL > plat.end.x) this.safeL = plat.end.x;
+		if (this.safeR < plat.start.x) this.safeR = plat.start.x;
+		if (this.safeR < plat.end.x) this.safeR = plat.end.x;
+	}
 };

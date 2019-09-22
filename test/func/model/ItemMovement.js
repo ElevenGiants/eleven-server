@@ -59,6 +59,13 @@ var gWall = new Geo({layers: {middleground: {
 	walls: {wall_1: wall1, wall_2: wall2, wall_3: wall3, wall_4: wall4},
 }}});
 
+var gFlying = new Geo({l: -100, r: 100, t: 100, b: 0, layers: {middleground: {platform_lines: {plat_1: {
+	start: {x: -100, y: 0},
+	end: {x: 100, y: 0},
+	platform_item_perm: -1,
+	platform_pc_perm: -1,
+}}}}});
+
 // helper to create items that can move without a request context
 function newItem(data) {
 	var it = new Item(data);
@@ -384,7 +391,7 @@ suite('ItemMovement', function () {
 
 		test('respects geo boundaries in continuous movement', function (done) {
 			var i1 = newItem({tsid: 'I1'});
-			addToTestLoc(i1, 0, 0, new Geo({l: -100, r: 100, t: 100, b: 0}));
+			addToTestLoc(i1, 0, 0, gFlying);
 			var moveStarted = i1.gsStartMoving('flying',
 				{left: -150, right: 150, width: 300, top: 100, height: 100},
 				{changeState: false, speed: 15, stopAtEnd: false});
