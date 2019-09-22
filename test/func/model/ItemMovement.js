@@ -101,6 +101,15 @@ suite('ItemMovement', function () {
 			assert.isFalse(moveStarted);
 		});
 
+		test('does not start if the item has been deleted', function () {
+			var i1 = newItem({tsid: 'I1', npc_walk_speed: 10});
+			addToTestLoc(i1, 10, 10, gPlat);
+			i1.apiDelete();
+			var moveStarted = i1.gsStartMoving('walking', {x: 20, y: 20},
+				{callback: 'doneMoving'});
+			assert.isFalse(moveStarted);
+		});
+
 		test('fails if there is no suitable platform', function () {
 			var i1 = newItem({tsid: 'I1', npc_walk_speed: 10});
 			addToTestLoc(i1, 35, 25, gPlat);  // on the edge of plat3, no way to go right

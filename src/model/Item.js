@@ -546,6 +546,10 @@ Item.prototype.gsStartMoving = function gsStartMoving(transport, dest, options) 
 		log.debug('not starting NPC movement for %s (disabled)', this);
 		return false;
 	}
+	if (this.deleted) {
+		log.info('not starting NPC movement for %s as it has been deleted', this);
+		return false;
+	}
 	if (!this.gsMovement) this.gsMovement = new ItemMovement(this);
 	return this.gsMovement.startMove(transport, dest, options);
 };
