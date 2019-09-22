@@ -89,6 +89,18 @@ suite('ItemMovement', function () {
 
 	suite('platform walking movement', function () {
 
+		test('safely handle cases where npc_walk_speed is not defined', function (done) {
+			var i1 = newItem({tsid: 'I1'});
+			i1.doneMoving = function doneMoving(args) {
+				assert.strictEqual(args.status, STATUS.ARRIVED);
+				done();
+			};
+			addToTestLoc(i1, 10, 10, gPlat);
+			var moveStarted = i1.gsStartMoving('walking', {x: 10, y: 10},
+				{callback: 'doneMoving'});
+			assert.isFalse(moveStarted);
+		});
+
 		test('does not start if the item is already at the given destination', function (done) {
 			var i1 = newItem({tsid: 'I1', npc_walk_speed: 10});
 			i1.doneMoving = function doneMoving(args) {

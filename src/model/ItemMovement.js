@@ -271,8 +271,9 @@ ItemMovement.prototype.moveWalking = function moveWalking(nextPath) {
 
 	// adjust direction and calculate horizontal movement
 	this.walkingDirection(nextPath.x, nextStep);
-	var step = Math.min(Math.abs(this.item.x - nextPath.x),
-		this.item.npc_walk_speed / 3);
+	// if we do not have a walk speed, just default to 50 for this movement
+	var walkSpeed = this.item.npc_walk_speed ? this.item.npc_walk_speed : 50;
+	var step = Math.min(Math.abs(this.item.x - nextPath.x), walkSpeed / 3);
 	nextStep.dx = Math.floor(this.item.x + this.facing * step);
 	nextStep.dy = this.item.y;
 	// dy is adjusted later (depends on where the horizontal movement takes us)
