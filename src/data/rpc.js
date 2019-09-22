@@ -435,7 +435,7 @@ function objectRequest(callerId, tsid, tag, fname, args, callback) {
 		tag = util.format('%s.%s.%s', callerId, tsid, fname);
 	}
 	RQ.getGlobal('persget').push('rpc.get.' + tsid,
-		pers.get.bind(null, tsid),
+		pers.get.bind(null, tsid, true),
 		function cb(err, obj) {
 			if (!err && !obj) err = new Error('object not found: ' + tsid);
 			if (err) {
