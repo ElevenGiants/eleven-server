@@ -137,6 +137,9 @@ function callFor(fname, targets, args, onlineOnly) {
  * to find the shortest path on the map.
  */
 function reloadDataForGlobalPathFinding(skipCache) {
+	if (pathFindingData) {
+		return;
+	}
 	log.info('reloading data for global pathfinding');
 	var pMap;
 	// check pathfinding cache
