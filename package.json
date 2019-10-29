@@ -72,7 +72,7 @@
     "benchmark": "https://github.com/bestiejs/benchmark.js/tarball/master",
     "chai": "^1.9.1",
     "coveralls": "^2.11.4",
-    "eslint": "^3.2.2",
+    "eslint": "^6.6.0",
     "eslint-plugin-lodash": "^1.10.1",
     "eslint-plugin-node": "^2.0.0",
     "jsdoc": "^3.3.0-alpha9",
