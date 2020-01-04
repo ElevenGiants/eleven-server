@@ -150,8 +150,8 @@ function load(tsid) {
 	assert(pbe, 'persistence back-end not set');
 	log.debug('pers.load: %s', tsid);
 	var data = pbe.read(tsid);
-	if (data === null && (utils.isGeo(tsid) || utils.isLoc(tsid) || utils.isGroup(tsid)) &&
-		!rpc.isLocal(tsid)) {
+	if (data === null && (utils.isGeo(tsid) || utils.isLoc(tsid) ||
+		utils.isGroup(tsid)) && !rpc.isLocal(tsid)) {
 		// if the object in question is managed by another gs, see if it has data on it
 		log.info('no data for %s, but managed by another gs', tsid);
 		try {

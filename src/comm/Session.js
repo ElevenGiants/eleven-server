@@ -4,10 +4,7 @@ module.exports = Session;
 
 
 var _ = require('lodash');
-var amf = {
-	js: require('eleven-node-amf/node-amf/amf'),
-	cc: require('node_amf_cc'),
-};
+var amf = require('eleven-node-amf/node-amf/amf');
 var assert = require('assert');
 var auth = require('comm/auth');
 var config = require('config');
@@ -216,24 +213,22 @@ Session.prototype.checkForMessages = function checkForMessages() {
 	// messages repeatedly until all data is consumed, or deserialization fails
 	var deser, index = 0;  // AMF deserializer and index
 	var bufstr = this.buffer.toString('binary');
-	if (this.jsamf) deser = amf.js.deserializer(bufstr);
+	if (this.jsamf) deser = amf.deserializer(bufstr);
 	while (index < bufstr.length) {
 		var msg;
 		try {
 			if (this.jsamf) {
-				msg = deser.readValue(amf.js.AMF3);
+				msg = deser.readValue(amf.AMF3);
 			}
 			else {
-				deser = amf.cc.deserialize(bufstr);
-				msg = deser.value;
-				bufstr = bufstr.substr(deser.consumed);
+				throw new Error('cc amf deserializer has been deprecated');
 			}
 		}
 		catch (e) {
 			// incomplete message; abort and preserve remaining (unparsed) data
 			// for next round
 			log.debug('%s bytes remaining', bufstr.length - index);
-			this.buffer = new Buffer(bufstr.substr(index), 'binary');
+			this.buffer = Buffer.from(bufstr.substr(index), 'binary');
 			break;
 		}
 		// still here? then update index and schedule message handling
@@ -423,13 +418,13 @@ Session.prototype.send = function send(msg) {
 	}
 	var data;
 	if (this.jsamf) {
-		data = amf.js.serializer().writeObject(msg);
+		data = amf.serializer().writeObject(msg);
 	}
 	else {
-		data = amf.cc.serialize(msg);
+		throw new Error('cc amf deserializer has been deprecated');
 	}
 	var size = Buffer.byteLength(data, 'binary');
-	var buf = new Buffer(4 + size);
+	var buf = Buffer.alloc(4 + size);
 	buf.writeUInt32BE(size, 0);
 	buf.write(data, 4, size, 'binary');
 	this.socket.write(buf);

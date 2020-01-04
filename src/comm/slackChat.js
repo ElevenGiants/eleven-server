@@ -13,13 +13,12 @@ module.exports = {
 	init: init,
 	shutdown: shutdown,
 	getClient: getClient,
-	patchGroup: patchGroup,
 	handleGroupMsg: handleGroupMsg,
 };
 
 
 var _ = require('lodash');
-var Slack = require('@slack/client');
+var SlackRTM = require('@slack/rtm-api').RTMClient;
 var config = require('config');
 var pers = require('data/pers');
 var RQ = require('data/RequestQueue');
@@ -45,50 +44,22 @@ function init() {
 	}
 	var logger = getSlackLogger();
 	log.debug('connecting to Slack');
-	slack = new Slack.RtmClient(token, {
+	slack = new SlackRTM(token, {
 		autoReconnect: true,
-		autoMark: true,
-		logLevel: 'silly',
 		logger: logger,
-		dataStore: new Slack.MemoryDataStore({
-			logLevel: 'silly',
-			logger: logger,
-		}),
 	});
-	slack.on(Slack.CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, onSlackOpen);
-	slack.on(Slack.RTM_EVENTS.MESSAGE, onSlackMessage);
+	slack.on('ready', onSlackOpen);
+	slack.on('message', onSlackMessage);
 	slack.on('error', onSlackError);
-	slack.login();
+	slack.start();
 }
 
 
 function getSlackLogger() {
-	var logger = log.child({lib: 'slack-client'});
-	return function slackLogger(level, msg) {
-		switch (level) {
-			case 'error':
-				logger.error(msg);
-				break;
-			case 'warn':
-				logger.warn(msg);
-				break;
-			case 'info':
-				logger.info(msg);
-				break;
-			case 'verbose':
-			case 'debug':
-				logger.debug(msg);
-				break;
-			case 'silly':
-				logger.trace(msg);
-				break;
-			default:
-				// just to be on the safe side in case we get something
-				// unexpected; should be categorized more appropriately then
-				logger.fatal(msg);
-				break;
-		}
-	};
+	var logger = log.child({lib: 'slack-rtmapi'});
+	logger.setName = _.noop;
+	logger.setLevel = _.noop;
+	return logger;
 }
 
 
@@ -109,18 +80,27 @@ function shutdown(done) {
  * Slack channels/groups as configured.
  * @private
  */
-function onSlackOpen() {
-	var user = slack.dataStore.getUserById(slack.activeUserId);
-	log.info('connected to Slack as %s', user.name);
+async function onSlackOpen() {
+	try {
+		var me = await slack.webClient.users.info({user: slack.activeUserId});
+	}
+	catch (e) {
+		log.error({err: e}, 'unable to fetch self info from slack api');
+		return;
+	}
+	log.info('connected to Slack as %s', me.user.name);
 	var groups = config.get('slack:chat:groups', {});
+	try {
+		var channelList = await slack.webClient.conversations.list();
+	}
+	catch (e) {
+		log.error({err: e}, 'unable to fetch conversation list from slack api');
+		return;
+	}
 	for (var tsid in groups) {
 		var chanName = groups[tsid];
 		log.debug('hooking up group %s to Slack channel #%s', tsid, chanName);
-		connectGroup(tsid, chanName, slack.dataStore.channels);
-		// no channel found? try groups, then
-		if (!groupToChannel[tsid]) {
-			connectGroup(tsid, chanName, slack.dataStore.groups);
-		}
+		connectGroup(tsid, chanName, channelList.channels);
 		if (!groupToChannel[tsid]) {
 			log.error('channel/group %s not found', chanName);
 		}
@@ -151,7 +131,7 @@ function connectGroup(groupTsid, cogName, cogs) {
 			else {
 				groupToChannel[groupTsid] = cog;
 				if (rpc.isLocal(groupTsid)) {
-					channelToGroup[k] = groupTsid;
+					channelToGroup[cog.id] = groupTsid;
 				}
 				log.info('connected %s to %s', cog.name, groupTsid);
 				break;
@@ -178,7 +158,7 @@ function onSlackError(err) {
  * connected groups), and forwards it to the respective group if so.
  * @private
  */
-function onSlackMessage(msg) {
+async function onSlackMessage(msg) {
 	log.trace({data: msg}, 'incoming Slack message');
 	if (msg.type !== 'message') return;  // ignore meta stuff
 	// is this a connected group managed by this GS instance?
@@ -191,12 +171,18 @@ function onSlackMessage(msg) {
 		msg.text = '[EDIT] ' + msg.text;
 	}
 	// prepare message payload
-	var user = slack.dataStore.getUserById(msg.user);
-	if (!user) {
-		log.error({data: msg}, 'could not retrieve Slack user');
+	try {
+		var sender = await slack.webClient.users.info({user: msg.user});
+	}
+	catch (e) {
+		log.error({err: e}, 'unable to fetch user info from slack api');
 		return;
 	}
-	if (user.id === slack.activeUserId) {
+	if (!sender) {
+		log.error({data: msg}, 'sender information is blank from api');
+		return;
+	}
+	if (sender.user.id === slack.activeUserId) {
 		// don't echo!
 		return;
 	}
@@ -205,8 +191,8 @@ function onSlackMessage(msg) {
 		tsid: groupTsid,
 		pc: {
 			// unique pseudo TSID so client assigns different colors:
-			tsid: 'PSLACK' + user.id,
-			label: user.name,
+			tsid: 'PSLACK' + sender.user.id,
+			label: sender.user.name,
 		},
 		txt: processMsgText(msg.text),
 	};
@@ -299,30 +285,4 @@ function handleGroupMsg(msg) {
 				channel.id);
 		}
 	}
-}
-
-
-/**
- * If Slack integration is configured for the given group, this
- * modifies its function reponsible for generating the list of chat
- * participants (i.e. the output of `/who`) to include Slack users.
- * @private
- */
-function patchGroup(group) {
-	if (!groupToChannel[group.tsid]) return;
-	// monkey patch the function generating /who output
-	var orig = group.chat_get_roster_msg;
-	utils.addNonEnumerable(group, 'chat_get_roster_msg',
-		function chat_get_roster_msg() {  // eslint-disable-line camelcase
-			var channel = groupToChannel[group.tsid];
-			var roster = utils.shallowCopy(group.chat_roster);
-			for (var i = 0; i < channel.members.length; i++) {
-				var user = slack.dataStore.getUserById(channel.members[i]);
-				if (user.presence === 'active' && user.id !== slack.activeUserId) {
-					roster[user.id] = {label: user.name + ' (Slack)'};
-				}
-			}
-			return orig.call({chat_roster: roster});
-		}
-	);
 }

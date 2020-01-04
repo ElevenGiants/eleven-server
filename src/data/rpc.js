@@ -335,7 +335,7 @@ function sendRequest(gsid, rpcFunc, args, callback) {
 		});
 	}
 	else {
-        var rc = RC.getContext(true);
+		var rc = RC.getContext(true);
 		try {
 			if (rc && rc.rq) rc.rq.rpcWait = true;
 			var res = wait.forMethod(client, 'request', rpcFunc, rpcArgs);
@@ -346,7 +346,7 @@ function sendRequest(gsid, rpcFunc, args, callback) {
 			return wrap.res;
 		}
 		catch (e) {
-            if (rc && rc.rq) delete rc.rq.rpcWait;
+			if (rc && rc.rq) delete rc.rq.rpcWait;
 			throw new RpcError('error calling ' + logmsg, e);
 		}
 	}

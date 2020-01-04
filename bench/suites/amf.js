@@ -7,8 +7,7 @@ module.exports = suite;
 
 var fs = require('fs');
 var amf = {
-	js: require('eleven-node-amf/node-amf/amf'),
-	cc: require('node_amf_cc'),
+	js: require('eleven-node-amf/node-amf/amf')
 };
 
 
@@ -40,17 +39,11 @@ Object.keys(amfData).forEach(function iter(type) {
 		var deser = amf.js.deserializer(amfDataStr[type]);
 		deser.readValue(amf.js.AMF3);
 	});
-	suite.add('amflib-cc/deserialize ' + type, function () {
-		amf.cc.deserialize(amfDataStr[type]);
-	});
 });
 
 
 Object.keys(jsonData).forEach(function iter(type) {
 	suite.add('amflib-js/serialize ' + type, function () {
 		amf.js.serializer().writeObject(jsonData[type]);
-	});
-	suite.add('amflib-cc/serialize ' + type, function () {
-		amf.cc.serialize(jsonData[type]);
 	});
 });

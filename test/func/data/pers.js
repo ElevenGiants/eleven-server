@@ -212,6 +212,7 @@ suite('pers', function () {
 
 		test('works with reference hashes as well as arrays', function (done) {
 			pbeMock.getDB().L1 = {tsid: 'L1', label: 'dummyLoc'};
+			pbeMock.getDB().G1 = {tsid: 'G1'};
 			pbeMock.getDB().R2 = {tsid: 'R2', label: 'exists'};
 			pbeMock.getDB().R3 = {tsid: 'R3', label: 'exists'};
 			pbeMock.getDB().D1 = {
