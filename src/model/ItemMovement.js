@@ -768,6 +768,11 @@ ItemMovement.prototype.transport = function transport(nextPath) {
  * second by an internal interval defined for the item.
  */
 ItemMovement.prototype.moveStep = function moveStep() {
+	// if there are no players in loc, reschedule without actually moving
+	if (!this.item.container.players.length) {
+		this.item.setGsTimer({fname: 'movementTimer', delay: 3000, internal: true});
+		return;
+	}
 	// sanity checking, this should not occur
 	if (!this.path || this.path.length === 0) {
 		log.error('movement: moving but no path information for %s', this.item);

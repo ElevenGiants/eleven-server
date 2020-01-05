@@ -4,6 +4,7 @@ var _ = require('lodash');
 var Item = require('model/Item');
 var Geo = require('model/Geo');
 var Location = require('model/Location');
+var Player = require('model/Player');
 var NpcMovementError = require('errors').NpcMovementError;
 var RQ = require('data/RequestQueue');
 
@@ -76,6 +77,8 @@ function newItem(data) {
 // helper creating a dummy location and adding an item to it at a given position
 function addToTestLoc(it, x, y, geo) {
 	var l = new Location({tsid: 'L1', items: []}, geo);
+	var p = new Player({tsid: 'P1'});
+	l.players[p.tsid] = p;
 	l.addItem(it, x, y);
 }
 
