@@ -1,17 +1,11 @@
 'use strict';
 
 var _ = require('lodash');
-var amf = require('eleven-node-amf/node-amf/amf');
 var config = require('config');
 var Session = require('comm/Session');
 var helpers = require('../../helpers');
 var gsjsBridge = require('model/gsjsBridge');
 
-
-var TEST_AMF3_MSG = ('0a 0b 01 09 74 79 70 65 06 09 74 65 73 74 0d 6d 73 67 ' +
-	'5f 69 64 06 03 31 01').replace(/ /g, '');
-var TEST_AMF3_MSG_MOVE_XY = '0a0b01037306052d37037804fffffdfc0974797065060f6d' +
-	'6f76655f7879037904ffffff7701';
 
 suite('Session', function () {
 
@@ -52,28 +46,21 @@ suite('Session', function () {
 
 	suite('onSocketData/handleData', function () {
 
-		test('stores data in internal buffer and triggers message handler', function (done) {
+		test('triggers message handler on socket write', function (done) {
 			var s = helpers.getTestSession('test');
-			s.checkForMessages = function () {
-				assert.property(s, 'buffer');
-				assert.strictEqual(s.buffer.toString(), 'asdf');
+			s.enqueueMessage = function (message) {
+				assert.strictEqual(message.foo, 'bar');
 				done();
 			};
-			s.socket.write(new Buffer('asdf'));
+			s.socket.write(JSON.stringify({foo: "bar"}));
 		});
 
-		test('concatenates consecutive data chunks', function (done) {
+		test('catch issues when parsing json message from socket data', function (done) {
 			var s = helpers.getTestSession('test');
-			var i = 0;
-			s.checkForMessages = function () {
-				if (i === 0) i++;
-				else if (i === 1) {
-					assert.strictEqual(s.buffer.toString(), 'asdfghjk');
-					done();
-				}
-			};
-			s.socket.write(new Buffer('asdf'));
-			s.socket.write(new Buffer('ghjk'));
+			s.socket.terminate = function (message) {
+				done();
+			}
+			s.socket.write('invalid');
 		});
 	});
 
@@ -82,7 +69,7 @@ suite('Session', function () {
 
 		test('handles socket errors', function (done) {
 			var socket = helpers.getDummySocket();
-			socket.destroy = function () {
+			socket.terminate = function () {
 				// this should be called by the domain error handler
 				done();
 			};
@@ -93,75 +80,16 @@ suite('Session', function () {
 		test('handles errors in our code', function (done) {
 			var socket = helpers.getDummySocket();
 			var s = new Session('test', socket);
-			socket.destroy = function () {
+			socket.terminate = function () {
 				// this should be called by the domain error handler
 				s.dom.exit();  // clean up (otherwise this domain affects other tests)
 				done();
 			};
-			s.checkForMessages = function (msg) {
+			s.enqueueMessage = function (msg) {
 				throw new Error('something bad happened while processing a request');
 			};
 			// simulate incoming data
-			socket.emit('data', 'crash!');
-		});
-	});
-
-
-	suite('checkForMessages', function () {
-
-		test('deserializes one message', function (done) {
-			var s = helpers.getTestSession('test');
-			s.buffer = new Buffer(TEST_AMF3_MSG, 'hex');
-			s.enqueueMessage = function (msg) {
-				assert.deepEqual(msg, {type: 'test', msg_id: '1'});
-				assert.notProperty(s, 'buffer');
-				done();
-			};
-			s.checkForMessages();
-		});
-
-		test('deserializes multiple messages', function (done) {
-			var s = helpers.getTestSession('test');
-			var buf = new Buffer(TEST_AMF3_MSG, 'hex');
-			s.buffer = Buffer.concat([buf, buf]);
-			var i = 0;
-			s.enqueueMessage = function (msg) {
-				assert.deepEqual(msg, {type: 'test', msg_id: '1'});
-				if (++i === 2) {
-					assert.notProperty(s, 'buffer');
-					done();
-				}
-			};
-			s.checkForMessages();
-		});
-
-		test('preserves trailing incomplete messages in buffer', function (done) {
-			var s = helpers.getTestSession('test');
-			s.buffer = Buffer.concat([new Buffer(TEST_AMF3_MSG, 'hex'),
-				new Buffer('foo')]);
-			s.enqueueMessage = function (msg) {
-				assert.deepEqual(msg, {type: 'test', msg_id: '1'});
-				assert.strictEqual(s.buffer.toString(), 'foo');
-				done();
-			};
-			s.checkForMessages();
-		});
-
-		test('fails on excessively large messages', function () {
-			var s = helpers.getTestSession('test');
-			s.buffer = new Buffer(new Array(config.get('net:maxMsgSize') + 2).join('X'));
-			assert.throw(s.checkForMessages.bind(s), Error);
-		});
-
-		test('deserializes negative numbers correctly', function (done) {
-			var s = helpers.getTestSession('test');
-			s.buffer = new Buffer(TEST_AMF3_MSG_MOVE_XY, 'hex');
-			s.enqueueMessage = function (msg) {
-				assert.strictEqual(msg.type, 'move_xy');
-				assert.strictEqual(msg.x, -516);
-				done();
-			};
-			s.checkForMessages();
+			socket.emit('message', JSON.stringify({crash: "me"}));
 		});
 	});
 
@@ -234,7 +162,7 @@ suite('Session', function () {
 					return true;
 				},
 			};
-			s.socket.destroy = function (msg) {
+			s.socket.terminate = function (msg) {
 				assert.strictEqual(actionSent, 'CLOSE');
 				done();
 			};
@@ -251,7 +179,7 @@ suite('Session', function () {
 					return false;
 				},
 			};
-			s.socket.destroy = done;
+			s.socket.terminate = done;
 			s.handleAmfReqError(undefined, new Error('foo'));
 		});
 	});
@@ -263,9 +191,8 @@ suite('Session', function () {
 			var socket = helpers.getDummySocket();
 			var s = helpers.getTestSession('test', socket);
 			s.loggedIn = true;
-			socket.write = function (data) {
-				assert.strictEqual(data.toString('hex'), '0000001d0a0b0d4f626' +
-					'a65637407666f6f06076261720d6d73675f696406033101');
+			socket.send = function (data) {
+				assert.strictEqual(data, JSON.stringify({foo: 'bar', msg_id: '1'}));
 				done();
 			};
 			s.send({foo: 'bar', msg_id: '1'});
@@ -274,12 +201,10 @@ suite('Session', function () {
 		test('does not send non-login messages until login is complete', function (done) {
 			var socket = helpers.getDummySocket();
 			var s = helpers.getTestSession('test', socket);
-			socket.write = function (data) {
-				data = data.slice(4);  // snip length header
-				var deser = amf.deserializer(data.toString('binary'));
-				var res = deser.readValue(amf.AMF3);
-				assert.notStrictEqual(res.type, 'foo1');
-				if (res.type === 'foo2') {
+			socket.send = function (data) {
+				data = JSON.parse(data);
+				assert.notStrictEqual(data.type, 'foo1');
+				if (data.type === 'foo2') {
 					done();
 				}
 			};

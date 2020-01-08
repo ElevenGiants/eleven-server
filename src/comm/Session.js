@@ -63,8 +63,6 @@ function Session(id, socket) {
 	this.ts = new Date().getTime();
 	this.maxMsgSize = config.get('net:maxMsgSize');
 	this.jsamf = config.get('net:amflib') === 'js';
-	// disable Nagle's algorithm (we need all messages delivered as quickly as possible)
-	this.socket.setNoDelay(true);
 	// set up domain for low-level issue handling (networking and
 	// AMF deserialization issues)
 	this.dom = domain.create();
@@ -78,7 +76,7 @@ function Session(id, socket) {
 
 
 Session.prototype.setupSocketEventHandlers = function setupSocketEventHandlers() {
-	this.socket.on('data', this.onSocketData.bind(this));
+	this.socket.on('message', this.onSocketMessage.bind(this));
 	this.socket.on('end', this.onSocketEnd.bind(this));
 	this.socket.on('timeout', this.onSocketTimeout.bind(this));
 	this.socket.on('close', this.onSocketClose.bind(this));
@@ -103,10 +101,14 @@ Session.logSerialize = function logSerialize(session) {
 };
 
 
-Session.prototype.onSocketData = function onSocketData(data) {
-	// wrap in nextTick to make sure sync errors are handled, too;
-	// see <https://stackoverflow.com/q/19461234/>
-	process.nextTick(this.handleData.bind(this, data));
+Session.prototype.onSocketMessage = function onSocketMessage(message) {
+	try {
+		setImmediate(this.enqueueMessage.bind(this), JSON.parse(message));
+	}
+	catch (err) {
+		log.error({session: this, err: err}, 'failed to parse incoming message');
+		this.socket.terminate();
+	}
 };
 
 
@@ -151,7 +153,7 @@ Session.prototype.close = function close(done) {
 			this.pc.onDisconnect.bind(this.pc),
 			function cb(err, res) {
 				if (err) log.error(err, 'error while closing session');
-				if (self.socket) self.socket.destroy();
+				if (self.socket) self.socket.terminate();
 				if (done) done();
 			},
 			{waitPers: true, obj: this.pc}
@@ -177,71 +179,9 @@ Session.prototype.handleError = function handleError(err) {
 	log.error({session: this, err: err},
 		'unhandled error: %s', err ? err.message : err);
 	// careful cleanup - if anything throws here, the server goes down
-	if (this.socket && this.socket.destroy) {
+	if (this.socket && this.socket.terminate) {
 		log.info({session: this}, 'destroying socket');
-		this.socket.destroy();
-	}
-};
-
-
-/**
- * Consumer of incoming socket data. Called whenever the socket's
- * `data` event is emitted (i.e. the supplied data chunk is not
- * necessarily a single, complete request).
- *
- * @param {Buffer} data incoming data chunk
- * @private
- */
-Session.prototype.handleData = function handleData(data) {
-	if (!this.buffer) {
-		this.buffer = data;
-	}
-	else {
-		var len = this.buffer.length + data.length;
-		this.buffer = Buffer.concat([this.buffer, data], len);
-	}
-	setImmediate(this.checkForMessages.bind(this));
-};
-
-
-Session.prototype.checkForMessages = function checkForMessages() {
-	// if node scheduled multiple consecutive calls, the first one has already
-	// processed all available messages, so, hammertime
-	if (!this.buffer) return;
-	// buffer can contain multiple messages (and the last one may be incomplete);
-	// since we don't have message length data, all we can do is try parsing
-	// messages repeatedly until all data is consumed, or deserialization fails
-	var deser, index = 0;  // AMF deserializer and index
-	var bufstr = this.buffer.toString('binary');
-	if (this.jsamf) deser = amf.deserializer(bufstr);
-	while (index < bufstr.length) {
-		var msg;
-		try {
-			if (this.jsamf) {
-				msg = deser.readValue(amf.AMF3);
-			}
-			else {
-				throw new Error('cc amf deserializer has been deprecated');
-			}
-		}
-		catch (e) {
-			// incomplete message; abort and preserve remaining (unparsed) data
-			// for next round
-			log.debug('%s bytes remaining', bufstr.length - index);
-			this.buffer = Buffer.from(bufstr.substr(index), 'binary');
-			break;
-		}
-		// still here? then update index and schedule message handling
-		if (this.jsamf) index = deser.i;
-		setImmediate(this.enqueueMessage.bind(this), msg);
-	}
-	if (index >= bufstr.length) {
-		delete this.buffer;  // buffer fully processed
-	}
-	// protection against broken/malicious clients
-	if (this.buffer && this.buffer.length > this.maxMsgSize) {
-		throw new Error('could not process incoming message(s) ' +
-			'(buffer length: ' + this.buffer.length + ' bytes)');
+		this.socket.terminate();
 	}
 };
 
@@ -299,7 +239,7 @@ Session.prototype.preRequestProc = function preRequestProc(req) {
 			break;
 		case 'logout':
 			if (this.pc) this.pc.onDisconnect();
-			if (this.socket) this.socket.end();
+			if (this.socket) this.socket.close();
 			return true;
 		case 'ping':
 			this.send({
@@ -313,7 +253,7 @@ Session.prototype.preRequestProc = function preRequestProc(req) {
 			if (!this.pc) {
 				log.info({session: this}, 'closing session after unexpected' +
 					' %s request in pre-auth session', req.type);
-				if (this.socket) this.socket.destroy();
+				if (this.socket) this.socket.terminate();
 				return true;
 			}
 	}
@@ -383,7 +323,7 @@ Session.prototype.handleAmfReqError = function handleAmfReqError(req, err) {
 				{msg: util.format('error processing %s request', req.type)});
 		}
 		log.info({session: this}, 'closing session after error');
-		this.socket.destroy();
+		this.socket.terminate();
 	}
 };
 
@@ -416,17 +356,6 @@ Session.prototype.send = function send(msg) {
 		log.trace({data: msg, to: this.pc ? this.pc.tsid : undefined},
 			'sending %s message', msg.type);
 	}
-	var data;
-	if (this.jsamf) {
-		data = amf.serializer().writeObject(msg);
-	}
-	else {
-		throw new Error('cc amf deserializer has been deprecated');
-	}
-	var size = Buffer.byteLength(data, 'binary');
-	var buf = Buffer.alloc(4 + size);
-	buf.writeUInt32BE(size, 0);
-	buf.write(data, 4, size, 'binary');
-	this.socket.write(buf);
+	this.socket.send(JSON.stringify(msg));
 	metrics.increment('net.amf.tx', 0.01);
 };

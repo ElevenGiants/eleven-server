@@ -40,7 +40,7 @@ function shutdown() {
 }
 
 
-function newSession(socket) {
+function newSession(socket, req) {
 	var id;
 	do {
 		id = (+new Date()).toString(36);
@@ -49,6 +49,7 @@ function newSession(socket) {
 	var session = new Session(id, socket);
 	sessions[id] = session;
 	session.on('close', onSessionClose);
+	session.remote = req ? req.connection.remoteAddress : 'unknown';
 	return session;
 }
 
@@ -106,7 +107,7 @@ function getSessionInfo() {
 	for (var id in sessions) {
 		var s = sessions[id];
 		ret[id] = {id: id};
-		if (s.socket) ret[id].socket = s.socket.remoteAddress + ':' + s.socket.remotePort;
+		if (s.socket) ret[id].socket = s.remote;
 		ret[id].loggedIn = s.loggedIn;
 		if (s.pc) ret[id].pc = s.pc.tsid;
 	}

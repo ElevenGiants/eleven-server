@@ -4,6 +4,7 @@ var async = require('async');
 var auth = require('comm/auth');
 var abePassthrough = require('comm/abe/passthrough');
 var net = require('net');
+var WebSocket = require('ws');
 var path = require('path');
 var wait = require('wait.for');
 var config = require('config');
@@ -23,12 +24,13 @@ suite('Session', function () {
 
 	suiteSetup(function () {
 		sessionMgr.init();
-		server = net.createServer(function (socket) {
+		server = new WebSocket.Server({port: cfg.port});
+		server.on('connection', function handle(socket) {
 			var s = sessionMgr.newSession(socket);
 			s.processRequest = function (req) {
-				socket.write(JSON.stringify(req));  // echo request object
+				this.socket.send(JSON.stringify(req));
 			};
-		}).listen(cfg.port, cfg.host);
+		});
 	});
 
 	suiteTeardown(function () {
@@ -42,32 +44,43 @@ suite('Session', function () {
 		this.timeout(5000);
 		this.slow(2000);
 
-		test('works as expected over local TCP connection', function (done) {
-			var sock = net.connect(cfg.port, cfg.host);
-			sock.on('data', function (data) {
-				assert.deepEqual(JSON.parse(data.toString()), {type: 'foo'});
-				sock.end();
+		test('works as expected over local WS connection', function (done) {
+			var sock = new WebSocket('ws://localhost:' + cfg.port);
+
+			sock.on('message', function (data) {
+				assert.deepEqual(JSON.parse(data), {type: 'foo'});
+				sock.close();
 			});
 			sock.on('close', function () {
-				assert.strictEqual(sessionMgr.getSessionCount(), 0);
-				done();
+				// use timeout to avoid checking session count too early
+				setTimeout(function () {
+					assert.strictEqual(sessionMgr.getSessionCount(), 0);
+					done();
+				}, 50);
 			});
-			sock.write(helpers.amfEnc({type: 'foo'}));
+			sock.on('open', function () {
+				sock.send(JSON.stringify({type: 'foo'}));
+			});
 		});
 
 		test('works with a number of concurrent connections', function (done) {
 			var numbers = Array.apply(null, {length: 100}).map(Number.call, Number);
 			async.eachLimit(numbers, 10,
 				function iterator(i, cb) {
-					net.connect(cfg.port, cfg.host)
-						.on('data', function (data) {
-							assert.strictEqual(JSON.parse(data.toString()).msg_id, i);
-							this.end();
-						})
-						.on('close', function (hadError) {
-							cb(hadError);
-						})
-						.write(helpers.amfEnc({msg_id: i}));
+					var sock = new WebSocket('ws://localhost:' + cfg.port);
+					sock.on('message', function (data) {
+						assert.strictEqual(JSON.parse(data).msg_id, i);
+						this.close();
+					});
+					sock.on('close', function (hadError) {
+						// use timeout to avoid checking session count too early
+						setTimeout(function () {
+							cb(hadError === 1005 ? null : hadError);
+						}, 50);
+					});
+					sock.on('open', function () {
+						sock.send(JSON.stringify({msg_id: i}));
+					});
 				},
 				function callback(err) {
 					assert.strictEqual(sessionMgr.getSessionCount(), 0);
