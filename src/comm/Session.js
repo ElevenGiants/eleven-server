@@ -4,7 +4,6 @@ module.exports = Session;
 
 
 var _ = require('lodash');
-var amf = require('eleven-node-amf/node-amf/amf');
 var assert = require('assert');
 var auth = require('comm/auth');
 var config = require('config');
@@ -62,7 +61,6 @@ function Session(id, socket) {
 	this.socket = socket;
 	this.ts = new Date().getTime();
 	this.maxMsgSize = config.get('net:maxMsgSize');
-	this.jsamf = config.get('net:amflib') === 'js';
 	// set up domain for low-level issue handling (networking and
 	// AMF deserialization issues)
 	this.dom = domain.create();

@@ -278,7 +278,9 @@ Location.prototype.removePlayer = function removePlayer(player, newLoc) {
  */
 Location.prototype.checkUnload = function checkUnload() {
 	// don't unload if there are people around
-	if (this.players.length) return;
+	for (var tsid in this.players) {
+		if (this.players[tsid].isConnected()) return;
+	}
 	// don't unload if anything is busy growing (e.g. jellisacs, barnacles)
 	for (var k in this.items) {
 		var it = this.items[k];
@@ -310,6 +312,10 @@ Location.prototype.checkUnload = function checkUnload() {
 Location.prototype.unload = function unload(callback) {
 	var self = this;
 	this.getRQ().push('unload', function unloadReq() {
+		for (var tsid in self.items) {
+			// unload all items first to stop timers etc
+			self.items[tsid].unload();
+		}
 		Location.super_.prototype.unload.call(self);
 		self.geometry.unload();
 	}, callback, {close: true, obj: this});

@@ -393,8 +393,7 @@ function getLoadedRefs(obj, root, ret) {
 		// otherwise, pick up (if it's a game object)
 		if (isGO) {
 			if (ret.indexOf(v.tsid) !== -1) {
-				log.warn('unexpected objref cycle detected: %s in %s',
-					v.tsid, root.tsid);
+				// ignore this gameobject as we know about it already
 				continue;
 			}
 			ret.push(v.tsid);

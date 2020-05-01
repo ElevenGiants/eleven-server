@@ -1,7 +1,6 @@
 'use strict';
 
 var _ = require('lodash');
-var amf = require('eleven-node-amf/node-amf/amf');
 var events = require('events');
 var Player = require('model/Player');
 var Session = require('comm/Session');
@@ -36,13 +35,5 @@ exports.getOnlinePlayer = function getOnlinePlayer(data) {
 	// create a "connected" player instance with a dummy session object
 	var ret = new Player(data);
 	ret.session = {send: _.noop};
-	return ret;
-};
-
-
-exports.amfEnc = function amfEnc(data) {
-	data = amf.serializer().writeObject(data);
-	var ret = new Buffer(Buffer.byteLength(data, 'binary'));
-	ret.write(data, 0, ret.length, 'binary');
 	return ret;
 };

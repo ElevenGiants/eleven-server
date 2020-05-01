@@ -241,14 +241,10 @@ function setupInterval(stat, type, delay, func) {
  */
 function startSystemMetrics() {
 	// process memory gauges
-	/* eslint-disable no-loop-func */
-	// (ok to make function within this (specific, run-once) loop)
-	for (var k in process.memoryUsage()) {
-		setupGaugeInterval('process.memory.' + k, function getter() {
-			return process.memoryUsage()[k];
-		});
-	}
-	/* eslint-enable no-loop-func */
+	gauge('process.memory.rss', process.memoryUsage().rss);
+	gauge('process.memory.heapTotal', process.memoryUsage().heapTotal);
+	gauge('process.memory.heapUsed', process.memoryUsage().heapUsed);
+	gauge('process.memory.external', process.memoryUsage().external);
 	// naive event loop latency
 	setupTimerInterval('process.ev_loop_latency', function resolver(timer) {
 		setImmediate(function stop() {
