@@ -120,8 +120,8 @@ Session.prototype.onSocketTimeout = function onSocketTimeout() {
 };
 
 
-Session.prototype.onSocketClose = function onSocketClose(hadError) {
-	log.info({session: this}, 'socket close (hadError: %s)', hadError);
+Session.prototype.onSocketClose = function onSocketClose(code) {
+	log.info({session: this}, 'socket close (code: %s)', code);
 	delete this.socket;
 	if (this.pc && this.pc.isConnected()) {
 		// if pc is still linked to session, socket has been closed without a
@@ -334,8 +334,9 @@ Session.prototype.handleAmfReqError = function handleAmfReqError(req, err) {
  *        that cannot be encoded in AMF3 (e.g. circular references)
  */
 Session.prototype.send = function send(msg) {
-	if (!this.socket) {
-		log.debug('socket is gone, dropping %s message', msg.type);
+	// only allow sending if socket is open, i.e. readyState = 1
+	if (!this.socket || this.socket.readyState !== 1) {
+		log.debug('socket is gone or not ready, dropping %s message', msg.type);
 		return;
 	}
 	if (!this.loggedIn) {

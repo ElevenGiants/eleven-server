@@ -14,6 +14,7 @@ exports.getDummySocket = function getDummySocket() {
 	ret.setNoDelay = _.noop;
 	ret.destroy = _.noop;
 	ret.end = _.noop;
+	ret.readyState = 1;
 	return ret;
 };
 
