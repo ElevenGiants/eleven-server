@@ -40,11 +40,6 @@ var util = require('util');
 var murmur = require('murmurhash-js');
 
 
-// buffer variables for TSID generation
-var lastTsidTime = 0;
-var lastTsidHrt = process.hrtime();
-
-
 /**
  * Creates a unique ID for a game object, based on server ID and
  * current time.
@@ -62,14 +57,14 @@ function makeTsid(initial, gsid) {
 		'TSID initial must be single letter (got length: %s)', initial.length));
 	assert(_.isString(gsid) && gsid.length, util.format(
 		'GSID must be a non-empty string (got: %s)', gsid));
-	var t = new Date().getTime() * 1e6;  // epoch time in ns
-	while (t <= lastTsidTime) {
-		// add ns since previous TSID was generated (repeatedly if timer
-		// resolution is too low)
-		t += process.hrtime(lastTsidHrt)[1];
+	var t = process.hrtime()[1].toString();
+	while (t.length < 6) {
+		t = "0" + t;
 	}
-	lastTsidTime = t;
-	lastTsidHrt = process.hrtime();
+	if (t.length > 6) {
+		t = t.substring(t.length - 6);
+	}
+	t = Number(new Date().getTime() + t);
 	var code = murmur.murmur3(gsid).toString(36) + t.toString(36);
 	return (initial + code).toUpperCase();
 }
