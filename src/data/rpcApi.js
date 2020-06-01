@@ -15,7 +15,6 @@ module.exports = {
 	ping: ping,
 	getConnectData: getConnectData,
 	createPlayer: redirWrap(createPlayer, NEW_PLAYER_LOC),
-	resetPlayer: redirWrap(resetPlayer),
 	getGsjsConfig: getGsjsConfig,
 	sendToAll: sendToAll,
 	getPlayerInfo: getPlayerInfo,
@@ -32,6 +31,7 @@ var pers = require('data/pers');
 var rpc = require('data/rpc');
 var utils = require('utils');
 var gsjsBridge = require('model/gsjsBridge');
+var api = require('model/globalApi');
 var Player = require('model/Player');
 var sessionMgr = require('comm/sessionMgr');
 var wait = require('wait.for');
@@ -146,65 +146,47 @@ function createPlayer(userId, name, tsid) {
 		y: -55,
 	};
 	if (tsid) data.tsid = tsid;
-	var pc = Player.create(data);
-	makeAlphaAdjustments(pc);
-	pc.unload();
-	return pc.tsid;
-}
-
-
-/**
- * Resets an existing blank player (for testing).
- *
- * @param {string} tsid TSID of the player that should be reset
- */
-function resetPlayer(tsid) {
-	var pc = pers.get(tsid);
-	assert(!!pc, 'player not found: ' + tsid);
-	// check for invalid object references that would break the reset function
-	// (TODO: this is a bug workaround and should eventually go away)
-	(function check(items) {
-		for (var k in items) {
-			var it = pers.get(k);
-			if (null === it) {
-				log.warn({pc: tsid, item: k}, 'deleting broken item reference');
-				delete items[k];
-			}
-			else if (utils.isBag(it)) {  // recurse
-				check(it.items);
-			}
-		}
-	})(pc.items);
-	Object.keys(pc.quests || {}).forEach(function check(key) {
-		var dc = pc.quests[key];
-		if (!dc || !dc.quests) return;
-		for (var k in dc.quests) {
-			var q = pers.get(dc.quests[k].tsid);
-			if (null === q) {
-				log.warn({pc: tsid, dc: dc.tsid, quest: dc.quests[k].tsid},
-					'deleting broken quest reference');
-				delete dc.quests[k];
-			}
-		}
-	});
-	// do the reset
-	pc.resetForTesting(true);
-	makeAlphaAdjustments(pc);
-}
-
-
-// temporary adjustments for alpha players that should be removed at some point (TODO...)
-function makeAlphaAdjustments(pc) {
-	// give the player a long subscription and some credits
-	pc.stats.has_subscription = true;
-	pc.stats.subscription_end = 9999999999;
-	pc.stats.credits.setVal(23);
-	pc.createItem('tester_widget', 1);
-	delete pc.use_img;
-	pc.adminBackfillNewxpPhysics();
+	// generate a random newxp location
 	var locs = gsjsBridge.getConfig().newxp_exits;
 	var loc = locs[Math.floor(Math.random() * locs.length)];
-	pc.teleportToLocation(loc.tsid, loc.x, loc.y);
+	// check if location exists and use NEW_PLAYER_LOC if it does not
+	var loadedLocation = pers.get(loc.tsid);
+	if (loadedLocation) {
+		data.location = loadedLocation;
+		data.x = loc.x;
+		data.y = loc.y;
+	}
+	// create player object
+	var pc = Player.create(data);
+	// make adjustments
+	pc.stats.has_subscription = true;
+	pc.stats.subscription_end = 9999999999;
+	pc.createItem('tester_widget', 1);
+	var s = api.apiNewItemStack('note', 1);
+	if (s) {
+		s.label = 'README FIRST!';
+		s.setInstanceProp('initial_title', "README FIRST!");
+		s.setInstanceProp('initial_text', "Welcome to the Eleven Alpha! Here are 5 " +
+			"tips to get you started:\n\n1) Open Global Chat to find other alphas and " +
+			"ask questions! Type /who to see who's around. (Didn't work? Type in Local " +
+			"Chat first.)\n\n2) The Tester Tool in your inventory is there for you! " +
+			"Don't be shy about using to Max energy, Teleport to Gregarious Grange " +
+			"(Eleven's town square) or escape the Ersatz Chamber, get useful Items, " +
+			"and more!\n\n3) Type /home or /house in Local Chat to quickly get to your " +
+			"Home Street or into your House.\n\n4) The IMG bubble in the upper left can " +
+			"also take you Home. You can choose from many preset Looks there after you " +
+			"hit Level 3.\n\n5) The Alpha subforum is the #1 place for info and support, " +
+			"especially dev help. You'll need to log out and back in at " +
+			"https://forum.elevengiants.com/ to see it. Check out the pinned posts for " +
+			"dev announcements and snarkle's Beginner Tips and Helpful Gameplay Links." +
+			"\n\nThanks for reading, now go have some preposterous fun!");
+		pc.addItemStack(s);
+	}
+	delete pc.use_img;
+	pc.adminBackfillNewxpPhysics();
+	// save the new player
+	pc.unload();
+	return pc.tsid;
 }
 
 
