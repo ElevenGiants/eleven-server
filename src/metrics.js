@@ -179,7 +179,15 @@ function createTimer(stat, sampleRate) {
  */
 function setupGaugeInterval(stat, valueGetter, sampleRate, delay) {
 	setupInterval(stat, 'gauge', delay, function exec() {
-		gauge(stat, valueGetter(), sampleRate);
+		var ret = valueGetter();
+		if (typeof ret === 'object') {
+			for (var key in ret) {
+				gauge(stat + '.' + key, ret[key], sampleRate);
+			}
+		}
+		else {
+			gauge(stat, ret, sampleRate);
+		}
 	});
 }
 
@@ -241,10 +249,7 @@ function setupInterval(stat, type, delay, func) {
  */
 function startSystemMetrics() {
 	// process memory gauges
-	gauge('process.memory.rss', process.memoryUsage().rss);
-	gauge('process.memory.heapTotal', process.memoryUsage().heapTotal);
-	gauge('process.memory.heapUsed', process.memoryUsage().heapUsed);
-	gauge('process.memory.external', process.memoryUsage().external);
+	setupGaugeInterval('process.memory', process.memoryUsage);
 	// naive event loop latency
 	setupTimerInterval('process.ev_loop_latency', function resolver(timer) {
 		setImmediate(function stop() {

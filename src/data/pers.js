@@ -78,12 +78,7 @@ function init(backEnd, config, callback) {
 	proxyCache = {};
 	pbe = backEnd;
 	shuttingDown = false;
-	metrics.setupGaugeInterval('pers.loc.size', function getLocSize() {
-		return cache ? Object.keys(cache).length : 0;
-	});
-	metrics.setupGaugeInterval('pers.poc.size', function getPocSize() {
-		return proxyCache ? Object.keys(proxyCache).length : 0;
-	});
+	metrics.setupGaugeInterval('cache.type', details, 1, 60000);
 	if (pbe && _.isFunction(pbe.init)) {
 		var pbeConfig;
 		if (config && config.backEnd) {
@@ -518,6 +513,25 @@ function unload(tsid, logmsg) {
 		cache[tsid].suspendGsTimers();
 		delete cache[tsid];
 	}
+}
+
+
+/**
+ * Returns counts of currently loaded objects in the cache
+ * that are used in metrics
+ *
+ * @returns {object} containing the total and counts for each type
+ */
+function details() {
+	var ret = {};
+	for (var tsid in cache) {
+		var initial = tsid[0];
+		if (!ret[initial]) {
+			ret[initial] = 0;
+		}
+		ret[initial]++;
+	}
+	return ret;
 }
 
 

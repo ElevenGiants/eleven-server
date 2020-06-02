@@ -12,6 +12,7 @@ module.exports = {
 	shutdown: shutdown,
 	newSession: newSession,
 	getSessionCount: getSessionCount,
+	getPlayerCount: getPlayerCount,
 	getPlayerInfo: getPlayerInfo,
 	getSessionInfo: getSessionInfo,
 	forEachSession: forEachSession,
@@ -28,7 +29,8 @@ var sessions = {};
 
 function init() {
 	sessions = {};
-	metrics.setupGaugeInterval('session.count', getSessionCount);
+	metrics.setupGaugeInterval('comm.session.count', getSessionCount);
+	metrics.setupGaugeInterval('comm.player.count', getPlayerCount);
 }
 
 
@@ -69,6 +71,22 @@ function onSessionClose(session) {
 function getSessionCount() {
 	if (!sessions) return 0;
 	return Object.keys(sessions).length;
+}
+
+
+/**
+ * Gets the number of logged in players
+ *
+ * @returns {number} the player count
+ */
+function getPlayerCount() {
+	var count = 0;
+	for (var sess in sessions) {
+		if (sessions[sess].loggedIn) {
+			count++;
+		}
+	}
+	return count;
 }
 
 
