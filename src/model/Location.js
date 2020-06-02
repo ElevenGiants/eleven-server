@@ -316,6 +316,9 @@ Location.prototype.unload = function unload(callback) {
 			// unload all items first to stop timers etc
 			self.items[tsid].unload();
 		}
+		// empty out player list as we do not want to persist any
+		// lingering references
+		self.players = [];
 		Location.super_.prototype.unload.call(self);
 		self.geometry.unload();
 	}, callback, {close: true, obj: this});
