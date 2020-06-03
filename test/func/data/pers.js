@@ -88,8 +88,10 @@ suite('pers', function () {
 	suite('postRequestProc', function () {
 
 		test('suspends timers when deleting/unloading', function (done) {
-			pbeMock.getDB().GO1 = {tsid: 'GO1'};
-			pbeMock.getDB().GO2 = {tsid: 'GO2'};
+			// avoid calling resumeGsTimers here as this is usually
+			// not called after unloading a gameobject
+			pbeMock.getDB().GO1 = {tsid: 'GO1', resumeGsTimers: _.noop};
+			pbeMock.getDB().GO2 = {tsid: 'GO2', resumeGsTimers: _.noop};
 			var go1, go2;
 			var timerFired = false;
 			var rc = new RC();

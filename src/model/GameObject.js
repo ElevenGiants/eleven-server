@@ -73,7 +73,7 @@ GameObject.prototype.gsOnLoad = function gsOnLoad() {
 	if (this.onLoad) {
 		this.onLoad();
 	}
-	this.resumeGsTimers();
+	this.rqPush(this.resumeGsTimers);
 };
 
 
