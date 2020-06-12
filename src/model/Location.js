@@ -179,9 +179,12 @@ Location.copy = function copy(src, options) {
 	else {
 		// ensure geo data is initialized (constructor may have skipped it)
 		ret.updateGeo(geo);
+		// TODO: if this gs is responsible for this copy, we end up
+		// unloading the location and throwing errors. for now, we will
+		// just ignore this step as we are using one gs anyway.
 		// make sure loc (and geo/items) don't stay in persistence cache, as
 		// this GS (that created it) may not be the one that is managing it
-		RC.getContext().setUnload(ret);
+		// RC.getContext().setUnload(ret);
 	}
 	return ret;
 };
